@@ -66,7 +66,11 @@ class AudienceApp {
       audienceFeaturedBanner: document.getElementById('audience-featured-banner'),
       audienceFeaturedText: document.getElementById('audience-featured-text'),
       audienceFeaturedAuthor: document.getElementById('audience-featured-author'),
-      sessionClosedNotice: document.getElementById('session-closed-notice')
+      sessionClosedNotice: document.getElementById('session-closed-notice'),
+
+      // Final Analytics
+      audienceFinalAnalytics: document.getElementById('audience-final-analytics'),
+      audienceAnalyticsContent: document.getElementById('audience-analytics-content')
     };
 
     this.init();
@@ -84,7 +88,7 @@ class AudienceApp {
       await this.engine.loadPresentation(this.presentationId);
       this.dom.headerTitle.textContent = this.engine.manifest.title || 'Apresentação';
       
-      this.realtime.startPresence(this.sessionId);
+      this.realtime.startPresence(this.sessionId, false, this.auth.user);
 
       this.realtime.subscribeToSession(this.sessionId, (sessionState) => {
         this.handleRemoteSessionUpdate(sessionState);
@@ -94,7 +98,7 @@ class AudienceApp {
       if (this.realtime.channel) {
         this.realtime.channel.addEventListener('message', (e) => {
           if (!e.data || e.data.sessionId !== this.sessionId) return;
-          if (e.data.type === 'VOTE_CAST' && this.pollState.showResults) {
+          if ((e.data.type === 'VOTE_CAST' || e.data.type === 'VOTE_RESET') && this.pollState.showResults) {
             this.updateView();
           }
         });
@@ -161,6 +165,14 @@ class AudienceApp {
       this.dom.audienceFeaturedBanner.style.display = 'block';
     } else if (this.dom.audienceFeaturedBanner) {
       this.dom.audienceFeaturedBanner.style.display = 'none';
+    }
+
+    // Exibe Analytics Final se projetado pelo Moderador
+    if (sessionState.showFinalAnalytics && this.dom.audienceFinalAnalytics) {
+      this.renderAudienceFinalAnalytics();
+      this.dom.audienceFinalAnalytics.style.display = 'block';
+    } else if (this.dom.audienceFinalAnalytics) {
+      this.dom.audienceFinalAnalytics.style.display = 'none';
     }
 
     // Tratamento de Sessão Encerrada
@@ -450,9 +462,73 @@ class AudienceApp {
       }
     });
 
+    // Reações ao Vivo da Audiência
+    document.querySelectorAll('.btn-reaction').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const emoji = btn.dataset.emoji || '👏';
+        
+        // Efeito de feedback tátil e animação local
+        btn.style.transform = 'scale(1.35)';
+        setTimeout(() => { btn.style.transform = 'scale(1)'; }, 180);
+
+        this.realtime.sendReaction(this.sessionId, emoji);
+      });
+    });
+
     this.engine.on('onSlideChange', () => {
       this.updateView();
     });
+  }
+
+  renderAudienceFinalAnalytics() {
+    if (!this.dom.audienceAnalyticsContent) return;
+
+    const polls = [];
+    if (this.engine.slidesData && this.engine.slidesData.slides) {
+      this.engine.slidesData.slides.forEach(s => {
+        if (s.interaction && s.interaction.poll) {
+          polls.push({
+            title: s.title,
+            poll: s.interaction.poll,
+            res: this.interaction.computePollResults(this.sessionId, s.interaction.poll)
+          });
+        }
+      });
+    }
+
+    const questions = this.moderation.getQuestions(this.sessionId);
+    const approvedQ = questions.filter(q => q.status === 'approved' || q.status === 'featured');
+
+    const pollsHtml = polls.map(p => `
+      <div style="margin-bottom: 12px; background: rgba(15,23,42,0.6); padding: 10px; border-radius: 6px;">
+        <div style="font-size: 12px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">${p.poll.question}</div>
+        ${p.res.options.map(opt => `
+          <div style="font-size: 11px; margin-bottom: 4px;">
+            <div style="display: flex; justify-content: space-between; color: #94a3b8;">
+              <span>${opt.id}. ${opt.text}</span>
+              <strong style="color: var(--accent-primary);">${opt.percentage}% (${opt.votes})</strong>
+            </div>
+            <div class="poll-progress-track" style="height: 4px; margin-top: 2px;">
+              <div class="poll-progress-fill" style="width: ${opt.percentage}%;"></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
+
+    this.dom.audienceAnalyticsContent.innerHTML = `
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+        <div class="stat-box" style="padding: 8px;">
+          <span style="font-size: 11px; color: var(--text-muted);">Perguntas Aprovadas</span>
+          <span class="stat-value" style="font-size: 16px;">${approvedQ.length}</span>
+        </div>
+        <div class="stat-box" style="padding: 8px;">
+          <span style="font-size: 11px; color: var(--text-muted);">Enquetes Realizadas</span>
+          <span class="stat-value" style="font-size: 16px;">${polls.length}</span>
+        </div>
+      </div>
+      <div>${pollsHtml}</div>
+    `;
   }
 
   async processVote(pollId, optionId) {

@@ -84,12 +84,31 @@
     </div>
   </div>
 
+  <!-- Painel de Resumo Analítico Final Projetado -->
+  <div id="audience-final-analytics" class="audience-container" style="display: none; padding-bottom: 0;">
+    <div class="card" style="background: linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(30,41,59,0.95) 100%); border: 1.5px solid var(--accent-primary); box-shadow: 0 0 20px var(--accent-glow);">
+      <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--accent-primary); margin-bottom: 6px;">
+        📊 BALANÇO GERAL DO EVENTO
+      </div>
+      <h3 style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 12px;">Resultados Consolidados da Apresentação</h3>
+      <div id="audience-analytics-content"></div>
+    </div>
+  </div>
+
   <!-- Conteúdo Principal do Smartphone -->
   <main class="audience-container" id="audience-content-area">
     <div class="card" style="text-align: center; color: var(--text-secondary); padding: 40px 20px;">
       <p>Carregando conteúdo do slide...</p>
     </div>
   </main>
+
+  <!-- Barra de Reações Rápidas ao Vivo da Audiência -->
+  <div class="audience-reactions-bar" style="position: fixed; bottom: 64px; left: 0; right: 0; display: flex; justify-content: center; gap: 12px; z-index: 90; pointer-events: auto; padding: 6px 0;">
+    <button class="btn-reaction" data-emoji="👏" style="background: rgba(15,23,42,0.85); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 5px 12px; font-size: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); backdrop-filter: blur(8px); cursor: pointer;" title="Aplaudir">👏</button>
+    <button class="btn-reaction" data-emoji="💡" style="background: rgba(15,23,42,0.85); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 5px 12px; font-size: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); backdrop-filter: blur(8px); cursor: pointer;" title="Insight">💡</button>
+    <button class="btn-reaction" data-emoji="❤️" style="background: rgba(15,23,42,0.85); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 5px 12px; font-size: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); backdrop-filter: blur(8px); cursor: pointer;" title="Amei">❤️</button>
+    <button class="btn-reaction" data-emoji="🚀" style="background: rgba(15,23,42,0.85); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 5px 12px; font-size: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); backdrop-filter: blur(8px); cursor: pointer;" title="Inovador">🚀</button>
+  </div>
 
   <!-- Barra Flutuante de Navegação e Ações no Smartphone -->
   <nav class="audience-bottom-bar">

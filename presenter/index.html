@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel do Apresentador | Plataforma de Apresentação</title>
+  <title>Telão do Auditório | Plataforma de Apresentação</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,28 +14,35 @@
   <link rel="stylesheet" href="../css/components.css">
   <link rel="stylesheet" href="../css/presenter.css">
 </head>
-<body class="presenter-body">
+<body class="presenter-body" id="presenter-root">
 
-  <!-- Header Superior do Apresentador -->
-  <header class="presenter-header">
+  <!-- Header Minimalista do Telão -->
+  <header class="presenter-header" id="presenter-header">
     <div class="presenter-title-area">
-      <span class="badge badge-accent">Apresentador</span>
+      <span class="badge badge-accent" id="session-code-display">#SDWAN2026</span>
       <h1 class="presenter-title" id="presentation-title">Carregando apresentação...</h1>
     </div>
 
-    <div class="presenter-status-area">
-      <button class="btn btn-sm" id="btn-toggle-moderation" style="border-color: var(--accent-primary); color: #7dd3fc;">
-        <span>💬 Perguntas</span>
-        <span class="badge badge-accent" id="badge-question-count" style="font-size: 10px; padding: 1px 6px;">0</span>
-      </button>
-
-      <div class="presenter-counter" id="participant-count-wrapper">
-        <span class="status-dot-connected" id="status-dot"></span>
-        <span id="connection-status">Sincronização Ativa</span>
+    <!-- Controles Centrais e Cronômetro -->
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <div class="presenter-timer" id="presenter-timer-box" title="Tempo de Apresentação">
+        <span>⏱️</span>
+        <span id="timer-display">00:00:00</span>
       </div>
 
-      <button class="btn btn-sm" id="btn-end-session" style="border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;" title="Encerrar Sessão">
-        <span>🛑 Encerrar</span>
+      <div class="badge" style="background: rgba(15,23,42,0.6); font-family: var(--font-mono); font-size: 13px;" id="slide-counter">
+        1 / --
+      </div>
+    </div>
+
+    <!-- Atalhos e Alternância de Modo -->
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button class="btn btn-sm" id="btn-toggle-pulpit" title="Alternar visão com Notas do Orador no Notebook">
+        🎛️ Púlpito com Notas
+      </button>
+
+      <button class="btn btn-sm" id="btn-fullscreen" title="Tela Cheia (F)">
+        ⛶ Tela Cheia
       </button>
 
       <span class="badge badge-live" id="badge-live-status">
@@ -44,14 +51,28 @@
     </div>
   </header>
 
-  <!-- Área Principal de Apresentação -->
+  <!-- Área Principal do Telão -->
   <main class="presenter-main">
-    <!-- Telão / Canvas de Slides -->
+    <!-- Telão / Canvas de Slides Full 16:9 -->
     <section class="slide-canvas" id="slide-canvas">
-      <div style="color: var(--text-secondary); font-size: 16px;">Carregando slides...</div>
+      <div style="color: var(--text-secondary); font-size: 18px;">Carregando slides...</div>
     </section>
 
-    <!-- Banner Flutuante de Pergunta Destacada no Telão -->
+    <!-- Barra Lateral do Púlpito (Opcional - Ativada via Toggle) -->
+    <aside class="pulpit-sidebar" id="pulpit-sidebar">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+        <h3 style="font-size: 14px; font-weight: 700; color: #ffffff;">📝 Notas do Orador</h3>
+        <span class="badge badge-accent">Privado</span>
+      </div>
+      <div id="speaker-notes-content" style="color: #cbd5e1; font-size: 14px; line-height: 1.6; flex: 1; overflow-y: auto;">
+        Nenhuma nota para este slide.
+      </div>
+      <div style="padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: 11px; color: var(--text-muted);">
+        💡 Use as teclas <strong>← / →</strong> para navegar.
+      </div>
+    </aside>
+
+    <!-- Banner Flutuante de Pergunta Destacada pelo Moderador -->
     <div id="featured-question-banner" class="featured-question-banner" style="display: none;">
       <div style="display: flex; align-items: flex-start; gap: 14px; flex: 1;">
         <div style="font-size: 26px; line-height: 1;">⭐</div>
@@ -68,96 +89,22 @@
       </button>
     </div>
 
-    <!-- Barra Lateral: QR Code e Notas do Orador -->
-    <aside class="presenter-sidebar">
-      <!-- Painel de Conexão do Público -->
-      <div class="qr-section">
-        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">
-          Acesso do Público
-        </div>
-        <div class="qr-box" id="qr-code-box"></div>
-        <div class="session-code-display">SESSÃO: <span id="session-code-display">---</span></div>
-        <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 6px; word-break: break-all;">
-          <a id="audience-direct-link" href="#" target="_blank" style="color: var(--accent-primary);">Abrir tela do público</a>
-        </div>
+    <!-- Widget Retrátil de QR Code no Rodapé (Atalho: Tecla Q) -->
+    <div class="qr-stage-widget" id="qr-stage-widget">
+      <div class="qr-box-inner" id="qr-code-box"></div>
+      <div class="qr-info-text">
+        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--accent-primary);">Acompanhe pelo Celular</div>
+        <div style="font-size: 11px; font-weight: 600; color: #ffffff;" id="audience-direct-link">app.online</div>
+        <div style="font-size: 9.5px; color: var(--text-muted); margin-top: 2px;">Atalho [Q] para ocultar</div>
       </div>
+      <button class="btn btn-sm" id="btn-toggle-qr" style="padding: 4px 6px; font-size: 11px;" title="Recolher / Expandir QR Code">
+        ⇲
+      </button>
+    </div>
 
-      <!-- Notas do Orador -->
-      <div class="speaker-notes" id="speaker-notes-content">
-        <div class="speaker-notes-title">Notas do Orador:</div>
-        <p style="color: var(--text-muted);">Nenhuma nota carregada.</p>
-      </div>
-    </aside>
+    <!-- Stream de Reações Flutuantes no Canto Inferior Direito -->
+    <div class="reaction-stream-container" id="reaction-stream"></div>
   </main>
-
-  <!-- Dock Inferior de Controle -->
-  <footer class="presenter-dock">
-    <div class="dock-left">
-      <button class="btn btn-icon" id="btn-prev" title="Slide Anterior (Seta Esquerda / PageUp)">
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      <span class="slide-nav-counter" id="slide-counter">0 / 0</span>
-
-      <button class="btn btn-icon" id="btn-next" title="Próximo Slide (Seta Direita / Espaço)">
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-    </div>
-
-    <div class="dock-center" id="poll-controls-wrapper" style="display: none; gap: 8px;">
-      <button class="btn btn-sm btn-primary" id="btn-open-poll">
-        <span>🟢 Abrir Votação</span>
-      </button>
-      <button class="btn btn-sm" id="btn-close-poll" style="display: none; border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;">
-        <span>🔴 Encerrar Votação</span>
-      </button>
-      <button class="btn btn-sm" id="btn-toggle-results" style="display: none;">
-        <span>📊 Mostrar Resultados</span>
-      </button>
-    </div>
-
-    <div class="dock-right">
-      <span style="font-size: 11px; color: var(--text-muted); margin-right: 12px;" id="keyboard-hint">
-        <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">←</kbd> <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">→</kbd> | <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">F</kbd> tela cheia
-      </span>
-      <button class="btn btn-sm" id="btn-fullscreen" title="Modo Tela Cheia">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-        </svg>
-        <span>Tela Cheia</span>
-      </button>
-    </div>
-  </footer>
-
-  <!-- Gaveta Lateral de Moderação de Perguntas -->
-  <aside class="moderation-drawer" id="moderation-drawer">
-    <div class="moderation-header">
-      <h3 style="font-size: 15px; font-weight: 700; color: #ffffff;">Fila de Perguntas</h3>
-      <button class="btn btn-icon btn-sm" id="btn-close-moderation" title="Fechar">&times;</button>
-    </div>
-
-    <div class="moderation-tabs">
-      <button class="moderation-tab-btn active" data-tab="pending" id="tab-pending">Pendentes</button>
-      <button class="moderation-tab-btn" data-tab="approved" id="tab-approved">Aprovadas</button>
-      <button class="moderation-tab-btn" data-tab="rejected" id="tab-rejected">Rejeitadas</button>
-    </div>
-
-    <div class="moderation-list" id="moderation-list">
-      <div style="text-align: center; color: var(--text-muted); padding: 40px 10px; font-size: 13px;">
-        Nenhuma pergunta nesta categoria.
-      </div>
-    </div>
-
-    <div style="padding: 12px 16px; border-top: 1px solid var(--border-subtle); background: rgba(15,23,42,0.6);">
-      <button class="btn btn-sm" id="btn-export-report" style="width: 100%; font-size: 12px;">
-        📥 Exportar Relatório da Sessão (JSON)
-      </button>
-    </div>
-  </aside>
 
   <!-- Scripts -->
   <script src="../lib/qrcode.min.js"></script>

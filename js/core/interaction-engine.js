@@ -158,6 +158,50 @@ export class InteractionEngine {
   }
 
   /**
+   * Admin: Zera a contagem de votos de uma enquete individual
+   */
+  async resetPoll(sessionId, pollId) {
+    // 1. Limpa localStorage
+    localStorage.removeItem(`session_votes_${sessionId}_${pollId}`);
+    
+    // Limpa votos locais dos usuários nesta máquina
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(`vote_${sessionId}_${pollId}_`)) {
+        localStorage.removeItem(key);
+      }
+    }
+
+    // 2. Notifica canais locais
+    if (this.realtime.channel) {
+      this.realtime.channel.postMessage({
+        type: 'VOTE_RESET',
+        sessionId: sessionId,
+        pollId: pollId
+      });
+    }
+
+    // 3. Atualiza Firebase
+    if (this.realtime.isFirebaseReady && window.firebase) {
+      try {
+        const db = window.firebase.database();
+        await db.ref(`sessions/${sessionId}/votes/${pollId}`).remove();
+      } catch (err) {
+        console.warn('Erro ao zerar enquete no Firebase:', err);
+      }
+    }
+  }
+
+  /**
+   * Admin: Zera todas as enquetes da apresentação
+   */
+  async resetAllPolls(sessionId, pollIds = []) {
+    for (const pid of pollIds) {
+      await this.resetPoll(sessionId, pid);
+    }
+  }
+
+  /**
    * Obtém a opção em que o usuário votou
    */
   getUserVoteOption(sessionId, pollId) {

@@ -20,22 +20,34 @@
   <header class="admin-header">
     <div style="display: flex; align-items: center; gap: 14px;">
       <span class="badge" style="background: rgba(129, 140, 248, 0.2); border-color: rgba(129, 140, 248, 0.4); color: #c7d2fe;">
-        🛡️ PAINEL DO MODERADOR & ADMIN
+        🛡️ MESA TÉCNICA & MODERAÇÃO
       </span>
       <h1 style="font-size: 15px; font-weight: 700; color: #ffffff;" id="admin-pres-title">Carregando...</h1>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 16px;">
-      <div class="stat-box" style="padding: 6px 12px; font-size: 12px; gap: 8px;">
+    <!-- Métricas de Presença em Tempo Real no Header -->
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div class="stat-box" style="padding: 4px 10px; font-size: 11.5px; gap: 8px;">
+        <span>👥 Online:</span>
+        <strong style="color: #38bdf8;" id="stat-total-online">0</strong>
+        <span style="color: #64748b;">|</span>
+        <span title="Autenticados com Google">👤 Logados:</span>
+        <strong style="color: #34d399;" id="stat-logged-online">0</strong>
+        <span style="color: #64748b;">|</span>
+        <span title="Anônimos (Leitura)">👁️ Anônimos:</span>
+        <strong style="color: #94a3b8;" id="stat-anon-online">0</strong>
+      </div>
+
+      <div class="stat-box" style="padding: 4px 10px; font-size: 11.5px; gap: 6px;">
         <span class="status-dot-connected" id="admin-status-dot"></span>
         <span id="admin-connection-status">Sincronização Ativa</span>
       </div>
 
       <a href="../presenter/?presentation=sdwan-cpe-unificado&session=SDWAN2026" target="_blank" class="btn btn-sm btn-primary">
-        🖥️ Abrir Telão do Apresentador
+        🖥️ Abrir Telão
       </a>
       <a href="../audience/?presentation=sdwan-cpe-unificado&session=SDWAN2026" target="_blank" class="btn btn-sm">
-        📱 Abrir Visão do Smartphone
+        📱 Abrir Celular
       </a>
     </div>
   </header>
@@ -43,50 +55,66 @@
   <!-- Grade Principal de Gestão e Moderação -->
   <main class="admin-grid">
 
-    <!-- COLUNA 1: Controle de Sessão e Slide -->
+    <!-- COLUNA 1: Controle de Sessão, Slide e Participantes Online -->
     <section class="admin-card">
       <div class="admin-card-header">
-        <h3>⚙️ Sessão & Apresentação</h3>
+        <h3>⚙️ Sessão & Audiência Ao Vivo</h3>
         <span class="badge badge-accent" id="admin-session-code">SESSÃO: ---</span>
       </div>
       
       <div class="admin-card-body">
         <div class="stat-box">
-          <span class="stat-label">Slide Ativo</span>
+          <span class="stat-label">Slide Ativo no Telão</span>
           <span class="stat-value" id="admin-slide-indicator">1 / 10</span>
         </div>
 
-        <div style="background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--accent-primary); margin-bottom: 4px;">
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--accent-primary); margin-bottom: 4px;">
             Título do Slide Atual:
           </div>
-          <div style="font-size: 14px; font-weight: 600; color: #ffffff;" id="admin-current-slide-title">---</div>
+          <div style="font-size: 13.5px; font-weight: 600; color: #ffffff;" id="admin-current-slide-title">---</div>
         </div>
 
         <!-- Controle de Navegação da Mesa Técnica -->
         <div>
-          <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">
-            Navegação Remota (Mesa Técnica):
+          <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">
+            Navegação Remota do Telão:
           </div>
-          <div style="display: flex; gap: 10px;">
-            <button class="btn btn-sm" id="admin-btn-prev" style="flex: 1;">⬅️ Slide Anterior</button>
-            <button class="btn btn-sm btn-primary" id="admin-btn-next" style="flex: 1;">Próximo Slide ➡️</button>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-sm" id="admin-btn-prev" style="flex: 1; font-size: 12px;">⬅️ Anterior</button>
+            <button class="btn btn-sm btn-primary" id="admin-btn-next" style="flex: 1; font-size: 12px;">Próximo ➡️</button>
+          </div>
+        </div>
+
+        <!-- Lista de Participantes Conectados ao Vivo com Banimento -->
+        <div style="border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary);">
+              Participantes Conectados
+            </span>
+            <span class="badge badge-accent" id="admin-live-badge">0 ao vivo</span>
+          </div>
+
+          <div id="admin-participants-list" style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; background: rgba(10,15,29,0.5); padding: 8px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+            <div style="color: var(--text-muted); font-size: 11.5px; text-align: center; padding: 12px;">Nenhum participante detectado ainda.</div>
           </div>
         </div>
 
         <!-- QR Code da Sessão -->
-        <div style="text-align: center; padding: 16px; background: rgba(15,23,42,0.7); border-radius: 8px; border: 1px solid var(--border-subtle);">
-          <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">
-            QR Code da Sessão
-          </div>
-          <div id="admin-qr-box" style="width: 140px; height: 140px; margin: 0 auto 10px; background: #ffffff; padding: 6px; border-radius: 6px;"></div>
-          <a id="admin-audience-link" href="#" target="_blank" style="font-size: 11px; word-break: break-all;">Link da Audiência</a>
+        <div style="text-align: center; padding: 12px; background: rgba(15,23,42,0.7); border-radius: 8px; border: 1px solid var(--border-subtle);">
+          <div id="admin-qr-box" style="width: 100px; height: 100px; margin: 0 auto 8px; background: #ffffff; padding: 4px; border-radius: 4px;"></div>
+          <a id="admin-audience-link" href="#" target="_blank" style="font-size: 10.5px; word-break: break-all; color: var(--accent-primary);">Link Direto</a>
         </div>
 
-        <!-- Encerramento de Sessão -->
-        <button class="btn btn-sm" id="admin-btn-end-session" style="border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; width: 100%;">
-          🛑 Encerrar Sessão da Apresentação
-        </button>
+        <!-- Ações de Encerramento e Projeção de Analytics -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button class="btn btn-sm" id="admin-btn-publish-analytics" style="background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7;">
+            📢 Projetar Resumo Analítico no Telão
+          </button>
+          <button class="btn btn-sm" id="admin-btn-end-session" style="border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;">
+            🛑 Encerrar Sessão da Apresentação
+          </button>
+        </div>
       </div>
     </section>
 
@@ -110,10 +138,13 @@
       </div>
     </section>
 
-    <!-- COLUNA 3: Central de Votações e Exportação -->
+    <!-- COLUNA 3: Central de Votações, Reset e Exportação -->
     <section class="admin-card">
       <div class="admin-card-header">
         <h3>📊 Central de Enquetes & Votações</h3>
+        <button class="btn btn-sm" id="admin-btn-reset-all-polls" style="padding: 2px 8px; font-size: 10.5px; border-color: rgba(239,68,68,0.4); color: #fca5a5;" title="Zerar todas as votações da apresentação">
+          ⚠️ Zerar Todas
+        </button>
       </div>
 
       <div class="admin-card-body">
@@ -121,7 +152,7 @@
           <!-- Enquetes geradas dinamicamente -->
         </div>
 
-        <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+        <div style="margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
           <button class="btn btn-sm btn-primary" id="admin-btn-export" style="width: 100%;">
             📥 Exportar Relatório Completo (JSON)
           </button>

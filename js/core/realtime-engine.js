@@ -199,17 +199,44 @@ export class RealtimeEngine {
   }
 
   /**
-   * Participante: Registra presença
+   * Participante: Registra presença com metadados de autenticação
    */
-  startPresence(sessionId) {
+  startPresence(sessionId, isPresenter = false, userMeta = null) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    
     const notifyPresence = () => {
+      const payload = {
+        participantId: this.participantId,
+        sessionId: normSessionId,
+        isPresenter: isPresenter,
+        isAuthenticated: !!(userMeta && userMeta.uid),
+        uid: (userMeta && userMeta.uid) || this.participantId,
+        alias: (userMeta && userMeta.anonymousAlias) || 'Participante Anônimo',
+        lastSeen: Date.now()
+      };
+
+      // Grava no registry de presença local
+      try {
+        const presenceKey = `session_presence_${normSessionId}`;
+        let map = {};
+        const raw = localStorage.getItem(presenceKey);
+        if (raw) map = JSON.parse(raw);
+        map[this.participantId] = payload;
+        
+        // Limpa usuários inativos há mais de 45 segundos
+        const now = Date.now();
+        Object.keys(map).forEach(k => {
+          if (now - map[k].lastSeen > 45000) delete map[k];
+        });
+        localStorage.setItem(presenceKey, JSON.stringify(map));
+      } catch (e) {}
+
       if (this.channel) {
         try {
           this.channel.postMessage({
             type: 'PRESENCE_PING',
             sessionId: normSessionId,
-            participantId: this.participantId
+            data: payload
           });
         } catch (e) {}
       }
@@ -218,6 +245,7 @@ export class RealtimeEngine {
         try {
           const participantRef = this.firebaseFns.ref(this.db, `sessions/${normSessionId}/participants/${this.participantId}`);
           this.firebaseFns.set(participantRef, {
+            ...payload,
             lastSeen: this.firebaseFns.serverTimestamp(),
             active: true
           });
@@ -227,7 +255,48 @@ export class RealtimeEngine {
     };
 
     notifyPresence();
-    this.presenceTimer = setInterval(notifyPresence, this.config.sync.heartbeatIntervalMs);
+    this.presenceTimer = setInterval(notifyPresence, this.config.sync.heartbeatIntervalMs || 10000);
+  }
+
+  /**
+   * Obtém estatísticas consolidadas de participantes online
+   */
+  getOnlineStats(sessionId) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    try {
+      const raw = localStorage.getItem(`session_presence_${normSessionId}`);
+      if (!raw) return { total: 0, authenticated: 0, anonymous: 0, list: [] };
+      const map = JSON.parse(raw);
+      const now = Date.now();
+      
+      const list = Object.values(map).filter(p => !p.isPresenter && (now - p.lastSeen < 45000));
+      const authenticated = list.filter(p => p.isAuthenticated).length;
+      const anonymous = list.length - authenticated;
+
+      return {
+        total: list.length,
+        authenticated: authenticated,
+        anonymous: anonymous,
+        list: list
+      };
+    } catch (e) {
+      return { total: 0, authenticated: 0, anonymous: 0, list: [] };
+    }
+  }
+
+  /**
+   * Emite uma reação instantânea (emoji)
+   */
+  sendReaction(sessionId, emoji) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    if (this.channel) {
+      this.channel.postMessage({
+        type: 'REACTION_SENT',
+        sessionId: normSessionId,
+        emoji: emoji,
+        timestamp: Date.now()
+      });
+    }
   }
 
   stopPresence() {

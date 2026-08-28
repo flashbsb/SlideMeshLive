@@ -1,6 +1,6 @@
 /**
- * Presenter Application Controller
- * Coordena eventos de tela, atalhos, sincronização, controle de enquetes e moderação de perguntas.
+ * Presenter & Clean Stage Application Controller
+ * Coordena projeção em tela cheia limpa, atalhos de palco, cronômetro, QR Code retrátil e reações.
  */
 
 import { PresentationEngine } from '../core/presentation-engine.js';
@@ -27,45 +27,38 @@ class PresenterApp {
       showResults: false
     };
 
-    this.activeModerationTab = 'pending';
+    this.timerSeconds = 0;
+    this.timerInterval = null;
 
     // DOM Elements
     this.dom = {
+      root: document.getElementById('presenter-root'),
       title: document.getElementById('presentation-title'),
       canvas: document.getElementById('slide-canvas'),
       notes: document.getElementById('speaker-notes-content'),
       slideCounter: document.getElementById('slide-counter'),
-      btnPrev: document.getElementById('btn-prev'),
-      btnNext: document.getElementById('btn-next'),
       btnFullscreen: document.getElementById('btn-fullscreen'),
+      btnTogglePulpit: document.getElementById('btn-toggle-pulpit'),
+      
+      // QR Code Widget
+      qrWidget: document.getElementById('qr-stage-widget'),
       qrContainer: document.getElementById('qr-code-box'),
       sessionCodeDisplay: document.getElementById('session-code-display'),
       audienceLink: document.getElementById('audience-direct-link'),
-      participantCount: document.getElementById('participant-count'),
-      connectionStatus: document.getElementById('connection-status'),
-      statusDot: document.getElementById('status-dot'),
-      
-      // Poll Controls
-      pollControlsWrapper: document.getElementById('poll-controls-wrapper'),
-      btnOpenPoll: document.getElementById('btn-open-poll'),
-      btnClosePoll: document.getElementById('btn-close-poll'),
-      btnToggleResults: document.getElementById('btn-toggle-results'),
+      btnToggleQR: document.getElementById('btn-toggle-qr'),
 
-      // Moderation Drawer & Featured Question
-      btnToggleModeration: document.getElementById('btn-toggle-moderation'),
-      badgeQuestionCount: document.getElementById('badge-question-count'),
-      moderationDrawer: document.getElementById('moderation-drawer'),
-      btnCloseModeration: document.getElementById('btn-close-moderation'),
-      moderationList: document.getElementById('moderation-list'),
+      // Timer
+      timerDisplay: document.getElementById('timer-display'),
+
+      // Featured Question
       featuredBanner: document.getElementById('featured-question-banner'),
       featuredText: document.getElementById('featured-question-text'),
       featuredAuthor: document.getElementById('featured-author'),
       btnDismissFeatured: document.getElementById('btn-dismiss-featured'),
 
-      // Session & Connectivity Controls
-      btnEndSession: document.getElementById('btn-end-session'),
-      badgeLiveStatus: document.getElementById('badge-live-status'),
-      btnExportReport: document.getElementById('btn-export-report')
+      // Reactions Stream
+      reactionStream: document.getElementById('reaction-stream'),
+      badgeLiveStatus: document.getElementById('badge-live-status')
     };
 
     this.init();
@@ -73,46 +66,55 @@ class PresenterApp {
 
   async init() {
     this.bindEvents();
-    this.setupQRCode();
+    this.startPresentationTimer();
+
+    if (this.dom.sessionCodeDisplay) {
+      this.dom.sessionCodeDisplay.textContent = `#${this.sessionId}`;
+    }
 
     try {
       await this.engine.loadPresentation(this.presentationId);
       this.dom.title.textContent = this.engine.manifest.title || 'Apresentação';
-      
-      this.broadcastCurrentSlide();
+
+      this.setupQRCode();
       this.updateSlideView();
-      this.updateModerationList();
+      await this.broadcastCurrentSlide();
 
-      if (this.dom.connectionStatus) {
-        this.dom.connectionStatus.textContent = this.realtime.isFirebaseReady ? 'Firebase Conectado' : 'Sincronização Ativa';
-      }
+      // Inicia presença e conexão Realtime
+      this.realtime.startPresence(this.sessionId, true);
 
-      // Escuta eventos de votação e novas perguntas
+      this.realtime.subscribeToSession(this.sessionId, (state) => {
+        this.handleRemoteSessionUpdate(state);
+      });
+
+      // Escuta eventos em tempo real
       if (this.realtime.channel) {
         this.realtime.channel.addEventListener('message', (e) => {
           if (!e.data || e.data.sessionId !== this.sessionId) return;
-          if (e.data.type === 'VOTE_CAST') {
-            this.updatePollDisplay();
-          } else if (e.data.type === 'NEW_QUESTION' || e.data.type === 'QUESTION_STATUS_CHANGE') {
-            this.updateModerationList();
+          if (e.data.type === 'REACTION_SENT') {
+            this.spawnFloatingReaction(e.data.emoji);
+          } else if (e.data.type === 'VOTE_CAST') {
+            this.updateSlideView();
+          } else if (e.data.type === 'QUESTION_STATUS_CHANGE') {
+            this.checkFeaturedQuestion();
           }
         });
       }
 
-      // Storage event listener para redundância local
       window.addEventListener('storage', (e) => {
-        if (e.key && e.key.startsWith(`session_votes_${this.sessionId}`)) {
-          this.updatePollDisplay();
-        } else if (e.key && e.key.startsWith(`session_questions_${this.sessionId}`)) {
-          this.updateModerationList();
+        if (e.key && e.key.startsWith(`session_questions_${this.sessionId}`)) {
+          this.checkFeaturedQuestion();
+        } else if (e.key && e.key.startsWith(`session_votes_${this.sessionId}`)) {
+          this.updateSlideView();
         }
       });
 
-    } catch (error) {
+      this.checkFeaturedQuestion();
+    } catch (err) {
       this.dom.canvas.innerHTML = `
-        <div style="text-align: center; color: #ef4444; padding: 40px;">
-          <h2>Erro ao carregar apresentação</h2>
-          <p style="margin-top: 10px; color: #94a3b8;">${error.message}</p>
+        <div class="card" style="text-align: center; color: #ef4444; max-width: 500px;">
+          <h3>Erro ao carregar apresentação</h3>
+          <p style="margin-top: 10px; color: #94a3b8; font-size: 14px;">${err.message}</p>
         </div>
       `;
     }
@@ -120,448 +122,233 @@ class PresenterApp {
 
   setupQRCode() {
     const audienceUrl = QREngine.getAudienceUrl(this.presentationId, this.sessionId);
-    this.dom.sessionCodeDisplay.textContent = this.sessionId;
     if (this.dom.audienceLink) {
-      this.dom.audienceLink.href = audienceUrl;
-      this.dom.audienceLink.textContent = audienceUrl;
+      this.dom.audienceLink.textContent = audienceUrl.replace(/^https?:\/\//, '');
     }
     QREngine.renderQR(this.dom.qrContainer, audienceUrl);
   }
 
-  broadcastCurrentSlide() {
-    if (this.realtime && this.engine.currentSlide) {
-      const slide = this.engine.currentSlide;
-      const hasPoll = slide.interaction && slide.interaction.poll;
-      
-      this.pollState = {
-        activePollId: hasPoll ? slide.interaction.poll.id : null,
-        pollStatus: hasPoll ? 'open' : 'draft',
-        showResults: false
-      };
+  startPresentationTimer() {
+    this.timerInterval = setInterval(() => {
+      this.timerSeconds++;
+      const hrs = String(Math.floor(this.timerSeconds / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((this.timerSeconds % 3600) / 60)).padStart(2, '0');
+      const secs = String(this.timerSeconds % 60).padStart(2, '0');
+      if (this.dom.timerDisplay) {
+        this.dom.timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
+      }
+    }, 1000);
+  }
 
-      this.realtime.updateSessionState(this.sessionId, {
-        currentSlide: this.engine.currentSlideIndex,
-        slideId: slide.id || (this.engine.currentSlideIndex + 1),
-        slideTitle: slide.title || '',
-        activePoll: this.pollState.activePollId,
-        pollStatus: this.pollState.pollStatus,
-        showResults: this.pollState.showResults,
-        status: 'running'
-      });
+  handleRemoteSessionUpdate(sessionState) {
+    if (!sessionState) return;
+
+    if (typeof sessionState.currentSlide === 'number' && this.engine.currentSlideIndex !== sessionState.currentSlide) {
+      this.engine.goToSlide(sessionState.currentSlide);
+      this.updateSlideView();
     }
+
+    if (sessionState.pollStatus) {
+      this.pollState.pollStatus = sessionState.pollStatus;
+    }
+    if (typeof sessionState.showResults === 'boolean') {
+      this.pollState.showResults = sessionState.showResults;
+    }
+
+    if (sessionState.featuredQuestion) {
+      this.showFeaturedBanner(sessionState.featuredQuestion.text, sessionState.featuredQuestion.authorAlias);
+    } else {
+      this.hideFeaturedBanner();
+    }
+
+    if (sessionState.status === 'closed') {
+      if (this.dom.badgeLiveStatus) {
+        this.dom.badgeLiveStatus.className = 'badge';
+        this.dom.badgeLiveStatus.style.background = 'rgba(239, 68, 68, 0.2)';
+        this.dom.badgeLiveStatus.style.color = '#fca5a5';
+        this.dom.badgeLiveStatus.textContent = '🔴 ENCERRADA';
+      }
+    }
+
+    this.updateSlideView();
+  }
+
+  checkFeaturedQuestion() {
+    const questions = this.moderation.getQuestions(this.sessionId);
+    const featured = questions.find(q => q.status === 'featured');
+    if (featured) {
+      this.showFeaturedBanner(featured.text, featured.authorAlias);
+    } else {
+      this.hideFeaturedBanner();
+    }
+  }
+
+  showFeaturedBanner(text, author) {
+    if (!this.dom.featuredBanner) return;
+    this.dom.featuredText.textContent = text;
+    this.dom.featuredAuthor.textContent = author || 'Participante';
+    this.dom.featuredBanner.style.display = 'flex';
+  }
+
+  hideFeaturedBanner() {
+    if (this.dom.featuredBanner) {
+      this.dom.featuredBanner.style.display = 'none';
+    }
+  }
+
+  spawnFloatingReaction(emoji) {
+    if (!this.dom.reactionStream) return;
+    const bubble = document.createElement('div');
+    bubble.className = 'floating-reaction-bubble';
+    bubble.textContent = emoji || '👏';
+    
+    // Pequena variação horizontal aleatória
+    const offset = Math.floor(Math.random() * 60) - 30;
+    bubble.style.right = `${20 + offset}px`;
+
+    this.dom.reactionStream.appendChild(bubble);
+    setTimeout(() => {
+      if (bubble.parentNode) bubble.parentNode.removeChild(bubble);
+    }, 2300);
   }
 
   updateSlideView() {
-    this.engine.renderPresenterSlide(this.dom.canvas, this.dom.notes);
-    
-    const current = this.engine.currentSlideIndex + 1;
-    const total = this.engine.totalSlides;
-    this.dom.slideCounter.textContent = `${current} / ${total}`;
-
-    this.dom.btnPrev.disabled = (this.engine.currentSlideIndex === 0);
-    this.dom.btnNext.disabled = (this.engine.currentSlideIndex === total - 1);
-
-    this.setupPollControls();
-    this.updatePollDisplay();
-  }
-
-  setupPollControls() {
-    const slide = this.engine.currentSlide;
-    const hasPoll = slide && slide.interaction && slide.interaction.poll;
-
-    if (hasPoll) {
-      this.dom.pollControlsWrapper.style.display = 'flex';
-      this.renderPollControlButtons();
-    } else {
-      this.dom.pollControlsWrapper.style.display = 'none';
-    }
-  }
-
-  renderPollControlButtons() {
-    const isOpen = (this.pollState.pollStatus === 'open');
-    const isShowingResults = this.pollState.showResults;
-
-    if (isOpen) {
-      this.dom.btnOpenPoll.style.display = 'none';
-      this.dom.btnClosePoll.style.display = 'inline-flex';
-    } else {
-      this.dom.btnOpenPoll.style.display = 'inline-flex';
-      this.dom.btnClosePoll.style.display = 'none';
+    // Se o Moderador ativou a projeção de Analytics Final
+    const sessionRaw = localStorage.getItem(`session_state_${this.sessionId}`);
+    let isFinalAnalytics = false;
+    if (sessionRaw) {
+      try {
+        const state = JSON.parse(sessionRaw);
+        isFinalAnalytics = !!state.showFinalAnalytics;
+      } catch (e) {}
     }
 
-    this.dom.btnToggleResults.style.display = 'inline-flex';
-    this.dom.btnToggleResults.innerHTML = isShowingResults 
-      ? '<span>🙈 Ocultar Resultados</span>' 
-      : '<span>📊 Mostrar Resultados</span>';
-  }
-
-  updatePollDisplay() {
-    const slide = this.engine.currentSlide;
-    if (!slide || !slide.interaction || !slide.interaction.poll) return;
-
-    const poll = slide.interaction.poll;
-    const results = this.interaction.computePollResults(this.sessionId, poll);
-
-    const voteCountEl = document.getElementById(`presenter-poll-vote-count-${poll.id}`);
-    const badgeEl = document.getElementById(`presenter-poll-badge-${poll.id}`);
-    const resultsContainer = document.getElementById(`presenter-poll-results-${poll.id}`);
-
-    if (voteCountEl) {
-      voteCountEl.textContent = `${results.totalVotes} voto(s) registrado(s)`;
-    }
-
-    if (badgeEl) {
-      if (this.pollState.pollStatus === 'open') {
-        badgeEl.className = 'badge badge-success';
-        badgeEl.textContent = '🟢 VOTAÇÃO ABERTA';
-      } else {
-        badgeEl.className = 'badge';
-        badgeEl.style.background = 'rgba(239, 68, 68, 0.2)';
-        badgeEl.style.color = '#fca5a5';
-        badgeEl.textContent = '🔴 ENCERRADA';
-      }
-    }
-
-    if (resultsContainer) {
-      if (this.pollState.showResults) {
-        resultsContainer.innerHTML = results.options.map(opt => `
-          <div class="poll-result-item animate-fade-in" style="margin-bottom: 16px;">
-            <div class="poll-result-header" style="font-size: 15px;">
-              <span class="poll-result-text">
-                <span class="poll-letter-badge">${opt.id}</span>
-                <span>${opt.text}</span>
-              </span>
-              <span class="poll-result-percentage" style="font-size: 16px;">${opt.percentage}% (${opt.votes})</span>
-            </div>
-            <div class="poll-progress-track" style="height: 14px;">
-              <div class="poll-progress-fill" style="width: ${opt.percentage}%;"></div>
-            </div>
-          </div>
-        `).join('');
-      } else {
-        resultsContainer.innerHTML = poll.options.map(opt => `
-          <div style="padding: 10px 14px; background: rgba(255,255,255,0.03); border-radius: 6px; margin-bottom: 8px; font-size: 14px; display: flex; align-items: center;">
-            <span class="poll-letter-badge" style="width: 24px; height: 24px; font-size: 12px; margin-right: 10px;">${opt.id}</span>
-            <span>${opt.text}</span>
-          </div>
-        `).join('');
-      }
-    }
-  }
-
-  updateModerationList() {
-    const allQuestions = this.moderation.getQuestions(this.sessionId);
-    const pendingQuestions = allQuestions.filter(q => q.status === 'pending');
-    
-    // Atualiza badge de contagem
-    if (this.dom.badgeQuestionCount) {
-      this.dom.badgeQuestionCount.textContent = pendingQuestions.length;
-      this.dom.badgeQuestionCount.style.display = pendingQuestions.length > 0 ? 'inline-block' : 'none';
-    }
-
-    // Verifica se há pergunta destacada
-    const featured = allQuestions.find(q => q.status === 'featured');
-    if (featured) {
-      this.dom.featuredText.textContent = featured.text;
-      this.dom.featuredAuthor.textContent = featured.authorAlias || 'Participante';
-      this.dom.featuredBanner.style.display = 'flex';
-    } else {
-      this.dom.featuredBanner.style.display = 'none';
-    }
-
-    // Filtra pela aba ativa
-    const filtered = allQuestions.filter(q => {
-      if (this.activeModerationTab === 'pending') return q.status === 'pending';
-      if (this.activeModerationTab === 'approved') return q.status === 'approved' || q.status === 'featured';
-      if (this.activeModerationTab === 'rejected') return q.status === 'rejected';
-      return true;
-    });
-
-    if (!this.dom.moderationList) return;
-
-    if (filtered.length === 0) {
-      this.dom.moderationList.innerHTML = `
-        <div style="text-align: center; color: var(--text-muted); padding: 40px 10px; font-size: 13px;">
-          Nenhuma pergunta ${this.activeModerationTab === 'pending' ? 'pendente' : 'nesta categoria'}.
-        </div>
-      `;
+    if (isFinalAnalytics) {
+      this.renderPresenterFinalAnalytics();
       return;
     }
 
-    this.dom.moderationList.innerHTML = filtered.map(q => {
-      const isFeatured = q.status === 'featured';
-      let actionsHtml = '';
+    const slide = this.engine.currentSlide;
+    let pollRenderData = {
+      pollStatus: this.pollState.pollStatus,
+      showResults: this.pollState.showResults,
+      results: null
+    };
 
-      if (q.status === 'pending') {
-        actionsHtml = `
-          <button class="btn btn-sm btn-primary btn-mod-action" data-action="feature" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px;">
-            ⭐ Destacar
-          </button>
-          <button class="btn btn-sm btn-mod-action" data-action="approve" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; color: #6ee7b7; border-color: rgba(16,185,129,0.3);">
-            ✓ Aprovar
-          </button>
-          <button class="btn btn-sm btn-mod-action" data-action="reject" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; color: #fca5a5; border-color: rgba(239,68,68,0.3);">
-            ✕
-          </button>
-        `;
-      } else if (q.status === 'approved' || q.status === 'featured') {
-        actionsHtml = `
-          <button class="btn btn-sm ${isFeatured ? 'btn-primary' : ''} btn-mod-action" data-action="${isFeatured ? 'unfeature' : 'feature'}" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px;">
-            ${isFeatured ? '⭐ Destacada' : '⭐ Destacar'}
-          </button>
-          <button class="btn btn-sm btn-mod-action" data-action="reject" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; color: #fca5a5;">
-            Remover
-          </button>
-        `;
-      } else if (q.status === 'rejected') {
-        actionsHtml = `
-          <button class="btn btn-sm btn-mod-action" data-action="approve" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px;">
-            Restaurar
-          </button>
-        `;
+    if (slide && slide.interaction && slide.interaction.poll) {
+      this.pollState.activePollId = slide.interaction.poll.id;
+      if (this.pollState.showResults) {
+        pollRenderData.results = this.interaction.computePollResults(this.sessionId, slide.interaction.poll);
       }
+    }
 
-      return `
-        <div class="question-card ${isFeatured ? 'featured' : ''}">
-          <div class="question-author">
-            <span>${q.authorAlias || 'Participante'}</span>
-            <span style="font-size: 10px; color: var(--text-muted); font-weight: normal;">
-              ${new Date(q.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
-          </div>
-          <div class="question-text">${q.text}</div>
-          <div class="question-actions">
-            ${actionsHtml}
-          </div>
-        </div>
-      `;
-    }).join('');
+    this.engine.renderPresenterSlide(this.dom.canvas, this.dom.notes, pollRenderData);
+
+    const current = this.engine.currentSlideIndex + 1;
+    const total = this.engine.totalSlides;
+    this.dom.slideCounter.textContent = `${current} / ${total}`;
   }
 
-  bindEvents() {
-    this.dom.btnPrev.addEventListener('click', () => {
-      this.engine.prevSlide();
-      this.broadcastCurrentSlide();
-      this.updateSlideView();
-    });
-
-    this.dom.btnNext.addEventListener('click', () => {
-      this.engine.nextSlide();
-      this.broadcastCurrentSlide();
-      this.updateSlideView();
-    });
-
-    // Enquetes
-    if (this.dom.btnOpenPoll) {
-      this.dom.btnOpenPoll.addEventListener('click', async () => {
-        const slide = this.engine.currentSlide;
-        if (slide && slide.interaction && slide.interaction.poll) {
-          this.pollState.pollStatus = 'open';
-          await this.interaction.openPoll(this.sessionId, slide.interaction.poll.id);
-          this.renderPollControlButtons();
-          this.updatePollDisplay();
-        }
-      });
-    }
-
-    if (this.dom.btnClosePoll) {
-      this.dom.btnClosePoll.addEventListener('click', async () => {
-        const slide = this.engine.currentSlide;
-        if (slide && slide.interaction && slide.interaction.poll) {
-          this.pollState.pollStatus = 'closed';
-          await this.interaction.closePoll(this.sessionId, slide.interaction.poll.id);
-          this.renderPollControlButtons();
-          this.updatePollDisplay();
-        }
-      });
-    }
-
-    if (this.dom.btnToggleResults) {
-      this.dom.btnToggleResults.addEventListener('click', async () => {
-        this.pollState.showResults = !this.pollState.showResults;
-        await this.interaction.toggleShowResults(this.sessionId, this.pollState.showResults);
-        this.renderPollControlButtons();
-        this.updatePollDisplay();
-      });
-    }
-
-    // Moderação Drawer
-    if (this.dom.btnToggleModeration) {
-      this.dom.btnToggleModeration.addEventListener('click', () => {
-        this.dom.moderationDrawer.classList.toggle('active');
-      });
-    }
-
-    if (this.dom.btnCloseModeration) {
-      this.dom.btnCloseModeration.addEventListener('click', () => {
-        this.dom.moderationDrawer.classList.remove('active');
-      });
-    }
-
-    // Abas de moderação
-    document.querySelectorAll('.moderation-tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.moderation-tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        this.activeModerationTab = btn.dataset.tab;
-        this.updateModerationList();
-      });
-    });
-
-    // Monitoramento de Rede e Contingência Offline
-    window.addEventListener('online', () => {
-      if (this.dom.connectionStatus) {
-        this.dom.connectionStatus.textContent = this.realtime.isFirebaseReady ? 'Firebase Conectado' : 'Sincronização Ativa';
-      }
-      if (this.dom.statusDot) {
-        this.dom.statusDot.className = 'status-dot-connected';
-      }
-    });
-
-    window.addEventListener('offline', () => {
-      if (this.dom.connectionStatus) {
-        this.dom.connectionStatus.textContent = 'Modo Local / Offline';
-      }
-      if (this.dom.statusDot) {
-        this.dom.statusDot.className = 'status-dot-live';
-      }
-    });
-
-    // Encerramento Formal da Sessão
-    if (this.dom.btnEndSession) {
-      this.dom.btnEndSession.addEventListener('click', async () => {
-        const confirmEnd = confirm('Deseja realmente encerrar esta sessão de apresentação? Os smartphones conectados serão finalizados.');
-        if (confirmEnd) {
-          await this.realtime.updateSessionState(this.sessionId, {
-            status: 'closed',
-            pollStatus: 'closed'
-          });
-
-          if (this.dom.badgeLiveStatus) {
-            this.dom.badgeLiveStatus.className = 'badge';
-            this.dom.badgeLiveStatus.style.background = 'rgba(239, 68, 68, 0.2)';
-            this.dom.badgeLiveStatus.style.color = '#fca5a5';
-            this.dom.badgeLiveStatus.textContent = '🔴 ENCERRADA';
-          }
-          if (this.dom.btnEndSession) {
-            this.dom.btnEndSession.disabled = true;
-            this.dom.btnEndSession.textContent = 'Sessão Fechada';
-          }
-          alert('Sessão encerrada com sucesso! Nenhuma nova interação será aceita.');
-        }
-      });
-    }
-
-    // Exportação de Relatório da Sessão
-    if (this.dom.btnExportReport) {
-      this.dom.btnExportReport.addEventListener('click', () => {
-        this.exportSessionReport();
-      });
-    }
-
-    // Ações de moderação nos cards
-    if (this.dom.moderationList) {
-      this.dom.moderationList.addEventListener('click', async (e) => {
-        const actionBtn = e.target.closest('.btn-mod-action');
-        if (actionBtn) {
-          const action = actionBtn.dataset.action;
-          const qid = actionBtn.dataset.qid;
-          const uid = actionBtn.dataset.uid;
-
-          if (action === 'approve') {
-            await this.moderation.setQuestionStatus(this.sessionId, qid, 'approved');
-          } else if (action === 'feature') {
-            await this.moderation.setQuestionStatus(this.sessionId, qid, 'featured');
-          } else if (action === 'unfeature') {
-            await this.moderation.clearFeatured(this.sessionId);
-          } else if (action === 'reject') {
-            await this.moderation.setQuestionStatus(this.sessionId, qid, 'rejected');
-          } else if (action === 'block' && uid) {
-            const isBlocked = this.moderation.toggleBlockUser(this.sessionId, uid);
-            alert(`Participante ${isBlocked ? 'bloqueado' : 'desbloqueado'} com sucesso.`);
-          }
-          this.updateModerationList();
-        }
-      });
-    }
-
-    if (this.dom.btnDismissFeatured) {
-      this.dom.btnDismissFeatured.addEventListener('click', async () => {
-        await this.moderation.clearFeatured(this.sessionId);
-        this.updateModerationList();
-      });
-    }
-
-    // Teclado
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
-        e.preventDefault();
-        this.engine.nextSlide();
-        this.broadcastCurrentSlide();
-        this.updateSlideView();
-      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-        e.preventDefault();
-        this.engine.prevSlide();
-        this.broadcastCurrentSlide();
-        this.updateSlideView();
-      } else if (e.key.toLowerCase() === 'f') {
-        this.toggleFullscreen();
-      }
-    });
-
-    if (this.dom.btnFullscreen) {
-      this.dom.btnFullscreen.addEventListener('click', () => this.toggleFullscreen());
-    }
-
-    this.engine.on('onSlideChange', () => {
-      this.updateSlideView();
-    });
-  }
-
-  exportSessionReport() {
+  renderPresenterFinalAnalytics() {
+    const stats = this.realtime.getOnlineStats(this.sessionId);
     const questions = this.moderation.getQuestions(this.sessionId);
-    
-    // Coleta todas as enquetes e computa resultados de cada uma
-    const pollsSummary = [];
+    const approvedQ = questions.filter(q => q.status === 'approved' || q.status === 'featured');
+
+    const polls = [];
     if (this.engine.slidesData && this.engine.slidesData.slides) {
       this.engine.slidesData.slides.forEach(s => {
         if (s.interaction && s.interaction.poll) {
-          const res = this.interaction.computePollResults(this.sessionId, s.interaction.poll);
-          pollsSummary.push({
-            slideId: s.id,
-            slideTitle: s.title,
+          polls.push({
+            title: s.title,
             poll: s.interaction.poll,
-            results: res
+            res: this.interaction.computePollResults(this.sessionId, s.interaction.poll)
           });
         }
       });
     }
 
-    const report = {
-      presentationId: this.presentationId,
-      presentationTitle: this.engine.manifest ? this.engine.manifest.title : '',
-      sessionId: this.sessionId,
-      exportedAt: new Date().toISOString(),
-      sessionStatus: this.pollState.status || 'active',
-      summary: {
-        totalSlides: this.engine.totalSlides,
-        totalQuestionsReceived: questions.length,
-        totalPolls: pollsSummary.length
-      },
-      polls: pollsSummary,
-      questions: questions
-    };
+    const pollsCardsHtml = polls.map(p => `
+      <div class="card" style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-subtle); padding: 18px; border-radius: var(--radius-md);">
+        <div style="font-size: 11px; font-weight: 700; color: var(--accent-primary); text-transform: uppercase; margin-bottom: 4px;">ENQUETE</div>
+        <div style="font-size: 15px; font-weight: 700; color: #ffffff; margin-bottom: 12px;">${p.poll.question}</div>
+        ${p.res.options.map(opt => `
+          <div style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 3px;">
+              <span style="color: #e2e8f0;">${opt.id}. ${opt.text}</span>
+              <strong style="color: var(--accent-primary); font-family: var(--font-mono); font-size: 14px;">${opt.percentage}% (${opt.votes})</strong>
+            </div>
+            <div class="poll-progress-track" style="height: 8px;">
+              <div class="poll-progress-fill" style="width: ${opt.percentage}%;"></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
 
-    // Gera arquivo JSON para download
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `relatorio_sessao_${this.sessionId}_${Date.now()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    this.dom.canvas.innerHTML = `
+      <div class="slide-content-wrapper" style="text-align: center; max-width: 1100px;">
+        <div style="font-size: 32px; margin-bottom: 6px;">🏁</div>
+        <div class="slide-category" style="margin-bottom: 6px;">BALANÇO GERAL DO EVENTO</div>
+        <h2 class="slide-headline" style="font-size: 34px; margin-bottom: 24px;">Resultados Consolidados da Apresentação</h2>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+          <div class="card" style="padding: 16px; text-align: center; background: rgba(15,23,42,0.8);">
+            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Participantes Conectados</div>
+            <div style="font-size: 28px; font-weight: 800; color: var(--accent-primary); font-family: var(--font-mono); margin-top: 4px;">
+              ${stats.total}
+            </div>
+          </div>
+          <div class="card" style="padding: 16px; text-align: center; background: rgba(15,23,42,0.8);">
+            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Perguntas Aprovadas</div>
+            <div style="font-size: 28px; font-weight: 800; color: #34d399; font-family: var(--font-mono); margin-top: 4px;">
+              ${approvedQ.length}
+            </div>
+          </div>
+          <div class="card" style="padding: 16px; text-align: center; background: rgba(15,23,42,0.8);">
+            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Enquetes Realizadas</div>
+            <div style="font-size: 28px; font-weight: 800; color: #fbbf24; font-family: var(--font-mono); margin-top: 4px;">
+              ${polls.length}
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; text-align: left;">
+          ${pollsCardsHtml}
+        </div>
+
+        <div style="margin-top: 24px; font-size: 14px; color: var(--text-muted);">
+          Obrigado pela sua presença e participação ativa!
+        </div>
+      </div>
+    `;
+
+    if (this.dom.notes) {
+      this.dom.notes.textContent = 'Slide executivo de encerramento com métricas e consolidação dos votos da audiência.';
+    }
+  }
+
+  async broadcastCurrentSlide() {
+    await this.realtime.setSlide(
+      this.sessionId,
+      this.engine.currentSlideIndex,
+      this.engine.currentSlide
+    );
+  }
+
+  toggleQRWidget() {
+    if (this.dom.qrWidget) {
+      this.dom.qrWidget.classList.toggle('collapsed');
+    }
+  }
+
+  togglePulpitMode() {
+    if (this.dom.root) {
+      this.dom.root.classList.toggle('pulpit-mode');
+      const isPulpit = this.dom.root.classList.contains('pulpit-mode');
+      if (this.dom.btnTogglePulpit) {
+        this.dom.btnTogglePulpit.textContent = isPulpit ? '🖥️ Modo Telão' : '🎛️ Púlpito com Notas';
+      }
+    }
   }
 
   toggleFullscreen() {
@@ -573,6 +360,51 @@ class PresenterApp {
       if (document.exitFullscreen) {
         document.exitFullscreen();
       }
+    }
+  }
+
+  bindEvents() {
+    // Atalhos de teclado para palco
+    window.addEventListener('keydown', (e) => {
+      // Ignora se estiver digitando em inputs
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        this.engine.nextSlide();
+        this.broadcastCurrentSlide();
+        this.updateSlideView();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        this.engine.prevSlide();
+        this.broadcastCurrentSlide();
+        this.updateSlideView();
+      } else if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        this.toggleFullscreen();
+      } else if (e.key.toLowerCase() === 'q') {
+        e.preventDefault();
+        this.toggleQRWidget();
+      }
+    });
+
+    if (this.dom.btnTogglePulpit) {
+      this.dom.btnTogglePulpit.addEventListener('click', () => this.togglePulpitMode());
+    }
+
+    if (this.dom.btnFullscreen) {
+      this.dom.btnFullscreen.addEventListener('click', () => this.toggleFullscreen());
+    }
+
+    if (this.dom.btnToggleQR) {
+      this.dom.btnToggleQR.addEventListener('click', () => this.toggleQRWidget());
+    }
+
+    if (this.dom.btnDismissFeatured) {
+      this.dom.btnDismissFeatured.addEventListener('click', async () => {
+        await this.moderation.clearFeatured(this.sessionId);
+        this.hideFeaturedBanner();
+      });
     }
   }
 }

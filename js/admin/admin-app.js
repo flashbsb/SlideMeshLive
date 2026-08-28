@@ -1,6 +1,7 @@
 /**
  * Admin & Moderator Application Controller
- * Coordena o console de moderação de perguntas, controle de enquetes e sessão para a equipe técnica.
+ * Coordena o console de moderação de perguntas, controle de enquetes com reset,
+ * monitoramento de audiência ao vivo com banimento e projeção de analytics.
  */
 
 import { PresentationEngine } from '../core/presentation-engine.js';
@@ -31,17 +32,26 @@ class AdminApp {
       btnPrev: document.getElementById('admin-btn-prev'),
       btnNext: document.getElementById('admin-btn-next'),
       btnEndSession: document.getElementById('admin-btn-end-session'),
+      btnPublishAnalytics: document.getElementById('admin-btn-publish-analytics'),
       qrBox: document.getElementById('admin-qr-box'),
       audienceLink: document.getElementById('admin-audience-link'),
       connectionStatus: document.getElementById('admin-connection-status'),
       statusDot: document.getElementById('admin-status-dot'),
       
+      // Online Stats & Live List
+      statTotalOnline: document.getElementById('stat-total-online'),
+      statLoggedOnline: document.getElementById('stat-logged-online'),
+      statAnonOnline: document.getElementById('stat-anon-online'),
+      liveBadge: document.getElementById('admin-live-badge'),
+      participantsList: document.getElementById('admin-participants-list'),
+
       // Moderation
       pendingCount: document.getElementById('admin-pending-count'),
       moderationList: document.getElementById('admin-moderation-list'),
       
       // Polls & Export
       pollsContainer: document.getElementById('admin-polls-container'),
+      btnResetAllPolls: document.getElementById('admin-btn-reset-all-polls'),
       btnExport: document.getElementById('admin-btn-export')
     };
 
@@ -65,14 +75,20 @@ class AdminApp {
         this.handleSessionUpdate(state);
       });
 
+      // Polling e escuta de eventos de presença
+      this.updatePresenceMetrics();
+      setInterval(() => this.updatePresenceMetrics(), 4000);
+
       // Escuta eventos em tempo real
       if (this.realtime.channel) {
         this.realtime.channel.addEventListener('message', (e) => {
           if (!e.data || e.data.sessionId !== this.sessionId) return;
           if (e.data.type === 'NEW_QUESTION' || e.data.type === 'QUESTION_STATUS_CHANGE') {
             this.renderModerationList();
-          } else if (e.data.type === 'VOTE_CAST') {
+          } else if (e.data.type === 'VOTE_CAST' || e.data.type === 'VOTE_RESET') {
             this.renderPollsList();
+          } else if (e.data.type === 'PRESENCE_PING') {
+            this.updatePresenceMetrics();
           }
         });
       }
@@ -80,8 +96,10 @@ class AdminApp {
       window.addEventListener('storage', (e) => {
         if (e.key && e.key.startsWith(`session_questions_${this.sessionId}`)) {
           this.renderModerationList();
-        } else if (e.key && e.key.startsWith(`session_votes_${this.sessionId}`)) {
+        } else if (e.key && (e.key.startsWith(`session_votes_${this.sessionId}`) || e.key.startsWith(`vote_`))) {
           this.renderPollsList();
+        } else if (e.key && e.key.startsWith(`session_presence_${this.sessionId}`)) {
+          this.updatePresenceMetrics();
         }
       });
 
@@ -104,6 +122,49 @@ class AdminApp {
       this.dom.audienceLink.textContent = audienceUrl;
     }
     QREngine.renderQR(this.dom.qrBox, audienceUrl);
+  }
+
+  updatePresenceMetrics() {
+    const stats = this.realtime.getOnlineStats(this.sessionId);
+    if (this.dom.statTotalOnline) this.dom.statTotalOnline.textContent = stats.total;
+    if (this.dom.statLoggedOnline) this.dom.statLoggedOnline.textContent = stats.authenticated;
+    if (this.dom.statAnonOnline) this.dom.statAnonOnline.textContent = stats.anonymous;
+    if (this.dom.liveBadge) this.dom.liveBadge.textContent = `${stats.total} ao vivo`;
+
+    this.renderParticipantsList(stats.list);
+  }
+
+  renderParticipantsList(participants = []) {
+    if (!this.dom.participantsList) return;
+
+    if (participants.length === 0) {
+      this.dom.participantsList.innerHTML = `
+        <div style="color: var(--text-muted); font-size: 11px; text-align: center; padding: 10px;">
+          Nenhum participante conectado no momento.
+        </div>
+      `;
+      return;
+    }
+
+    this.dom.participantsList.innerHTML = participants.map(p => {
+      const isBlocked = this.moderation.isUserBlocked(this.sessionId, p.uid);
+      return `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: rgba(15,23,42,0.6); border-radius: 4px; border: 1px solid var(--border-subtle);">
+          <div>
+            <div style="font-size: 11.5px; font-weight: 600; color: ${p.isAuthenticated ? '#6ee7b7' : '#e2e8f0'}; display: flex; align-items: center; gap: 4px;">
+              <span>${p.isAuthenticated ? '👤' : '👁️'}</span>
+              <span>${p.alias || 'Participante'}</span>
+            </div>
+            <div style="font-size: 9.5px; color: var(--text-muted);">
+              ${p.isAuthenticated ? 'Google Auth' : 'Anônimo (Leitura)'} • ID: ${p.uid.substring(0, 8)}...
+            </div>
+          </div>
+          <button class="btn btn-sm btn-admin-ban" data-uid="${p.uid}" style="padding: 2px 6px; font-size: 10px; border-color: ${isBlocked ? 'rgba(16,185,129,0.4)' : 'rgba(239,68,68,0.4)'}; color: ${isBlocked ? '#6ee7b7' : '#fca5a5'};">
+            ${isBlocked ? '✓ Desbloquear' : '🚫 Banir'}
+          </button>
+        </div>
+      `;
+    }).join('');
   }
 
   handleSessionUpdate(state) {
@@ -160,6 +221,7 @@ class AdminApp {
 
     this.dom.moderationList.innerHTML = filtered.map(q => {
       const isFeatured = (q.status === 'featured');
+      const isBlocked = this.moderation.isUserBlocked(this.sessionId, q.uid);
       let actionsHtml = '';
 
       if (q.status === 'pending') {
@@ -173,8 +235,8 @@ class AdminApp {
           <button class="btn btn-sm btn-admin-mod" data-action="reject" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; color: #fca5a5; border-color: rgba(239,68,68,0.4);">
             ✕ Rejeitar
           </button>
-          <button class="btn btn-sm btn-admin-mod" data-action="block" data-uid="${q.uid}" style="padding: 4px 6px; font-size: 11px; color: #fca5a5;" title="Bloquear Participante">
-            🚫
+          <button class="btn btn-sm btn-admin-mod" data-action="block" data-uid="${q.uid}" style="padding: 4px 6px; font-size: 11px; color: ${isBlocked ? '#6ee7b7' : '#fca5a5'};" title="${isBlocked ? 'Desbloquear' : 'Banir Participante'}">
+            ${isBlocked ? '✓' : '🚫'}
           </button>
         `;
       } else if (q.status === 'approved' || q.status === 'featured') {
@@ -246,22 +308,25 @@ class AdminApp {
       `).join('');
 
       return `
-        <div class="card" style="padding: 16px; background: rgba(15,23,42,0.6);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div class="card" style="padding: 14px; background: rgba(15,23,42,0.6);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <span class="badge badge-accent" style="font-size: 10px;">Slide ${item.slideId}</span>
             <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">${res.totalVotes} voto(s)</span>
           </div>
-          <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-bottom: 12px;">${item.poll.question}</div>
+          <div style="font-size: 12.5px; font-weight: 700; color: #ffffff; margin-bottom: 10px;">${item.poll.question}</div>
           <div>${barsHtml}</div>
-          <div style="display: flex; gap: 6px; margin-top: 12px;">
-            <button class="btn btn-sm btn-admin-poll" data-action="open" data-pid="${item.poll.id}" style="flex: 1; font-size: 11px; padding: 4px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; margin-top: 10px;">
+            <button class="btn btn-sm btn-admin-poll" data-action="open" data-pid="${item.poll.id}" style="font-size: 10px; padding: 4px 2px;">
               🟢 Abrir
             </button>
-            <button class="btn btn-sm btn-admin-poll" data-action="close" data-pid="${item.poll.id}" style="flex: 1; font-size: 11px; padding: 4px; color: #fca5a5;">
+            <button class="btn btn-sm btn-admin-poll" data-action="close" data-pid="${item.poll.id}" style="font-size: 10px; padding: 4px 2px; color: #fca5a5;">
               🔴 Fechar
             </button>
-            <button class="btn btn-sm btn-admin-poll" data-action="results" data-pid="${item.poll.id}" style="flex: 1; font-size: 11px; padding: 4px;">
-              📊 Resultados
+            <button class="btn btn-sm btn-admin-poll" data-action="results" data-pid="${item.poll.id}" style="font-size: 10px; padding: 4px 2px;">
+              📊 Telão
+            </button>
+            <button class="btn btn-sm btn-admin-poll" data-action="reset" data-pid="${item.poll.id}" style="font-size: 10px; padding: 4px 2px; border-color: rgba(239,68,68,0.3); color: #fca5a5;" title="Zerar votos desta enquete">
+              🔄 Zerar
             </button>
           </div>
         </div>
@@ -287,6 +352,20 @@ class AdminApp {
       });
     }
 
+    // Projetar Resumo Analítico no Telão e Smartphones
+    if (this.dom.btnPublishAnalytics) {
+      this.dom.btnPublishAnalytics.addEventListener('click', async () => {
+        const ok = confirm('Deseja projetar o painel de encerramento com o resumo analítico completo no telão e nos smartphones?');
+        if (ok) {
+          await this.realtime.updateSessionState(this.sessionId, {
+            showFinalAnalytics: true,
+            status: 'closed'
+          });
+          alert('Resumo analítico projetado com sucesso no telão!');
+        }
+      });
+    }
+
     // Encerramento de Sessão
     if (this.dom.btnEndSession) {
       this.dom.btnEndSession.addEventListener('click', async () => {
@@ -297,6 +376,38 @@ class AdminApp {
             pollStatus: 'closed'
           });
           alert('Sessão encerrada com sucesso!');
+        }
+      });
+    }
+
+    // Zerar todas as enquetes
+    if (this.dom.btnResetAllPolls) {
+      this.dom.btnResetAllPolls.addEventListener('click', async () => {
+        const ok = confirm('ATENÇÃO: Deseja realmente ZERAR TODOS os votos de todas as enquetes desta apresentação?');
+        if (ok) {
+          const pollIds = [];
+          if (this.engine.slidesData && this.engine.slidesData.slides) {
+            this.engine.slidesData.slides.forEach(s => {
+              if (s.interaction && s.interaction.poll) pollIds.push(s.interaction.poll.id);
+            });
+          }
+          await this.interaction.resetAllPolls(this.sessionId, pollIds);
+          this.renderPollsList();
+          alert('Todas as votações foram zeradas com sucesso!');
+        }
+      });
+    }
+
+    // Banimento de participantes na lista
+    if (this.dom.participantsList) {
+      this.dom.participantsList.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-admin-ban');
+        if (btn) {
+          const uid = btn.dataset.uid;
+          const isBlocked = this.moderation.toggleBlockUser(this.sessionId, uid);
+          this.updatePresenceMetrics();
+          this.renderModerationList();
+          alert(`Participante ${isBlocked ? 'bloqueado' : 'desbloqueado'} com sucesso.`);
         }
       });
     }
@@ -330,6 +441,8 @@ class AdminApp {
             await this.moderation.setQuestionStatus(this.sessionId, qid, 'rejected');
           } else if (action === 'block' && uid) {
             const isBlocked = this.moderation.toggleBlockUser(this.sessionId, uid);
+            this.updatePresenceMetrics();
+            this.renderModerationList();
             alert(`Participante ${isBlocked ? 'bloqueado' : 'desbloqueado'} com sucesso.`);
           }
           this.renderModerationList();
@@ -357,6 +470,13 @@ class AdminApp {
               show = !state.showResults;
             }
             await this.interaction.toggleShowResults(this.sessionId, show);
+          } else if (action === 'reset') {
+            const ok = confirm('Deseja zerar os votos desta enquete?');
+            if (ok) {
+              await this.interaction.resetPoll(this.sessionId, pid);
+              this.renderPollsList();
+              alert('Votação zerada!');
+            }
           }
           this.renderPollsList();
         }
