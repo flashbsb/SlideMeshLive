@@ -36,7 +36,7 @@
     </div>
 
     <!-- Atalhos e Alternância de Modo -->
-    <div style="display: flex; align-items: center; gap: 10px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
       <button class="btn btn-sm" id="btn-toggle-large-qr" style="border-color: rgba(56,189,248,0.4); color: #7dd3fc;" title="Projetar QR Code Gigante no Centro da Tela (Atalho: Q)">
         📱 QR Gigante (Q)
       </button>
@@ -45,12 +45,16 @@
         🔲 QR Rodapé (W)
       </button>
 
-      <button class="btn btn-sm" id="btn-toggle-pulpit" title="Alternar visão com Notas do Orador no Notebook">
-        🎛️ Púlpito
+      <button class="btn btn-sm" id="btn-toggle-questions" style="border-color: rgba(168,85,247,0.4); color: #c084fc;" title="Abrir Mural de Perguntas da Audiência (Atalho: M)">
+        💬 Perguntas (M)
       </button>
 
-      <button class="btn btn-sm" id="btn-fullscreen" title="Tela Cheia (F)">
-        ⛶ Tela Cheia
+      <button class="btn btn-sm" id="btn-toggle-pulpit" title="Alternar visão com Notas do Orador no Notebook (Atalho: P)">
+        🎛️ Púlpito (P)
+      </button>
+
+      <button class="btn btn-sm" id="btn-fullscreen" title="Alternar Modo Tela Cheia (Atalho: F)">
+        ⛶ Tela Cheia (F)
       </button>
 
       <span class="badge badge-live" id="badge-live-status">
@@ -66,7 +70,7 @@
       <div style="color: var(--text-secondary); font-size: 18px;">Carregando slides...</div>
     </section>
 
-    <!-- Barra Lateral do Púlpito (Opcional - Ativada via Toggle) -->
+    <!-- Barra Lateral do Púlpito (Opcional - Ativada via Toggle ou Tecla P) -->
     <aside class="pulpit-sidebar" id="pulpit-sidebar">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
         <h3 style="font-size: 14px; font-weight: 700; color: #ffffff;">📝 Notas do Orador</h3>
@@ -76,9 +80,27 @@
         Nenhuma nota para este slide.
       </div>
       <div style="padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: 11px; color: var(--text-muted);">
-        💡 Use <strong>← / →</strong> para navegar, <strong>Q</strong> para QR Gigante, <strong>W</strong> para ocultar/mostrar QR Rodapé, <strong>V</strong> para votação, <strong>R</strong> para resultados, <strong>B</strong> para blackout.
+        💡 Atalhos: <strong>← / →</strong> (Navegar), <strong>Q</strong> (QR Gigante), <strong>W</strong> (QR Rodapé), <strong>M</strong> (Mural Perguntas), <strong>P</strong> (Púlpito), <strong>V</strong> (Votação), <strong>R</strong> (Resultados), <strong>B</strong> (Blackout), <strong>F</strong> (Tela Cheia).
       </div>
     </aside>
+
+    <!-- Gaveta Flutuante do Mural de Perguntas Ao Vivo (Atalho: Tecla M) -->
+    <div class="stage-questions-drawer" id="stage-questions-drawer" style="display: none;">
+      <div class="stage-drawer-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h3 style="font-size: 14px; font-weight: 700; color: #ffffff;">💬 Mural de Perguntas</h3>
+          <span class="badge badge-accent" id="stage-unanswered-badge" style="font-size: 10px;">0 pendentes</span>
+        </div>
+        <button class="btn btn-sm" id="btn-close-questions-drawer" style="padding: 2px 8px; font-size: 12px;">
+          ✕
+        </button>
+      </div>
+      <div class="stage-drawer-body" id="stage-questions-list">
+        <div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 24px;">
+          Nenhuma pergunta aprovada pendente de resposta.
+        </div>
+      </div>
+    </div>
 
     <!-- Mini-Dock Flutuante de Controle de Enquete no Palco (Surge apenas em slides com enquete) -->
     <div class="stage-poll-dock" id="stage-poll-dock" style="display: none;">

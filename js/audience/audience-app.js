@@ -300,6 +300,7 @@ class AudienceApp {
       if (this.dom.questionFeedback) this.dom.questionFeedback.style.display = 'none';
       if (this.dom.questionInput) this.dom.questionInput.value = '';
       if (this.dom.questionCharCount) this.dom.questionCharCount.textContent = '0 / 300';
+      this.renderMyQuestionsList();
       this.dom.questionModal.classList.add('active');
     }
   }
@@ -308,6 +309,46 @@ class AudienceApp {
     if (this.dom.questionModal) {
       this.dom.questionModal.classList.remove('active');
     }
+  }
+
+  renderMyQuestionsList() {
+    const listEl = document.getElementById('my-questions-list');
+    if (!listEl) return;
+
+    const myQuestions = this.moderation.getMyQuestions(this.sessionId);
+    if (myQuestions.length === 0) {
+      listEl.innerHTML = `
+        <div style="color: var(--text-muted); font-size: 11px; text-align: center; padding: 8px;">
+          Você ainda não enviou perguntas nesta apresentação.
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = myQuestions.map(q => {
+      let statusBadge = '';
+      if (q.answered) {
+        statusBadge = `<span class="badge" style="background: rgba(16,185,129,0.2); color: #6ee7b7; font-size: 9.5px; padding: 1px 6px;">✓ Respondida pelo Palestrante</span>`;
+      } else if (q.status === 'featured') {
+        statusBadge = `<span class="badge badge-accent" style="font-size: 9.5px; padding: 1px 6px;">⭐ Em Destaque no Telão</span>`;
+      } else if (q.status === 'approved') {
+        statusBadge = `<span class="badge" style="background: rgba(56,189,248,0.2); color: #7dd3fc; font-size: 9.5px; padding: 1px 6px;">💬 No Mural do Telão</span>`;
+      } else if (q.status === 'pending') {
+        statusBadge = `<span class="badge" style="background: rgba(148,163,184,0.15); color: #94a3b8; font-size: 9.5px; padding: 1px 6px;">⏳ Em Moderação</span>`;
+      } else if (q.status === 'rejected') {
+        statusBadge = `<span class="badge" style="background: rgba(239,68,68,0.15); color: #fca5a5; font-size: 9.5px; padding: 1px 6px;">✕ Não Aprovada</span>`;
+      }
+
+      return `
+        <div style="background: rgba(15,23,42,0.6); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            ${statusBadge}
+            <span style="font-size: 9px; color: var(--text-muted);">${new Date(q.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>
+          </div>
+          <div style="font-size: 12px; color: #ffffff; line-height: 1.3;">${q.text}</div>
+        </div>
+      `;
+    }).join('');
   }
 
   bindEvents() {

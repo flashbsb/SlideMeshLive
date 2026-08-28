@@ -262,6 +262,51 @@ export class ModerationEngine {
   }
 
   /**
+   * Apresentador/Admin: Marca ou desmarca uma pergunta como respondida
+   */
+  async toggleQuestionAnswered(sessionId, questionId) {
+    const storageKey = `session_questions_${sessionId}`;
+    let questions = this.getQuestions(sessionId);
+    let target = questions.find(q => q.id === questionId);
+    if (!target) return false;
+
+    target.answered = !target.answered;
+    target.answeredAt = target.answered ? Date.now() : null;
+
+    localStorage.setItem(storageKey, JSON.stringify(questions));
+
+    if (this.realtime.channel) {
+      this.realtime.channel.postMessage({
+        type: 'QUESTION_STATUS_CHANGE',
+        sessionId: sessionId,
+        action: 'answered_toggle',
+        questionId: questionId,
+        answered: target.answered
+      });
+    }
+
+    if (this.realtime.isFirebaseReady && window.firebase) {
+      try {
+        const db = window.firebase.database();
+        await db.ref(`sessions/${sessionId}/questions/${questionId}/answered`).set(target.answered);
+      } catch (err) {
+        console.warn('Erro ao atualizar status de respondida no Firebase:', err);
+      }
+    }
+
+    return target.answered;
+  }
+
+  /**
+   * Obtém até N perguntas aprovadas e ainda não respondidas
+   */
+  getUnansweredApprovedQuestions(sessionId, limit = 10) {
+    return this.getQuestions(sessionId)
+      .filter(q => (q.status === 'approved' || q.status === 'featured') && !q.answered)
+      .slice(0, limit);
+  }
+
+  /**
    * Apresentador: Bloqueia ou desbloqueia um participante
    */
   toggleBlockUser(sessionId, uid) {

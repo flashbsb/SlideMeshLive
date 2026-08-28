@@ -74,6 +74,13 @@ class PresenterApp {
       featuredAuthor: document.getElementById('featured-author'),
       btnDismissFeatured: document.getElementById('btn-dismiss-featured'),
 
+      // Questions Drawer (Mural - Atalho M)
+      btnToggleQuestions: document.getElementById('btn-toggle-questions'),
+      questionsDrawer: document.getElementById('stage-questions-drawer'),
+      questionsList: document.getElementById('stage-questions-list'),
+      unansweredBadge: document.getElementById('stage-unanswered-badge'),
+      btnCloseQuestionsDrawer: document.getElementById('btn-close-questions-drawer'),
+
       // Reactions Stream
       reactionStream: document.getElementById('reaction-stream')
     };
@@ -211,6 +218,62 @@ class PresenterApp {
     } else {
       this.hideFeaturedBanner();
     }
+    this.renderStageQuestionsList();
+  }
+
+  toggleQuestionsDrawer(forceState = null) {
+    if (!this.dom.questionsDrawer) return;
+    const isVisible = (this.dom.questionsDrawer.style.display !== 'none');
+    const newState = (forceState !== null) ? forceState : !isVisible;
+    this.dom.questionsDrawer.style.display = newState ? 'flex' : 'none';
+    if (newState) {
+      this.renderStageQuestionsList();
+    }
+  }
+
+  renderStageQuestionsList() {
+    if (!this.dom.questionsList) return;
+    const unanswered = this.moderation.getUnansweredApprovedQuestions(this.sessionId, 10);
+
+    if (this.dom.unansweredBadge) {
+      this.dom.unansweredBadge.textContent = `${unanswered.length} pendente(s)`;
+    }
+
+    if (unanswered.length === 0) {
+      this.dom.questionsList.innerHTML = `
+        <div style="color: var(--text-muted); font-size: 12.5px; text-align: center; padding: 24px;">
+          Nenhuma pergunta aprovada pendente de resposta no momento.
+        </div>
+      `;
+      return;
+    }
+
+    this.dom.questionsList.innerHTML = unanswered.map(q => {
+      const isFeatured = (q.status === 'featured');
+      return `
+        <div class="stage-question-card ${isFeatured ? 'featured' : ''}" style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="badge ${isFeatured ? 'badge-accent' : ''}" style="font-size: 10px; padding: 2px 6px;">
+              ${isFeatured ? '⭐ EM DESTAQUE' : (q.authorAlias || 'Participante')}
+            </span>
+            <span style="font-size: 10px; color: var(--text-muted);">
+              ${new Date(q.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+          <div style="font-size: 13.5px; color: #ffffff; line-height: 1.4; font-weight: 500;">
+            ${q.text}
+          </div>
+          <div style="display: flex; gap: 6px; justify-content: flex-end; margin-top: 4px;">
+            <button class="btn btn-sm btn-stage-feature" data-qid="${q.id}" style="padding: 2px 8px; font-size: 10.5px; ${isFeatured ? 'border-color: var(--accent-primary); color: #7dd3fc;' : ''}">
+              ${isFeatured ? '✕ Desmarcar' : '⭐ Destacar'}
+            </button>
+            <button class="btn btn-sm btn-stage-answer" data-qid="${q.id}" style="padding: 2px 8px; font-size: 10.5px; background: rgba(16,185,129,0.2); border-color: rgba(16,185,129,0.4); color: #6ee7b7;">
+              ✓ Respondida
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   showFeaturedBanner(text, author) {
@@ -473,6 +536,12 @@ class PresenterApp {
         this.engine.prevSlide();
         await this.broadcastCurrentSlide();
         this.updateSlideView();
+      } else if (e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        this.togglePulpitMode();
+      } else if (e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        this.toggleQuestionsDrawer();
       } else if (e.key.toLowerCase() === 'f') {
         e.preventDefault();
         this.toggleFullscreen();
@@ -493,6 +562,7 @@ class PresenterApp {
         this.toggleBlackout();
       } else if (e.key === 'Escape') {
         this.toggleLargeQRModal(false);
+        this.toggleQuestionsDrawer(false);
       }
     });
 
@@ -514,6 +584,38 @@ class PresenterApp {
 
     if (this.dom.btnMaximizeQR) {
       this.dom.btnMaximizeQR.addEventListener('click', () => this.toggleLargeQRModal(true));
+    }
+
+    if (this.dom.btnToggleQuestions) {
+      this.dom.btnToggleQuestions.addEventListener('click', () => this.toggleQuestionsDrawer());
+    }
+
+    if (this.dom.btnCloseQuestionsDrawer) {
+      this.dom.btnCloseQuestionsDrawer.addEventListener('click', () => this.toggleQuestionsDrawer(false));
+    }
+
+    // Ações do Mural de Perguntas (Destacar e Marcar como Respondida)
+    if (this.dom.questionsList) {
+      this.dom.questionsList.addEventListener('click', async (e) => {
+        const featureBtn = e.target.closest('.btn-stage-feature');
+        const answerBtn = e.target.closest('.btn-stage-answer');
+
+        if (featureBtn) {
+          const qid = featureBtn.dataset.qid;
+          const questions = this.moderation.getQuestions(this.sessionId);
+          const q = questions.find(item => item.id === qid);
+          if (q && q.status === 'featured') {
+            await this.moderation.clearFeatured(this.sessionId);
+          } else {
+            await this.moderation.setQuestionStatus(this.sessionId, qid, 'featured');
+          }
+          this.checkFeaturedQuestion();
+        } else if (answerBtn) {
+          const qid = answerBtn.dataset.qid;
+          await this.moderation.toggleQuestionAnswered(this.sessionId, qid);
+          this.checkFeaturedQuestion();
+        }
+      });
     }
 
     if (this.dom.btnStagePollToggle) {

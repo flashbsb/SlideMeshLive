@@ -232,7 +232,8 @@ class AdminApp {
 
     const filtered = allQuestions.filter(q => {
       if (this.activeTab === 'pending') return q.status === 'pending';
-      if (this.activeTab === 'approved') return q.status === 'approved' || q.status === 'featured';
+      if (this.activeTab === 'approved') return (q.status === 'approved' || q.status === 'featured') && !q.answered;
+      if (this.activeTab === 'answered') return q.answered === true;
       if (this.activeTab === 'rejected') return q.status === 'rejected';
       return true;
     });
@@ -251,6 +252,7 @@ class AdminApp {
     this.dom.moderationList.innerHTML = filtered.map(q => {
       const isFeatured = (q.status === 'featured');
       const isBlocked = this.moderation.isUserBlocked(this.sessionId, q.uid);
+      const isAnswered = !!q.answered;
       let actionsHtml = '';
 
       if (q.status === 'pending') {
@@ -272,17 +274,32 @@ class AdminApp {
           </button>
         `;
       } else if (q.status === 'approved' || q.status === 'featured') {
-        actionsHtml = `
-          <button class="btn btn-sm ${isFeatured ? 'btn-primary' : ''} btn-admin-mod" data-action="${isFeatured ? 'unfeature' : 'feature'}" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px;">
-            ${isFeatured ? '⭐ Destacada no Telão' : '⭐ Destacar'}
-          </button>
-          <button class="btn btn-sm btn-admin-mod" data-action="reject" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; color: #fca5a5;">
-            Remover
-          </button>
-          <button class="btn btn-sm btn-admin-mod" data-action="delete" data-qid="${q.id}" style="padding: 4px 6px; font-size: 11px; color: #fca5a5;" title="Excluir Definitivamente">
-            🗑️
-          </button>
-        `;
+        if (!isAnswered) {
+          actionsHtml = `
+            <button class="btn btn-sm ${isFeatured ? 'btn-primary' : ''} btn-admin-mod" data-action="${isFeatured ? 'unfeature' : 'feature'}" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px;">
+              ${isFeatured ? '⭐ No Telão' : '⭐ Destacar'}
+            </button>
+            <button class="btn btn-sm btn-admin-mod" data-action="toggle_answered" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; background: rgba(16,185,129,0.2); border-color: rgba(16,185,129,0.4); color: #6ee7b7;">
+              ✓ Respondida
+            </button>
+            <button class="btn btn-sm btn-admin-mod" data-action="reject" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; color: #fca5a5;">
+              Remover
+            </button>
+            <button class="btn btn-sm btn-admin-mod" data-action="delete" data-qid="${q.id}" style="padding: 4px 6px; font-size: 11px; color: #fca5a5;" title="Excluir Definitivamente">
+              🗑️
+            </button>
+          `;
+        } else {
+          actionsHtml = `
+            <span class="badge" style="background: rgba(16,185,129,0.2); color: #6ee7b7; font-size: 10px; padding: 2px 8px;">✓ Respondida</span>
+            <button class="btn btn-sm btn-admin-mod" data-action="toggle_answered" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; color: #94a3b8;">
+              ↩️ Reabrir
+            </button>
+            <button class="btn btn-sm btn-admin-mod" data-action="delete" data-qid="${q.id}" style="padding: 4px 6px; font-size: 11px; color: #fca5a5;" title="Excluir Definitivamente">
+              🗑️
+            </button>
+          `;
+        }
       } else if (q.status === 'rejected') {
         actionsHtml = `
           <button class="btn btn-sm btn-admin-mod" data-action="approve" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px;">
@@ -295,9 +312,12 @@ class AdminApp {
       }
 
       return `
-        <div class="question-card ${isFeatured ? 'featured' : ''}">
+        <div class="question-card ${isFeatured ? 'featured' : ''} ${isAnswered ? 'answered' : ''}">
           <div class="question-author">
-            <span>${q.authorAlias || 'Participante'}</span>
+            <span style="display: flex; align-items: center; gap: 6px;">
+              <span>${q.authorAlias || 'Participante'}</span>
+              ${isAnswered ? '<span class="badge" style="background: rgba(16,185,129,0.2); color: #6ee7b7; font-size: 9px; padding: 1px 5px;">Respondida</span>' : ''}
+            </span>
             <span style="font-size: 10px; color: var(--text-muted); font-weight: normal;">
               ${new Date(q.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
@@ -649,6 +669,8 @@ class AdminApp {
             await this.moderation.setQuestionStatus(this.sessionId, qid, 'featured');
           } else if (action === 'unfeature') {
             await this.moderation.clearFeatured(this.sessionId);
+          } else if (action === 'toggle_answered') {
+            await this.moderation.toggleQuestionAnswered(this.sessionId, qid);
           } else if (action === 'reject') {
             await this.moderation.setQuestionStatus(this.sessionId, qid, 'rejected');
           } else if (action === 'delete') {
