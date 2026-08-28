@@ -1,14 +1,17 @@
 /**
  * Presenter Application Controller
- * Coordena os eventos de tela, atalhos de teclado e ciclo de vida da apresentação.
+ * Coordena os eventos de tela, atalhos de teclado e sincronização em tempo real.
  */
 
 import { PresentationEngine } from '../core/presentation-engine.js';
 import { QREngine } from '../core/qr-engine.js';
+import { RealtimeEngine } from '../core/realtime-engine.js';
 
 class PresenterApp {
   constructor() {
     this.engine = new PresentationEngine({ basePath: '../presentations' });
+    this.realtime = new RealtimeEngine();
+    
     this.presentationId = PresentationEngine.getPresentationIdFromURL();
     this.sessionId = PresentationEngine.getSessionIdFromURL() || QREngine.generateSessionCode();
 
@@ -25,7 +28,8 @@ class PresenterApp {
       sessionCodeDisplay: document.getElementById('session-code-display'),
       audienceLink: document.getElementById('audience-direct-link'),
       participantCount: document.getElementById('participant-count'),
-      connectionStatus: document.getElementById('connection-status')
+      connectionStatus: document.getElementById('connection-status'),
+      statusDot: document.getElementById('status-dot')
     };
 
     this.init();
@@ -38,7 +42,15 @@ class PresenterApp {
     try {
       await this.engine.loadPresentation(this.presentationId);
       this.dom.title.textContent = this.engine.manifest.title || 'Apresentação';
+      
+      // Publica o estado inicial da sessão em tempo real
+      this.broadcastCurrentSlide();
       this.updateSlideView();
+
+      // Atualiza status de conexão
+      if (this.dom.connectionStatus) {
+        this.dom.connectionStatus.textContent = this.realtime.isFirebaseReady ? 'Firebase Conectado' : 'Sincronização Ativa';
+      }
     } catch (error) {
       this.dom.canvas.innerHTML = `
         <div style="text-align: center; color: #ef4444; padding: 40px;">
@@ -59,6 +71,12 @@ class PresenterApp {
     QREngine.renderQR(this.dom.qrContainer, audienceUrl);
   }
 
+  broadcastCurrentSlide() {
+    if (this.realtime && this.engine.currentSlide) {
+      this.realtime.setSlide(this.sessionId, this.engine.currentSlideIndex, this.engine.currentSlide);
+    }
+  }
+
   updateSlideView() {
     this.engine.renderPresenterSlide(this.dom.canvas, this.dom.notes);
     
@@ -76,11 +94,13 @@ class PresenterApp {
     // Botões de navegação
     this.dom.btnPrev.addEventListener('click', () => {
       this.engine.prevSlide();
+      this.broadcastCurrentSlide();
       this.updateSlideView();
     });
 
     this.dom.btnNext.addEventListener('click', () => {
       this.engine.nextSlide();
+      this.broadcastCurrentSlide();
       this.updateSlideView();
     });
 
@@ -89,10 +109,12 @@ class PresenterApp {
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
         e.preventDefault();
         this.engine.nextSlide();
+        this.broadcastCurrentSlide();
         this.updateSlideView();
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
         e.preventDefault();
         this.engine.prevSlide();
+        this.broadcastCurrentSlide();
         this.updateSlideView();
       } else if (e.key.toLowerCase() === 'f') {
         this.toggleFullscreen();

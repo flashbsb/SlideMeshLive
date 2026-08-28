@@ -26,11 +26,18 @@ export class PresentationEngine {
   }
 
   /**
-   * Obtém a sessão a partir da URL
+   * Obtém a sessão a partir da URL ou sessão ativa no navegador
    */
   static getSessionIdFromURL() {
     const params = new URLSearchParams(window.location.search);
-    return params.get('session') || params.get('s') || 'DEMO-LIVE';
+    const fromUrl = params.get('session') || params.get('s');
+    if (fromUrl) {
+      const clean = fromUrl.trim().toUpperCase();
+      try { localStorage.setItem('active_presentation_session', clean); } catch(e){}
+      return clean;
+    }
+    const stored = localStorage.getItem('active_presentation_session');
+    return (stored || 'SDWAN2026').trim().toUpperCase();
   }
 
   /**

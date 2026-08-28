@@ -1,15 +1,20 @@
 /**
  * Audience Mobile Application Controller
- * Coordena a visualização no smartphone, cards expansíveis e estado de interação.
+ * Coordena a sincronização em tempo real no smartphone, presença e modo ao vivo.
  */
 
 import { PresentationEngine } from '../core/presentation-engine.js';
+import { RealtimeEngine } from '../core/realtime-engine.js';
 
 class AudienceApp {
   constructor() {
     this.engine = new PresentationEngine({ basePath: '../presentations' });
+    this.realtime = new RealtimeEngine();
+
     this.presentationId = PresentationEngine.getPresentationIdFromURL();
     this.sessionId = PresentationEngine.getSessionIdFromURL();
+    this.isLiveSync = true;
+    this.presenterSlideIndex = 0;
 
     // DOM Elements
     this.dom = {
@@ -18,7 +23,9 @@ class AudienceApp {
       contentArea: document.getElementById('audience-content-area'),
       sessionBadge: document.getElementById('session-badge-code'),
       navPrev: document.getElementById('btn-audience-prev'),
-      navNext: document.getElementById('btn-audience-next')
+      navNext: document.getElementById('btn-audience-next'),
+      btnSync: document.getElementById('btn-audience-sync'),
+      syncToast: document.getElementById('sync-toast')
     };
 
     this.init();
@@ -34,6 +41,15 @@ class AudienceApp {
     try {
       await this.engine.loadPresentation(this.presentationId);
       this.dom.headerTitle.textContent = this.engine.manifest.title || 'Apresentação';
+      
+      // Inicia registro de presença em tempo real
+      this.realtime.startPresence(this.sessionId);
+
+      // Inscreve-se nas atualizações de estado do apresentador
+      this.realtime.subscribeToSession(this.sessionId, (sessionState) => {
+        this.handleRemoteSessionUpdate(sessionState);
+      });
+
       this.updateView();
     } catch (error) {
       this.dom.contentArea.innerHTML = `
@@ -43,6 +59,54 @@ class AudienceApp {
         </div>
       `;
     }
+  }
+
+  handleRemoteSessionUpdate(sessionState) {
+    if (!sessionState) return;
+
+    if (typeof sessionState.currentSlide === 'number') {
+      this.presenterSlideIndex = sessionState.currentSlide;
+
+      if (this.isLiveSync) {
+        if (this.engine.currentSlideIndex !== this.presenterSlideIndex) {
+          this.engine.goToSlide(this.presenterSlideIndex);
+          this.updateView();
+        }
+      } else {
+        // Se o usuário estiver navegando manualmente, mostra toast informativo
+        this.showSyncToast();
+      }
+    }
+  }
+
+  showSyncToast() {
+    if (!this.dom.syncToast) return;
+    if (this.engine.currentSlideIndex !== this.presenterSlideIndex) {
+      this.dom.syncToast.innerHTML = `
+        <span>🔴 Apresentador está no slide <strong>${this.presenterSlideIndex + 1}</strong></span>
+        <button id="btn-toast-sync" class="btn btn-sm btn-primary" style="padding: 4px 10px; font-size: 11px;">Sincronizar</button>
+      `;
+      this.dom.syncToast.style.display = 'flex';
+      
+      const syncBtn = document.getElementById('btn-toast-sync');
+      if (syncBtn) {
+        syncBtn.onclick = () => this.syncToLive();
+      }
+    } else {
+      this.dom.syncToast.style.display = 'none';
+    }
+  }
+
+  syncToLive() {
+    this.isLiveSync = true;
+    if (this.dom.btnSync) {
+      this.dom.btnSync.classList.add('active');
+    }
+    if (this.dom.syncToast) {
+      this.dom.syncToast.style.display = 'none';
+    }
+    this.engine.goToSlide(this.presenterSlideIndex);
+    this.updateView();
   }
 
   updateView() {
@@ -60,28 +124,41 @@ class AudienceApp {
   }
 
   bindEvents() {
+    // Navegação manual desativa temporariamente o lock estrito se o usuário quiser ler outros slides
     if (this.dom.navPrev) {
       this.dom.navPrev.addEventListener('click', () => {
+        this.isLiveSync = false;
+        if (this.dom.btnSync) this.dom.btnSync.classList.remove('active');
         this.engine.prevSlide();
         this.updateView();
+        this.showSyncToast();
       });
     }
 
     if (this.dom.navNext) {
       this.dom.navNext.addEventListener('click', () => {
+        this.isLiveSync = false;
+        if (this.dom.btnSync) this.dom.btnSync.classList.remove('active');
         this.engine.nextSlide();
         this.updateView();
+        this.showSyncToast();
       });
     }
 
-    // Delegação de cliques para botões de opção de enquete (preparatório para fases 3 e 4)
+    // Botão de sincronização ao vivo
+    if (this.dom.btnSync) {
+      this.dom.btnSync.addEventListener('click', () => {
+        this.syncToLive();
+      });
+    }
+
+    // Delegação de cliques para opções de enquete
     this.dom.contentArea.addEventListener('click', (e) => {
       const pollBtn = e.target.closest('.poll-option-btn');
       if (pollBtn) {
         const pollId = pollBtn.dataset.pollId;
         const optionId = pollBtn.dataset.optionId;
         
-        // Remove seleção de outras opções da mesma enquete
         const container = document.getElementById(`poll-options-${pollId}`);
         if (container) {
           container.querySelectorAll('.poll-option-btn').forEach(btn => btn.classList.remove('selected'));

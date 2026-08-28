@@ -12,6 +12,27 @@
   <link rel="stylesheet" href="../css/animations.css">
   <link rel="stylesheet" href="../css/components.css">
   <link rel="stylesheet" href="../css/audience.css">
+  <style>
+    .sync-toast {
+      position: fixed;
+      top: 60px;
+      left: 16px;
+      right: 16px;
+      max-width: 568px;
+      margin: 0 auto;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--accent-primary);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-lg);
+      z-index: 100;
+      font-size: 12.5px;
+      animation: fadeIn 0.2s ease-out;
+    }
+  </style>
 </head>
 <body class="audience-body">
 
@@ -31,6 +52,9 @@
       </span>
     </div>
   </header>
+
+  <!-- Toast Flutuante de Alerta de Sincronização -->
+  <div id="sync-toast" class="sync-toast"></div>
 
   <!-- Conteúdo Principal do Smartphone -->
   <main class="audience-container" id="audience-content-area">
