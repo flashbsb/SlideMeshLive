@@ -1,6 +1,6 @@
 /**
  * Presenter Application Controller
- * Coordena os eventos de tela, atalhos de teclado, sincronização e controle de enquetes ao vivo.
+ * Coordena eventos de tela, atalhos, sincronização, controle de enquetes e moderação de perguntas.
  */
 
 import { PresentationEngine } from '../core/presentation-engine.js';
@@ -8,6 +8,7 @@ import { QREngine } from '../core/qr-engine.js';
 import { RealtimeEngine } from '../core/realtime-engine.js';
 import { AuthEngine } from '../core/auth-engine.js';
 import { InteractionEngine } from '../core/interaction-engine.js';
+import { ModerationEngine } from '../core/moderation-engine.js';
 
 class PresenterApp {
   constructor() {
@@ -15,15 +16,18 @@ class PresenterApp {
     this.realtime = new RealtimeEngine();
     this.auth = new AuthEngine();
     this.interaction = new InteractionEngine(this.realtime, this.auth);
+    this.moderation = new ModerationEngine(this.realtime, this.auth);
     
     this.presentationId = PresentationEngine.getPresentationIdFromURL();
     this.sessionId = PresentationEngine.getSessionIdFromURL() || QREngine.generateSessionCode();
 
     this.pollState = {
       activePollId: null,
-      pollStatus: 'draft', // 'draft', 'open', 'closed'
+      pollStatus: 'draft',
       showResults: false
     };
+
+    this.activeModerationTab = 'pending';
 
     // DOM Elements
     this.dom = {
@@ -45,7 +49,18 @@ class PresenterApp {
       pollControlsWrapper: document.getElementById('poll-controls-wrapper'),
       btnOpenPoll: document.getElementById('btn-open-poll'),
       btnClosePoll: document.getElementById('btn-close-poll'),
-      btnToggleResults: document.getElementById('btn-toggle-results')
+      btnToggleResults: document.getElementById('btn-toggle-results'),
+
+      // Moderation Drawer & Featured Question
+      btnToggleModeration: document.getElementById('btn-toggle-moderation'),
+      badgeQuestionCount: document.getElementById('badge-question-count'),
+      moderationDrawer: document.getElementById('moderation-drawer'),
+      btnCloseModeration: document.getElementById('btn-close-moderation'),
+      moderationList: document.getElementById('moderation-list'),
+      featuredBanner: document.getElementById('featured-question-banner'),
+      featuredText: document.getElementById('featured-question-text'),
+      featuredAuthor: document.getElementById('featured-author'),
+      btnDismissFeatured: document.getElementById('btn-dismiss-featured')
     };
 
     this.init();
@@ -61,24 +76,30 @@ class PresenterApp {
       
       this.broadcastCurrentSlide();
       this.updateSlideView();
+      this.updateModerationList();
 
       if (this.dom.connectionStatus) {
         this.dom.connectionStatus.textContent = this.realtime.isFirebaseReady ? 'Firebase Conectado' : 'Sincronização Ativa';
       }
 
-      // Escuta eventos de votação para atualizar contadores e gráficos na hora
+      // Escuta eventos de votação e novas perguntas
       if (this.realtime.channel) {
         this.realtime.channel.addEventListener('message', (e) => {
-          if (e.data && e.data.type === 'VOTE_CAST' && e.data.sessionId === this.sessionId) {
+          if (!e.data || e.data.sessionId !== this.sessionId) return;
+          if (e.data.type === 'VOTE_CAST') {
             this.updatePollDisplay();
+          } else if (e.data.type === 'NEW_QUESTION' || e.data.type === 'QUESTION_STATUS_CHANGE') {
+            this.updateModerationList();
           }
         });
       }
 
-      // Storage event listener para votos locais
+      // Storage event listener para redundância local
       window.addEventListener('storage', (e) => {
         if (e.key && e.key.startsWith(`session_votes_${this.sessionId}`)) {
           this.updatePollDisplay();
+        } else if (e.key && e.key.startsWith(`session_questions_${this.sessionId}`)) {
+          this.updateModerationList();
         }
       });
 
@@ -109,7 +130,7 @@ class PresenterApp {
       
       this.pollState = {
         activePollId: hasPoll ? slide.interaction.poll.id : null,
-        pollStatus: hasPoll ? 'open' : 'draft', // Votação abre automaticamente ao entrar no slide
+        pollStatus: hasPoll ? 'open' : 'draft',
         showResults: false
       };
 
@@ -198,7 +219,6 @@ class PresenterApp {
 
     if (resultsContainer) {
       if (this.pollState.showResults) {
-        // Renderiza gráfico de barras com percentuais no telão
         resultsContainer.innerHTML = results.options.map(opt => `
           <div class="poll-result-item animate-fade-in" style="margin-bottom: 16px;">
             <div class="poll-result-header" style="font-size: 15px;">
@@ -214,7 +234,6 @@ class PresenterApp {
           </div>
         `).join('');
       } else {
-        // Exibe apenas a lista das opções sem revelar percentuais
         resultsContainer.innerHTML = poll.options.map(opt => `
           <div style="padding: 10px 14px; background: rgba(255,255,255,0.03); border-radius: 6px; margin-bottom: 8px; font-size: 14px; display: flex; align-items: center;">
             <span class="poll-letter-badge" style="width: 24px; height: 24px; font-size: 12px; margin-right: 10px;">${opt.id}</span>
@@ -225,8 +244,96 @@ class PresenterApp {
     }
   }
 
+  updateModerationList() {
+    const allQuestions = this.moderation.getQuestions(this.sessionId);
+    const pendingQuestions = allQuestions.filter(q => q.status === 'pending');
+    
+    // Atualiza badge de contagem
+    if (this.dom.badgeQuestionCount) {
+      this.dom.badgeQuestionCount.textContent = pendingQuestions.length;
+      this.dom.badgeQuestionCount.style.display = pendingQuestions.length > 0 ? 'inline-block' : 'none';
+    }
+
+    // Verifica se há pergunta destacada
+    const featured = allQuestions.find(q => q.status === 'featured');
+    if (featured) {
+      this.dom.featuredText.textContent = featured.text;
+      this.dom.featuredAuthor.textContent = featured.authorAlias || 'Participante';
+      this.dom.featuredBanner.style.display = 'flex';
+    } else {
+      this.dom.featuredBanner.style.display = 'none';
+    }
+
+    // Filtra pela aba ativa
+    const filtered = allQuestions.filter(q => {
+      if (this.activeModerationTab === 'pending') return q.status === 'pending';
+      if (this.activeModerationTab === 'approved') return q.status === 'approved' || q.status === 'featured';
+      if (this.activeModerationTab === 'rejected') return q.status === 'rejected';
+      return true;
+    });
+
+    if (!this.dom.moderationList) return;
+
+    if (filtered.length === 0) {
+      this.dom.moderationList.innerHTML = `
+        <div style="text-align: center; color: var(--text-muted); padding: 40px 10px; font-size: 13px;">
+          Nenhuma pergunta ${this.activeModerationTab === 'pending' ? 'pendente' : 'nesta categoria'}.
+        </div>
+      `;
+      return;
+    }
+
+    this.dom.moderationList.innerHTML = filtered.map(q => {
+      const isFeatured = q.status === 'featured';
+      let actionsHtml = '';
+
+      if (q.status === 'pending') {
+        actionsHtml = `
+          <button class="btn btn-sm btn-primary btn-mod-action" data-action="feature" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px;">
+            ⭐ Destacar
+          </button>
+          <button class="btn btn-sm btn-mod-action" data-action="approve" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; color: #6ee7b7; border-color: rgba(16,185,129,0.3);">
+            ✓ Aprovar
+          </button>
+          <button class="btn btn-sm btn-mod-action" data-action="reject" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; color: #fca5a5; border-color: rgba(239,68,68,0.3);">
+            ✕
+          </button>
+        `;
+      } else if (q.status === 'approved' || q.status === 'featured') {
+        actionsHtml = `
+          <button class="btn btn-sm ${isFeatured ? 'btn-primary' : ''} btn-mod-action" data-action="${isFeatured ? 'unfeature' : 'feature'}" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px;">
+            ${isFeatured ? '⭐ Destacada' : '⭐ Destacar'}
+          </button>
+          <button class="btn btn-sm btn-mod-action" data-action="reject" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; color: #fca5a5;">
+            Remover
+          </button>
+        `;
+      } else if (q.status === 'rejected') {
+        actionsHtml = `
+          <button class="btn btn-sm btn-mod-action" data-action="approve" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px;">
+            Restaurar
+          </button>
+        `;
+      }
+
+      return `
+        <div class="question-card ${isFeatured ? 'featured' : ''}">
+          <div class="question-author">
+            <span>${q.authorAlias || 'Participante'}</span>
+            <span style="font-size: 10px; color: var(--text-muted); font-weight: normal;">
+              ${new Date(q.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+          <div class="question-text">${q.text}</div>
+          <div class="question-actions">
+            ${actionsHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
   bindEvents() {
-    // Navegação
     this.dom.btnPrev.addEventListener('click', () => {
       this.engine.prevSlide();
       this.broadcastCurrentSlide();
@@ -239,7 +346,7 @@ class PresenterApp {
       this.updateSlideView();
     });
 
-    // Controles de Votação
+    // Enquetes
     if (this.dom.btnOpenPoll) {
       this.dom.btnOpenPoll.addEventListener('click', async () => {
         const slide = this.engine.currentSlide;
@@ -273,7 +380,59 @@ class PresenterApp {
       });
     }
 
-    // Atalhos de teclado
+    // Moderação Drawer
+    if (this.dom.btnToggleModeration) {
+      this.dom.btnToggleModeration.addEventListener('click', () => {
+        this.dom.moderationDrawer.classList.toggle('active');
+      });
+    }
+
+    if (this.dom.btnCloseModeration) {
+      this.dom.btnCloseModeration.addEventListener('click', () => {
+        this.dom.moderationDrawer.classList.remove('active');
+      });
+    }
+
+    // Abas de moderação
+    document.querySelectorAll('.moderation-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.moderation-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.activeModerationTab = btn.dataset.tab;
+        this.updateModerationList();
+      });
+    });
+
+    // Ações de moderação nos cards
+    if (this.dom.moderationList) {
+      this.dom.moderationList.addEventListener('click', async (e) => {
+        const actionBtn = e.target.closest('.btn-mod-action');
+        if (actionBtn) {
+          const action = actionBtn.dataset.action;
+          const qid = actionBtn.dataset.qid;
+
+          if (action === 'approve') {
+            await this.moderation.setQuestionStatus(this.sessionId, qid, 'approved');
+          } else if (action === 'feature') {
+            await this.moderation.setQuestionStatus(this.sessionId, qid, 'featured');
+          } else if (action === 'unfeature') {
+            await this.moderation.clearFeatured(this.sessionId);
+          } else if (action === 'reject') {
+            await this.moderation.setQuestionStatus(this.sessionId, qid, 'rejected');
+          }
+          this.updateModerationList();
+        }
+      });
+    }
+
+    if (this.dom.btnDismissFeatured) {
+      this.dom.btnDismissFeatured.addEventListener('click', async () => {
+        await this.moderation.clearFeatured(this.sessionId);
+        this.updateModerationList();
+      });
+    }
+
+    // Teclado
     window.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
         e.preventDefault();

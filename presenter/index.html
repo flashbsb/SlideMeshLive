@@ -23,9 +23,14 @@
     </div>
 
     <div class="presenter-status-area">
+      <button class="btn btn-sm" id="btn-toggle-moderation" style="border-color: var(--accent-primary); color: #7dd3fc;">
+        <span>💬 Perguntas</span>
+        <span class="badge badge-accent" id="badge-question-count" style="font-size: 10px; padding: 1px 6px;">0</span>
+      </button>
+
       <div class="presenter-counter" id="participant-count-wrapper">
         <span class="status-dot-connected"></span>
-        <span id="connection-status">Modo Local (Fase 1)</span>
+        <span id="connection-status">Sincronização Ativa</span>
       </div>
       <span class="badge badge-live">
         <span class="status-dot-live"></span> AO VIVO
@@ -38,6 +43,20 @@
     <!-- Telão / Canvas de Slides -->
     <section class="slide-canvas" id="slide-canvas">
       <div style="color: var(--text-secondary); font-size: 16px;">Carregando slides...</div>
+
+      <!-- Banner de Pergunta Destacada no Telão -->
+      <div id="featured-question-banner" class="featured-question-banner" style="display: none;">
+        <div style="flex: 1; padding-right: 16px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--accent-primary); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+            <span>⭐ PERGUNTA DO PÚBLICO</span>
+            <span id="featured-author" style="color: var(--text-muted);">Participante</span>
+          </div>
+          <div class="featured-question-text" id="featured-question-text">Texto da pergunta...</div>
+        </div>
+        <button class="btn btn-sm" id="btn-dismiss-featured" style="background: rgba(255,255,255,0.1); color: #f8fafc;">
+          Ocultar
+        </button>
+      </div>
     </section>
 
     <!-- Barra Lateral: QR Code e Notas do Orador -->
@@ -104,6 +123,26 @@
       </button>
     </div>
   </footer>
+
+  <!-- Gaveta Lateral de Moderação de Perguntas -->
+  <aside class="moderation-drawer" id="moderation-drawer">
+    <div class="moderation-header">
+      <h3 style="font-size: 15px; font-weight: 700; color: #ffffff;">Fila de Perguntas</h3>
+      <button class="btn btn-icon btn-sm" id="btn-close-moderation" title="Fechar">&times;</button>
+    </div>
+
+    <div class="moderation-tabs">
+      <button class="moderation-tab-btn active" data-tab="pending" id="tab-pending">Pendentes</button>
+      <button class="moderation-tab-btn" data-tab="approved" id="tab-approved">Aprovadas</button>
+      <button class="moderation-tab-btn" data-tab="rejected" id="tab-rejected">Rejeitadas</button>
+    </div>
+
+    <div class="moderation-list" id="moderation-list">
+      <div style="text-align: center; color: var(--text-muted); padding: 40px 10px; font-size: 13px;">
+        Nenhuma pergunta nesta categoria.
+      </div>
+    </div>
+  </aside>
 
   <!-- Scripts -->
   <script src="../lib/qrcode.min.js"></script>

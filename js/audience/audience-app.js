@@ -1,12 +1,13 @@
 /**
  * Audience Mobile Application Controller
- * Coordena a sincronização em tempo real no smartphone, autenticação e sistema de votação.
+ * Coordena sincronização, presença, enquetes e envio de perguntas à moderação.
  */
 
 import { PresentationEngine } from '../core/presentation-engine.js';
 import { RealtimeEngine } from '../core/realtime-engine.js';
 import { AuthEngine } from '../core/auth-engine.js';
 import { InteractionEngine } from '../core/interaction-engine.js';
+import { ModerationEngine } from '../core/moderation-engine.js';
 
 class AudienceApp {
   constructor() {
@@ -14,6 +15,7 @@ class AudienceApp {
     this.realtime = new RealtimeEngine();
     this.auth = new AuthEngine();
     this.interaction = new InteractionEngine(this.realtime, this.auth);
+    this.moderation = new ModerationEngine(this.realtime, this.auth);
 
     this.presentationId = PresentationEngine.getPresentationIdFromURL();
     this.sessionId = PresentationEngine.getSessionIdFromURL();
@@ -35,6 +37,7 @@ class AudienceApp {
       navPrev: document.getElementById('btn-audience-prev'),
       navNext: document.getElementById('btn-audience-next'),
       btnSync: document.getElementById('btn-audience-sync'),
+      btnAsk: document.getElementById('btn-audience-ask'),
       syncToast: document.getElementById('sync-toast'),
       
       // Auth elements
@@ -49,7 +52,15 @@ class AudienceApp {
       btnCloseProfileModal: document.getElementById('btn-close-profile-modal'),
       profileAlias: document.getElementById('profile-modal-alias'),
       profileUid: document.getElementById('profile-modal-uid'),
-      btnLogout: document.getElementById('btn-logout')
+      btnLogout: document.getElementById('btn-logout'),
+
+      // Question modal elements
+      questionModal: document.getElementById('question-modal'),
+      btnCloseQuestionModal: document.getElementById('btn-close-question-modal'),
+      questionInput: document.getElementById('question-input'),
+      questionCharCount: document.getElementById('question-char-count'),
+      btnSubmitQuestion: document.getElementById('btn-submit-question'),
+      questionFeedback: document.getElementById('question-feedback')
     };
 
     this.init();
@@ -73,23 +84,19 @@ class AudienceApp {
         this.handleRemoteSessionUpdate(sessionState);
       });
 
-      // Escuta eventos de votação para atualizar resultados em tempo real
+      // Escuta eventos em tempo real
       if (this.realtime.channel) {
         this.realtime.channel.addEventListener('message', (e) => {
-          if (e.data && e.data.type === 'VOTE_CAST' && e.data.sessionId === this.sessionId) {
-            if (this.pollState.showResults) {
-              this.updateView();
-            }
+          if (!e.data || e.data.sessionId !== this.sessionId) return;
+          if (e.data.type === 'VOTE_CAST' && this.pollState.showResults) {
+            this.updateView();
           }
         });
       }
 
-      // Storage event listener para votos
       window.addEventListener('storage', (e) => {
-        if (e.key && e.key.startsWith(`session_votes_${this.sessionId}`)) {
-          if (this.pollState.showResults) {
-            this.updateView();
-          }
+        if (e.key && e.key.startsWith(`session_votes_${this.sessionId}`) && this.pollState.showResults) {
+          this.updateView();
         }
       });
 
@@ -242,6 +249,25 @@ class AudienceApp {
     }
   }
 
+  openQuestionModal() {
+    if (!this.auth.isAuthenticated) {
+      this.openAuthModal(() => this.openQuestionModal());
+      return;
+    }
+    if (this.dom.questionModal) {
+      if (this.dom.questionFeedback) this.dom.questionFeedback.style.display = 'none';
+      if (this.dom.questionInput) this.dom.questionInput.value = '';
+      if (this.dom.questionCharCount) this.dom.questionCharCount.textContent = '0 / 300';
+      this.dom.questionModal.classList.add('active');
+    }
+  }
+
+  closeQuestionModal() {
+    if (this.dom.questionModal) {
+      this.dom.questionModal.classList.remove('active');
+    }
+  }
+
   bindEvents() {
     if (this.dom.authStatusBtn) {
       this.dom.authStatusBtn.addEventListener('click', () => {
@@ -292,9 +318,62 @@ class AudienceApp {
       });
     }
 
+    // Question Modal
+    if (this.dom.btnAsk) {
+      this.dom.btnAsk.addEventListener('click', () => this.openQuestionModal());
+    }
+
+    if (this.dom.btnCloseQuestionModal) {
+      this.dom.btnCloseQuestionModal.addEventListener('click', () => this.closeQuestionModal());
+    }
+
+    if (this.dom.questionInput) {
+      this.dom.questionInput.addEventListener('input', () => {
+        const len = this.dom.questionInput.value.length;
+        if (this.dom.questionCharCount) this.dom.questionCharCount.textContent = `${len} / 300`;
+      });
+    }
+
+    if (this.dom.btnSubmitQuestion) {
+      this.dom.btnSubmitQuestion.addEventListener('click', async () => {
+        const text = this.dom.questionInput.value;
+        try {
+          this.dom.btnSubmitQuestion.disabled = true;
+          this.dom.btnSubmitQuestion.textContent = 'Enviando...';
+
+          await this.moderation.submitQuestion(this.sessionId, text);
+
+          if (this.dom.questionFeedback) {
+            this.dom.questionFeedback.style.display = 'block';
+            this.dom.questionFeedback.style.background = 'rgba(16, 185, 129, 0.15)';
+            this.dom.questionFeedback.style.border = '1px solid rgba(16, 185, 129, 0.4)';
+            this.dom.questionFeedback.style.color = '#6ee7b7';
+            this.dom.questionFeedback.innerHTML = '✓ Pergunta enviada à fila de moderação do apresentador!';
+          }
+
+          setTimeout(() => {
+            this.closeQuestionModal();
+          }, 1500);
+
+        } catch (err) {
+          if (this.dom.questionFeedback) {
+            this.dom.questionFeedback.style.display = 'block';
+            this.dom.questionFeedback.style.background = 'rgba(239, 68, 68, 0.15)';
+            this.dom.questionFeedback.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+            this.dom.questionFeedback.style.color = '#fca5a5';
+            this.dom.questionFeedback.textContent = err.message;
+          }
+        } finally {
+          this.dom.btnSubmitQuestion.disabled = false;
+          this.dom.btnSubmitQuestion.textContent = 'Enviar Pergunta';
+        }
+      });
+    }
+
     window.addEventListener('click', (e) => {
       if (e.target === this.dom.authModal) this.closeAuthModal();
       if (e.target === this.dom.profileModal) this.closeProfileModal();
+      if (e.target === this.dom.questionModal) this.closeQuestionModal();
     });
 
     if (this.dom.navPrev) {
@@ -323,14 +402,13 @@ class AudienceApp {
       });
     }
 
-    // Interação com opções de enquete
+    // Interação com enquetes
     this.dom.contentArea.addEventListener('click', async (e) => {
       const pollBtn = e.target.closest('.poll-option-btn');
       if (pollBtn) {
         const pollId = pollBtn.dataset.pollId;
         const optionId = pollBtn.dataset.optionId;
 
-        // Se o usuário NÃO estiver autenticado, abre modal de login
         if (!this.auth.isAuthenticated) {
           this.openAuthModal(async () => {
             await this.processVote(pollId, optionId);

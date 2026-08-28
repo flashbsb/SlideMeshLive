@@ -84,6 +84,13 @@
       <span>Ao Vivo</span>
     </button>
 
+    <button class="audience-action-btn" id="btn-audience-ask" title="Enviar Pergunta">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>Perguntar</span>
+    </button>
+
     <button class="audience-action-btn" id="btn-audience-next" title="Próximo Slide">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -91,6 +98,32 @@
       <span>Próximo</span>
     </button>
   </nav>
+
+  <!-- Modal de Envio de Pergunta -->
+  <div class="modal-overlay" id="question-modal">
+    <div class="modal-container">
+      <button class="modal-close-btn" id="btn-close-question-modal">&times;</button>
+      
+      <h3 style="font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">Enviar Pergunta ao Apresentador</h3>
+      <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 16px;">
+        Sua pergunta passará pela moderação antes de ser apresentada ou destacada no telão.
+      </p>
+
+      <div style="margin-bottom: 16px;">
+        <textarea id="question-input" rows="4" maxlength="300" placeholder="Digite sua pergunta técnica..." style="width: 100%; background: rgba(15,23,42,0.8); border: 1.5px solid var(--border-medium); border-radius: 8px; padding: 12px; color: #ffffff; font-family: inherit; font-size: 14px; resize: vertical; outline: none;"></textarea>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+          <span>Identificado anonimamente</span>
+          <span id="question-char-count">0 / 300</span>
+        </div>
+      </div>
+
+      <div id="question-feedback" style="display: none; margin-bottom: 14px; padding: 10px; border-radius: 6px; font-size: 12.5px;"></div>
+
+      <button class="btn btn-primary" id="btn-submit-question" style="width: 100%;">
+        Enviar Pergunta
+      </button>
+    </div>
+  </div>
 
   <!-- Modal de Autenticação com Google -->
   <div class="modal-overlay" id="auth-modal">
