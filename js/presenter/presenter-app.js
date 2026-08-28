@@ -64,7 +64,8 @@ class PresenterApp {
 
       // Session & Connectivity Controls
       btnEndSession: document.getElementById('btn-end-session'),
-      badgeLiveStatus: document.getElementById('badge-live-status')
+      badgeLiveStatus: document.getElementById('badge-live-status'),
+      btnExportReport: document.getElementById('btn-export-report')
     };
 
     this.init();
@@ -451,6 +452,13 @@ class PresenterApp {
       });
     }
 
+    // Exportação de Relatório da Sessão
+    if (this.dom.btnExportReport) {
+      this.dom.btnExportReport.addEventListener('click', () => {
+        this.exportSessionReport();
+      });
+    }
+
     // Ações de moderação nos cards
     if (this.dom.moderationList) {
       this.dom.moderationList.addEventListener('click', async (e) => {
@@ -508,6 +516,52 @@ class PresenterApp {
     this.engine.on('onSlideChange', () => {
       this.updateSlideView();
     });
+  }
+
+  exportSessionReport() {
+    const questions = this.moderation.getQuestions(this.sessionId);
+    
+    // Coleta todas as enquetes e computa resultados de cada uma
+    const pollsSummary = [];
+    if (this.engine.slidesData && this.engine.slidesData.slides) {
+      this.engine.slidesData.slides.forEach(s => {
+        if (s.interaction && s.interaction.poll) {
+          const res = this.interaction.computePollResults(this.sessionId, s.interaction.poll);
+          pollsSummary.push({
+            slideId: s.id,
+            slideTitle: s.title,
+            poll: s.interaction.poll,
+            results: res
+          });
+        }
+      });
+    }
+
+    const report = {
+      presentationId: this.presentationId,
+      presentationTitle: this.engine.manifest ? this.engine.manifest.title : '',
+      sessionId: this.sessionId,
+      exportedAt: new Date().toISOString(),
+      sessionStatus: this.pollState.status || 'active',
+      summary: {
+        totalSlides: this.engine.totalSlides,
+        totalQuestionsReceived: questions.length,
+        totalPolls: pollsSummary.length
+      },
+      polls: pollsSummary,
+      questions: questions
+    };
+
+    // Gera arquivo JSON para download
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `relatorio_sessao_${this.sessionId}_${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   toggleFullscreen() {
