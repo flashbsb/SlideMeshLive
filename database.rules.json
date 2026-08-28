@@ -1,0 +1,56 @@
+{
+  "rules": {
+    "sessions": {
+      "$sessionId": {
+        // Leitura pública do estado da sessão e slides para os smartphones conectados
+        ".read": true,
+
+        // Apenas o apresentador pode alterar o estado do slide, status da sessão e enquetes
+        "currentSlide": {
+          ".write": "auth != null || !data.exists()"
+        },
+        "status": {
+          ".write": "auth != null || !data.exists()"
+        },
+        "activePoll": {
+          ".write": "auth != null || !data.exists()"
+        },
+        "pollStatus": {
+          ".write": "auth != null || !data.exists()"
+        },
+        "showResults": {
+          ".write": "auth != null || !data.exists()"
+        },
+
+        // Registro de presença do participante (Fase 2)
+        "participants": {
+          "$participantId": {
+            ".write": true,
+            ".validate": "newData.hasChildren(['lastSeen', 'active'])"
+          }
+        },
+
+        // Votação com voto único por UID autenticado (Fase 4)
+        "votes": {
+          "$pollId": {
+            "$uid": {
+              // Somente o usuário autenticado pode gravar seu próprio voto
+              ".write": "auth != null && auth.uid == $uid && root.child('sessions').child($sessionId).child('pollStatus').val() == 'open'",
+              // Voto único: não permite sobrescrever se já existir
+              ".validate": "!data.exists() && newData.hasChildren(['optionId', 'timestamp'])"
+            }
+          }
+        },
+
+        // Perguntas do público (Fase 5)
+        "questions": {
+          "$questionId": {
+            // Qualquer usuário autenticado pode submeter uma pergunta
+            ".write": "auth != null && root.child('sessions').child($sessionId).child('status').val() == 'running'",
+            ".validate": "newData.hasChildren(['text', 'uid', 'status', 'timestamp'])"
+          }
+        }
+      }
+    }
+  }
+}
