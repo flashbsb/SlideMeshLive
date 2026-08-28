@@ -1,0 +1,328 @@
+{
+  "presentationId": "sdwan-cpe-unificado",
+  "title": "Adoção do SD-WAN Edge como CPE Único e Unificado",
+  "slides": [
+    {
+      "id": 1,
+      "slug": "abertura-contexto",
+      "tag": "NTP-ENG-SDWAN-2026-001",
+      "title": "Adoção do SD-WAN Edge como CPE Único e Unificado",
+      "presenter": {
+        "headline": "Adoção do SD-WAN Edge como CPE Único de Carrier",
+        "bullets": [
+          "Superação definitiva do modelo legado Dual-CPE (Roteador + Firewall)",
+          "Convergência de terminação Underlay Carrier-Grade com Overlay Seguro",
+          "Padronização técnica corporativa para novas contratações e renovações"
+        ],
+        "notes": "Introduzir a motivação da NTP: eliminar o modelo histórico de 20 anos que impunha custos e falhas desnecessárias."
+      },
+      "audience": {
+        "summary": "Esta Nota Técnica Padronizada (NTP-ENG-SDWAN-2026-001) estabelece as diretrizes de engenharia para adotar o SD-WAN Edge como único equipamento de terminação de circuito no cliente corporativo.",
+        "sections": [
+          {
+            "title": "Premissa Tecnológica",
+            "type": "text",
+            "content": "Os appliances modernos de SD-WAN alcançaram maturidade para executar simultaneamente BGP RFC 4271, BFD sub-segundo, QoS hierárquico (HQoS) e encapsulamento IPsec em taxa de linha (line-rate) via hardware ASIC ou aceleração DPDK."
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "slug": "evolucao-wan",
+      "tag": "Evolução Histórica",
+      "title": "Evolução das Arquiteturas WAN de Operadora",
+      "presenter": {
+        "headline": "A Transição do Modelo de Borda WAN",
+        "bullets": [
+          "Era Tradicional: Roteador de Operadora + Firewall do Cliente em cascata",
+          "Era de Transição: SD-WAN inserido atrás do Roteador mantendo 2 caixas",
+          "Era Moderna (Alvo): SD-WAN Edge Unificado conectado diretamente aos links"
+        ],
+        "notes": "Destacar que o modelo de transição gerava o pior dos dois mundos (duplo hardware e latência de processamento)."
+      },
+      "audience": {
+        "summary": "Com a evolução das redes IP/MPLS e banda larga corporativa, o roteador dedicado de operadora tornou-se uma camada intermediária redundante.",
+        "sections": [
+          {
+            "title": "Linha do Tempo Arquitetural",
+            "type": "list",
+            "items": [
+              "Fase 1 (1995-2015): Roteador CE exclusivo de telecom para terminação E1/Serial/Ethernet.",
+              "Fase 2 (2015-2023): Inserção de SD-WAN Overlay mantendo o CE da operadora por inércia contratual.",
+              "Fase 3 (2024+): Consolidação em CPE único com terminação direta de fibra/cobre e túneis dinâmicos."
+            ]
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll-modelo-atual",
+          "question": "Qual arquitetura de CPE predomina nas suas filiais atualmente?",
+          "options": [
+            { "id": "A", "text": "Dual-CPE tradicional (Roteador da Operadora + Firewall/SD-WAN separado)" },
+            { "id": "B", "text": "SD-WAN Edge Unificado diretamente nos links WAN" },
+            { "id": "C", "text": "Híbrido (depende da localidade ou operadora)" }
+          ]
+        }
+      }
+    },
+    {
+      "id": 3,
+      "slug": "comparativo-arquitetural",
+      "tag": "Engenharia Comparativa",
+      "title": "Análise Comparativa Arquitetural",
+      "presenter": {
+        "headline": "Dual-CPE vs SD-WAN Edge Unificado",
+        "bullets": [
+          "50% menos equipamentos em rack e cabos de interconexão",
+          "Eliminação de pontos cegos de troubleshooting entre caixas",
+          "Redução média de até 45% no consumo elétrico e carga em no-breaks"
+        ],
+        "notes": "Enfatizar a matriz comparativa: cabos, MTTR e consumo de energia."
+      },
+      "audience": {
+        "summary": "Comparação técnica ponto a ponto entre a abordagem de dois equipamentos em cascata e a abordagem de borda única convergente.",
+        "sections": [
+          {
+            "title": "Tabela Comparativa de Arquitetura",
+            "type": "table",
+            "headers": ["Critério de Avaliação", "Modelo Dual-CPE (Legado)", "SD-WAN Edge Unificado (Alvo)"],
+            "rows": [
+              ["Quantidade de Equipamentos", "2 dispositivos em série por link", "1 dispositivo de borda convergente"],
+              ["Cabos de Interconexão", "Cabos de transição adicionais (risco físico)", "Sem cabos intermediários de interconexão"],
+              ["Ponto Cego de Telemetria", "Presente entre porta LAN do CE e WAN do SD-WAN", "Inexistente (visibilidade fim a fim direta)"],
+              ["Eficiência Energética", "Carga dobrada em no-breaks/UPS", "Consumo elétrico reduzido em até 45%"],
+              ["MTTR Médio de Falhas", "Elevado (disputa de fronteira de operadora)", "Reduzido em até 60% por diagnóstico unificado"]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "slug": "requisitos-carrier-grade",
+      "tag": "Normas & Protocolos",
+      "title": "Requisitos e Funções Integradas de Carrier",
+      "presenter": {
+        "headline": "Capacidades Obrigatórias do SD-WAN Edge",
+        "bullets": [
+          "Terminação Ethernet 802.1Q (Subinterfaces, QinQ e MTU 1500-9216)",
+          "BGP RFC 4271 com BFD RFC 5880 (Detecção de queda em < 300ms)",
+          "VRF Lite para separação estrita de tráfego de gestão e dados"
+        ],
+        "notes": "Requisitos obrigatórios para homologação de fabricantes (Fortinet, Cisco, Versa, Aruba)."
+      },
+      "audience": {
+        "summary": "Para substituir o roteador de carrier, o equipamento SD-WAN deve cumprir integralmente as normas de telecomunicações do Underlay.",
+        "sections": [
+          {
+            "title": "Checklist de Homologação Underlay",
+            "type": "list",
+            "items": [
+              "VLAN Tagging: Suporte a 802.1Q em todas as interfaces WAN físicas.",
+              "Roteamento Dinâmico: BGP4 com suporte a BGP Communities e prefix-lists granulares.",
+              "BFD Bidirectional Forwarding Detection: Temporizadores agressivos (3x100ms).",
+              "QoS de Saída: Modelagem de tráfego hierárquica (HQoS) para evitar descarte no PE."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "slug": "delimitacao-responsabilidades",
+      "tag": "Matriz RACI",
+      "title": "Delimitação de Responsabilidades: Underlay vs Overlay",
+      "presenter": {
+        "headline": "Demarcação Operacional Clara e Sem Conflitos",
+        "bullets": [
+          "Operadora: Responsável pelo circuito físico até a porta SFP/RJ45 do SD-WAN",
+          "Cliente/Integrador: Responsável pela configuração do SD-WAN Edge e políticas",
+          "Acordo de Nível de Serviço: Diagnóstico objetivo via métricas de IP SLA e BFD"
+        ],
+        "notes": "Esclarecer que a demarcação passa a ser a porta física de entrada do SD-WAN."
+      },
+      "audience": {
+        "summary": "A matriz RACI estabelece os limites operacionais entre o provedor de telecomunicações (Underlay) e a equipe de redes/segurança corporativa (Overlay).",
+        "sections": [
+          {
+            "title": "Matriz de Demarcação Operacional",
+            "type": "table",
+            "headers": ["Camada / Elemento", "Responsável Primário", "Mecanismo de Validação"],
+            "rows": [
+              ["Meio Físico / DIO / Conector", "Operadora de Telecom", "Power Level óptico (DDM/DOM) e Link Carrier"],
+              ["Sessão BGP Underlay", "Operadora / Cliente", "Logs de adjacência BGP e BFD Keepalives"],
+              ["Túneis IPsec e SLA Overlay", "Equipe Corporativa", "Controle de Perda, Jitter, Latência no Orquestrador"],
+              ["Políticas de Segurança e NGFW", "Equipe de Segurança", "Logs SIEM e inspeção SSL/TLS"]
+            ]
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll-demarcacao",
+          "question": "Na sua visão, qual é a principal vantagem da demarcação direta na porta do SD-WAN?",
+          "options": [
+            { "id": "A", "text": "Fim do 'jogo de empurra' entre operadora de link e time de segurança" },
+            { "id": "B", "text": "Visibilidade instantânea de perda de pacotes no Underlay" },
+            { "id": "C", "text": "Agilidade para ativar links secundários e banda larga sem aguardar CE" }
+          ]
+        }
+      }
+    },
+    {
+      "id": 6,
+      "slug": "engenharia-sla-mttr",
+      "tag": "SLA & Resiliência",
+      "title": "Engenharia de SLA, MTTR e Disponibilidade",
+      "presenter": {
+        "headline": "Impacto Direto na Resiliência e Redução de MTTR",
+        "bullets": [
+          "Failover sub-segundo automático sem dependência de intervenção humana",
+          "Detecção de Blackout e Brownout em tempo real no Overlay",
+          "Redução média do MTTR global de 4.2h para 1.5h por incidente"
+        ],
+        "notes": "Apresentar os números de MTTR comparativos de campo."
+      },
+      "audience": {
+        "summary": "O SD-WAN Edge monitora simultaneamente a saúde de todos os links através de sondas sintéticas ativas a cada 1000ms.",
+        "sections": [
+          {
+            "title": "Métricas de Detecção & Comutação",
+            "type": "list",
+            "items": [
+              "Detecção de degradação sutil (Jitter > 30ms ou Perda > 1%): desvio imediato de fluxos VoIP/Vídeo.",
+              "Queda total de Link (Carrier Down): comutação em menos de 300ms.",
+              "Abertura automática de ticket via Webhooks/API integrado ao NOC."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "slug": "dcn-out-of-band",
+      "tag": "Gestão Segura",
+      "title": "DCN e Reporte Out-of-Band (LTE/5G)",
+      "presenter": {
+        "headline": "Acesso Crítico de Contingência Fora de Banda",
+        "bullets": [
+          "Módem celular 4G/5G integrado para canal de controle de emergência",
+          "Zero-Touch Provisioning (ZTP) seguro direto da fábrica",
+          "Acesso SSH e telemetria mesmo com rompimento total das fibras terrestres"
+        ],
+        "notes": "Mostrar como o ZTP via 4G/5G reduz o tempo de implantação de semanas para minutos."
+      },
+      "audience": {
+        "summary": "O canal Out-of-Band via conexão celular dedicada garante que o equipamento seja gerenciável e telemetrado mesmo em caso de sinistro físico grave nos acessos terrestres.",
+        "sections": [
+          {
+            "title": "Benefícios do Canal OoB",
+            "type": "text",
+            "content": "Permite restauração de configurações, upgrade de firmware e isolamento de falhas sem necessidade de deslocamento de técnico de campo (Truck Roll Elimination)."
+          }
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "slug": "telemetria-automacao",
+      "tag": "Observabilidade",
+      "title": "Telemetria, Observabilidade e Automação",
+      "presenter": {
+        "headline": "Superando o SNMP Legado com Streaming Telemetry",
+        "bullets": [
+          "Streaming Telemetry via gNMI / YANG e exportação IPFIX / NetFlow v9",
+          "Mapeamento granular de consumo por aplicação (L7 / DPI)",
+          "Integração contínua com pipelines de AIOps e dashboards executivos"
+        ],
+        "notes": "Comentar sobre a obsolescência do polling SNMP a cada 5 minutos."
+      },
+      "audience": {
+        "summary": "Enquanto o modelo legado dependia de pesquisas SNMP lentas, o SD-WAN Edge transmite telemetria em fluxo contínuo (Streaming Telemetry) a cada poucos segundos.",
+        "sections": [
+          {
+            "title": "Padrões Suportados",
+            "type": "list",
+            "items": [
+              "gNMI / YANG: Métricas de hardware, consumo de CPU/Memória e estados de interface.",
+              "IPFIX (RFC 7011): Fluxos de tráfego com identificação de mais de 5.000 aplicações SaaS/IaaS.",
+              "Syslog Seguro (RFC 5424 sobre TLS): Eventos de segurança e auditoria em tempo real."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "slug": "casos-excecao",
+      "tag": "Exceções Técnicas",
+      "title": "Casos de Exceção: Quando o Roteador Dedicado se Mantém",
+      "presenter": {
+        "headline": "Cenários Especiais onde o Roteador Dedicado é Recomendado",
+        "bullets": [
+          "Presença de interfaces legadas não-Ethernet (TDM, E1, STM-1/4, V.35)",
+          "Bordas de Data Center com tabela BGP Global (Full-Routing > 1.000.000 rotas)",
+          "Exigência regulatória de isolamento criptográfico governamental específico"
+        ],
+        "notes": "Importante demonstrar maturidade técnica: saber quando NÃO aplicar a solução unificada."
+      },
+      "audience": {
+        "summary": "A padronização prevê exceções fundamentadas para cenários industriais, telecom legada e núcleos de tráfego de ultra-escala.",
+        "sections": [
+          {
+            "title": "Critérios de Exceção Válidos",
+            "type": "table",
+            "headers": ["Cenário Específico", "Motivo Técnico", "Solução Recomendada"],
+            "rows": [
+              ["Circuitos E1 / Channellized", "Ausência de porta TDM nativa em appliances modernos", "Roteador dedicado compacto para conversão de mídia"],
+              ["Internet Exchange Point (IXP)", "Necessidade de tabela Full BGP na FIB de hardware", "Roteador Carrier-Core de alta capacidade de TCAM"],
+              ["Homologação Militar/Cripto", "Módulo de hardware dedicado isolado", "Equipamento certificado em linha separada"]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "slug": "conclusao-direcionamento",
+      "tag": "Direcionamento Estratégico",
+      "title": "Conclusão Técnica & Plano de Transição",
+      "presenter": {
+        "headline": "Diretrizes para Novos Termos de Referência (TR)",
+        "bullets": [
+          "Adotar o modelo SD-WAN Edge Unificado como padrão em 100% dos novos editais",
+          "Incluir cláusula obrigatória de terminação de circuito no SD-WAN nos contratos de link",
+          "Plano de migração gradual das filiais no ciclo de renovação tecnológica"
+        ],
+        "notes": "Concluir a apresentação e abrir para perguntas e deliberação do comitê de engenharia."
+      },
+      "audience": {
+        "summary": "A nota técnica conclui pela viabilidade técnica, econômica e operacional plena do modelo unificado para 98% das localidades corporativas.",
+        "sections": [
+          {
+            "title": "Próximos Passos de Engenharia",
+            "type": "list",
+            "items": [
+              "1. Atualização dos Cadernos de Encargos Técnicos (ETP e TR).",
+              "2. Homologação dos modelos de referência em laboratório de telecom.",
+              "3. Execução de piloto controlado em 5 localidades no próximo trimestre."
+            ]
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll-conclusao-comite",
+          "question": "Você aprova a padronização do SD-WAN Edge Unificado para os novos editais e contratações?",
+          "options": [
+            { "id": "A", "text": "Sim, com início imediato nos novos projetos" },
+            { "id": "B", "text": "Sim, porém condicionado ao piloto de 5 localidades" },
+            { "id": "C", "text": "Necessário maior aprofundamento em segurança" }
+          ]
+        }
+      }
+    }
+  ]
+}

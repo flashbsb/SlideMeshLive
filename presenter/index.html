@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Apresentador | Plataforma de Apresentação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/presenter.css">
+</head>
+<body class="presenter-body">
+
+  <!-- Header Superior do Apresentador -->
+  <header class="presenter-header">
+    <div class="presenter-title-area">
+      <span class="badge badge-accent">Apresentador</span>
+      <h1 class="presenter-title" id="presentation-title">Carregando apresentação...</h1>
+    </div>
+
+    <div class="presenter-status-area">
+      <div class="presenter-counter" id="participant-count-wrapper">
+        <span class="status-dot-connected"></span>
+        <span id="connection-status">Modo Local (Fase 1)</span>
+      </div>
+      <span class="badge badge-live">
+        <span class="status-dot-live"></span> AO VIVO
+      </span>
+    </div>
+  </header>
+
+  <!-- Área Principal de Apresentação -->
+  <main class="presenter-main">
+    <!-- Telão / Canvas de Slides -->
+    <section class="slide-canvas" id="slide-canvas">
+      <div style="color: var(--text-secondary); font-size: 16px;">Carregando slides...</div>
+    </section>
+
+    <!-- Barra Lateral: QR Code e Notas do Orador -->
+    <aside class="presenter-sidebar">
+      <!-- Painel de Conexão do Público -->
+      <div class="qr-section">
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">
+          Acesso do Público
+        </div>
+        <div class="qr-box" id="qr-code-box"></div>
+        <div class="session-code-display">SESSÃO: <span id="session-code-display">---</span></div>
+        <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 6px; word-break: break-all;">
+          <a id="audience-direct-link" href="#" target="_blank" style="color: var(--accent-primary);">Abrir tela do público</a>
+        </div>
+      </div>
+
+      <!-- Notas do Orador -->
+      <div class="speaker-notes" id="speaker-notes-content">
+        <div class="speaker-notes-title">Notas do Orador:</div>
+        <p style="color: var(--text-muted);">Nenhuma nota carregada.</p>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Dock Inferior de Controle -->
+  <footer class="presenter-dock">
+    <div class="dock-left">
+      <button class="btn btn-icon" id="btn-prev" title="Slide Anterior (Seta Esquerda / PageUp)">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <span class="slide-nav-counter" id="slide-counter">0 / 0</span>
+
+      <button class="btn btn-icon" id="btn-next" title="Próximo Slide (Seta Direita / Espaço)">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="dock-center">
+      <span style="font-size: 12px; color: var(--text-muted);">
+        Atalhos: <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">←</kbd> <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">→</kbd> avançar | <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">F</kbd> tela cheia
+      </span>
+    </div>
+
+    <div class="dock-right">
+      <button class="btn btn-sm" id="btn-fullscreen" title="Modo Tela Cheia">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+        </svg>
+        <span>Tela Cheia</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="../lib/qrcode.min.js"></script>
+  <script type="module" src="../js/presenter/presenter-app.js"></script>
+</body>
+</html>

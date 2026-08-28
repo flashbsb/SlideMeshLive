@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plataforma de Apresentação HTML Interativa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .portal-hero {
+      max-width: 900px;
+      margin: 80px auto 40px;
+      padding: 0 20px;
+      text-align: center;
+    }
+    .portal-title {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .portal-subtitle {
+      font-size: 17px;
+      color: var(--text-secondary);
+      max-width: 650px;
+      margin: 0 auto 36px;
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      max-width: 960px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+    }
+    .presentation-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all var(--transition-fast);
+    }
+    .presentation-card:hover {
+      border-color: var(--accent-primary);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px -10px var(--accent-glow);
+    }
+    .card-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <header style="padding: 20px 40px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+    <div style="font-weight: 800; font-size: 16px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;">
+      <span style="width: 12px; height: 12px; border-radius: 50%; background: var(--accent-primary); display: inline-block;"></span>
+      <span>Apresentação Online</span>
+    </div>
+    <span class="badge badge-accent">Fase 1: Engine Modular</span>
+  </header>
+
+  <main>
+    <section class="portal-hero animate-fade-in">
+      <h1 class="portal-title">Plataforma de Apresentação HTML Sincronizada</h1>
+      <p class="portal-subtitle">
+        Apresentações web de alto impacto com sincronização em tempo real entre o telão do apresentador e smartphones do público.
+      </p>
+    </section>
+
+    <section class="cards-grid">
+      <!-- Card da Apresentação Piloto NTP SD-WAN -->
+      <article class="presentation-card animate-fade-in">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+            <span class="badge badge-accent">NTP-ENG-SDWAN-2026</span>
+            <span class="badge">10 Slides</span>
+          </div>
+          <h2 style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 10px;">
+            Adoção do SD-WAN Edge como CPE Único e Unificado
+          </h2>
+          <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;">
+            Apresentação técnica baseada no documento oficial NTP de convergência de borda WAN corporativa, comparativo Dual-CPE, matriz RACI e requisitos de telecom.
+          </p>
+        </div>
+
+        <div class="card-actions">
+          <a href="presenter/?presentation=sdwan-cpe-unificado&session=SDWAN2026" class="btn btn-primary" style="flex: 1;">
+            🖥️ Abrir Apresentador
+          </a>
+          <a href="audience/?presentation=sdwan-cpe-unificado&session=SDWAN2026" class="btn" style="flex: 1;" target="_blank">
+            📱 Ver no Smartphone
+          </a>
+        </div>
+      </article>
+
+      <!-- Card Explicativo de Multi-Apresentação -->
+      <article class="presentation-card animate-fade-in" style="border-style: dashed;">
+        <div>
+          <span class="badge" style="margin-bottom: 14px;">Arquitetura Modular</span>
+          <h2 style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 10px;">
+            Adicionar Novas Apresentações
+          </h2>
+          <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;">
+            A plataforma suporta qualquer apresentação modular. Basta criar uma nova pasta em <code>presentations/&lt;nome&gt;/</code> contendo <code>manifest.json</code> e <code>slides.json</code>.
+          </p>
+        </div>
+
+        <div class="card-actions">
+          <a href="NTP_Adocao_SDWAN_Edge_CPE_Unificado.html" class="btn" style="width: 100%;" target="_blank">
+            📄 Ver Documento NTP Original
+          </a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+</body>
+</html>
