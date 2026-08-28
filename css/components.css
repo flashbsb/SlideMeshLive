@@ -254,3 +254,58 @@
 .user-badge-btn:hover {
   background: rgba(56, 189, 248, 0.25);
 }
+
+/* Poll Results & Progress Bars */
+.poll-result-item {
+  margin-bottom: 14px;
+}
+
+.poll-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13.5px;
+}
+
+.poll-result-text {
+  color: #f8fafc;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.poll-result-percentage {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.poll-progress-track {
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  position: relative;
+}
+
+.poll-progress-fill {
+  height: 100%;
+  background: var(--accent-gradient);
+  border-radius: var(--radius-full);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* Presenter Poll Control Box in Slide */
+.presenter-poll-box {
+  margin-top: 28px;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(56, 189, 248, 0.4);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glass);
+}
+

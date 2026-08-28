@@ -1,23 +1,30 @@
 /**
  * Audience Mobile Application Controller
- * Coordena a sincronização em tempo real no smartphone, presença e autenticação segura.
+ * Coordena a sincronização em tempo real no smartphone, autenticação e sistema de votação.
  */
 
 import { PresentationEngine } from '../core/presentation-engine.js';
 import { RealtimeEngine } from '../core/realtime-engine.js';
 import { AuthEngine } from '../core/auth-engine.js';
+import { InteractionEngine } from '../core/interaction-engine.js';
 
 class AudienceApp {
   constructor() {
     this.engine = new PresentationEngine({ basePath: '../presentations' });
     this.realtime = new RealtimeEngine();
     this.auth = new AuthEngine();
+    this.interaction = new InteractionEngine(this.realtime, this.auth);
 
     this.presentationId = PresentationEngine.getPresentationIdFromURL();
     this.sessionId = PresentationEngine.getSessionIdFromURL();
     this.isLiveSync = true;
     this.presenterSlideIndex = 0;
     this.pendingAction = null;
+
+    this.pollState = {
+      pollStatus: 'open',
+      showResults: false
+    };
 
     // DOM Elements
     this.dom = {
@@ -60,12 +67,30 @@ class AudienceApp {
       await this.engine.loadPresentation(this.presentationId);
       this.dom.headerTitle.textContent = this.engine.manifest.title || 'Apresentação';
       
-      // Inicia registro de presença em tempo real
       this.realtime.startPresence(this.sessionId);
 
-      // Inscreve-se nas atualizações de estado do apresentador
       this.realtime.subscribeToSession(this.sessionId, (sessionState) => {
         this.handleRemoteSessionUpdate(sessionState);
+      });
+
+      // Escuta eventos de votação para atualizar resultados em tempo real
+      if (this.realtime.channel) {
+        this.realtime.channel.addEventListener('message', (e) => {
+          if (e.data && e.data.type === 'VOTE_CAST' && e.data.sessionId === this.sessionId) {
+            if (this.pollState.showResults) {
+              this.updateView();
+            }
+          }
+        });
+      }
+
+      // Storage event listener para votos
+      window.addEventListener('storage', (e) => {
+        if (e.key && e.key.startsWith(`session_votes_${this.sessionId}`)) {
+          if (this.pollState.showResults) {
+            this.updateView();
+          }
+        }
       });
 
       this.updateView();
@@ -90,7 +115,6 @@ class AudienceApp {
         if (this.dom.profileAlias) this.dom.profileAlias.textContent = user.anonymousAlias || 'Participante';
         if (this.dom.profileUid) this.dom.profileUid.textContent = `ID: ${user.uid.substring(0, 14)}...`;
 
-        // Executa ação pendente após autenticar (ex: votar)
         if (this.pendingAction) {
           const action = this.pendingAction;
           this.pendingAction = null;
@@ -102,11 +126,20 @@ class AudienceApp {
         this.dom.authStatusBtn.style.background = 'rgba(56, 189, 248, 0.12)';
         this.dom.authStatusBtn.style.color = '#7dd3fc';
       }
+
+      this.updateView();
     });
   }
 
   handleRemoteSessionUpdate(sessionState) {
     if (!sessionState) return;
+
+    if (sessionState.pollStatus) {
+      this.pollState.pollStatus = sessionState.pollStatus;
+    }
+    if (typeof sessionState.showResults === 'boolean') {
+      this.pollState.showResults = sessionState.showResults;
+    }
 
     if (typeof sessionState.currentSlide === 'number') {
       this.presenterSlideIndex = sessionState.currentSlide;
@@ -115,10 +148,15 @@ class AudienceApp {
         if (this.engine.currentSlideIndex !== this.presenterSlideIndex) {
           this.engine.goToSlide(this.presenterSlideIndex);
           this.updateView();
+        } else {
+          this.updateView();
         }
       } else {
         this.showSyncToast();
+        this.updateView();
       }
+    } else {
+      this.updateView();
     }
   }
 
@@ -153,7 +191,23 @@ class AudienceApp {
   }
 
   updateView() {
-    this.engine.renderAudienceSlide(this.dom.contentArea);
+    const slide = this.engine.currentSlide;
+    let pollRenderData = {
+      pollStatus: this.pollState.pollStatus,
+      showResults: this.pollState.showResults,
+      userVoteOption: null,
+      results: null
+    };
+
+    if (slide && slide.interaction && slide.interaction.poll) {
+      const poll = slide.interaction.poll;
+      pollRenderData.userVoteOption = this.interaction.getUserVoteOption(this.sessionId, poll.id);
+      if (this.pollState.showResults) {
+        pollRenderData.results = this.interaction.computePollResults(this.sessionId, poll);
+      }
+    }
+
+    this.engine.renderAudienceSlide(this.dom.contentArea, pollRenderData);
 
     const current = this.engine.currentSlideIndex + 1;
     const total = this.engine.totalSlides;
@@ -161,8 +215,6 @@ class AudienceApp {
 
     if (this.dom.navPrev) this.dom.navPrev.disabled = (this.engine.currentSlideIndex === 0);
     if (this.dom.navNext) this.dom.navNext.disabled = (this.engine.currentSlideIndex === total - 1);
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   openAuthModal(onSuccessAction = null) {
@@ -191,7 +243,6 @@ class AudienceApp {
   }
 
   bindEvents() {
-    // Auth Modal Controls
     if (this.dom.authStatusBtn) {
       this.dom.authStatusBtn.addEventListener('click', () => {
         if (this.auth.isAuthenticated) {
@@ -241,13 +292,11 @@ class AudienceApp {
       });
     }
 
-    // Fechar modais ao clicar no overlay
     window.addEventListener('click', (e) => {
       if (e.target === this.dom.authModal) this.closeAuthModal();
       if (e.target === this.dom.profileModal) this.closeProfileModal();
     });
 
-    // Navegação manual
     if (this.dom.navPrev) {
       this.dom.navPrev.addEventListener('click', () => {
         this.isLiveSync = false;
@@ -274,8 +323,8 @@ class AudienceApp {
       });
     }
 
-    // Interação com enquetes: exige autenticação
-    this.dom.contentArea.addEventListener('click', (e) => {
+    // Interação com opções de enquete
+    this.dom.contentArea.addEventListener('click', async (e) => {
       const pollBtn = e.target.closest('.poll-option-btn');
       if (pollBtn) {
         const pollId = pollBtn.dataset.pollId;
@@ -283,13 +332,13 @@ class AudienceApp {
 
         // Se o usuário NÃO estiver autenticado, abre modal de login
         if (!this.auth.isAuthenticated) {
-          this.openAuthModal(() => {
-            this.handleVoteSelection(pollId, optionId, pollBtn);
+          this.openAuthModal(async () => {
+            await this.processVote(pollId, optionId);
           });
           return;
         }
 
-        this.handleVoteSelection(pollId, optionId, pollBtn);
+        await this.processVote(pollId, optionId);
       }
     });
 
@@ -298,23 +347,16 @@ class AudienceApp {
     });
   }
 
-  handleVoteSelection(pollId, optionId, pollBtn) {
-    const container = document.getElementById(`poll-options-${pollId}`);
-    if (container) {
-      container.querySelectorAll('.poll-option-btn').forEach(btn => btn.classList.remove('selected'));
-    }
-    pollBtn.classList.add('selected');
-
-    const feedback = document.getElementById(`poll-feedback-${pollId}`);
-    if (feedback) {
-      feedback.innerHTML = `
-        <span style="color: #10b981; font-weight: 600;">✓ Voto na Opção ${optionId} registrado como ${this.auth.user.anonymousAlias}!</span>
-      `;
+  async processVote(pollId, optionId) {
+    try {
+      await this.interaction.submitVote(this.sessionId, pollId, optionId);
+      this.updateView();
+    } catch (err) {
+      alert(err.message);
     }
   }
 }
 
-// Inicializa no smartphone quando pronto
 document.addEventListener('DOMContentLoaded', () => {
   window.audienceApp = new AudienceApp();
 });

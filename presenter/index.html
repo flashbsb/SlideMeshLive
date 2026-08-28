@@ -80,13 +80,22 @@
       </button>
     </div>
 
-    <div class="dock-center">
-      <span style="font-size: 12px; color: var(--text-muted);">
-        Atalhos: <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">←</kbd> <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">→</kbd> avançar | <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">F</kbd> tela cheia
-      </span>
+    <div class="dock-center" id="poll-controls-wrapper" style="display: none; gap: 8px;">
+      <button class="btn btn-sm btn-primary" id="btn-open-poll">
+        <span>🟢 Abrir Votação</span>
+      </button>
+      <button class="btn btn-sm" id="btn-close-poll" style="display: none; border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;">
+        <span>🔴 Encerrar Votação</span>
+      </button>
+      <button class="btn btn-sm" id="btn-toggle-results" style="display: none;">
+        <span>📊 Mostrar Resultados</span>
+      </button>
     </div>
 
     <div class="dock-right">
+      <span style="font-size: 11px; color: var(--text-muted); margin-right: 12px;" id="keyboard-hint">
+        <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">←</kbd> <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">→</kbd> | <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">F</kbd> tela cheia
+      </span>
       <button class="btn btn-sm" id="btn-fullscreen" title="Modo Tela Cheia">
         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />

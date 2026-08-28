@@ -131,6 +131,28 @@ export class PresentationEngine {
         </li>
       `).join('');
 
+    let presenterPollHtml = '';
+    if (slide.interaction && slide.interaction.poll) {
+      const poll = slide.interaction.poll;
+      presenterPollHtml = `
+        <div class="presenter-poll-box animate-fade-in" id="presenter-poll-box-${poll.id}">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="badge badge-accent">📊 Enquete do Slide</span>
+              <span class="badge" id="presenter-poll-badge-${poll.id}">VOTAÇÃO</span>
+            </div>
+            <div style="font-size: 13px; color: var(--accent-primary); font-weight: 600;" id="presenter-poll-vote-count-${poll.id}">
+              0 votos registrados
+            </div>
+          </div>
+          <h3 style="font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 18px;">${poll.question}</h3>
+          <div id="presenter-poll-results-${poll.id}">
+            <!-- Resultados ou lista de opções -->
+          </div>
+        </div>
+      `;
+    }
+
     containerElement.innerHTML = `
       <div class="slide-content-wrapper animate-slide-next">
         <div class="slide-tag">${slide.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
@@ -138,6 +160,7 @@ export class PresentationEngine {
         <ul class="slide-bullets">
           ${bulletsHtml}
         </ul>
+        ${presenterPollHtml}
       </div>
     `;
 
@@ -152,7 +175,7 @@ export class PresentationEngine {
   /**
    * Renderiza o slide atual para a visão do Smartphone do Público
    */
-  renderAudienceSlide(containerElement) {
+  renderAudienceSlide(containerElement, pollState = {}) {
     const slide = this.currentSlide;
     if (!slide || !containerElement) return;
 
@@ -194,27 +217,65 @@ export class PresentationEngine {
     let interactionHtml = '';
     if (slide.interaction && slide.interaction.poll) {
       const poll = slide.interaction.poll;
-      const optionsHtml = poll.options.map(opt => `
-        <button class="poll-option-btn" data-poll-id="${poll.id}" data-option-id="${opt.id}">
-          <div style="display: flex; align-items: center;">
-            <span class="poll-letter-badge">${opt.id}</span>
-            <span>${opt.text}</span>
+      const isClosed = (pollState.pollStatus === 'closed');
+      const showResults = (pollState.showResults === true);
+      const userVotedOption = pollState.userVoteOption || null;
+
+      let optionsOrResultsHtml = '';
+
+      if (showResults && pollState.results) {
+        // Exibe gráfico de barras
+        optionsOrResultsHtml = pollState.results.options.map(opt => `
+          <div class="poll-result-item">
+            <div class="poll-result-header">
+              <span class="poll-result-text">
+                <span class="poll-letter-badge" style="width: 22px; height: 22px; font-size: 11px; margin-right: 4px;">${opt.id}</span>
+                <span>${opt.text}</span>
+              </span>
+              <span class="poll-result-percentage">${opt.percentage}% (${opt.votes})</span>
+            </div>
+            <div class="poll-progress-track">
+              <div class="poll-progress-fill" style="width: ${opt.percentage}%;"></div>
+            </div>
           </div>
-        </button>
-      `).join('');
+        `).join('');
+      } else {
+        // Exibe botões de votação
+        optionsOrResultsHtml = poll.options.map(opt => {
+          const isSelected = (userVotedOption === opt.id);
+          const disabledAttr = (isClosed || userVotedOption) ? 'disabled' : '';
+          return `
+            <button class="poll-option-btn ${isSelected ? 'selected' : ''}" data-poll-id="${poll.id}" data-option-id="${opt.id}" ${disabledAttr}>
+              <div style="display: flex; align-items: center;">
+                <span class="poll-letter-badge">${opt.id}</span>
+                <span>${opt.text}</span>
+              </div>
+              ${isSelected ? '<span style="color: #10b981; font-weight: 700;">✓ Votado</span>' : ''}
+            </button>
+          `;
+        }).join('');
+      }
+
+      const statusBadge = isClosed 
+        ? '<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5;">Encerrada</span>'
+        : '<span class="badge badge-success">🟢 Votação Aberta</span>';
+
+      const feedbackText = userVotedOption 
+        ? `✓ Seu voto (Opção ${userVotedOption}) está registrado!` 
+        : (isClosed ? 'Votação encerrada pelo apresentador.' : 'Selecione uma opção para votar (1 voto por participante).');
 
       interactionHtml = `
         <div class="card animate-fade-in" style="border-color: rgba(56, 189, 248, 0.4); background: rgba(15, 23, 42, 0.85);">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <span class="badge badge-accent">📊 Enquete Técnica</span>
-            <span class="badge badge-live">Ao Vivo</span>
+            ${statusBadge}
           </div>
           <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 16px; color: #ffffff;">${poll.question}</h4>
           <div class="poll-options-container" id="poll-options-${poll.id}">
-            ${optionsHtml}
+            ${optionsOrResultsHtml}
           </div>
           <div id="poll-feedback-${poll.id}" style="margin-top: 10px; font-size: 12px; color: var(--text-secondary); text-align: center;">
-            Clique para registrar seu voto (exige login nas fases de interação).
+            ${feedbackText}
           </div>
         </div>
       `;
