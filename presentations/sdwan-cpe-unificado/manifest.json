@@ -5,9 +5,12 @@
   "version": "1.0.0",
   "author": "Engenharia de Soluções WAN",
   "description": "Especificação técnica e arquitetural da transição do modelo histórico Dual-CPE para SD-WAN Edge Unificado com convergência Carrier-Grade.",
-  "totalSlides": 12,
   "theme": {
     "primaryColor": "#38bdf8",
     "accentColor": "#818cf8"
+  },
+  "security": {
+    "mode": "public",
+    "description": "Apresentação pública com login necessário apenas para interações (enquetes e perguntas)"
   }
 }

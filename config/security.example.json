@@ -1,0 +1,45 @@
+{
+  "admin": {
+    "pin": "2026",
+    "requirePinForAdmin": true,
+    "allowedEmails": [
+      "admin@suaempresa.com.br",
+      "palestrante@suaempresa.com.br",
+      "moderador@suaempresa.com.br"
+    ],
+    "users": [
+      {
+        "username": "admin",
+        "password": "SUA_SENHA_ADMIN_AQUI",
+        "role": "admin",
+        "name": "Mesa Técnica"
+      },
+      {
+        "username": "palestrante",
+        "password": "SUA_SENHA_PALESTRANTE_AQUI",
+        "role": "presenter",
+        "name": "Palestrante Principal"
+      }
+    ]
+  },
+  "offlineAudience": {
+    "enabled": true,
+    "users": [
+      {
+        "username": "participante1",
+        "password": "123",
+        "name": "Participante 01"
+      },
+      {
+        "username": "participante2",
+        "password": "123",
+        "name": "Participante 02"
+      },
+      {
+        "username": "convidado",
+        "password": "123",
+        "name": "Convidado Especial"
+      }
+    ]
+  }
+}

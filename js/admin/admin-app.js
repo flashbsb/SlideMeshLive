@@ -71,7 +71,13 @@ class AdminApp {
       newSessionModal: document.getElementById('new-session-modal'),
       btnCloseNewSessionModal: document.getElementById('btn-close-new-session-modal'),
       inputNewSessionCode: document.getElementById('input-new-session-code'),
-      btnConfirmNewSession: document.getElementById('btn-confirm-new-session')
+      btnConfirmNewSession: document.getElementById('btn-confirm-new-session'),
+
+      // Admin Lock Modal
+      adminLockModal: document.getElementById('admin-lock-modal'),
+      inputAdminPin: document.getElementById('input-admin-pin'),
+      adminPinError: document.getElementById('admin-pin-error'),
+      btnUnlockAdmin: document.getElementById('btn-unlock-admin')
     };
 
     this.init();
@@ -80,6 +86,7 @@ class AdminApp {
   async init() {
     this.bindEvents();
     this.setupQRCode();
+    this.checkAdminProtection();
 
     if (this.dom.sessionCode) {
       this.dom.sessionCode.textContent = `SESSÃO: ${this.sessionId}`;
@@ -155,6 +162,30 @@ class AdminApp {
       this.dom.linkPresenter.href = `../presenter/?presentation=${encodeURIComponent(this.presentationId)}&session=${encodeURIComponent(this.sessionId)}`;
     }
     QREngine.renderQR(this.dom.qrBox, audienceUrl);
+  }
+
+  checkAdminProtection() {
+    if (!this.auth.isAdminAuthenticated()) {
+      if (this.dom.adminLockModal) {
+        this.dom.adminLockModal.classList.add('active');
+      }
+    }
+  }
+
+  unlockAdminWithPin() {
+    const entered = this.dom.inputAdminPin.value;
+    if (this.auth.verifyAdminPIN(entered)) {
+      if (this.dom.adminLockModal) {
+        this.dom.adminLockModal.classList.remove('active');
+      }
+      if (this.dom.adminPinError) {
+        this.dom.adminPinError.style.display = 'none';
+      }
+    } else {
+      if (this.dom.adminPinError) {
+        this.dom.adminPinError.style.display = 'block';
+      }
+    }
   }
 
   updatePresenceMetrics() {
@@ -484,6 +515,16 @@ class AdminApp {
         this.engine.nextSlide();
         await this.realtime.setSlide(this.sessionId, this.engine.currentSlideIndex, this.engine.currentSlide);
         this.updateView();
+      });
+    }
+
+    // Desbloqueio da Mesa Técnica por PIN
+    if (this.dom.btnUnlockAdmin) {
+      this.dom.btnUnlockAdmin.addEventListener('click', () => this.unlockAdminWithPin());
+    }
+    if (this.dom.inputAdminPin) {
+      this.dom.inputAdminPin.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') this.unlockAdminWithPin();
       });
     }
 

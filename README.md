@@ -261,7 +261,40 @@ O Painel do Moderador & Admin (`/admin/`) conta com gestão do ciclo de vida das
 
 ---
 
-## 8. Material Piloto Integrado
+## 9. Segurança Declarativa via JSON & Autenticação Híbrida
 
-Esta implantação inclui como demonstração técnica completa a apresentação:
-- **`sdwan-cpe-unificado`**: Baseada integralmente no documento oficial [NTP_Adocao_SDWAN_Edge_CPE_Unificado.html](file:///home/flashbsb/projetos/apresentacaoonline/NTP_Adocao_SDWAN_Edge_CPE_Unificado.html) com 10 slides aprofundados, tabelas comparativas de arquitetura de telecomunicações, matriz RACI e enquetes interativas.
+A plataforma permite configurar regras de segurança, senhas e usuários locais de forma simples através do arquivo `config/security.json`:
+
+### 9.1 Configuração Global de Segurança (`config/security.json`)
+```json
+{
+  "admin": {
+    "pin": "2026",
+    "allowedEmails": ["admin@suaempresa.com.br", "palestrante@suaempresa.com.br"],
+    "users": [
+      { "username": "admin", "password": "123", "role": "admin", "name": "Mesa Técnica" }
+    ]
+  },
+  "offlineAudience": {
+    "enabled": true,
+    "users": [
+      { "username": "participante1", "password": "123", "name": "Participante 01" },
+      { "username": "convidado", "password": "123", "name": "Convidado" }
+    ]
+  }
+}
+```
+
+### 9.2 Modos de Segurança por Apresentação (`manifest.json`)
+No arquivo `manifest.json` de cada palestra, defina o bloco `"security"`:
+- **`"mode": "public"`**: Apresentação aberta; identificação necessária apenas para votar ou enviar perguntas.
+- **`"mode": "pin"`**: O smartphone do participante exige o PIN do evento (ex: `pin: "7482"`) antes de exibir os slides.
+- **`"mode": "restricted"`**: Exige login com e-mail corporativo (`allowedDomains`) ou usuário local autorizado.
+
+---
+
+## 10. Material Piloto Integrado
+
+Esta implantação inclui como demonstrações técnicas completas:
+- **`sdwan-cpe-unificado`**: Apresentação pública técnica baseada no documento oficial com 12 slides aprofundados.
+- **`treinamento-interno-pin`**: Demonstração de apresentação com controle de acesso protegido por PIN do evento (`PIN: 7482`).

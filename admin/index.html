@@ -214,6 +214,29 @@
     </div>
   </div>
 
+  <!-- Modal de Bloqueio por PIN da Mesa Técnica (Segurança Declarativa) -->
+  <div class="modal-overlay" id="admin-lock-modal" style="backdrop-filter: blur(16px);">
+    <div class="modal-container" style="max-width: 400px; text-align: center;">
+      <div style="font-size: 34px; margin-bottom: 8px;">🛡️</div>
+      <h3 style="font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">Mesa Técnica Protegida</h3>
+      <p style="font-size: 12.5px; color: #94a3b8; margin-bottom: 18px;">
+        Digite o PIN do administrador configurado em <code style="color: var(--accent-primary);">config/security.json</code> para liberar o controle.
+      </p>
+
+      <div style="margin-bottom: 14px;">
+        <input type="password" id="input-admin-pin" maxlength="8" placeholder="Digite o PIN (Ex: 2026)" style="width: 100%; text-align: center; letter-spacing: 4px; padding: 12px; background: rgba(15,23,42,0.9); border: 1.5px solid var(--accent-primary); border-radius: 8px; color: #ffffff; font-family: var(--font-mono); font-size: 18px; font-weight: 700;">
+      </div>
+
+      <div id="admin-pin-error" style="display: none; color: #fca5a5; font-size: 12px; margin-bottom: 12px;">
+        ✕ PIN incorreto. Verifique o arquivo config/security.json.
+      </div>
+
+      <button class="btn btn-primary" id="btn-unlock-admin" style="width: 100%; padding: 10px; font-size: 13.5px;">
+        🔓 Desbloquear Mesa Técnica
+      </button>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="../lib/qrcode.min.js"></script>
   <script type="module" src="../js/admin/admin-app.js"></script>

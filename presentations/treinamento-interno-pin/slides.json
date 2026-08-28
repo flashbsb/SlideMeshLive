@@ -1,0 +1,40 @@
+{
+  "slides": [
+    {
+      "id": 1,
+      "tag": "SEGURANÇA INTERNA",
+      "title": "Acesso Restrito ao Conteúdo",
+      "presenter": {
+        "headline": "Apresentação Privada com PIN",
+        "bullets": [
+          "Conteúdo restrito visível no celular apenas após digitar o PIN 7482",
+          "Mesa Técnica protegida pelo PIN 2026 configurado em config/security.json",
+          "Suporte a contas locais offline sem necessidade de conexão com a nuvem"
+        ],
+        "notes": "Informar ao auditório que o código de acesso para o celular é 7482."
+      },
+      "audience": {
+        "headline": "Bem-vindo ao Treinamento Restrito",
+        "sections": [
+          {
+            "title": "Acesso Seguro Validado",
+            "type": "text",
+            "content": "Você digitou o PIN correto e agora possui acesso exclusivo aos materiais e enquetes desta sessão."
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll_treinamento_1",
+          "question": "Qual modalidade de segurança você considera mais prática para seus eventos?",
+          "options": [
+            { "id": "A", "text": "Acesso 100% Público (Aberto)" },
+            { "id": "B", "text": "PIN de 4 dígitos informado no palco" },
+            { "id": "C", "text": "Usuário e Senha Locais (Offline)" },
+            { "id": "D", "text": "Google Workspace corporativo (@empresa.com.br)" }
+          ]
+        }
+      }
+    }
+  ]
+}

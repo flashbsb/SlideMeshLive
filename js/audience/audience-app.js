@@ -46,7 +46,18 @@ class AudienceApp {
       authModal: document.getElementById('auth-modal'),
       btnCloseAuthModal: document.getElementById('btn-close-auth-modal'),
       btnGoogleLogin: document.getElementById('btn-google-login'),
-      
+      btnLocalLogin: document.getElementById('btn-local-login'),
+      inputLocalUsername: document.getElementById('input-local-username'),
+      inputLocalPassword: document.getElementById('input-local-password'),
+      localLoginError: document.getElementById('local-login-error'),
+
+      // Session PIN modal
+      sessionPinModal: document.getElementById('session-pin-modal'),
+      sessionPinHint: document.getElementById('session-pin-hint'),
+      inputSessionPin: document.getElementById('input-session-pin'),
+      sessionPinError: document.getElementById('session-pin-error'),
+      btnSubmitSessionPin: document.getElementById('btn-submit-session-pin'),
+
       // Profile modal elements
       profileModal: document.getElementById('profile-modal'),
       btnCloseProfileModal: document.getElementById('btn-close-profile-modal'),
@@ -88,6 +99,8 @@ class AudienceApp {
       await this.engine.loadPresentation(this.presentationId);
       this.dom.headerTitle.textContent = this.engine.manifest.title || 'Apresentação';
       
+      this.checkPresentationAccess();
+
       this.realtime.startPresence(this.sessionId, false, this.auth.user);
 
       this.realtime.subscribeToSession(this.sessionId, (sessionState) => {
@@ -351,6 +364,59 @@ class AudienceApp {
     }).join('');
   }
 
+  checkPresentationAccess() {
+    const check = this.auth.isAuthorizedForPresentation(this.engine.manifest);
+    if (!check.authorized) {
+      if (check.reason === 'PIN_REQUIRED') {
+        if (this.dom.sessionPinHint) this.dom.sessionPinHint.textContent = check.hint;
+        if (this.dom.sessionPinModal) this.dom.sessionPinModal.classList.add('active');
+      } else if (check.reason === 'AUTH_REQUIRED' || check.reason === 'DOMAIN_FORBIDDEN') {
+        if (this.dom.authModal) this.dom.authModal.classList.add('active');
+        if (check.message) alert(check.message);
+      }
+    } else {
+      if (this.dom.sessionPinModal) this.dom.sessionPinModal.classList.remove('active');
+    }
+  }
+
+  async handleLocalLogin() {
+    const u = this.dom.inputLocalUsername ? this.dom.inputLocalUsername.value : '';
+    const p = this.dom.inputLocalPassword ? this.dom.inputLocalPassword.value : '';
+
+    try {
+      if (this.dom.btnLocalLogin) {
+        this.dom.btnLocalLogin.disabled = true;
+        this.dom.btnLocalLogin.textContent = 'Autenticando...';
+      }
+      await this.auth.signInWithLocalCredentials(u, p);
+      if (this.dom.localLoginError) this.dom.localLoginError.style.display = 'none';
+      this.closeAuthModal();
+      this.checkPresentationAccess();
+    } catch (err) {
+      if (this.dom.localLoginError) {
+        this.dom.localLoginError.style.display = 'block';
+        this.dom.localLoginError.textContent = `✕ ${err.message}`;
+      }
+    } finally {
+      if (this.dom.btnLocalLogin) {
+        this.dom.btnLocalLogin.disabled = false;
+        this.dom.btnLocalLogin.textContent = '👤 Entrar com Conta Local';
+      }
+    }
+  }
+
+  handleSessionPinSubmit() {
+    const entered = this.dom.inputSessionPin ? this.dom.inputSessionPin.value : '';
+    const check = this.auth.isAuthorizedForPresentation(this.engine.manifest, entered);
+    if (check.authorized) {
+      if (this.dom.sessionPinModal) this.dom.sessionPinModal.classList.remove('active');
+      if (this.dom.sessionPinError) this.dom.sessionPinError.style.display = 'none';
+      this.updateView();
+    } else {
+      if (this.dom.sessionPinError) this.dom.sessionPinError.style.display = 'block';
+    }
+  }
+
   bindEvents() {
     if (this.dom.authStatusBtn) {
       this.dom.authStatusBtn.addEventListener('click', () => {
@@ -370,6 +436,26 @@ class AudienceApp {
       this.dom.btnCloseProfileModal.addEventListener('click', () => this.closeProfileModal());
     }
 
+    // Login Offline / Local
+    if (this.dom.btnLocalLogin) {
+      this.dom.btnLocalLogin.addEventListener('click', () => this.handleLocalLogin());
+    }
+    if (this.dom.inputLocalPassword) {
+      this.dom.inputLocalPassword.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') this.handleLocalLogin();
+      });
+    }
+
+    // PIN de Apresentação
+    if (this.dom.btnSubmitSessionPin) {
+      this.dom.btnSubmitSessionPin.addEventListener('click', () => this.handleSessionPinSubmit());
+    }
+    if (this.dom.inputSessionPin) {
+      this.dom.inputSessionPin.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') this.handleSessionPinSubmit();
+      });
+    }
+
     if (this.dom.btnGoogleLogin) {
       this.dom.btnGoogleLogin.addEventListener('click', async () => {
         try {
@@ -377,6 +463,7 @@ class AudienceApp {
           this.dom.btnGoogleLogin.textContent = 'Autenticando...';
           await this.auth.signInWithGoogle();
           this.closeAuthModal();
+          this.checkPresentationAccess();
         } catch (err) {
           alert('Erro ao autenticar com Google: ' + err.message);
         } finally {
@@ -388,7 +475,7 @@ class AudienceApp {
               <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/>
               <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
             </svg>
-            <span>Continuar com Google</span>
+            <span>Continuar com Google (Online)</span>
           `;
         }
       });
@@ -398,6 +485,7 @@ class AudienceApp {
       this.dom.btnLogout.addEventListener('click', async () => {
         await this.auth.signOut();
         this.closeProfileModal();
+        this.checkPresentationAccess();
       });
     }
 

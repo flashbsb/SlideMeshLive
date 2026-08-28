@@ -1,0 +1,113 @@
+# ==============================================================================
+# .gitignore — Plataforma de Apresentação HTML Interativa
+# Proteção de credenciais, arquivos sensíveis e temporários para o GitHub
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. SEGURANÇA, CREDENCIAIS E CONTAS SENSÍVEIS
+# ------------------------------------------------------------------------------
+# Arquivo com senhas, PINs e e-mails reais de produção
+config/security.json
+config/security.local.json
+config/admin-keys.json
+
+# Arquivos de ambiente e variáveis locais
+.env
+.env.*
+!.env.example
+*.env
+
+# Chaves de API, Certificados e Contas de Serviço (Firebase / GCP / AWS / SSH)
+service-account*.json
+firebase-adminsdk*.json
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+
+# Configurações com credenciais privadas locais
+js/config.local.js
+config.local.js
+
+# ------------------------------------------------------------------------------
+# 2. ARQUIVOS DE EXPORTAÇÃO E DADOS ANALÍTICOS LOCAIS
+# ------------------------------------------------------------------------------
+# Relatórios exportados pelo Painel do Moderador
+export_*.json
+apresentacao_export_*.json
+relatorio_*.json
+*.sqlite
+*.db
+
+# ------------------------------------------------------------------------------
+# 3. LOGS, CACHES E ARQUIVOS TEMPORÁRIOS
+# ------------------------------------------------------------------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.cache/
+.temp/
+.tmp/
+tmp/
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+
+# ------------------------------------------------------------------------------
+# 4. DEPENDÊNCIAS E BUILDS
+# ------------------------------------------------------------------------------
+node_modules/
+dist/
+build/
+out/
+.package/
+
+# ------------------------------------------------------------------------------
+# 5. ARQUIVOS DE SISTEMA OPERACIONAL
+# ------------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+.Trash-*
+.fuse_hidden*
+
+# ------------------------------------------------------------------------------
+# 6. IDES, EDITORES E AMBIENTES DE DESENVOLVIMENTO
+# ------------------------------------------------------------------------------
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.iml
+*.iws
+*.ipr
+.project
+.settings/
+.classpath
+*.sublime-project
+*.sublime-workspace

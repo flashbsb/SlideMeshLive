@@ -1,9 +1,11 @@
 /**
- * Authentication Engine
+ * Authentication & Security Engine
  * Plataforma de Apresentação HTML Interativa
  * 
- * Gerencia a autenticação de participantes e apresentadores via Firebase Authentication
- * (Google Sign-In) com suporte a perfil anônimo técnico para privacidade do público.
+ * Gerencia autenticação híbrida:
+ * 1. Online: Google Sign-In via Firebase Auth.
+ * 2. Offline / Local: Contas e senhas locais configuradas em config/security.json.
+ * 3. Mesa Técnica: PIN de segurança e Whitelist de administradores.
  */
 
 import { APP_CONFIG } from '../config.js';
@@ -15,13 +17,14 @@ export class AuthEngine {
     this.currentUser = null;
     this.isFirebaseReady = false;
     this.authListeners = [];
+    this.securityConfig = null;
 
     this.init();
   }
 
   async init() {
-    // Recupera usuário autenticado em cache local/session
     this._loadCachedUser();
+    await this.loadSecurityConfig();
 
     const isFirebaseConfigured = this.config.firebase && 
       this.config.firebase.apiKey && 
@@ -39,7 +42,6 @@ export class AuthEngine {
         this.firebaseAuthFns = { signInWithPopup, signOut, onAuthStateChanged };
         this.isFirebaseReady = true;
 
-        // Monitora mudanças de autenticação reais no Firebase
         this.firebaseAuthFns.onAuthStateChanged(this.auth, (user) => {
           if (user) {
             const participantUser = {
@@ -48,20 +50,42 @@ export class AuthEngine {
               displayName: user.displayName || 'Participante',
               anonymousAlias: this._generateAnonymousAlias(user.uid),
               provider: 'google',
-              photoURL: user.photoURL
+              photoURL: user.photoURL,
+              role: this.isEmailAdmin(user.email) ? 'admin' : 'participant'
             };
             this._setCurrentUser(participantUser);
           } else {
-            this._setCurrentUser(null);
+            // Se não houver user Firebase mas houver local auth, não sobrescreve
+            if (this.currentUser && this.currentUser.provider !== 'local') {
+              this._setCurrentUser(null);
+            }
           }
         });
-        console.log('[AuthEngine] Firebase Authentication inicializado com sucesso.');
       } catch (err) {
-        console.warn('[AuthEngine] Firebase Auth não conectado, utilizando modo de autenticação simulado:', err);
+        console.warn('[AuthEngine] Firebase Auth indisponível, modo local ativo:', err);
         this.isFirebaseReady = false;
       }
-    } else {
-      console.log('[AuthEngine] Modo Local / Simulação de Google Auth ativo.');
+    }
+  }
+
+  /**
+   * Carrega a configuração declarativa de segurança (config/security.json)
+   */
+  async loadSecurityConfig() {
+    try {
+      const basePath = window.location.pathname.includes('/presenter') || 
+                       window.location.pathname.includes('/admin') || 
+                       window.location.pathname.includes('/audience') ? '../' : './';
+      const res = await fetch(`${basePath}config/security.json?t=${Date.now()}`);
+      if (res.ok) {
+        this.securityConfig = await res.json();
+      }
+    } catch (e) {
+      console.warn('[AuthEngine] config/security.json não encontrado, usando padrões.');
+      this.securityConfig = {
+        admin: { pin: "2026", allowedEmails: [], users: [] },
+        offlineAudience: { enabled: true, users: [] }
+      };
     }
   }
 
@@ -96,7 +120,6 @@ export class AuthEngine {
   }
 
   _generateAnonymousAlias(uid) {
-    // Gera um código simples como "Participante #83" com base nos últimos dígitos do UID
     let hash = 0;
     for (let i = 0; i < uid.length; i++) {
       hash = ((hash << 5) - hash) + uid.charCodeAt(i);
@@ -115,7 +138,84 @@ export class AuthEngine {
   }
 
   /**
-   * Realiza login com Google (Firebase real ou Fallback Local imediato)
+   * Verifica se um e-mail está na lista de administradores
+   */
+  isEmailAdmin(email) {
+    if (!email || !this.securityConfig || !this.securityConfig.admin) return false;
+    const allowed = this.securityConfig.admin.allowedEmails || [];
+    return allowed.some(a => a.toLowerCase() === email.toLowerCase());
+  }
+
+  /**
+   * Valida PIN de Mesa Técnica / Admin
+   */
+  verifyAdminPIN(pin) {
+    if (!this.securityConfig || !this.securityConfig.admin) return pin === '2026';
+    const correctPin = String(this.securityConfig.admin.pin || '2026');
+    const valid = (String(pin).trim() === correctPin.trim());
+    if (valid) {
+      sessionStorage.setItem('admin_pin_authenticated', 'true');
+    }
+    return valid;
+  }
+
+  isAdminAuthenticated() {
+    const isPinAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true';
+    const isRoleAdmin = this.currentUser && (this.currentUser.role === 'admin' || this.isEmailAdmin(this.currentUser.email));
+    return isPinAuth || isRoleAdmin;
+  }
+
+  /**
+   * Realiza login com Usuário e Senha Local (100% Offline)
+   */
+  async signInWithLocalCredentials(username, password) {
+    if (!this.securityConfig) await this.loadSecurityConfig();
+
+    const u = String(username).trim();
+    const p = String(password).trim();
+
+    // 1. Verifica usuários administradores locais
+    const adminUsers = (this.securityConfig && this.securityConfig.admin && this.securityConfig.admin.users) || [];
+    const adminMatch = adminUsers.find(acc => acc.username.toLowerCase() === u.toLowerCase() && acc.password === p);
+
+    if (adminMatch) {
+      const localUser = {
+        uid: 'local_adm_' + adminMatch.username,
+        email: `${adminMatch.username}@local`,
+        displayName: adminMatch.name || adminMatch.username,
+        anonymousAlias: adminMatch.name || adminMatch.username,
+        provider: 'local',
+        role: adminMatch.role || 'admin',
+        photoURL: null
+      };
+      this._setCurrentUser(localUser);
+      sessionStorage.setItem('admin_pin_authenticated', 'true');
+      return localUser;
+    }
+
+    // 2. Verifica usuários da audiência offline
+    const audienceUsers = (this.securityConfig && this.securityConfig.offlineAudience && this.securityConfig.offlineAudience.users) || [];
+    const audienceMatch = audienceUsers.find(acc => acc.username.toLowerCase() === u.toLowerCase() && acc.password === p);
+
+    if (audienceMatch) {
+      const localUser = {
+        uid: 'local_aud_' + audienceMatch.username,
+        email: `${audienceMatch.username}@local`,
+        displayName: audienceMatch.name || audienceMatch.username,
+        anonymousAlias: audienceMatch.name || this._generateAnonymousAlias(audienceMatch.username),
+        provider: 'local',
+        role: 'participant',
+        photoURL: null
+      };
+      this._setCurrentUser(localUser);
+      return localUser;
+    }
+
+    throw new Error('Usuário ou senha incorretos.');
+  }
+
+  /**
+   * Realiza login com Google
    */
   async signInWithGoogle() {
     if (this.isFirebaseReady && this.auth) {
@@ -128,23 +228,24 @@ export class AuthEngine {
           displayName: user.displayName || 'Participante',
           anonymousAlias: this._generateAnonymousAlias(user.uid),
           provider: 'google',
-          photoURL: user.photoURL
+          photoURL: user.photoURL,
+          role: this.isEmailAdmin(user.email) ? 'admin' : 'participant'
         };
         this._setCurrentUser(participantUser);
         return participantUser;
       } catch (err) {
-        console.error('[AuthEngine] Erro ao autenticar no Google Firebase:', err);
+        console.error('[AuthEngine] Erro ao autenticar no Google:', err);
         throw err;
       }
     } else {
-      // Modo Local / Simulação amigável de Google Sign-In
       const mockUid = 'goog_' + Math.random().toString(36).substring(2, 12);
       const mockUser = {
         uid: mockUid,
-        email: 'usuario.demo@gmail.com',
-        displayName: 'Participante Conectado',
+        email: 'usuario.demo@empresa.com.br',
+        displayName: 'Participante Google',
         anonymousAlias: this._generateAnonymousAlias(mockUid),
         provider: 'google_mock',
+        role: 'participant',
         photoURL: null
       };
       this._setCurrentUser(mockUser);
@@ -153,22 +254,66 @@ export class AuthEngine {
   }
 
   /**
-   * Realiza logout
+   * Valida se o usuário tem permissão para acessar a apresentação
    */
+  isAuthorizedForPresentation(manifest, sessionPin = null) {
+    if (!manifest || !manifest.security) return { authorized: true };
+
+    const sec = manifest.security;
+    const mode = sec.mode || 'public';
+
+    if (mode === 'public') {
+      return { authorized: true };
+    }
+
+    if (mode === 'pin') {
+      const savedPin = sessionStorage.getItem(`pres_pin_${manifest.id}`);
+      const entered = sessionPin || savedPin;
+      if (entered && String(entered).trim() === String(sec.pin).trim()) {
+        sessionStorage.setItem(`pres_pin_${manifest.id}`, entered);
+        return { authorized: true };
+      }
+      return { authorized: false, reason: 'PIN_REQUIRED', hint: sec.pinHint || 'Digite o PIN da apresentação' };
+    }
+
+    if (mode === 'restricted') {
+      if (!this.isAuthenticated || !this.currentUser) {
+        return { authorized: false, reason: 'AUTH_REQUIRED' };
+      }
+
+      // Permite administradores e usuários locais
+      if (this.currentUser.role === 'admin' || this.currentUser.provider === 'local') {
+        return { authorized: true };
+      }
+
+      // Valida domínios de e-mail permitidos
+      const email = this.currentUser.email || '';
+      const domain = email.split('@')[1] || '';
+      const allowedDomains = sec.allowedDomains || [];
+
+      if (allowedDomains.some(d => d.toLowerCase() === domain.toLowerCase())) {
+        return { authorized: true };
+      }
+
+      return { authorized: false, reason: 'DOMAIN_FORBIDDEN', message: `Acesso restrito aos domínios: ${allowedDomains.join(', ')}` };
+    }
+
+    return { authorized: true };
+  }
+
   async signOut() {
     if (this.isFirebaseReady && this.auth) {
       try {
         await this.firebaseAuthFns.signOut(this.auth);
       } catch (e) {}
     }
+    sessionStorage.removeItem('admin_pin_authenticated');
     this._setCurrentUser(null);
   }
 
   onAuthStateChanged(callback) {
     this.authListeners.push(callback);
-    // Executa imediatamente com o estado atual
     callback(this.currentUser);
-
     return () => {
       this.authListeners = this.authListeners.filter(cb => cb !== callback);
     };

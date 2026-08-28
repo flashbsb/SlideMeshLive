@@ -1,0 +1,17 @@
+{
+  "id": "treinamento-interno-pin",
+  "title": "Treinamento Técnico Interno (Protegido por PIN)",
+  "subtitle": "Exemplo de Apresentação com Acesso Restrito",
+  "version": "1.0.0",
+  "author": "Coordenação de Treinamento",
+  "description": "Apresentação demonstrativa que exige PIN do evento para liberar a visualização dos slides no smartphone.",
+  "theme": {
+    "primaryColor": "#10b981",
+    "accentColor": "#6366f1"
+  },
+  "security": {
+    "mode": "pin",
+    "pin": "7482",
+    "pinHint": "Digite o código de 4 dígitos informado pelo palestrante (PIN: 7482)"
+  }
+}
