@@ -46,7 +46,9 @@ class PresenterApp {
       qrContainer: document.getElementById('qr-code-box'),
       sessionCodeDisplay: document.getElementById('session-code-display'),
       audienceLink: document.getElementById('audience-direct-link'),
-      btnToggleQR: document.getElementById('btn-toggle-qr'),
+      btnToggleMiniQR: document.getElementById('btn-toggle-mini-qr'),
+      btnHideMiniQR: document.getElementById('btn-hide-mini-qr'),
+      btnMaximizeQR: document.getElementById('btn-maximize-qr'),
 
       // Large QR Modal
       qrCenterModal: document.getElementById('qr-center-modal'),
@@ -386,6 +388,17 @@ class PresenterApp {
     );
   }
 
+  toggleMiniQRWidget(forceState = null) {
+    if (!this.dom.qrWidget) return;
+    const isHidden = (this.dom.qrWidget.style.display === 'none');
+    const newState = (forceState !== null) ? forceState : isHidden;
+    this.dom.qrWidget.style.display = newState ? 'flex' : 'none';
+    if (this.dom.btnToggleMiniQR) {
+      this.dom.btnToggleMiniQR.textContent = newState ? '🔲 QR Rodapé (W)' : '🔲 Exibir QR (W)';
+      this.dom.btnToggleMiniQR.style.color = newState ? 'var(--text-secondary)' : '#38bdf8';
+    }
+  }
+
   toggleLargeQRModal(forceState = null) {
     if (!this.dom.qrCenterModal) return;
     const isVisible = (this.dom.qrCenterModal.style.display === 'flex');
@@ -466,6 +479,9 @@ class PresenterApp {
       } else if (e.key.toLowerCase() === 'q') {
         e.preventDefault();
         this.toggleLargeQRModal();
+      } else if (e.key.toLowerCase() === 'w') {
+        e.preventDefault();
+        this.toggleMiniQRWidget();
       } else if (e.key.toLowerCase() === 'v') {
         e.preventDefault();
         await this.toggleCurrentPoll();
@@ -486,6 +502,18 @@ class PresenterApp {
 
     if (this.dom.btnCloseLargeQR) {
       this.dom.btnCloseLargeQR.addEventListener('click', () => this.toggleLargeQRModal(false));
+    }
+
+    if (this.dom.btnToggleMiniQR) {
+      this.dom.btnToggleMiniQR.addEventListener('click', () => this.toggleMiniQRWidget());
+    }
+
+    if (this.dom.btnHideMiniQR) {
+      this.dom.btnHideMiniQR.addEventListener('click', () => this.toggleMiniQRWidget(false));
+    }
+
+    if (this.dom.btnMaximizeQR) {
+      this.dom.btnMaximizeQR.addEventListener('click', () => this.toggleLargeQRModal(true));
     }
 
     if (this.dom.btnStagePollToggle) {

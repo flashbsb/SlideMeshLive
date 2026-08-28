@@ -38,7 +38,11 @@
     <!-- Atalhos e Alternância de Modo -->
     <div style="display: flex; align-items: center; gap: 10px;">
       <button class="btn btn-sm" id="btn-toggle-large-qr" style="border-color: rgba(56,189,248,0.4); color: #7dd3fc;" title="Projetar QR Code Gigante no Centro da Tela (Atalho: Q)">
-        📱 QR Code (Q)
+        📱 QR Gigante (Q)
+      </button>
+
+      <button class="btn btn-sm" id="btn-toggle-mini-qr" style="border-color: var(--border-subtle); color: var(--text-secondary);" title="Exibir / Ocultar Mini-Widget de QR no Rodapé (Atalho: W)">
+        🔲 QR Rodapé (W)
       </button>
 
       <button class="btn btn-sm" id="btn-toggle-pulpit" title="Alternar visão com Notas do Orador no Notebook">
@@ -72,7 +76,7 @@
         Nenhuma nota para este slide.
       </div>
       <div style="padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: 11px; color: var(--text-muted);">
-        💡 Use <strong>← / →</strong> para navegar, <strong>V</strong> para votação, <strong>R</strong> para resultados, <strong>B</strong> para blackout.
+        💡 Use <strong>← / →</strong> para navegar, <strong>Q</strong> para QR Gigante, <strong>W</strong> para ocultar/mostrar QR Rodapé, <strong>V</strong> para votação, <strong>R</strong> para resultados, <strong>B</strong> para blackout.
       </div>
     </aside>
 
@@ -110,11 +114,16 @@
       <div class="qr-info-text">
         <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--accent-primary);">Acompanhe pelo Celular</div>
         <div style="font-size: 11px; font-weight: 600; color: #ffffff;" id="audience-direct-link">app.online</div>
-        <div style="font-size: 9.5px; color: var(--text-muted); margin-top: 2px;">Atalho [Q] para ampliar</div>
+        <div style="font-size: 9.5px; color: var(--text-muted); margin-top: 2px;">Atalho [Q] amplia • [W] oculta</div>
       </div>
-      <button class="btn btn-sm" id="btn-toggle-qr" style="padding: 4px 6px; font-size: 11px;" title="Recolher / Expandir QR Code">
-        ⇲
-      </button>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <button class="btn btn-sm" id="btn-maximize-qr" style="padding: 2px 6px; font-size: 11px;" title="Ampliar no Centro (Q)">
+          ⛶
+        </button>
+        <button class="btn btn-sm" id="btn-hide-mini-qr" style="padding: 2px 6px; font-size: 11px; color: #94a3b8;" title="Ocultar do Palco (W)">
+          ✕
+        </button>
+      </div>
     </div>
 
     <!-- Modal Central Gigante de QR Code no Telão (Atalho: Tecla Q) -->

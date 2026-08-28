@@ -239,7 +239,8 @@ A plataforma é **100% multi-apresentação**. Para cadastrar uma nova apresenta
 | :--- | :--- |
 | **`→`** / **`Espaço`** / **`PageDown`** | Avançar para o próximo slide |
 | **`←`** / **`PageUp`** | Voltar ao slide anterior |
-| **`Q`** | Abrir / Fechar o **Modal Central Gigante de QR Code** (300x300px) |
+| **`Q`** | Abrir / Fechar o **Modal Central Gigante de QR Code** (280x280px) |
+| **`W`** | **Exibir / Ocultar o Mini-Widget de QR Code** do rodapé (ganhar espaço) |
 | **`V`** | **Abrir / Encerrar Votação** da enquete do slide atual |
 | **`R`** | **Revelar / Ocultar Resultados** com gráficos animados no telão |
 | **`B`** | Modo **Blackout** (tela preta para focar a atenção no palestrante) |

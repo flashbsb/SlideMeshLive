@@ -37,6 +37,8 @@ class AdminApp {
       btnPublishAnalytics: document.getElementById('admin-btn-publish-analytics'),
       qrBox: document.getElementById('admin-qr-box'),
       audienceLink: document.getElementById('admin-audience-link'),
+      linkPresenter: document.getElementById('admin-link-presenter'),
+      linkAudienceHeader: document.getElementById('admin-link-audience'),
       connectionStatus: document.getElementById('admin-connection-status'),
       statusDot: document.getElementById('admin-status-dot'),
       
@@ -145,6 +147,12 @@ class AdminApp {
     if (this.dom.audienceLink) {
       this.dom.audienceLink.href = audienceUrl;
       this.dom.audienceLink.textContent = audienceUrl;
+    }
+    if (this.dom.linkAudienceHeader) {
+      this.dom.linkAudienceHeader.href = audienceUrl;
+    }
+    if (this.dom.linkPresenter) {
+      this.dom.linkPresenter.href = `../presenter/?presentation=${encodeURIComponent(this.presentationId)}&session=${encodeURIComponent(this.sessionId)}`;
     }
     QREngine.renderQR(this.dom.qrBox, audienceUrl);
   }
@@ -378,12 +386,12 @@ class AdminApp {
   openHistoryModal() {
     if (!this.dom.historyModal) return;
     this.renderHistorySessionsList();
-    this.dom.historyModal.style.display = 'flex';
+    this.dom.historyModal.classList.add('active');
   }
 
   closeHistoryModal() {
     if (this.dom.historyModal) {
-      this.dom.historyModal.style.display = 'none';
+      this.dom.historyModal.classList.remove('active');
     }
   }
 
@@ -431,13 +439,13 @@ class AdminApp {
   openNewSessionModal() {
     if (this.dom.newSessionModal) {
       if (this.dom.inputNewSessionCode) this.dom.inputNewSessionCode.value = '';
-      this.dom.newSessionModal.style.display = 'flex';
+      this.dom.newSessionModal.classList.add('active');
     }
   }
 
   closeNewSessionModal() {
     if (this.dom.newSessionModal) {
-      this.dom.newSessionModal.style.display = 'none';
+      this.dom.newSessionModal.classList.remove('active');
     }
   }
 
@@ -469,6 +477,11 @@ class AdminApp {
     if (this.dom.btnDoneHistory) {
       this.dom.btnDoneHistory.addEventListener('click', () => this.closeHistoryModal());
     }
+    if (this.dom.historyModal) {
+      this.dom.historyModal.addEventListener('click', (e) => {
+        if (e.target === this.dom.historyModal) this.closeHistoryModal();
+      });
+    }
 
     // Modal de Nova Sessão
     if (this.dom.btnNewSession) {
@@ -476,6 +489,11 @@ class AdminApp {
     }
     if (this.dom.btnCloseNewSessionModal) {
       this.dom.btnCloseNewSessionModal.addEventListener('click', () => this.closeNewSessionModal());
+    }
+    if (this.dom.newSessionModal) {
+      this.dom.newSessionModal.addEventListener('click', (e) => {
+        if (e.target === this.dom.newSessionModal) this.closeNewSessionModal();
+      });
     }
 
     // Confirmar criação de nova sessão

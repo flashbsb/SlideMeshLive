@@ -119,7 +119,7 @@ export class PresentationEngine {
   /**
    * Renderiza o slide atual para a visão do Apresentador
    */
-  renderPresenterSlide(containerElement, notesElement = null) {
+  renderPresenterSlide(containerElement, notesElement = null, pollRenderData = null) {
     const slide = this.currentSlide;
     if (!slide || !containerElement) return;
 
@@ -134,20 +134,55 @@ export class PresentationEngine {
     let presenterPollHtml = '';
     if (slide.interaction && slide.interaction.poll) {
       const poll = slide.interaction.poll;
-      presenterPollHtml = `
-        <div class="presenter-poll-box animate-fade-in" id="presenter-poll-box-${poll.id}">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <span class="badge badge-accent">📊 Enquete do Slide</span>
-              <span class="badge" id="presenter-poll-badge-${poll.id}">VOTAÇÃO</span>
+      const pollStatus = (pollRenderData && pollRenderData.pollStatus) || 'open';
+      const showResults = !!(pollRenderData && pollRenderData.showResults);
+      const results = (pollRenderData && pollRenderData.results) || null;
+      const totalVotes = results ? results.totalVotes : 0;
+
+      let pollBodyHtml = '';
+      if (showResults && results) {
+        // Exibe gráficos de barras no telão
+        pollBodyHtml = results.options.map(opt => `
+          <div style="margin-bottom: 12px;" class="animate-fade-in">
+            <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px;">
+              <span style="color: #ffffff; font-weight: 600;">${opt.id}. ${opt.text}</span>
+              <strong style="color: var(--accent-primary); font-family: var(--font-mono); font-size: 15px;">${opt.percentage}% (${opt.votes})</strong>
             </div>
-            <div style="font-size: 13px; color: var(--accent-primary); font-weight: 600;" id="presenter-poll-vote-count-${poll.id}">
-              0 votos registrados
+            <div class="poll-progress-track" style="height: 10px; background: rgba(255,255,255,0.08); border-radius: 5px;">
+              <div class="poll-progress-fill" style="width: ${opt.percentage}%; background: linear-gradient(90deg, var(--accent-primary) 0%, #38bdf8 100%); border-radius: 5px;"></div>
             </div>
           </div>
-          <h3 style="font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 18px;">${poll.question}</h3>
-          <div id="presenter-poll-results-${poll.id}">
-            <!-- Resultados ou lista de opções -->
+        `).join('');
+      } else {
+        // Exibe lista de opções legíveis no telão
+        pollBodyHtml = `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+            ${poll.options.map(opt => `
+              <div style="background: rgba(15,23,42,0.7); border: 1px solid var(--border-subtle); padding: 12px 16px; border-radius: var(--radius-md); display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-accent" style="font-size: 12px; font-weight: 700; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; padding: 0;">${opt.id}</span>
+                <span style="font-size: 14px; font-weight: 600; color: #e2e8f0;">${opt.text}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      presenterPollHtml = `
+        <div class="presenter-poll-box animate-fade-in" id="presenter-poll-box-${poll.id}" style="margin-top: 24px; background: rgba(15,23,42,0.85); border: 1.5px solid ${showResults ? 'var(--accent-primary)' : 'var(--border-subtle)'}; border-radius: var(--radius-lg); padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="badge ${pollStatus === 'open' ? 'badge-accent' : ''}">
+                ${pollStatus === 'open' ? '🟢 VOTAÇÃO ABERTA' : '🔴 VOTAÇÃO ENCERRADA'}
+              </span>
+              ${showResults ? '<span class="badge badge-live">📊 RESULTADOS REVELADOS</span>' : '<span style="font-size: 11.5px; color: var(--text-muted);">Votação em andamento pelo celular</span>'}
+            </div>
+            <div style="font-size: 13.5px; color: var(--accent-primary); font-weight: 700; font-family: var(--font-mono);">
+              ${totalVotes} voto(s) computados
+            </div>
+          </div>
+          <h3 style="font-size: 19px; font-weight: 700; color: #ffffff; margin-bottom: 16px;">${poll.question}</h3>
+          <div>
+            ${pollBodyHtml}
           </div>
         </div>
       `;

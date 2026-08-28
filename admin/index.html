@@ -46,10 +46,10 @@
         🚀 Nova Sessão
       </button>
 
-      <a href="../presenter/?presentation=sdwan-cpe-unificado&session=SDWAN2026" target="_blank" class="btn btn-sm btn-primary">
+      <a href="#" id="admin-link-presenter" target="_blank" class="btn btn-sm btn-primary" title="Abrir Telão do Apresentador para a Sessão Ativa">
         🖥️ Telão
       </a>
-      <a href="../audience/?presentation=sdwan-cpe-unificado&session=SDWAN2026" target="_blank" class="btn btn-sm">
+      <a href="#" id="admin-link-audience" target="_blank" class="btn btn-sm" title="Abrir Visão do Participante no Celular para a Sessão Ativa">
         📱 Celular
       </a>
     </div>
@@ -168,7 +168,7 @@
   </main>
 
   <!-- Modal de Histórico de Apresentações Anteriores -->
-  <div class="modal-overlay" id="history-modal" style="display: none;">
+  <div class="modal-overlay" id="history-modal">
     <div class="modal-container" style="max-width: 750px;">
       <button class="modal-close-btn" id="btn-close-history-modal">&times;</button>
       <h3 style="font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">📚 Histórico de Apresentações Realizadas</h3>
@@ -192,7 +192,7 @@
   </div>
 
   <!-- Modal para Iniciar Nova Apresentação Limpa -->
-  <div class="modal-overlay" id="new-session-modal" style="display: none;">
+  <div class="modal-overlay" id="new-session-modal">
     <div class="modal-container" style="max-width: 460px;">
       <button class="modal-close-btn" id="btn-close-new-session-modal">&times;</button>
       <h3 style="font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">🚀 Iniciar Nova Apresentação</h3>
