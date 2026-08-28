@@ -233,13 +233,28 @@ A plataforma é **100% multi-apresentação**. Para cadastrar uma nova apresenta
 
 ---
 
-## 7. Atalhos de Teclado do Apresentador
+## 7. Atalhos de Teclado no Telão do Apresentador
 
 | Tecla | Ação |
 | :--- | :--- |
 | **`→`** / **`Espaço`** / **`PageDown`** | Avançar para o próximo slide |
 | **`←`** / **`PageUp`** | Voltar ao slide anterior |
-| **`F`** | Alternar modo Tela Cheia (Fullscreen) |
+| **`Q`** | Abrir / Fechar o **Modal Central Gigante de QR Code** (300x300px) |
+| **`V`** | **Abrir / Encerrar Votação** da enquete do slide atual |
+| **`R`** | **Revelar / Ocultar Resultados** com gráficos animados no telão |
+| **`B`** | Modo **Blackout** (tela preta para focar a atenção no palestrante) |
+| **`F`** | Alternar modo **Tela Cheia** (Fullscreen) |
+| **`Esc`** | Fechar modal aberto (QR Code gigante) |
+
+---
+
+## 8. Gestão de Múltiplas Apresentações & Histórico
+
+O Painel do Moderador & Admin (`/admin/`) conta com gestão do ciclo de vida das apresentações:
+- **📚 Histórico de Sessões**: Lista todas as apresentações passadas com data, total de participantes, votos e perguntas.
+- **📥 Exportação Consolidada**: Download em JSON de relatórios de sessões individuais ou de todas as sessões combinadas.
+- **🗑️ Apagar Sessões Antigas**: Limpeza de dados antigos para manter o banco e o armazenamento organizados.
+- **🚀 Iniciar Nova Sessão Limpa**: Cria uma nova sessão com código personalizado (ex: `SDWAN_TURMA_B`), arquivando a anterior e reiniciando a plataforma com 0 votos, 0 perguntas e slide no início.
 
 ---
 

@@ -207,6 +207,61 @@ export class ModerationEngine {
   }
 
   /**
+   * Apresentador/Admin: Exclui permanentemente uma pergunta individual
+   */
+  async deleteQuestion(sessionId, questionId) {
+    const storageKey = `session_questions_${sessionId}`;
+    let questions = this.getQuestions(sessionId);
+    questions = questions.filter(q => q.id !== questionId);
+    localStorage.setItem(storageKey, JSON.stringify(questions));
+
+    // Notifica canais locais
+    if (this.realtime.channel) {
+      this.realtime.channel.postMessage({
+        type: 'QUESTION_STATUS_CHANGE',
+        sessionId: sessionId,
+        action: 'deleted',
+        questionId: questionId
+      });
+    }
+
+    // Atualiza Firebase se ativo
+    if (this.realtime.isFirebaseReady && window.firebase) {
+      try {
+        const db = window.firebase.database();
+        await db.ref(`sessions/${sessionId}/questions/${questionId}`).remove();
+      } catch (err) {
+        console.warn('Erro ao deletar pergunta no Firebase:', err);
+      }
+    }
+  }
+
+  /**
+   * Apresentador/Admin: Limpa todas as perguntas da sessão
+   */
+  async clearAllQuestions(sessionId) {
+    const storageKey = `session_questions_${sessionId}`;
+    localStorage.removeItem(storageKey);
+
+    if (this.realtime.channel) {
+      this.realtime.channel.postMessage({
+        type: 'QUESTION_STATUS_CHANGE',
+        sessionId: sessionId,
+        action: 'cleared_all'
+      });
+    }
+
+    if (this.realtime.isFirebaseReady && window.firebase) {
+      try {
+        const db = window.firebase.database();
+        await db.ref(`sessions/${sessionId}/questions`).remove();
+      } catch (err) {
+        console.warn('Erro ao limpar perguntas no Firebase:', err);
+      }
+    }
+  }
+
+  /**
    * Apresentador: Bloqueia ou desbloqueia um participante
    */
   toggleBlockUser(sessionId, uid) {

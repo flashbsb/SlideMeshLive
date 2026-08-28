@@ -11,6 +11,20 @@
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  transition: background var(--transition-normal);
+}
+
+/* Modo Blackout de Palco (Atalho: Tecla B) */
+.presenter-body.blackout-active .slide-canvas,
+.presenter-body.blackout-active .qr-stage-widget,
+.presenter-body.blackout-active .reaction-stream-container,
+.presenter-body.blackout-active .stage-poll-dock {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.presenter-body.blackout-active {
+  background-color: #000000 !important;
 }
 
 /* Header Minimalista do Telão */
@@ -28,13 +42,6 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: opacity var(--transition-normal);
-}
-
-.presenter-header.auto-hide {
-  opacity: 0.15;
-}
-.presenter-header.auto-hide:hover {
-  opacity: 1;
 }
 
 .presenter-title-area {
@@ -109,6 +116,47 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+/* Mini-Dock Flutuante de Controle de Enquete no Palco */
+.stage-poll-dock {
+  position: absolute;
+  bottom: 24px;
+  right: 28px;
+  z-index: 75;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px var(--accent-glow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Modal Central Gigante de QR Code no Telão */
+.qr-center-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 13, 26, 0.92);
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.qr-center-box {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px var(--accent-glow);
 }
 
 /* Widget Discreto de QR Code no Rodapé do Telão */

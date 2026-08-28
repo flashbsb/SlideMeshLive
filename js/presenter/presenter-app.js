@@ -1,6 +1,7 @@
 /**
  * Presenter & Clean Stage Application Controller
- * Coordena projeção em tela cheia limpa, atalhos de palco, cronômetro, QR Code retrátil e reações.
+ * Coordena projeção limpa no palco, controle de enquetes ao vivo, modal gigante de QR Code,
+ * atalhos de teclado (Q, V, R, B), cronômetro e reações.
  */
 
 import { PresentationEngine } from '../core/presentation-engine.js';
@@ -23,7 +24,7 @@ class PresenterApp {
 
     this.pollState = {
       activePollId: null,
-      pollStatus: 'draft',
+      pollStatus: 'open',
       showResults: false
     };
 
@@ -40,15 +41,30 @@ class PresenterApp {
       btnFullscreen: document.getElementById('btn-fullscreen'),
       btnTogglePulpit: document.getElementById('btn-toggle-pulpit'),
       
-      // QR Code Widget
+      // QR Code Widgets
       qrWidget: document.getElementById('qr-stage-widget'),
       qrContainer: document.getElementById('qr-code-box'),
       sessionCodeDisplay: document.getElementById('session-code-display'),
       audienceLink: document.getElementById('audience-direct-link'),
       btnToggleQR: document.getElementById('btn-toggle-qr'),
 
-      // Timer
+      // Large QR Modal
+      qrCenterModal: document.getElementById('qr-center-modal'),
+      qrLargeBox: document.getElementById('qr-large-box'),
+      qrLargeSessionCode: document.getElementById('qr-large-session-code'),
+      qrLargeUrlText: document.getElementById('qr-large-url-text'),
+      btnToggleLargeQR: document.getElementById('btn-toggle-large-qr'),
+      btnCloseLargeQR: document.getElementById('btn-close-large-qr'),
+
+      // Stage Poll Dock
+      stagePollDock: document.getElementById('stage-poll-dock'),
+      stagePollVotesCount: document.getElementById('stage-poll-votes-count'),
+      btnStagePollToggle: document.getElementById('btn-stage-poll-toggle'),
+      btnStageResultsToggle: document.getElementById('btn-stage-results-toggle'),
+
+      // Timer & Badges
       timerDisplay: document.getElementById('timer-display'),
+      badgeLiveStatus: document.getElementById('badge-live-status'),
 
       // Featured Question
       featuredBanner: document.getElementById('featured-question-banner'),
@@ -57,8 +73,7 @@ class PresenterApp {
       btnDismissFeatured: document.getElementById('btn-dismiss-featured'),
 
       // Reactions Stream
-      reactionStream: document.getElementById('reaction-stream'),
-      badgeLiveStatus: document.getElementById('badge-live-status')
+      reactionStream: document.getElementById('reaction-stream')
     };
 
     this.init();
@@ -76,7 +91,7 @@ class PresenterApp {
       await this.engine.loadPresentation(this.presentationId);
       this.dom.title.textContent = this.engine.manifest.title || 'Apresentação';
 
-      this.setupQRCode();
+      this.setupQRCodes();
       this.updateSlideView();
       await this.broadcastCurrentSlide();
 
@@ -93,7 +108,7 @@ class PresenterApp {
           if (!e.data || e.data.sessionId !== this.sessionId) return;
           if (e.data.type === 'REACTION_SENT') {
             this.spawnFloatingReaction(e.data.emoji);
-          } else if (e.data.type === 'VOTE_CAST') {
+          } else if (e.data.type === 'VOTE_CAST' || e.data.type === 'VOTE_RESET') {
             this.updateSlideView();
           } else if (e.data.type === 'QUESTION_STATUS_CHANGE') {
             this.checkFeaturedQuestion();
@@ -104,7 +119,7 @@ class PresenterApp {
       window.addEventListener('storage', (e) => {
         if (e.key && e.key.startsWith(`session_questions_${this.sessionId}`)) {
           this.checkFeaturedQuestion();
-        } else if (e.key && e.key.startsWith(`session_votes_${this.sessionId}`)) {
+        } else if (e.key && (e.key.startsWith(`session_votes_${this.sessionId}`) || e.key.startsWith(`vote_`))) {
           this.updateSlideView();
         }
       });
@@ -120,12 +135,25 @@ class PresenterApp {
     }
   }
 
-  setupQRCode() {
+  setupQRCodes() {
     const audienceUrl = QREngine.getAudienceUrl(this.presentationId, this.sessionId);
     if (this.dom.audienceLink) {
       this.dom.audienceLink.textContent = audienceUrl.replace(/^https?:\/\//, '');
     }
-    QREngine.renderQR(this.dom.qrContainer, audienceUrl);
+    if (this.dom.qrLargeUrlText) {
+      this.dom.qrLargeUrlText.textContent = audienceUrl;
+    }
+    if (this.dom.qrLargeSessionCode) {
+      this.dom.qrLargeSessionCode.textContent = `#${this.sessionId}`;
+    }
+
+    // Renderiza QR pequeno no rodapé
+    QREngine.renderQR(this.dom.qrContainer, audienceUrl, 144);
+
+    // Renderiza QR gigante central
+    if (this.dom.qrLargeBox) {
+      QREngine.renderQR(this.dom.qrLargeBox, audienceUrl, 250);
+    }
   }
 
   startPresentationTimer() {
@@ -202,7 +230,6 @@ class PresenterApp {
     bubble.className = 'floating-reaction-bubble';
     bubble.textContent = emoji || '👏';
     
-    // Pequena variação horizontal aleatória
     const offset = Math.floor(Math.random() * 60) - 30;
     bubble.style.right = `${20 + offset}px`;
 
@@ -213,7 +240,7 @@ class PresenterApp {
   }
 
   updateSlideView() {
-    // Se o Moderador ativou a projeção de Analytics Final
+    // Verifica se há projeção de Analytics Final
     const sessionRaw = localStorage.getItem(`session_state_${this.sessionId}`);
     let isFinalAnalytics = false;
     if (sessionRaw) {
@@ -225,6 +252,7 @@ class PresenterApp {
 
     if (isFinalAnalytics) {
       this.renderPresenterFinalAnalytics();
+      if (this.dom.stagePollDock) this.dom.stagePollDock.style.display = 'none';
       return;
     }
 
@@ -235,10 +263,33 @@ class PresenterApp {
       results: null
     };
 
+    // Atualiza Dock de Enquetes no Telão
     if (slide && slide.interaction && slide.interaction.poll) {
-      this.pollState.activePollId = slide.interaction.poll.id;
+      const poll = slide.interaction.poll;
+      this.pollState.activePollId = poll.id;
+      const res = this.interaction.computePollResults(this.sessionId, poll);
+      
       if (this.pollState.showResults) {
-        pollRenderData.results = this.interaction.computePollResults(this.sessionId, slide.interaction.poll);
+        pollRenderData.results = res;
+      }
+
+      if (this.dom.stagePollDock) {
+        this.dom.stagePollDock.style.display = 'flex';
+        if (this.dom.stagePollVotesCount) {
+          this.dom.stagePollVotesCount.textContent = `${res.totalVotes} voto(s)`;
+        }
+        if (this.dom.btnStagePollToggle) {
+          const isOpen = (this.pollState.pollStatus === 'open');
+          this.dom.btnStagePollToggle.textContent = isOpen ? '🔴 Encerrar Votação (V)' : '🟢 Abrir Votação (V)';
+          this.dom.btnStagePollToggle.style.color = isOpen ? '#fca5a5' : '#6ee7b7';
+        }
+        if (this.dom.btnStageResultsToggle) {
+          this.dom.btnStageResultsToggle.textContent = this.pollState.showResults ? '🙈 Ocultar Resultados (R)' : '📊 Revelar Resultados (R)';
+        }
+      }
+    } else {
+      if (this.dom.stagePollDock) {
+        this.dom.stagePollDock.style.display = 'none';
       }
     }
 
@@ -335,10 +386,41 @@ class PresenterApp {
     );
   }
 
-  toggleQRWidget() {
-    if (this.dom.qrWidget) {
-      this.dom.qrWidget.classList.toggle('collapsed');
+  toggleLargeQRModal(forceState = null) {
+    if (!this.dom.qrCenterModal) return;
+    const isVisible = (this.dom.qrCenterModal.style.display === 'flex');
+    const newState = (forceState !== null) ? forceState : !isVisible;
+    this.dom.qrCenterModal.style.display = newState ? 'flex' : 'none';
+  }
+
+  toggleBlackout() {
+    if (this.dom.root) {
+      this.dom.root.classList.toggle('blackout-active');
     }
+  }
+
+  async toggleCurrentPoll() {
+    const slide = this.engine.currentSlide;
+    if (!slide || !slide.interaction || !slide.interaction.poll) return;
+
+    const pollId = slide.interaction.poll.id;
+    const isOpen = (this.pollState.pollStatus === 'open');
+
+    if (isOpen) {
+      await this.interaction.closePoll(this.sessionId, pollId);
+    } else {
+      await this.interaction.openPoll(this.sessionId, pollId);
+    }
+    this.updateSlideView();
+  }
+
+  async toggleCurrentResults() {
+    const slide = this.engine.currentSlide;
+    if (!slide || !slide.interaction || !slide.interaction.poll) return;
+
+    const show = !this.pollState.showResults;
+    await this.interaction.toggleShowResults(this.sessionId, show);
+    this.updateSlideView();
   }
 
   togglePulpitMode() {
@@ -346,7 +428,7 @@ class PresenterApp {
       this.dom.root.classList.toggle('pulpit-mode');
       const isPulpit = this.dom.root.classList.contains('pulpit-mode');
       if (this.dom.btnTogglePulpit) {
-        this.dom.btnTogglePulpit.textContent = isPulpit ? '🖥️ Modo Telão' : '🎛️ Púlpito com Notas';
+        this.dom.btnTogglePulpit.textContent = isPulpit ? '🖥️ Modo Telão' : '🎛️ Púlpito';
       }
     }
   }
@@ -364,29 +446,55 @@ class PresenterApp {
   }
 
   bindEvents() {
-    // Atalhos de teclado para palco
-    window.addEventListener('keydown', (e) => {
-      // Ignora se estiver digitando em inputs
+    // Atalhos de teclado
+    window.addEventListener('keydown', async (e) => {
       if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
 
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
         e.preventDefault();
         this.engine.nextSlide();
-        this.broadcastCurrentSlide();
+        await this.broadcastCurrentSlide();
         this.updateSlideView();
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
         e.preventDefault();
         this.engine.prevSlide();
-        this.broadcastCurrentSlide();
+        await this.broadcastCurrentSlide();
         this.updateSlideView();
       } else if (e.key.toLowerCase() === 'f') {
         e.preventDefault();
         this.toggleFullscreen();
       } else if (e.key.toLowerCase() === 'q') {
         e.preventDefault();
-        this.toggleQRWidget();
+        this.toggleLargeQRModal();
+      } else if (e.key.toLowerCase() === 'v') {
+        e.preventDefault();
+        await this.toggleCurrentPoll();
+      } else if (e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        await this.toggleCurrentResults();
+      } else if (e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        this.toggleBlackout();
+      } else if (e.key === 'Escape') {
+        this.toggleLargeQRModal(false);
       }
     });
+
+    if (this.dom.btnToggleLargeQR) {
+      this.dom.btnToggleLargeQR.addEventListener('click', () => this.toggleLargeQRModal());
+    }
+
+    if (this.dom.btnCloseLargeQR) {
+      this.dom.btnCloseLargeQR.addEventListener('click', () => this.toggleLargeQRModal(false));
+    }
+
+    if (this.dom.btnStagePollToggle) {
+      this.dom.btnStagePollToggle.addEventListener('click', () => this.toggleCurrentPoll());
+    }
+
+    if (this.dom.btnStageResultsToggle) {
+      this.dom.btnStageResultsToggle.addEventListener('click', () => this.toggleCurrentResults());
+    }
 
     if (this.dom.btnTogglePulpit) {
       this.dom.btnTogglePulpit.addEventListener('click', () => this.togglePulpitMode());
@@ -394,10 +502,6 @@ class PresenterApp {
 
     if (this.dom.btnFullscreen) {
       this.dom.btnFullscreen.addEventListener('click', () => this.toggleFullscreen());
-    }
-
-    if (this.dom.btnToggleQR) {
-      this.dom.btnToggleQR.addEventListener('click', () => this.toggleQRWidget());
     }
 
     if (this.dom.btnDismissFeatured) {

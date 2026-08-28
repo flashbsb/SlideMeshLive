@@ -1,7 +1,7 @@
 /**
  * Admin & Moderator Application Controller
- * Coordena o console de moderação de perguntas, controle de enquetes com reset,
- * monitoramento de audiência ao vivo com banimento e projeção de analytics.
+ * Coordena o console de moderação de perguntas (com exclusão), controle mestre de enquetes com prévia,
+ * audiência ao vivo com banimento e gestão de histórico de múltiplas sessões.
  */
 
 import { PresentationEngine } from '../core/presentation-engine.js';
@@ -10,6 +10,7 @@ import { RealtimeEngine } from '../core/realtime-engine.js';
 import { AuthEngine } from '../core/auth-engine.js';
 import { InteractionEngine } from '../core/interaction-engine.js';
 import { ModerationEngine } from '../core/moderation-engine.js';
+import { SessionManager } from '../core/session-manager.js';
 
 class AdminApp {
   constructor() {
@@ -18,6 +19,7 @@ class AdminApp {
     this.auth = new AuthEngine();
     this.interaction = new InteractionEngine(this.realtime, this.auth);
     this.moderation = new ModerationEngine(this.realtime, this.auth);
+    this.sessionManager = new SessionManager();
 
     this.presentationId = PresentationEngine.getPresentationIdFromURL();
     this.sessionId = PresentationEngine.getSessionIdFromURL();
@@ -48,11 +50,26 @@ class AdminApp {
       // Moderation
       pendingCount: document.getElementById('admin-pending-count'),
       moderationList: document.getElementById('admin-moderation-list'),
+      btnClearAllQuestions: document.getElementById('admin-btn-clear-all-questions'),
       
       // Polls & Export
       pollsContainer: document.getElementById('admin-polls-container'),
       btnResetAllPolls: document.getElementById('admin-btn-reset-all-polls'),
-      btnExport: document.getElementById('admin-btn-export')
+      btnExport: document.getElementById('admin-btn-export'),
+
+      // Session History & New Session Modals
+      btnHistory: document.getElementById('admin-btn-history'),
+      btnNewSession: document.getElementById('admin-btn-new-session'),
+      historyModal: document.getElementById('history-modal'),
+      btnCloseHistoryModal: document.getElementById('btn-close-history-modal'),
+      btnDoneHistory: document.getElementById('btn-done-history'),
+      historySessionsList: document.getElementById('history-sessions-list'),
+      btnExportAllHistory: document.getElementById('btn-export-all-history'),
+      
+      newSessionModal: document.getElementById('new-session-modal'),
+      btnCloseNewSessionModal: document.getElementById('btn-close-new-session-modal'),
+      inputNewSessionCode: document.getElementById('input-new-session-code'),
+      btnConfirmNewSession: document.getElementById('btn-confirm-new-session')
     };
 
     this.init();
@@ -70,12 +87,20 @@ class AdminApp {
       await this.engine.loadPresentation(this.presentationId);
       this.dom.presTitle.textContent = this.engine.manifest.title || 'Apresentação';
 
+      // Registra a sessão atual no histórico
+      this.sessionManager.saveSessionToHistory({
+        sessionId: this.sessionId,
+        presentationId: this.presentationId,
+        presentationTitle: this.engine.manifest.title,
+        status: 'active'
+      });
+
       // Inscreve-se nas atualizações da sessão
       this.realtime.subscribeToSession(this.sessionId, (state) => {
         this.handleSessionUpdate(state);
       });
 
-      // Polling e escuta de eventos de presença
+      // Polling de presença
       this.updatePresenceMetrics();
       setInterval(() => this.updatePresenceMetrics(), 4000);
 
@@ -197,10 +222,6 @@ class AdminApp {
     const allQuestions = this.moderation.getQuestions(this.sessionId);
     const pendingQuestions = allQuestions.filter(q => q.status === 'pending');
 
-    if (this.dom.pendingCount) {
-      this.dom.pendingCount.textContent = `${pendingQuestions.length} pendente(s)`;
-    }
-
     const filtered = allQuestions.filter(q => {
       if (this.activeTab === 'pending') return q.status === 'pending';
       if (this.activeTab === 'approved') return q.status === 'approved' || q.status === 'featured';
@@ -235,6 +256,9 @@ class AdminApp {
           <button class="btn btn-sm btn-admin-mod" data-action="reject" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; color: #fca5a5; border-color: rgba(239,68,68,0.4);">
             ✕ Rejeitar
           </button>
+          <button class="btn btn-sm btn-admin-mod" data-action="delete" data-qid="${q.id}" style="padding: 4px 6px; font-size: 11px; color: #fca5a5;" title="Excluir Definitivamente">
+            🗑️
+          </button>
           <button class="btn btn-sm btn-admin-mod" data-action="block" data-uid="${q.uid}" style="padding: 4px 6px; font-size: 11px; color: ${isBlocked ? '#6ee7b7' : '#fca5a5'};" title="${isBlocked ? 'Desbloquear' : 'Banir Participante'}">
             ${isBlocked ? '✓' : '🚫'}
           </button>
@@ -247,11 +271,17 @@ class AdminApp {
           <button class="btn btn-sm btn-admin-mod" data-action="reject" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; color: #fca5a5;">
             Remover
           </button>
+          <button class="btn btn-sm btn-admin-mod" data-action="delete" data-qid="${q.id}" style="padding: 4px 6px; font-size: 11px; color: #fca5a5;" title="Excluir Definitivamente">
+            🗑️
+          </button>
         `;
       } else if (q.status === 'rejected') {
         actionsHtml = `
           <button class="btn btn-sm btn-admin-mod" data-action="approve" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px;">
-            Restaurar para Aprovadas
+            Restaurar
+          </button>
+          <button class="btn btn-sm btn-admin-mod" data-action="delete" data-qid="${q.id}" style="padding: 4px 6px; font-size: 11px; color: #fca5a5;" title="Excluir Definitivamente">
+            🗑️
           </button>
         `;
       }
@@ -282,7 +312,8 @@ class AdminApp {
         polls.push({
           slideId: s.id,
           slideTitle: s.title,
-          poll: s.interaction.poll
+          poll: s.interaction.poll,
+          isCurrentSlide: (this.engine.currentSlideIndex === s.id - 1)
         });
       }
     });
@@ -292,8 +323,16 @@ class AdminApp {
       return;
     }
 
+    // Pega o estado geral da sessão
+    const sessionRaw = localStorage.getItem(`session_state_${this.sessionId}`);
+    let sessionState = { pollStatus: 'open', showResults: false };
+    if (sessionRaw) {
+      try { sessionState = JSON.parse(sessionRaw); } catch(e) {}
+    }
+
     this.dom.pollsContainer.innerHTML = polls.map(item => {
       const res = this.interaction.computePollResults(this.sessionId, item.poll);
+      const isCurrent = item.isCurrentSlide;
       
       const barsHtml = res.options.map(opt => `
         <div style="margin-bottom: 8px;">
@@ -308,12 +347,14 @@ class AdminApp {
       `).join('');
 
       return `
-        <div class="card" style="padding: 14px; background: rgba(15,23,42,0.6);">
+        <div class="card" style="padding: 14px; background: ${isCurrent ? 'rgba(30,41,59,0.85)' : 'rgba(15,23,42,0.6)'}; border: ${isCurrent ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-subtle)'};">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span class="badge badge-accent" style="font-size: 10px;">Slide ${item.slideId}</span>
-            <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">${res.totalVotes} voto(s)</span>
+            <span class="badge ${isCurrent ? 'badge-accent' : ''}" style="font-size: 10px;">
+              ${isCurrent ? '⭐ SLIDE ATUAL' : `Slide ${item.slideId}`}
+            </span>
+            <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">${res.totalVotes} voto(s) computados</span>
           </div>
-          <div style="font-size: 12.5px; font-weight: 700; color: #ffffff; margin-bottom: 10px;">${item.poll.question}</div>
+          <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-bottom: 10px;">${item.poll.question}</div>
           <div>${barsHtml}</div>
           <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; margin-top: 10px;">
             <button class="btn btn-sm btn-admin-poll" data-action="open" data-pid="${item.poll.id}" style="font-size: 10px; padding: 4px 2px;">
@@ -322,8 +363,8 @@ class AdminApp {
             <button class="btn btn-sm btn-admin-poll" data-action="close" data-pid="${item.poll.id}" style="font-size: 10px; padding: 4px 2px; color: #fca5a5;">
               🔴 Fechar
             </button>
-            <button class="btn btn-sm btn-admin-poll" data-action="results" data-pid="${item.poll.id}" style="font-size: 10px; padding: 4px 2px;">
-              📊 Telão
+            <button class="btn btn-sm btn-primary btn-admin-poll" data-action="results" data-pid="${item.poll.id}" style="font-size: 10px; padding: 4px 2px;">
+              ${(isCurrent && sessionState.showResults) ? '🙈 Ocultar' : '📊 Projetar'}
             </button>
             <button class="btn btn-sm btn-admin-poll" data-action="reset" data-pid="${item.poll.id}" style="font-size: 10px; padding: 4px 2px; border-color: rgba(239,68,68,0.3); color: #fca5a5;" title="Zerar votos desta enquete">
               🔄 Zerar
@@ -332,6 +373,72 @@ class AdminApp {
         </div>
       `;
     }).join('');
+  }
+
+  openHistoryModal() {
+    if (!this.dom.historyModal) return;
+    this.renderHistorySessionsList();
+    this.dom.historyModal.style.display = 'flex';
+  }
+
+  closeHistoryModal() {
+    if (this.dom.historyModal) {
+      this.dom.historyModal.style.display = 'none';
+    }
+  }
+
+  renderHistorySessionsList() {
+    if (!this.dom.historySessionsList) return;
+    const history = this.sessionManager.getSessionsHistory();
+
+    if (history.length === 0) {
+      this.dom.historySessionsList.innerHTML = `
+        <div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 20px;">
+          Nenhuma sessão arquivada no histórico.
+        </div>
+      `;
+      return;
+    }
+
+    this.dom.historySessionsList.innerHTML = history.map(s => {
+      const isCurrent = (s.sessionId === this.sessionId);
+      return `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: rgba(15,23,42,0.7); border: ${isCurrent ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-subtle)'}; border-radius: 8px;">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+              <span>#${s.sessionId}</span>
+              ${isCurrent ? '<span class="badge badge-live" style="font-size: 9.5px; padding: 1px 6px;">Sessão Ativa</span>' : ''}
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+              ${new Date(s.createdAt).toLocaleDateString()} às ${new Date(s.createdAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-sm btn-export-single-session" data-sid="${s.sessionId}" style="font-size: 11px; padding: 4px 8px;">
+              📥 Exportar JSON
+            </button>
+            ${!isCurrent ? `
+              <button class="btn btn-sm btn-delete-single-session" data-sid="${s.sessionId}" style="font-size: 11px; padding: 4px 8px; border-color: rgba(239,68,68,0.4); color: #fca5a5;">
+                🗑️ Apagar
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  openNewSessionModal() {
+    if (this.dom.newSessionModal) {
+      if (this.dom.inputNewSessionCode) this.dom.inputNewSessionCode.value = '';
+      this.dom.newSessionModal.style.display = 'flex';
+    }
+  }
+
+  closeNewSessionModal() {
+    if (this.dom.newSessionModal) {
+      this.dom.newSessionModal.style.display = 'none';
+    }
   }
 
   bindEvents() {
@@ -352,7 +459,82 @@ class AdminApp {
       });
     }
 
-    // Projetar Resumo Analítico no Telão e Smartphones
+    // Modal de Histórico
+    if (this.dom.btnHistory) {
+      this.dom.btnHistory.addEventListener('click', () => this.openHistoryModal());
+    }
+    if (this.dom.btnCloseHistoryModal) {
+      this.dom.btnCloseHistoryModal.addEventListener('click', () => this.closeHistoryModal());
+    }
+    if (this.dom.btnDoneHistory) {
+      this.dom.btnDoneHistory.addEventListener('click', () => this.closeHistoryModal());
+    }
+
+    // Modal de Nova Sessão
+    if (this.dom.btnNewSession) {
+      this.dom.btnNewSession.addEventListener('click', () => this.openNewSessionModal());
+    }
+    if (this.dom.btnCloseNewSessionModal) {
+      this.dom.btnCloseNewSessionModal.addEventListener('click', () => this.closeNewSessionModal());
+    }
+
+    // Confirmar criação de nova sessão
+    if (this.dom.btnConfirmNewSession) {
+      this.dom.btnConfirmNewSession.addEventListener('click', () => {
+        const customCode = this.dom.inputNewSessionCode.value;
+        const newSid = this.sessionManager.createNewSession(this.presentationId, customCode);
+        alert(`Nova sessão #${newSid} iniciada com sucesso! A página será recarregada.`);
+        window.location.href = `?presentation=${this.presentationId}&session=${newSid}`;
+      });
+    }
+
+    // Ações na lista de histórico (Exportar e Deletar sessão individual)
+    if (this.dom.historySessionsList) {
+      this.dom.historySessionsList.addEventListener('click', (e) => {
+        const exportBtn = e.target.closest('.btn-export-single-session');
+        const deleteBtn = e.target.closest('.btn-delete-single-session');
+
+        if (exportBtn) {
+          const sid = exportBtn.dataset.sid;
+          const report = this.sessionManager.compileSessionReport(sid, this.engine.slidesData);
+          const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `relatorio_sessao_${sid}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } else if (deleteBtn) {
+          const sid = deleteBtn.dataset.sid;
+          const ok = confirm(`Deseja realmente apagar todos os dados da sessão #${sid}?`);
+          if (ok) {
+            this.sessionManager.deleteSession(sid);
+            this.renderHistorySessionsList();
+          }
+        }
+      });
+    }
+
+    // Exportar todo o histórico consolidado
+    if (this.dom.btnExportAllHistory) {
+      this.dom.btnExportAllHistory.addEventListener('click', () => {
+        const history = this.sessionManager.getSessionsHistory();
+        const allReports = history.map(s => this.sessionManager.compileSessionReport(s.sessionId, this.engine.slidesData));
+        const blob = new Blob([JSON.stringify(allReports, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `historico_consolidado_${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    // Projetar Resumo Analítico no Telão
     if (this.dom.btnPublishAnalytics) {
       this.dom.btnPublishAnalytics.addEventListener('click', async () => {
         const ok = confirm('Deseja projetar o painel de encerramento com o resumo analítico completo no telão e nos smartphones?');
@@ -376,6 +558,18 @@ class AdminApp {
             pollStatus: 'closed'
           });
           alert('Sessão encerrada com sucesso!');
+        }
+      });
+    }
+
+    // Limpar todas as perguntas
+    if (this.dom.btnClearAllQuestions) {
+      this.dom.btnClearAllQuestions.addEventListener('click', async () => {
+        const ok = confirm('ATENÇÃO: Deseja realmente APAGAR TODAS as perguntas enviadas nesta sessão?');
+        if (ok) {
+          await this.moderation.clearAllQuestions(this.sessionId);
+          this.renderModerationList();
+          alert('Todas as perguntas foram excluídas.');
         }
       });
     }
@@ -422,7 +616,7 @@ class AdminApp {
       });
     });
 
-    // Ações de moderação
+    // Ações de moderação (com suporte a exclusão individual)
     if (this.dom.moderationList) {
       this.dom.moderationList.addEventListener('click', async (e) => {
         const btn = e.target.closest('.btn-admin-mod');
@@ -439,10 +633,14 @@ class AdminApp {
             await this.moderation.clearFeatured(this.sessionId);
           } else if (action === 'reject') {
             await this.moderation.setQuestionStatus(this.sessionId, qid, 'rejected');
+          } else if (action === 'delete') {
+            const ok = confirm('Deseja excluir definitivamente esta pergunta?');
+            if (ok) {
+              await this.moderation.deleteQuestion(this.sessionId, qid);
+            }
           } else if (action === 'block' && uid) {
             const isBlocked = this.moderation.toggleBlockUser(this.sessionId, uid);
             this.updatePresenceMetrics();
-            this.renderModerationList();
             alert(`Participante ${isBlocked ? 'bloqueado' : 'desbloqueado'} com sucesso.`);
           }
           this.renderModerationList();
@@ -450,7 +648,7 @@ class AdminApp {
       });
     }
 
-    // Ações de enquetes
+    // Ações de enquetes (Controle Mestre com prévia e projeção no telão)
     if (this.dom.pollsContainer) {
       this.dom.pollsContainer.addEventListener('click', async (e) => {
         const btn = e.target.closest('.btn-admin-poll');
@@ -483,42 +681,15 @@ class AdminApp {
       });
     }
 
-    // Exportação
+    // Exportação da sessão atual
     if (this.dom.btnExport) {
       this.dom.btnExport.addEventListener('click', () => {
-        const questions = this.moderation.getQuestions(this.sessionId);
-        const pollsSummary = [];
-        this.engine.slidesData.slides.forEach(s => {
-          if (s.interaction && s.interaction.poll) {
-            const res = this.interaction.computePollResults(this.sessionId, s.interaction.poll);
-            pollsSummary.push({
-              slideId: s.id,
-              slideTitle: s.title,
-              poll: s.interaction.poll,
-              results: res
-            });
-          }
-        });
-
-        const report = {
-          presentationId: this.presentationId,
-          presentationTitle: this.engine.manifest ? this.engine.manifest.title : '',
-          sessionId: this.sessionId,
-          exportedAt: new Date().toISOString(),
-          summary: {
-            totalSlides: this.engine.totalSlides,
-            totalQuestions: questions.length,
-            totalPolls: pollsSummary.length
-          },
-          polls: pollsSummary,
-          questions: questions
-        };
-
+        const report = this.sessionManager.compileSessionReport(this.sessionId, this.engine.slidesData);
         const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `relatorio_admin_${this.sessionId}_${Date.now()}.json`;
+        a.download = `relatorio_sessao_${this.sessionId}_${Date.now()}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
