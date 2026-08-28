@@ -176,7 +176,7 @@
 
 .modal-container {
   width: 90%;
-  max-width: 480px;
+  max-width: 440px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-lg);
@@ -184,8 +184,73 @@
   box-shadow: var(--shadow-glass);
   transform: translateY(20px);
   transition: transform var(--transition-normal);
+  position: relative;
 }
 
 .modal-overlay.active .modal-container {
   transform: translateY(0);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  color: var(--text-muted);
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* Google Sign-in Button */
+.btn-google {
+  width: 100%;
+  background: #ffffff;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 14.5px;
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e7eb;
+  transition: all var(--transition-fast);
+  margin-top: 16px;
+}
+
+.btn-google:hover {
+  background: #f8fafc;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.user-badge-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #7dd3fc;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.user-badge-btn:hover {
+  background: rgba(56, 189, 248, 0.25);
 }

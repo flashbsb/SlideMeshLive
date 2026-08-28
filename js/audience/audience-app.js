@@ -1,20 +1,23 @@
 /**
  * Audience Mobile Application Controller
- * Coordena a sincronização em tempo real no smartphone, presença e modo ao vivo.
+ * Coordena a sincronização em tempo real no smartphone, presença e autenticação segura.
  */
 
 import { PresentationEngine } from '../core/presentation-engine.js';
 import { RealtimeEngine } from '../core/realtime-engine.js';
+import { AuthEngine } from '../core/auth-engine.js';
 
 class AudienceApp {
   constructor() {
     this.engine = new PresentationEngine({ basePath: '../presentations' });
     this.realtime = new RealtimeEngine();
+    this.auth = new AuthEngine();
 
     this.presentationId = PresentationEngine.getPresentationIdFromURL();
     this.sessionId = PresentationEngine.getSessionIdFromURL();
     this.isLiveSync = true;
     this.presenterSlideIndex = 0;
+    this.pendingAction = null;
 
     // DOM Elements
     this.dom = {
@@ -25,7 +28,21 @@ class AudienceApp {
       navPrev: document.getElementById('btn-audience-prev'),
       navNext: document.getElementById('btn-audience-next'),
       btnSync: document.getElementById('btn-audience-sync'),
-      syncToast: document.getElementById('sync-toast')
+      syncToast: document.getElementById('sync-toast'),
+      
+      // Auth elements
+      authStatusBtn: document.getElementById('auth-status-btn'),
+      authUserLabel: document.getElementById('auth-user-label'),
+      authModal: document.getElementById('auth-modal'),
+      btnCloseAuthModal: document.getElementById('btn-close-auth-modal'),
+      btnGoogleLogin: document.getElementById('btn-google-login'),
+      
+      // Profile modal elements
+      profileModal: document.getElementById('profile-modal'),
+      btnCloseProfileModal: document.getElementById('btn-close-profile-modal'),
+      profileAlias: document.getElementById('profile-modal-alias'),
+      profileUid: document.getElementById('profile-modal-uid'),
+      btnLogout: document.getElementById('btn-logout')
     };
 
     this.init();
@@ -33,6 +50,7 @@ class AudienceApp {
 
   async init() {
     this.bindEvents();
+    this.setupAuthObserver();
 
     if (this.dom.sessionBadge) {
       this.dom.sessionBadge.textContent = this.sessionId;
@@ -61,6 +79,32 @@ class AudienceApp {
     }
   }
 
+  setupAuthObserver() {
+    this.auth.onAuthStateChanged((user) => {
+      if (user) {
+        this.dom.authUserLabel.innerHTML = `<span>👤</span> <span>${user.anonymousAlias || 'Participante'}</span>`;
+        this.dom.authStatusBtn.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+        this.dom.authStatusBtn.style.background = 'rgba(16, 185, 129, 0.15)';
+        this.dom.authStatusBtn.style.color = '#6ee7b7';
+
+        if (this.dom.profileAlias) this.dom.profileAlias.textContent = user.anonymousAlias || 'Participante';
+        if (this.dom.profileUid) this.dom.profileUid.textContent = `ID: ${user.uid.substring(0, 14)}...`;
+
+        // Executa ação pendente após autenticar (ex: votar)
+        if (this.pendingAction) {
+          const action = this.pendingAction;
+          this.pendingAction = null;
+          action();
+        }
+      } else {
+        this.dom.authUserLabel.innerHTML = `<span>🔐</span> <span>Entrar</span>`;
+        this.dom.authStatusBtn.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+        this.dom.authStatusBtn.style.background = 'rgba(56, 189, 248, 0.12)';
+        this.dom.authStatusBtn.style.color = '#7dd3fc';
+      }
+    });
+  }
+
   handleRemoteSessionUpdate(sessionState) {
     if (!sessionState) return;
 
@@ -73,7 +117,6 @@ class AudienceApp {
           this.updateView();
         }
       } else {
-        // Se o usuário estiver navegando manualmente, mostra toast informativo
         this.showSyncToast();
       }
     }
@@ -119,12 +162,92 @@ class AudienceApp {
     if (this.dom.navPrev) this.dom.navPrev.disabled = (this.engine.currentSlideIndex === 0);
     if (this.dom.navNext) this.dom.navNext.disabled = (this.engine.currentSlideIndex === total - 1);
 
-    // Scroll suave para o topo ao trocar de slide
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  openAuthModal(onSuccessAction = null) {
+    this.pendingAction = onSuccessAction;
+    if (this.dom.authModal) {
+      this.dom.authModal.classList.add('active');
+    }
+  }
+
+  closeAuthModal() {
+    if (this.dom.authModal) {
+      this.dom.authModal.classList.remove('active');
+    }
+  }
+
+  openProfileModal() {
+    if (this.dom.profileModal) {
+      this.dom.profileModal.classList.add('active');
+    }
+  }
+
+  closeProfileModal() {
+    if (this.dom.profileModal) {
+      this.dom.profileModal.classList.remove('active');
+    }
+  }
+
   bindEvents() {
-    // Navegação manual desativa temporariamente o lock estrito se o usuário quiser ler outros slides
+    // Auth Modal Controls
+    if (this.dom.authStatusBtn) {
+      this.dom.authStatusBtn.addEventListener('click', () => {
+        if (this.auth.isAuthenticated) {
+          this.openProfileModal();
+        } else {
+          this.openAuthModal();
+        }
+      });
+    }
+
+    if (this.dom.btnCloseAuthModal) {
+      this.dom.btnCloseAuthModal.addEventListener('click', () => this.closeAuthModal());
+    }
+
+    if (this.dom.btnCloseProfileModal) {
+      this.dom.btnCloseProfileModal.addEventListener('click', () => this.closeProfileModal());
+    }
+
+    if (this.dom.btnGoogleLogin) {
+      this.dom.btnGoogleLogin.addEventListener('click', async () => {
+        try {
+          this.dom.btnGoogleLogin.disabled = true;
+          this.dom.btnGoogleLogin.textContent = 'Autenticando...';
+          await this.auth.signInWithGoogle();
+          this.closeAuthModal();
+        } catch (err) {
+          alert('Erro ao autenticar com Google: ' + err.message);
+        } finally {
+          this.dom.btnGoogleLogin.disabled = false;
+          this.dom.btnGoogleLogin.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 18 18">
+              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+              <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/>
+              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+            </svg>
+            <span>Continuar com Google</span>
+          `;
+        }
+      });
+    }
+
+    if (this.dom.btnLogout) {
+      this.dom.btnLogout.addEventListener('click', async () => {
+        await this.auth.signOut();
+        this.closeProfileModal();
+      });
+    }
+
+    // Fechar modais ao clicar no overlay
+    window.addEventListener('click', (e) => {
+      if (e.target === this.dom.authModal) this.closeAuthModal();
+      if (e.target === this.dom.profileModal) this.closeProfileModal();
+    });
+
+    // Navegação manual
     if (this.dom.navPrev) {
       this.dom.navPrev.addEventListener('click', () => {
         this.isLiveSync = false;
@@ -145,36 +268,49 @@ class AudienceApp {
       });
     }
 
-    // Botão de sincronização ao vivo
     if (this.dom.btnSync) {
       this.dom.btnSync.addEventListener('click', () => {
         this.syncToLive();
       });
     }
 
-    // Delegação de cliques para opções de enquete
+    // Interação com enquetes: exige autenticação
     this.dom.contentArea.addEventListener('click', (e) => {
       const pollBtn = e.target.closest('.poll-option-btn');
       if (pollBtn) {
         const pollId = pollBtn.dataset.pollId;
         const optionId = pollBtn.dataset.optionId;
-        
-        const container = document.getElementById(`poll-options-${pollId}`);
-        if (container) {
-          container.querySelectorAll('.poll-option-btn').forEach(btn => btn.classList.remove('selected'));
-        }
-        pollBtn.classList.add('selected');
 
-        const feedback = document.getElementById(`poll-feedback-${pollId}`);
-        if (feedback) {
-          feedback.innerHTML = `<span style="color: #38bdf8; font-weight: 600;">Opção ${optionId} selecionada.</span> Na Fase 4, a autenticação enviará este voto ao Realtime Database.`;
+        // Se o usuário NÃO estiver autenticado, abre modal de login
+        if (!this.auth.isAuthenticated) {
+          this.openAuthModal(() => {
+            this.handleVoteSelection(pollId, optionId, pollBtn);
+          });
+          return;
         }
+
+        this.handleVoteSelection(pollId, optionId, pollBtn);
       }
     });
 
     this.engine.on('onSlideChange', () => {
       this.updateView();
     });
+  }
+
+  handleVoteSelection(pollId, optionId, pollBtn) {
+    const container = document.getElementById(`poll-options-${pollId}`);
+    if (container) {
+      container.querySelectorAll('.poll-option-btn').forEach(btn => btn.classList.remove('selected'));
+    }
+    pollBtn.classList.add('selected');
+
+    const feedback = document.getElementById(`poll-feedback-${pollId}`);
+    if (feedback) {
+      feedback.innerHTML = `
+        <span style="color: #10b981; font-weight: 600;">✓ Voto na Opção ${optionId} registrado como ${this.auth.user.anonymousAlias}!</span>
+      `;
+    }
   }
 }
 
