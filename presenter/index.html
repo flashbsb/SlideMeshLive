@@ -43,21 +43,24 @@
     <!-- Telão / Canvas de Slides -->
     <section class="slide-canvas" id="slide-canvas">
       <div style="color: var(--text-secondary); font-size: 16px;">Carregando slides...</div>
+    </section>
 
-      <!-- Banner de Pergunta Destacada no Telão -->
-      <div id="featured-question-banner" class="featured-question-banner" style="display: none;">
+    <!-- Banner Flutuante de Pergunta Destacada no Telão -->
+    <div id="featured-question-banner" class="featured-question-banner" style="display: none;">
+      <div style="display: flex; align-items: flex-start; gap: 14px; flex: 1;">
+        <div style="font-size: 26px; line-height: 1;">⭐</div>
         <div style="flex: 1; padding-right: 16px;">
-          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--accent-primary); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-            <span>⭐ PERGUNTA DO PÚBLICO</span>
-            <span id="featured-author" style="color: var(--text-muted);">Participante</span>
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-primary); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+            <span>PERGUNTA EM DESTAQUE NO TELÃO</span>
+            <span class="badge" id="featured-author" style="font-size: 10px; padding: 2px 8px;">Participante</span>
           </div>
           <div class="featured-question-text" id="featured-question-text">Texto da pergunta...</div>
         </div>
-        <button class="btn btn-sm" id="btn-dismiss-featured" style="background: rgba(255,255,255,0.1); color: #f8fafc;">
-          Ocultar
-        </button>
       </div>
-    </section>
+      <button class="btn btn-sm btn-primary" id="btn-dismiss-featured" style="flex-shrink: 0;">
+        ✕ Fechar Destaque
+      </button>
+    </div>
 
     <!-- Barra Lateral: QR Code e Notas do Orador -->
     <aside class="presenter-sidebar">

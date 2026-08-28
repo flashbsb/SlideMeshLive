@@ -60,7 +60,12 @@ class AudienceApp {
       questionInput: document.getElementById('question-input'),
       questionCharCount: document.getElementById('question-char-count'),
       btnSubmitQuestion: document.getElementById('btn-submit-question'),
-      questionFeedback: document.getElementById('question-feedback')
+      questionFeedback: document.getElementById('question-feedback'),
+
+      // Featured question on audience
+      audienceFeaturedBanner: document.getElementById('audience-featured-banner'),
+      audienceFeaturedText: document.getElementById('audience-featured-text'),
+      audienceFeaturedAuthor: document.getElementById('audience-featured-author')
     };
 
     this.init();
@@ -146,6 +151,15 @@ class AudienceApp {
     }
     if (typeof sessionState.showResults === 'boolean') {
       this.pollState.showResults = sessionState.showResults;
+    }
+
+    // Exibe ou oculta pergunta destacada no smartphone
+    if (sessionState.featuredQuestion && this.dom.audienceFeaturedBanner) {
+      this.dom.audienceFeaturedText.textContent = sessionState.featuredQuestion.text;
+      this.dom.audienceFeaturedAuthor.textContent = sessionState.featuredQuestion.authorAlias || 'Participante';
+      this.dom.audienceFeaturedBanner.style.display = 'block';
+    } else if (this.dom.audienceFeaturedBanner) {
+      this.dom.audienceFeaturedBanner.style.display = 'none';
     }
 
     if (typeof sessionState.currentSlide === 'number') {
