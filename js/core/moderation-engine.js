@@ -6,10 +6,13 @@
  * em tempo real para o apresentador (Aprovar, Destacar no Telão, Rejeitar).
  */
 
+import { SecurityGuard } from './security-guard.js';
+
 export class ModerationEngine {
   constructor(realtimeEngine, authEngine) {
     this.realtime = realtimeEngine;
     this.auth = authEngine;
+    this.guard = new SecurityGuard();
     this.questionsListeners = new Map();
   }
 
@@ -21,6 +24,14 @@ export class ModerationEngine {
       throw new Error('É necessário estar identificado para enviar perguntas.');
     }
 
+    const uid = this.auth.user.uid;
+
+    // Proteção contra abuso e Rate Limiting
+    const check = this.guard.canUserSubmitQuestion(sessionId, uid);
+    if (!check.allowed) {
+      throw new Error(check.reason);
+    }
+
     const cleanText = (text || '').trim();
     if (cleanText.length < 5) {
       throw new Error('A pergunta deve ter pelo menos 5 caracteres.');
@@ -29,7 +40,6 @@ export class ModerationEngine {
       throw new Error('A pergunta não pode exceder 300 caracteres.');
     }
 
-    const uid = this.auth.user.uid;
     const questionId = 'q_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
 
     const questionPayload = {
@@ -40,6 +50,9 @@ export class ModerationEngine {
       status: 'pending', // 'pending', 'approved', 'featured', 'rejected'
       timestamp: Date.now()
     };
+
+    // 1. Registra timestamp para rate limit
+    this.guard.recordQuestionSubmission(sessionId, uid);
 
     // 1. Salva no pool de perguntas local da sessão
     const storageKey = `session_questions_${sessionId}`;
@@ -191,5 +204,16 @@ export class ModerationEngine {
     if (!this.auth.isAuthenticated || !this.auth.user) return [];
     const uid = this.auth.user.uid;
     return this.getQuestions(sessionId).filter(q => q.uid === uid);
+  }
+
+  /**
+   * Apresentador: Bloqueia ou desbloqueia um participante
+   */
+  toggleBlockUser(sessionId, uid) {
+    return this.guard.toggleBlockUser(sessionId, uid);
+  }
+
+  isUserBlocked(sessionId, uid) {
+    return this.guard.isUserBlocked(sessionId, uid);
   }
 }

@@ -60,7 +60,11 @@ class PresenterApp {
       featuredBanner: document.getElementById('featured-question-banner'),
       featuredText: document.getElementById('featured-question-text'),
       featuredAuthor: document.getElementById('featured-author'),
-      btnDismissFeatured: document.getElementById('btn-dismiss-featured')
+      btnDismissFeatured: document.getElementById('btn-dismiss-featured'),
+
+      // Session & Connectivity Controls
+      btnEndSession: document.getElementById('btn-end-session'),
+      badgeLiveStatus: document.getElementById('badge-live-status')
     };
 
     this.init();
@@ -403,6 +407,50 @@ class PresenterApp {
       });
     });
 
+    // Monitoramento de Rede e Contingência Offline
+    window.addEventListener('online', () => {
+      if (this.dom.connectionStatus) {
+        this.dom.connectionStatus.textContent = this.realtime.isFirebaseReady ? 'Firebase Conectado' : 'Sincronização Ativa';
+      }
+      if (this.dom.statusDot) {
+        this.dom.statusDot.className = 'status-dot-connected';
+      }
+    });
+
+    window.addEventListener('offline', () => {
+      if (this.dom.connectionStatus) {
+        this.dom.connectionStatus.textContent = 'Modo Local / Offline';
+      }
+      if (this.dom.statusDot) {
+        this.dom.statusDot.className = 'status-dot-live';
+      }
+    });
+
+    // Encerramento Formal da Sessão
+    if (this.dom.btnEndSession) {
+      this.dom.btnEndSession.addEventListener('click', async () => {
+        const confirmEnd = confirm('Deseja realmente encerrar esta sessão de apresentação? Os smartphones conectados serão finalizados.');
+        if (confirmEnd) {
+          await this.realtime.updateSessionState(this.sessionId, {
+            status: 'closed',
+            pollStatus: 'closed'
+          });
+
+          if (this.dom.badgeLiveStatus) {
+            this.dom.badgeLiveStatus.className = 'badge';
+            this.dom.badgeLiveStatus.style.background = 'rgba(239, 68, 68, 0.2)';
+            this.dom.badgeLiveStatus.style.color = '#fca5a5';
+            this.dom.badgeLiveStatus.textContent = '🔴 ENCERRADA';
+          }
+          if (this.dom.btnEndSession) {
+            this.dom.btnEndSession.disabled = true;
+            this.dom.btnEndSession.textContent = 'Sessão Fechada';
+          }
+          alert('Sessão encerrada com sucesso! Nenhuma nova interação será aceita.');
+        }
+      });
+    }
+
     // Ações de moderação nos cards
     if (this.dom.moderationList) {
       this.dom.moderationList.addEventListener('click', async (e) => {
@@ -410,6 +458,7 @@ class PresenterApp {
         if (actionBtn) {
           const action = actionBtn.dataset.action;
           const qid = actionBtn.dataset.qid;
+          const uid = actionBtn.dataset.uid;
 
           if (action === 'approve') {
             await this.moderation.setQuestionStatus(this.sessionId, qid, 'approved');
@@ -419,6 +468,9 @@ class PresenterApp {
             await this.moderation.clearFeatured(this.sessionId);
           } else if (action === 'reject') {
             await this.moderation.setQuestionStatus(this.sessionId, qid, 'rejected');
+          } else if (action === 'block' && uid) {
+            const isBlocked = this.moderation.toggleBlockUser(this.sessionId, uid);
+            alert(`Participante ${isBlocked ? 'bloqueado' : 'desbloqueado'} com sucesso.`);
           }
           this.updateModerationList();
         }

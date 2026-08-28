@@ -65,7 +65,8 @@ class AudienceApp {
       // Featured question on audience
       audienceFeaturedBanner: document.getElementById('audience-featured-banner'),
       audienceFeaturedText: document.getElementById('audience-featured-text'),
-      audienceFeaturedAuthor: document.getElementById('audience-featured-author')
+      audienceFeaturedAuthor: document.getElementById('audience-featured-author'),
+      sessionClosedNotice: document.getElementById('session-closed-notice')
     };
 
     this.init();
@@ -160,6 +161,21 @@ class AudienceApp {
       this.dom.audienceFeaturedBanner.style.display = 'block';
     } else if (this.dom.audienceFeaturedBanner) {
       this.dom.audienceFeaturedBanner.style.display = 'none';
+    }
+
+    // Tratamento de Sessão Encerrada
+    if (sessionState.status === 'closed') {
+      if (this.dom.sessionClosedNotice) this.dom.sessionClosedNotice.style.display = 'block';
+      if (this.dom.btnAsk) {
+        this.dom.btnAsk.disabled = true;
+        this.dom.btnAsk.style.opacity = '0.4';
+      }
+    } else {
+      if (this.dom.sessionClosedNotice) this.dom.sessionClosedNotice.style.display = 'none';
+      if (this.dom.btnAsk) {
+        this.dom.btnAsk.disabled = false;
+        this.dom.btnAsk.style.opacity = '1';
+      }
     }
 
     if (typeof sessionState.currentSlide === 'number') {

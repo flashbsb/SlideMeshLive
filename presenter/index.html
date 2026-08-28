@@ -29,10 +29,15 @@
       </button>
 
       <div class="presenter-counter" id="participant-count-wrapper">
-        <span class="status-dot-connected"></span>
+        <span class="status-dot-connected" id="status-dot"></span>
         <span id="connection-status">Sincronização Ativa</span>
       </div>
-      <span class="badge badge-live">
+
+      <button class="btn btn-sm" id="btn-end-session" style="border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;" title="Encerrar Sessão">
+        <span>🛑 Encerrar</span>
+      </button>
+
+      <span class="badge badge-live" id="badge-live-status">
         <span class="status-dot-live"></span> AO VIVO
       </span>
     </div>

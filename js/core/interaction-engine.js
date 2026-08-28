@@ -50,7 +50,37 @@ export class InteractionEngine {
       throw new Error('É necessário estar identificado para votar.');
     }
 
+    // 0. Verifica se a sessão está encerrada
+    const sessionRaw = localStorage.getItem(`session_state_${sessionId}`);
+    if (sessionRaw) {
+      try {
+        const session = JSON.parse(sessionRaw);
+        if (session.status === 'closed') {
+          throw new Error('Esta apresentação foi encerrada. Novas votações não são mais aceitas.');
+        }
+        if (session.pollStatus === 'closed') {
+          throw new Error('Esta votação foi encerrada pelo apresentador.');
+        }
+      } catch (e) {
+        if (e.message && e.message.includes('encerrada')) throw e;
+      }
+    }
+
     const uid = this.auth.user.uid;
+
+    // Verifica se participante está bloqueado
+    const blockedRaw = localStorage.getItem(`session_blocked_users_${sessionId}`);
+    if (blockedRaw) {
+      try {
+        const blockedList = JSON.parse(blockedRaw);
+        if (blockedList.includes(uid)) {
+          throw new Error('Sua participação foi suspensa pelo moderador da sessão.');
+        }
+      } catch (e) {
+        if (e.message && e.message.includes('suspensa')) throw e;
+      }
+    }
+
     const voteKey = `vote_${sessionId}_${pollId}_${uid}`;
 
     // 1. Verificação local no cliente (primeira barreira)
