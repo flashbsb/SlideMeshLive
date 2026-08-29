@@ -33,6 +33,15 @@
       font-size: 12.5px;
       animation: fadeIn 0.2s ease-out;
     }
+    .offline-banner {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+      padding: 6px 12px;
+      font-size: 11.5px;
+      text-align: center;
+      display: none;
+    }
   </style>
 </head>
 <body class="audience-body">
@@ -41,16 +50,26 @@
   <header class="audience-header">
     <div class="audience-brand">
       <div style="display: flex; align-items: center; gap: 6px;">
-        <span class="badge badge-live" style="font-size: 10px; padding: 2px 6px;">AO VIVO</span>
+        <span class="badge badge-live" style="font-size: 10px; padding: 2px 6px;" data-i18n="audience.live_badge">AO VIVO</span>
         <span class="audience-slide-indicator" id="audience-slide-indicator">0/0</span>
       </div>
       <div class="audience-pres-name" id="audience-pres-name">Carregando...</div>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 8px;">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <!-- Seletor de Idioma Rápido -->
+      <button class="user-badge-btn" id="btn-audience-lang" style="padding: 4px 6px; font-size: 11px;" title="Alternar Idioma">
+        🇧🇷 PT
+      </button>
+
+      <!-- Seletor de Tema Rápido -->
+      <button class="user-badge-btn" id="btn-audience-theme" style="padding: 4px 6px; font-size: 11px;" title="Alternar Tema">
+        🌙
+      </button>
+
       <!-- Indicador de Autenticação / Perfil -->
       <button class="user-badge-btn" id="auth-status-btn" title="Status de Login">
-        <span id="auth-user-label">🔐 Entrar</span>
+        <span id="auth-user-label" data-i18n="audience.btn_login">🔐 Entrar</span>
       </button>
 
       <span class="badge" id="session-badge" style="font-size: 10px; font-family: var(--font-mono);">
@@ -58,6 +77,11 @@
       </span>
     </div>
   </header>
+
+  <!-- Banner de Reconexão / Status Offline -->
+  <div id="audience-offline-banner" class="offline-banner" data-i18n="audience.offline_banner">
+    ⚠️ Conexão oscilando. Tentando reconectar...
+  </div>
 
   <!-- Toast Flutuante de Alerta de Sincronização -->
   <div id="sync-toast" class="sync-toast"></div>
@@ -79,8 +103,8 @@
   <div id="session-closed-notice" class="audience-container" style="display: none; padding-bottom: 0;">
     <div class="card" style="background: rgba(239, 68, 68, 0.15); border: 1.5px solid rgba(239, 68, 68, 0.4); text-align: center;">
       <div style="font-size: 24px; margin-bottom: 4px;">🏁</div>
-      <h3 style="font-size: 16px; font-weight: 700; color: #fca5a5; margin-bottom: 4px;">Apresentação Encerrada</h3>
-      <p style="font-size: 12.5px; color: #cbd5e1;">A sessão foi concluída pelo apresentador. Obrigado por participar!</p>
+      <h3 style="font-size: 16px; font-weight: 700; color: #fca5a5; margin-bottom: 4px;" data-i18n="audience.session_closed_title">Apresentação Encerrada</h3>
+      <p style="font-size: 12.5px; color: #cbd5e1;" data-i18n="audience.session_closed_desc">A sessão foi concluída pelo apresentador. Obrigado por participar!</p>
     </div>
   </div>
 
@@ -98,7 +122,7 @@
   <!-- Conteúdo Principal do Smartphone -->
   <main class="audience-container" id="audience-content-area">
     <div class="card" style="text-align: center; color: var(--text-secondary); padding: 40px 20px;">
-      <p>Carregando conteúdo do slide...</p>
+      <p data-i18n="app.loading">Carregando conteúdo do slide...</p>
     </div>
   </main>
 
@@ -116,28 +140,28 @@
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
-      <span>Anterior</span>
+      <span data-i18n="audience.nav_prev">Anterior</span>
     </button>
 
     <button class="audience-action-btn active" id="btn-audience-sync" title="Sincronizado ao Vivo">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <span>Ao Vivo</span>
+      <span data-i18n="audience.nav_live">Ao Vivo</span>
     </button>
 
     <button class="audience-action-btn" id="btn-audience-ask" title="Enviar Pergunta">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <span>Perguntar</span>
+      <span data-i18n="audience.nav_ask">Perguntar</span>
     </button>
 
     <button class="audience-action-btn" id="btn-audience-next" title="Próximo Slide">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
-      <span>Próximo</span>
+      <span data-i18n="audience.nav_next">Próximo</span>
     </button>
   </nav>
 
@@ -146,13 +170,13 @@
     <div class="modal-container">
       <button class="modal-close-btn" id="btn-close-question-modal">&times;</button>
       
-      <h3 style="font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">Enviar Pergunta ao Apresentador</h3>
-      <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 8px;" data-i18n="audience.ask_modal_title">Enviar Pergunta ao Apresentador</h3>
+      <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 16px;" data-i18n="audience.ask_modal_desc">
         Sua pergunta passará pela moderação antes de ser apresentada ou destacada no telão.
       </p>
 
       <div style="margin-bottom: 16px;">
-        <textarea id="question-input" rows="4" maxlength="300" placeholder="Digite sua pergunta técnica..." style="width: 100%; background: rgba(15,23,42,0.8); border: 1.5px solid var(--border-medium); border-radius: 8px; padding: 12px; color: #ffffff; font-family: inherit; font-size: 14px; resize: vertical; outline: none;"></textarea>
+        <textarea id="question-input" rows="4" maxlength="300" placeholder="Digite sua pergunta técnica..." data-i18n-placeholder="audience.ask_placeholder" style="width: 100%; background: rgba(15,23,42,0.8); border: 1.5px solid var(--border-medium); border-radius: 8px; padding: 12px; color: #ffffff; font-family: inherit; font-size: 14px; resize: vertical; outline: none;"></textarea>
         <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
           <span>Identificado anonimamente</span>
           <span id="question-char-count">0 / 300</span>
@@ -161,13 +185,13 @@
 
       <div id="question-feedback" style="display: none; margin-bottom: 14px; padding: 10px; border-radius: 6px; font-size: 12.5px;"></div>
 
-      <button class="btn btn-primary" id="btn-submit-question" style="width: 100%; margin-bottom: 16px;">
+      <button class="btn btn-primary" id="btn-submit-question" style="width: 100%; margin-bottom: 16px;" data-i18n="audience.btn_send_question">
         Enviar Pergunta
       </button>
 
       <!-- Lista de Perguntas Enviadas pelo Participante -->
       <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px;">
-        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;" data-i18n="audience.my_questions_title">
           Suas Perguntas Enviadas
         </div>
         <div id="my-questions-list" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">

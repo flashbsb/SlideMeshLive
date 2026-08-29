@@ -198,4 +198,70 @@ export class SessionManager {
       questions: questions
     };
   }
+
+  /**
+   * Exporta os resultados da sessão em formato CSV tabular para Excel
+   */
+  exportSessionCSV(sessionId, slidesData = null) {
+    const report = this.compileSessionReport(sessionId, slidesData);
+    let csv = '\uFEFF'; // BOM para compatibilidade com acentos no Excel
+
+    // Seção 1: Enquetes
+    csv += '--- ENQUETES E VOTAÇÕES ---\n';
+    csv += 'Slide;Enquete;Opção ID;Opção Texto;Votos Computados;Percentual (%)\n';
+    report.polls.forEach(p => {
+      p.options.forEach(opt => {
+        csv += `"${p.slideId} - ${p.slideTitle.replace(/"/g, '""')}";"${p.question.replace(/"/g, '""')}";"${opt.id}";"${opt.text.replace(/"/g, '""')}";${opt.votes};${opt.percentage}%\n`;
+      });
+    });
+
+    csv += '\n--- PERGUNTAS RECEBIDAS DA AUDIÊNCIA ---\n';
+    csv += 'ID;Horário;Autor;Status;Respondida;Pergunta\n';
+    report.questions.forEach(q => {
+      const time = new Date(q.timestamp).toLocaleString();
+      csv += `"${q.id}";"${time}";"${q.authorAlias || 'Participante'}";"${q.status}";"${q.answered ? 'SIM' : 'NÃO'}";"${q.text.replace(/"/g, '""')}"\n`;
+    });
+
+    return csv;
+  }
+
+  /**
+   * Exporta um relatório executivo em formato Markdown
+   */
+  exportSessionMarkdown(sessionId, slidesData = null) {
+    const report = this.compileSessionReport(sessionId, slidesData);
+    let md = `# Relatório Executivo da Apresentação - Sessão #${report.sessionId}\n\n`;
+    md += `* **Data de Exportação:** ${new Date(report.exportedAt).toLocaleString()}\n`;
+    md += `* **Total de Enquetes:** ${report.summary.totalPolls}\n`;
+    md += `* **Total de Perguntas Recebidas:** ${report.summary.totalQuestionsReceived}\n\n`;
+    md += `---\n\n## 📊 Resultados das Enquetes\n\n`;
+
+    if (report.polls.length === 0) {
+      md += `*Nenhuma enquete realizada nesta sessão.*\n\n`;
+    } else {
+      report.polls.forEach(p => {
+        md += `### Slide ${p.slideId}: ${p.question}\n\n`;
+        md += `* **Total de Votos:** ${p.totalVotes}\n\n`;
+        md += `| Opção | Descrição | Votos | Percentual |\n`;
+        md += `| :---: | :--- | :---: | :---: |\n`;
+        p.options.forEach(opt => {
+          md += `| **${opt.id}** | ${opt.text} | ${opt.votes} | **${opt.percentage}%** |\n`;
+        });
+        md += `\n`;
+      });
+    }
+
+    md += `---\n\n## 💬 Perguntas da Audiência\n\n`;
+    if (report.questions.length === 0) {
+      md += `*Nenhuma pergunta submetida durante a apresentação.*\n\n`;
+    } else {
+      report.questions.forEach(q => {
+        const time = new Date(q.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const badge = q.answered ? '✅ Respondida' : (q.status === 'featured' ? '⭐ Destacada' : (q.status === 'approved' ? '💬 Aprovada' : '⏳ Pendente'));
+        md += `* **[${time}] ${q.authorAlias || 'Participante'}** (${badge}):\n  > "${q.text}"\n\n`;
+      });
+    }
+
+    return md;
+  }
 }

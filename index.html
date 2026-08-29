@@ -15,7 +15,7 @@
   <style>
     .portal-hero {
       max-width: 900px;
-      margin: 60px auto 30px;
+      margin: 50px auto 20px;
       padding: 0 20px;
       text-align: center;
     }
@@ -31,11 +31,18 @@
       -webkit-text-fill-color: transparent;
     }
     .portal-subtitle {
-      font-size: 16.5px;
+      font-size: 16px;
       color: var(--text-secondary);
       max-width: 680px;
-      margin: 0 auto 36px;
+      margin: 0 auto 30px;
       line-height: 1.6;
+    }
+    .portal-search-bar {
+      max-width: 500px;
+      margin: 0 auto 40px;
+      display: flex;
+      gap: 10px;
+      padding: 0 20px;
     }
     .cards-grid {
       display: grid;
@@ -88,110 +95,193 @@
 </head>
 <body>
 
-  <header style="padding: 18px 40px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+  <header style="padding: 16px 36px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
     <div style="font-weight: 800; font-size: 16px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px;">
       <span style="width: 12px; height: 12px; border-radius: 50%; background: var(--accent-primary); display: inline-block; box-shadow: 0 0 10px var(--accent-primary);"></span>
-      <span style="color: #ffffff;">Apresentação Online</span>
-      <span class="badge" style="font-size: 10px; font-weight: 600; font-family: var(--font-mono);">Multi-Apresentações</span>
+      <span style="color: var(--text-primary);" data-i18n="app.title">Apresentação Online</span>
+      <span class="badge" style="font-size: 10px; font-weight: 600; font-family: var(--font-mono);" data-i18n="app.tagline">Multi-Apresentações</span>
     </div>
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <span class="badge badge-accent">⚡ Sincronização em Tempo Real</span>
+    
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <!-- Seletor de Idioma -->
+      <button class="btn btn-sm" id="btn-portal-lang" style="padding: 4px 8px; font-size: 12px;" title="Alternar Idioma">
+        🇧🇷 PT
+      </button>
+
+      <!-- Seletor de Tema -->
+      <button class="btn btn-sm" id="btn-portal-theme" style="padding: 4px 8px; font-size: 12px;" title="Alternar Tema Visual">
+        🌙 Tema
+      </button>
+
+      <span class="badge badge-accent" data-i18n="app.realtime_active">⚡ Sincronização em Tempo Real</span>
     </div>
   </header>
 
   <main>
     <section class="portal-hero animate-fade-in">
-      <h1 class="portal-title">Plataforma de Apresentação HTML Sincronizada</h1>
-      <p class="portal-subtitle">
+      <h1 class="portal-title" data-i18n="portal.hero_title">Plataforma de Apresentação HTML Sincronizada</h1>
+      <p class="portal-subtitle" data-i18n="portal.hero_subtitle">
         Projeções web de alto impacto com controle remoto da mesa técnica e sincronização instantânea com os smartphones do público via QR Code.
       </p>
+      
+      <!-- Busca e Filtro de Apresentações -->
+      <div class="portal-search-bar">
+        <input type="text" id="portal-search-input" placeholder="Buscar apresentação..." data-i18n-placeholder="portal.search_placeholder" style="width: 100%; padding: 10px 14px; background: var(--bg-secondary); border: 1.5px solid var(--border-medium); border-radius: 8px; color: var(--text-primary); font-size: 13.5px; outline: none;">
+      </div>
     </section>
 
     <!-- Grid de Cards Carregado Dinamicamente -->
     <section class="cards-grid" id="catalog-cards-container">
-      <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;">
+      <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;" data-i18n="app.loading">
         Carregando apresentações disponíveis...
       </div>
     </section>
   </main>
 
   <script type="module">
-    async function loadCatalog() {
+    import { i18n } from './js/core/i18n-engine.js';
+    import { theme, THEMES } from './js/core/theme-engine.js';
+
+    let allPresentations = [];
+
+    function updateLanguageButton() {
+      const btn = document.getElementById('btn-portal-lang');
+      if (btn) btn.textContent = i18n.language === 'pt-BR' ? '🇧🇷 PT' : '🇺🇸 EN';
+    }
+
+    function updateThemeButton() {
+      const btn = document.getElementById('btn-portal-theme');
+      if (btn) {
+        const current = THEMES.find(t => t.id === theme.theme) || THEMES[0];
+        btn.textContent = `${current.icon} ${i18n.t(current.labelKey)}`;
+      }
+    }
+
+    function renderCards(presentations) {
       const container = document.getElementById('catalog-cards-container');
+      if (!container) return;
+
+      let html = presentations.map(p => `
+        <article class="presentation-card animate-fade-in">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 8px;">
+              <span class="badge ${p.badgeClass || 'badge-accent'}">${p.code || p.id}</span>
+              <span class="badge" style="font-size: 10.5px;">${i18n.t('portal.slides_count', { count: p.totalSlides })}</span>
+            </div>
+            <div style="font-size: 11px; color: var(--accent-primary); font-weight: 700; margin-bottom: 4px;">
+              ${p.securityLabel || 'Pública'}
+            </div>
+            <h2 style="font-size: 18.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; line-height: 1.3;">
+              ${p.title}
+            </h2>
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.55;">
+              ${p.description}
+            </p>
+          </div>
+
+          <div class="card-actions">
+            <a href="presenter/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn btn-primary" title="Abrir Telão Principal">
+              ${i18n.t('portal.btn_presenter')}
+            </a>
+            <a href="admin/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn" style="border-color: rgba(129, 140, 248, 0.4); color: #c7d2fe;" title="Abrir Mesa Técnica e Moderação">
+              ${i18n.t('portal.btn_admin')}
+            </a>
+            <a href="audience/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn" title="Abrir Visão do Smartphone">
+              ${i18n.t('portal.btn_audience')}
+            </a>
+          </div>
+        </article>
+      `).join('');
+
+      // Card explicativo de como adicionar novas apresentações
+      html += `
+        <article class="presentation-card animate-fade-in" style="border-style: dashed; background: rgba(15,23,42,0.4);">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+              <span class="badge" style="background: rgba(16,185,129,0.15); color: #6ee7b7; border-color: rgba(16,185,129,0.3);">+ Modular</span>
+              <span class="badge">JSON</span>
+            </div>
+            <h2 style="font-size: 18.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; line-height: 1.3;">
+              ${i18n.t('portal.add_new_title')}
+            </h2>
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.55;">
+              ${i18n.t('portal.add_new_desc')}
+            </p>
+          </div>
+
+          <div style="margin-top: 24px;">
+            <a href="README.md" class="btn" style="width: 100%; text-align: center; justify-content: center;" target="_blank">
+              ${i18n.t('portal.view_guide')}
+            </a>
+          </div>
+        </article>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    async function loadCatalog() {
+      updateLanguageButton();
+      updateThemeButton();
+      i18n.applyTranslations();
+
       try {
         const res = await fetch('presentations/catalog.json?t=' + Date.now());
         if (!res.ok) throw new Error('Não foi possível carregar presentations/catalog.json');
         const data = await res.json();
-        const presentations = data.presentations || [];
-
-        let html = presentations.map(p => `
-          <article class="presentation-card animate-fade-in">
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 8px;">
-                <span class="badge ${p.badgeClass || 'badge-accent'}">${p.code || p.id}</span>
-                <span class="badge" style="font-size: 10.5px;">${p.totalSlides} Slide(s)</span>
-              </div>
-              <div style="font-size: 11px; color: var(--accent-primary); font-weight: 700; margin-bottom: 4px;">
-                ${p.securityLabel || 'Pública'}
-              </div>
-              <h2 style="font-size: 18.5px; font-weight: 700; color: #ffffff; margin-bottom: 8px; line-height: 1.3;">
-                ${p.title}
-              </h2>
-              <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.55;">
-                ${p.description}
-              </p>
-            </div>
-
-            <div class="card-actions">
-              <a href="presenter/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn btn-primary" title="Abrir Telão Principal">
-                🖥️ Telão
-              </a>
-              <a href="admin/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn" style="border-color: rgba(129, 140, 248, 0.4); color: #c7d2fe;" title="Abrir Mesa Técnica e Moderação">
-                🛡️ Painel
-              </a>
-              <a href="audience/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn" title="Abrir Visão do Smartphone">
-                📱 Celular
-              </a>
-            </div>
-          </article>
-        `).join('');
-
-        // Card explicativo de como adicionar novas apresentações
-        html += `
-          <article class="presentation-card animate-fade-in" style="border-style: dashed; background: rgba(15,23,42,0.4);">
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <span class="badge" style="background: rgba(16,185,129,0.15); color: #6ee7b7; border-color: rgba(16,185,129,0.3);">+ Modular</span>
-                <span class="badge">JSON</span>
-              </div>
-              <h2 style="font-size: 18.5px; font-weight: 700; color: #ffffff; margin-bottom: 8px; line-height: 1.3;">
-                Adicionar Nova Apresentação
-              </h2>
-              <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.55;">
-                Crie uma pasta em <code>presentations/&lt;nome&gt;/</code> contendo <code>manifest.json</code> e <code>slides.json</code> e registre no <code>presentations/catalog.json</code>.
-              </p>
-            </div>
-
-            <div style="margin-top: 24px;">
-              <a href="README.md" class="btn" style="width: 100%; text-align: center; justify-content: center;" target="_blank">
-                📖 Ver Guia de Apresentações
-              </a>
-            </div>
-          </article>
-        `;
-
-        container.innerHTML = html;
+        allPresentations = data.presentations || [];
+        renderCards(allPresentations);
       } catch (err) {
-        container.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; color: #fca5a5; padding: 30px;">
-            Erro ao carregar catálogo de apresentações: ${err.message}
-          </div>
-        `;
+        const container = document.getElementById('catalog-cards-container');
+        if (container) {
+          container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; color: #fca5a5; padding: 30px;">
+              Erro ao carregar catálogo: ${err.message}
+            </div>
+          `;
+        }
       }
+    }
+
+    // Busca e filtro
+    const searchInput = document.getElementById('portal-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        if (!term) {
+          renderCards(allPresentations);
+        } else {
+          const filtered = allPresentations.filter(p => 
+            p.title.toLowerCase().includes(term) ||
+            p.description.toLowerCase().includes(term) ||
+            (p.code && p.code.toLowerCase().includes(term))
+          );
+          renderCards(filtered);
+        }
+      });
+    }
+
+    // Idioma
+    const langBtn = document.getElementById('btn-portal-lang');
+    if (langBtn) {
+      langBtn.addEventListener('click', () => {
+        i18n.toggleLanguage();
+        updateLanguageButton();
+        updateThemeButton();
+        renderCards(allPresentations);
+      });
+    }
+
+    // Tema
+    const themeBtn = document.getElementById('btn-portal-theme');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        theme.cycleTheme();
+        updateThemeButton();
+      });
     }
 
     document.addEventListener('DOMContentLoaded', loadCatalog);
   </script>
-
 </body>
 </html>

@@ -18,41 +18,58 @@
 
   <!-- Header Superior do Admin / Moderador -->
   <header class="admin-header">
-    <div style="display: flex; align-items: center; gap: 14px;">
-      <span class="badge" style="background: rgba(129, 140, 248, 0.2); border-color: rgba(129, 140, 248, 0.4); color: #c7d2fe;">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <span class="badge" style="background: rgba(129, 140, 248, 0.2); border-color: rgba(129, 140, 248, 0.4); color: #c7d2fe;" data-i18n="admin.badge">
         🛡️ MESA TÉCNICA
       </span>
       <select id="admin-pres-selector" style="background: rgba(15,23,42,0.85); border: 1px solid var(--border-medium); color: #ffffff; padding: 4px 8px; border-radius: 6px; font-size: 13px; font-weight: 600; outline: none; cursor: pointer;">
-        <option value="sdwan-cpe-unificado">Adoção do SD-WAN Edge (NTP)</option>
-        <option value="treinamento-interno-pin">Treinamento Técnico (PIN 7482)</option>
+        <!-- Preenchido dinamicamente via catalog.json -->
       </select>
+
+      <button class="btn btn-sm btn-primary" id="admin-btn-switch-project" title="Projetar esta apresentação no Telão e Smartphones de todos os participantes" data-i18n="admin.btn_switch_project">
+        🚀 Projetar para Todos
+      </button>
+
+      <button class="btn btn-sm" id="admin-btn-configure-host" style="border-color: rgba(56,189,248,0.4); color: #7dd3fc;" title="Configurar IP, FQDN ou Porta do QR Code do evento" data-i18n="admin.btn_configure_host">
+        🌐 Configurar Endereço QR
+      </button>
     </div>
 
-    <!-- Métricas de Presença em Tempo Real no Header -->
-    <div style="display: flex; align-items: center; gap: 10px;">
+    <!-- Métricas de Presença e Controles de Idioma/Tema no Header -->
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
       <div class="stat-box" style="padding: 4px 10px; font-size: 11.5px; gap: 8px;">
-        <span>👥 Online:</span>
+        <span data-i18n="admin.online_stat">👥 Online:</span>
         <strong style="color: #38bdf8;" id="stat-total-online">0</strong>
         <span style="color: #64748b;">|</span>
-        <span title="Autenticados com Google">👤 Logados:</span>
+        <span data-i18n="admin.logged_stat" title="Autenticados com Google">👤 Logados:</span>
         <strong style="color: #34d399;" id="stat-logged-online">0</strong>
         <span style="color: #64748b;">|</span>
-        <span title="Anônimos (Leitura)">👁️ Anônimos:</span>
+        <span data-i18n="admin.anon_stat" title="Anônimos (Leitura)">👁️ Anônimos:</span>
         <strong style="color: #94a3b8;" id="stat-anon-online">0</strong>
       </div>
 
-      <button class="btn btn-sm" id="admin-btn-history" style="border-color: rgba(129, 140, 248, 0.4); color: #c7d2fe;" title="Ver histórico de apresentações anteriores">
+      <!-- Seletor de Idioma -->
+      <button class="btn btn-sm" id="btn-toggle-lang" style="padding: 4px 8px; font-size: 12px;" title="Alternar Idioma / Toggle Language">
+        🇧🇷 PT
+      </button>
+
+      <!-- Seletor de Tema -->
+      <button class="btn btn-sm" id="btn-toggle-theme" style="padding: 4px 8px; font-size: 12px;" title="Alternar Tema Visual (Dark/Light/Slate/High Contrast)">
+        🌙 Tema
+      </button>
+
+      <button class="btn btn-sm" id="admin-btn-history" style="border-color: rgba(129, 140, 248, 0.4); color: #c7d2fe;" title="Ver histórico de apresentações anteriores" data-i18n="admin.btn_history">
         📚 Histórico
       </button>
 
-      <button class="btn btn-sm" id="admin-btn-new-session" style="border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7;" title="Iniciar uma nova apresentação limpa">
+      <button class="btn btn-sm" id="admin-btn-new-session" style="border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7;" title="Iniciar uma nova apresentação limpa" data-i18n="admin.btn_new_session">
         🚀 Nova Sessão
       </button>
 
-      <a href="#" id="admin-link-presenter" target="_blank" class="btn btn-sm btn-primary" title="Abrir Telão do Apresentador para a Sessão Ativa">
+      <a href="#" id="admin-link-presenter" target="_blank" class="btn btn-sm btn-primary" title="Abrir Telão do Apresentador para a Sessão Ativa" data-i18n="portal.btn_presenter">
         🖥️ Telão
       </a>
-      <a href="#" id="admin-link-audience" target="_blank" class="btn btn-sm" title="Abrir Visão do Participante no Celular para a Sessão Ativa">
+      <a href="#" id="admin-link-audience" target="_blank" class="btn btn-sm" title="Abrir Visão do Participante no Celular para a Sessão Ativa" data-i18n="portal.btn_audience">
         📱 Celular
       </a>
     </div>
@@ -64,18 +81,18 @@
     <!-- COLUNA 1: Controle de Sessão, Slide e Participantes Online -->
     <section class="admin-card">
       <div class="admin-card-header">
-        <h3>⚙️ Sessão & Audiência Ao Vivo</h3>
+        <h3 data-i18n="admin.card_session_title">⚙️ Sessão & Audiência Ao Vivo</h3>
         <span class="badge badge-accent" id="admin-session-code">SESSÃO: ---</span>
       </div>
       
       <div class="admin-card-body">
         <div class="stat-box">
-          <span class="stat-label">Slide Ativo no Telão</span>
+          <span class="stat-label" data-i18n="admin.active_slide">Slide Ativo no Telão</span>
           <span class="stat-value" id="admin-slide-indicator">1 / 10</span>
         </div>
 
         <div style="background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-          <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--accent-primary); margin-bottom: 4px;">
+          <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--accent-primary); margin-bottom: 4px;" data-i18n="admin.slide_title_label">
             Título do Slide Atual:
           </div>
           <div style="font-size: 13.5px; font-weight: 600; color: #ffffff;" id="admin-current-slide-title">---</div>
@@ -83,19 +100,19 @@
 
         <!-- Controle de Navegação da Mesa Técnica -->
         <div>
-          <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">
+          <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;" data-i18n="admin.remote_nav_label">
             Navegação Remota do Telão:
           </div>
           <div style="display: flex; gap: 8px;">
-            <button class="btn btn-sm" id="admin-btn-prev" style="flex: 1; font-size: 12px;">⬅️ Anterior</button>
-            <button class="btn btn-sm btn-primary" id="admin-btn-next" style="flex: 1; font-size: 12px;">Próximo ➡️</button>
+            <button class="btn btn-sm" id="admin-btn-prev" style="flex: 1; font-size: 12px;" data-i18n="app.previous">⬅️ Anterior</button>
+            <button class="btn btn-sm btn-primary" id="admin-btn-next" style="flex: 1; font-size: 12px;" data-i18n="app.next">Próximo ➡️</button>
           </div>
         </div>
 
         <!-- Lista de Participantes Conectados ao Vivo com Banimento -->
         <div style="border-top: 1px solid var(--border-subtle); padding-top: 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary);">
+            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary);" data-i18n="admin.connected_participants">
               Participantes Conectados
             </span>
             <span class="badge badge-accent" id="admin-live-badge">0 ao vivo</span>
@@ -108,16 +125,17 @@
 
         <!-- QR Code da Sessão -->
         <div style="text-align: center; padding: 10px; background: rgba(15,23,42,0.7); border-radius: 8px; border: 1px solid var(--border-subtle);">
-          <div id="admin-qr-box" style="width: 90px; height: 90px; margin: 0 auto 6px; background: #ffffff; padding: 4px; border-radius: 4px;"></div>
-          <a id="admin-audience-link" href="#" target="_blank" style="font-size: 10px; word-break: break-all; color: var(--accent-primary);">Link Direto</a>
+          <div id="admin-qr-box" style="width: 100px; height: 100px; margin: 0 auto 6px; background: #ffffff; padding: 4px; border-radius: 4px;"></div>
+          <a id="admin-audience-link" href="#" target="_blank" style="font-size: 10.5px; word-break: break-all; color: var(--accent-primary);">Link Direto</a>
+          <div id="admin-qr-host-indicator" style="font-size: 9.5px; color: var(--text-muted); margin-top: 4px;">Host: Padrão</div>
         </div>
 
         <!-- Ações de Encerramento e Projeção de Analytics -->
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <button class="btn btn-sm" id="admin-btn-publish-analytics" style="background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7;">
+          <button class="btn btn-sm" id="admin-btn-publish-analytics" style="background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7;" data-i18n="admin.btn_publish_analytics">
             📢 Projetar Resumo no Telão
           </button>
-          <button class="btn btn-sm" id="admin-btn-end-session" style="border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;">
+          <button class="btn btn-sm" id="admin-btn-end-session" style="border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;" data-i18n="admin.btn_end_session">
             🛑 Encerrar Sessão
           </button>
         </div>
@@ -127,31 +145,31 @@
     <!-- COLUNA 2: Console de Moderação de Perguntas -->
     <section class="admin-card">
       <div class="admin-card-header">
-        <h3>💬 Moderação de Perguntas</h3>
-        <button class="btn btn-sm" id="admin-btn-clear-all-questions" style="padding: 2px 8px; font-size: 10.5px; border-color: rgba(239,68,68,0.4); color: #fca5a5;" title="Apagar permanentemente todas as perguntas da sessão">
+        <h3 data-i18n="admin.card_moderation_title">💬 Moderação de Perguntas</h3>
+        <button class="btn btn-sm" id="admin-btn-clear-all-questions" style="padding: 2px 8px; font-size: 10.5px; border-color: rgba(239,68,68,0.4); color: #fca5a5;" title="Apagar permanentemente todas as perguntas da sessão" data-i18n="admin.btn_clear_all_q">
           🗑️ Limpar Todas
         </button>
       </div>
 
       <div class="moderation-tabs">
-        <button class="moderation-tab-btn active" data-tab="pending" id="admin-tab-pending">Pendentes</button>
-        <button class="moderation-tab-btn" data-tab="approved" id="admin-tab-approved">Aprovadas</button>
-        <button class="moderation-tab-btn" data-tab="answered" id="admin-tab-answered">✓ Respondidas</button>
-        <button class="moderation-tab-btn" data-tab="rejected" id="admin-tab-rejected">Rejeitadas</button>
+        <button class="moderation-tab-btn active" data-tab="pending" id="admin-tab-pending" data-i18n="admin.tab_pending">Pendentes</button>
+        <button class="moderation-tab-btn" data-tab="approved" id="admin-tab-approved" data-i18n="admin.tab_approved">Aprovadas</button>
+        <button class="moderation-tab-btn" data-tab="answered" id="admin-tab-answered" data-i18n="admin.tab_answered">✓ Respondidas</button>
+        <button class="moderation-tab-btn" data-tab="rejected" id="admin-tab-rejected" data-i18n="admin.tab_rejected">Rejeitadas</button>
       </div>
 
       <div class="admin-card-body" id="admin-moderation-list" style="gap: 12px;">
-        <div style="text-align: center; color: var(--text-muted); padding: 40px; font-size: 13px;">
+        <div style="text-align: center; color: var(--text-muted); padding: 40px; font-size: 13px;" data-i18n="admin.no_questions">
           Nenhuma pergunta nesta categoria.
         </div>
       </div>
     </section>
 
-    <!-- COLUNA 3: Central de Votações com Controle Mestre e Prévia -->
+    <!-- COLUNA 3: Central de Votações com Controle Mestre e Exportação Multiformato -->
     <section class="admin-card">
       <div class="admin-card-header">
-        <h3>📊 Controle Mestre de Votações</h3>
-        <button class="btn btn-sm" id="admin-btn-reset-all-polls" style="padding: 2px 8px; font-size: 10.5px; border-color: rgba(239,68,68,0.4); color: #fca5a5;" title="Zerar todas as votações da apresentação">
+        <h3 data-i18n="admin.card_polls_title">📊 Controle Mestre de Votações</h3>
+        <button class="btn btn-sm" id="admin-btn-reset-all-polls" style="padding: 2px 8px; font-size: 10.5px; border-color: rgba(239,68,68,0.4); color: #fca5a5;" title="Zerar todas as votações da apresentação" data-i18n="admin.btn_reset_all_polls">
           ⚠️ Zerar Todas
         </button>
       </div>
@@ -161,15 +179,62 @@
           <!-- Enquetes geradas dinamicamente com prévia de votos -->
         </div>
 
-        <div style="margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
-          <button class="btn btn-sm btn-primary" id="admin-btn-export" style="width: 100%;">
-            📥 Exportar Relatório Desta Sessão (JSON)
+        <!-- Exportação Multiformato -->
+        <div style="margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 8px;">
+          <button class="btn btn-sm btn-primary" id="admin-btn-export" style="width: 100%; font-size: 11.5px;" data-i18n="admin.export_session_json">
+            📥 Exportar Relatório (JSON)
           </button>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-sm" id="admin-btn-export-csv" style="flex: 1; font-size: 11px; border-color: rgba(16,185,129,0.4); color: #6ee7b7;" data-i18n="admin.export_session_csv">
+              📊 Votos (CSV)
+            </button>
+            <button class="btn btn-sm" id="admin-btn-export-md" style="flex: 1; font-size: 11px; border-color: rgba(129,140,248,0.4); color: #c7d2fe;" data-i18n="admin.export_session_md">
+              📝 Resumo (MD)
+            </button>
+          </div>
         </div>
       </div>
     </section>
 
   </main>
+
+  <!-- Modal de Configuração de Host/IP/FQDN do QR Code -->
+  <div class="modal-overlay" id="host-config-modal">
+    <div class="modal-container" style="max-width: 520px;">
+      <button class="modal-close-btn" id="btn-close-host-modal">&times;</button>
+      <h3 style="font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 6px;" data-i18n="host_modal.title">
+        🌐 Configurar Endereço do QR Code
+      </h3>
+      <p style="font-size: 12.5px; color: #94a3b8; margin-bottom: 16px;" data-i18n="host_modal.desc">
+        Ajuste o IP, FQDN ou porta se a apresentação estiver sendo remapeada na rede ou através de um domínio/túnel externo.
+      </p>
+
+      <div style="margin-bottom: 16px;">
+        <label style="font-size: 12px; font-weight: 600; color: #cbd5e1; display: block; margin-bottom: 6px;" data-i18n="host_modal.label_custom_url">
+          URL Base de Acesso (com protocolo):
+        </label>
+        <input type="text" id="input-custom-host" placeholder="Ex: https://live.empresa.com.br ou http://192.168.1.50:8080" style="width: 100%; padding: 10px 12px; background: rgba(15,23,42,0.8); border: 1.5px solid var(--border-medium); border-radius: 6px; color: #ffffff; font-family: var(--font-mono); font-size: 13px;">
+      </div>
+
+      <div style="background: rgba(15,23,42,0.6); padding: 12px; border-radius: 6px; border: 1px solid var(--border-subtle); margin-bottom: 18px;">
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--accent-primary); margin-bottom: 4px;" data-i18n="host_modal.preview_label">
+          Pré-visualização do Link gerado no QR Code:
+        </div>
+        <div id="host-preview-link" style="font-size: 12px; color: #38bdf8; word-break: break-all; font-family: var(--font-mono);">
+          ---
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <button class="btn btn-sm" id="btn-reset-host-default" style="font-size: 12px;" data-i18n="host_modal.btn_reset">
+          Restaurar Padrão
+        </button>
+        <button class="btn btn-sm btn-primary" id="btn-save-host-config" style="font-size: 12px; padding: 8px 16px;" data-i18n="host_modal.btn_save">
+          💾 Aplicar Novo Endereço
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal de Histórico de Apresentações Anteriores -->
   <div class="modal-overlay" id="history-modal">
@@ -188,7 +253,7 @@
         <button class="btn btn-sm" id="btn-export-all-history" style="font-size: 12px;">
           📥 Exportar Todas as Apresentações (JSON Consolidado)
         </button>
-        <button class="btn btn-sm btn-primary" id="btn-done-history" style="font-size: 12px;">
+        <button class="btn btn-sm btn-primary" id="btn-done-history" style="font-size: 12px;" data-i18n="app.close">
           Fechar
         </button>
       </div>
@@ -199,7 +264,7 @@
   <div class="modal-overlay" id="new-session-modal">
     <div class="modal-container" style="max-width: 460px;">
       <button class="modal-close-btn" id="btn-close-new-session-modal">&times;</button>
-      <h3 style="font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">🚀 Iniciar Nova Apresentação</h3>
+      <h3 style="font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 6px;" data-i18n="admin.btn_new_session">🚀 Iniciar Nova Apresentação</h3>
       <p style="font-size: 12.5px; color: #94a3b8; margin-bottom: 16px;">
         A sessão atual será arquivada e uma nova sessão limpa (com 0 votos e 0 perguntas) será iniciada.
       </p>

@@ -357,6 +357,45 @@ export class RealtimeEngine {
     }
   }
 
+  /**
+   * Propaga alteração de Host/IP do QR Code para o Telão e Mesa Técnica
+   */
+  sendQRHostChange(sessionId, customHost) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    if (this.channel) {
+      this.channel.postMessage({
+        type: 'QR_HOST_CONFIG_CHANGED',
+        sessionId: normSessionId,
+        customHost: customHost,
+        timestamp: Date.now()
+      });
+    }
+  }
+
+  /**
+   * Mesa Técnica: Propaga comando de transição sincronizada de apresentação para todos
+   */
+  sendPresentationSwitch(sessionId, newPresentationId) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    if (this.channel) {
+      this.channel.postMessage({
+        type: 'SWITCH_ACTIVE_PRESENTATION',
+        sessionId: normSessionId,
+        presentationId: newPresentationId,
+        timestamp: Date.now()
+      });
+    }
+    this.updateSessionState(sessionId, {
+      presentationId: newPresentationId,
+      currentSlide: 0,
+      slideId: 1,
+      pollStatus: 'open',
+      showResults: false,
+      featuredQuestion: null,
+      showFinalAnalytics: false
+    });
+  }
+
   stopPresence() {
     if (this.presenceTimer) {
       clearInterval(this.presenceTimer);
