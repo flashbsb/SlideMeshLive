@@ -129,7 +129,11 @@ export class AuthEngine {
     return `Participante #${num}`;
   }
 
-  get isAuthenticated() {
+  getCurrentUser() {
+    return this.currentUser;
+  }
+
+  isAuthenticated() {
     return this.currentUser !== null;
   }
 
@@ -212,6 +216,13 @@ export class AuthEngine {
     }
 
     throw new Error('Usuário ou senha incorretos.');
+  }
+
+  /**
+   * Alias de conveniência para signInWithLocalCredentials
+   */
+  async signInWithLocalPassword(username, password) {
+    return this.signInWithLocalCredentials(username, password);
   }
 
   /**
