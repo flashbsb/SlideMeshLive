@@ -183,6 +183,20 @@ export class ModerationEngine {
   }
 
   /**
+   * Obtém perguntas pendentes de moderação
+   */
+  getPendingQuestions(sessionId) {
+    return this.getQuestions(sessionId).filter(q => q.status === 'pending');
+  }
+
+  /**
+   * Obtém a pergunta atualmente destacada
+   */
+  getFeaturedQuestion(sessionId) {
+    return this.getQuestions(sessionId).find(q => q.status === 'featured') || null;
+  }
+
+  /**
    * Obtém perguntas aprovadas / visíveis ao público
    */
   getApprovedQuestions(sessionId) {
@@ -193,9 +207,25 @@ export class ModerationEngine {
    * Obtém perguntas enviadas pelo usuário logado
    */
   getMyQuestions(sessionId) {
-    if (!this.auth.isAuthenticated || !this.auth.user) return [];
-    const uid = this.auth.user.uid;
+    const user = this.auth ? this.auth.getCurrentUser() : null;
+    if (!user) return [];
+    const uid = user.uid;
     return this.getQuestions(sessionId).filter(q => q.uid === uid);
+  }
+
+  /**
+   * Verifica se o usuário está bloqueado
+   */
+  isUserBlocked(sessionId, uid) {
+    if (!uid) return false;
+    const blockedRaw = localStorage.getItem(`session_blocked_users_${sessionId}`);
+    if (!blockedRaw) return false;
+    try {
+      const list = JSON.parse(blockedRaw);
+      return Array.isArray(list) && list.includes(uid);
+    } catch (e) {
+      return false;
+    }
   }
 
   /**

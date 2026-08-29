@@ -3,18 +3,39 @@
  * Plataforma de Apresentação HTML Interativa Sincronizada
  * 
  * Gera links de conexão e renderiza QR Code dinâmico para o público.
- * Suporta customização dinâmica de Host, IP, FQDN e Porta pela Mesa Técnica.
+ * Suporta customização dinâmica de Host, IP, FQDN e Porta pela Mesa Técnica
+ * com sanitização para isolar estritamente o origin (protocol://host:port).
  */
 
 export class QREngine {
   /**
-   * Obtém o host base configurado para a sessão (ou fallback para window.location.origin)
+   * Sanitiza qualquer URL ou IP para extrair apenas a origem (protocol + host + port)
+   */
+  static sanitizeHost(rawInput) {
+    if (!rawInput || typeof rawInput !== 'string') return window.location.origin;
+    let input = rawInput.trim();
+    if (!input) return window.location.origin;
+
+    if (!input.startsWith('http://') && !input.startsWith('https://')) {
+      input = 'http://' + input;
+    }
+
+    try {
+      const parsed = new URL(input);
+      return parsed.origin;
+    } catch (e) {
+      return input.replace(/\/+$/, '');
+    }
+  }
+
+  /**
+   * Obtém o host base configurado para a sessão
    */
   static getBaseHost(sessionId) {
     if (sessionId) {
       const custom = localStorage.getItem(`session_qr_host_${sessionId}`);
       if (custom && custom.trim().length > 0) {
-        return custom.trim().replace(/\/+$/, '');
+        return this.sanitizeHost(custom);
       }
     }
     return window.location.origin;
@@ -24,14 +45,11 @@ export class QREngine {
    * Define e persiste um Host/IP/FQDN customizado para a sessão
    */
   static setCustomHost(sessionId, customBaseUrl) {
-    if (!sessionId) return;
+    if (!sessionId) return window.location.origin;
     if (customBaseUrl && customBaseUrl.trim().length > 0) {
-      let clean = customBaseUrl.trim().replace(/\/+$/, '');
-      if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
-        clean = 'http://' + clean;
-      }
-      localStorage.setItem(`session_qr_host_${sessionId}`, clean);
-      return clean;
+      const sanitized = this.sanitizeHost(customBaseUrl);
+      localStorage.setItem(`session_qr_host_${sessionId}`, sanitized);
+      return sanitized;
     } else {
       localStorage.removeItem(`session_qr_host_${sessionId}`);
       return window.location.origin;
@@ -49,23 +67,13 @@ export class QREngine {
   }
 
   /**
-   * Gera a URL completa para a audiência
+   * Gera a URL completa para a audiência sem duplicação de caminhos
    */
   static getAudienceUrl(presentationId, sessionId) {
     const baseHost = this.getBaseHost(sessionId);
-    const pathname = window.location.pathname;
-    let basePath = '';
-    
-    if (pathname.includes('/presenter')) {
-      basePath = pathname.substring(0, pathname.lastIndexOf('/presenter'));
-    } else if (pathname.includes('/admin')) {
-      basePath = pathname.substring(0, pathname.lastIndexOf('/admin'));
-    } else if (pathname.includes('/audience')) {
-      basePath = pathname.substring(0, pathname.lastIndexOf('/audience'));
-    }
-
-    const cleanBasePath = basePath ? basePath.replace(/\/+$/, '') : '';
-    return `${baseHost}${cleanBasePath}/audience/?presentation=${encodeURIComponent(presentationId || 'sdwan-cpe-unificado')}&session=${encodeURIComponent(sessionId || 'SDWAN2026')}`;
+    const pid = encodeURIComponent(presentationId || 'sdwan-cpe-unificado');
+    const sid = encodeURIComponent(sessionId || 'SDWAN2026');
+    return `${baseHost}/audience/?presentation=${pid}&session=${sid}`;
   }
 
   /**
@@ -99,8 +107,8 @@ export class QREngine {
         });
       } else {
         containerElement.innerHTML = `
-          <div style="font-size: 11px; color: #64748b; padding: 10px; text-align: center;">
-            QR Code indisponível
+          <div style="font-size: 11px; color: var(--text-muted); padding: 10px; text-align: center;">
+            QR Code indisponível offline sem biblioteca.
           </div>
         `;
       }

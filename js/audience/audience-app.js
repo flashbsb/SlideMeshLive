@@ -121,34 +121,30 @@ class AudienceApp {
         this.handleRemoteSessionUpdate(state);
       });
 
-      // Escuta eventos em tempo real
-      if (this.realtime.channel) {
-        this.realtime.channel.addEventListener('message', (e) => {
-          if (!e.data || e.data.sessionId !== this.sessionId) return;
-          if (e.data.type === 'VOTE_CAST' || e.data.type === 'VOTE_RESET') {
-            this.renderAudienceSlide();
-          } else if (e.data.type === 'QUESTION_STATUS_CHANGE') {
-            this.updateMyQuestionsStatus();
-          } else if (e.data.type === 'USER_BLOCKED_STATUS') {
-            const currentUser = this.auth.getCurrentUser();
-            if (currentUser && currentUser.uid === e.data.uid) {
-              if (e.data.isBlocked) {
-                alert('Aviso: Sua conta foi temporariamente bloqueada pela moderação da apresentação.');
-              }
-            }
-          } else if (e.data.type === 'SWITCH_ACTIVE_PRESENTATION') {
-            if (e.data.presentationId && e.data.presentationId !== this.presentationId) {
-              window.location.href = `?presentation=${encodeURIComponent(e.data.presentationId)}&session=${encodeURIComponent(this.sessionId)}`;
+      // Escuta unificada de eventos em tempo real
+      this.realtime.onEvent((event) => {
+        if (!event || event.sessionId !== this.sessionId) return;
+        const type = event.type;
+        const payload = event.payload || event;
+
+        if (type === 'VOTE_CAST' || type === 'VOTE_RESET' || type === 'RESET_POLL' || type === 'RESET_ALL_POLLS') {
+          this.renderAudienceSlide();
+        } else if (type === 'QUESTION_STATUS_CHANGE' || type === 'CLEAR_ALL_QUESTIONS') {
+          this.updateMyQuestionsStatus();
+        } else if (type === 'USER_BLOCKED_STATUS') {
+          const currentUser = this.auth.getCurrentUser();
+          if (currentUser && currentUser.uid === (payload.uid || event.uid)) {
+            if (payload.isBlocked || event.isBlocked) {
+              alert('Aviso: Sua conta foi temporariamente bloqueada pela moderação.');
             }
           }
-        });
-      }
-
-      window.addEventListener('storage', (e) => {
-        if (e.key && (e.key.startsWith(`session_votes_${this.sessionId}`) || e.key.startsWith(`vote_`))) {
-          this.renderAudienceSlide();
-        } else if (e.key && e.key.startsWith(`session_questions_${this.sessionId}`)) {
-          this.updateMyQuestionsStatus();
+        } else if (type === 'SWITCH_ACTIVE_PRESENTATION') {
+          const newPid = payload.presentationId || event.presentationId;
+          if (newPid && newPid !== this.presentationId) {
+            window.location.href = `?presentation=${encodeURIComponent(newPid)}&session=${encodeURIComponent(this.sessionId)}`;
+          }
+        } else if (type === 'SESSION_STATE_UPDATE' || type === 'SESSION_UPDATE') {
+          this.handleRemoteSessionUpdate(payload);
         }
       });
 
@@ -514,8 +510,12 @@ class AudienceApp {
           return;
         }
 
-        await this.interaction.castVote(this.sessionId, pollId, optId);
-        this.renderAudienceSlide();
+        try {
+          await this.interaction.castVote(this.sessionId, pollId, optId);
+          this.renderAudienceSlide();
+        } catch (err) {
+          alert(err.message);
+        }
       });
     });
   }

@@ -1,12 +1,12 @@
 /**
  * Realtime Synchronization Engine
- * Plataforma de Apresentação HTML Interativa
+ * Plataforma de Apresentação HTML Interativa Sincronizada
  * 
- * Sincronização ultra-robusta em tempo real em 4 camadas:
- * 1. BroadcastChannel (baixa latência na mesma máquina)
- * 2. Window Storage Event (garantia nativa entre abas/janelas)
- * 3. Hub HTTP Local /api/sync (sincronização Wi-Fi/LAN entre Celulares e Computadores 100% offline)
- * 4. Firebase Realtime Database (internet / múltiplos locais remotos)
+ * Despachante unificado em 4 camadas de transporte:
+ * 1. Despachante direto de eventos onEvent()
+ * 2. Hub HTTP Local Sequencial (/api/sync) para Wi-Fi/LAN entre múltiplos aparelhos
+ * 3. BroadcastChannel nativo do navegador
+ * 4. Firebase Realtime Database para nuvem/internet
  */
 
 import { APP_CONFIG } from '../config.js';
@@ -18,11 +18,10 @@ export class RealtimeEngine {
     this.db = null;
     this.channel = null;
     this.sessionListeners = new Map();
+    this.eventListeners = [];
     this.participantId = this._generateParticipantId();
     this.presenceTimer = null;
-    this.lastProcessedTimestamp = new Map();
-    this.lastSyncTimestamp = 0;
-    this.isHttpSyncActive = false;
+    this.lastProcessedEventId = 0;
 
     this.init();
   }
@@ -43,13 +42,13 @@ export class RealtimeEngine {
         this.channel = new BroadcastChannel('apresentacao_realtime_sync');
         this.channel.onmessage = (event) => {
           if (event && event.data) {
-            this._handleIncomingMessage(event.data);
+            this._handleIncomingRawMessage(event.data);
           }
         };
       } catch (e) {}
     }
 
-    // 2. Registra listener nativo de Storage
+    // 2. Storage event nativo
     window.addEventListener('storage', (e) => {
       if (e.key && e.key.startsWith('session_state_') && e.newValue) {
         try {
@@ -63,8 +62,8 @@ export class RealtimeEngine {
     // 3. Inicializa Firebase de forma assíncrona se configurado
     this._initFirebase();
 
-    // 4. Inicializa Hub de Sincronização Local HTTP (/api/sync)
-    this._initLocalHttpSync();
+    // 4. Inicia sincronização sequencial com o servidor local
+    this._startLocalHttpPolling();
   }
 
   async _initFirebase() {
@@ -88,66 +87,88 @@ export class RealtimeEngine {
     }
   }
 
-  _initLocalHttpSync() {
-    // Inicia polling leve a cada 1200ms para manter todos os celulares e computadores sincronizados via Wi-Fi
+  _startLocalHttpPolling() {
     setInterval(() => {
       this.syncWithLocalServer();
-    }, 1200);
+    }, 750);
   }
 
   async syncWithLocalServer() {
     const sessionId = (sessionStorage.getItem('apres_active_session') || localStorage.getItem('active_presentation_session') || 'SDWAN2026').trim().toUpperCase();
+    const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'http://127.0.0.1:8000';
+    const baseUrl = origin.startsWith('http') ? origin : 'http://127.0.0.1:8000';
+
     try {
-      const res = await fetch(`/api/sync?session=${encodeURIComponent(sessionId)}&since=${this.lastSyncTimestamp}`);
+      const res = await fetch(`${baseUrl}/api/sync?session=${encodeURIComponent(sessionId)}&since_id=${this.lastProcessedEventId}`);
       if (!res.ok) return;
       const data = await res.json();
-      this.lastSyncTimestamp = data.serverTime || Date.now();
+      
+      if (data.lastEventId) {
+        this.lastProcessedEventId = Math.max(this.lastProcessedEventId, data.lastEventId);
+      }
 
-      // Aplica estado da sessão se for mais recente
+      // 1. Atualiza estado da sessão
       if (data.state && Object.keys(data.state).length > 0) {
         const localRaw = localStorage.getItem(`session_state_${sessionId}`);
         let localState = {};
         try { if (localRaw) localState = JSON.parse(localRaw); } catch(e){}
-        
         const merged = { ...localState, ...data.state };
         localStorage.setItem(`session_state_${sessionId}`, JSON.stringify(merged));
         this._triggerSessionListeners(sessionId, merged);
       }
 
-      // Aplica perguntas consolidadas
-      if (Array.isArray(data.questions) && data.questions.length > 0) {
+      // 2. Atualiza perguntas consolidadas
+      if (Array.isArray(data.questions)) {
         localStorage.setItem(`session_questions_${sessionId}`, JSON.stringify(data.questions));
       }
 
-      // Aplica votos consolidados
+      // 3. Atualiza votos consolidados
       if (data.votes && typeof data.votes === 'object') {
         Object.keys(data.votes).forEach(pid => {
           localStorage.setItem(`session_votes_${sessionId}_${pid}`, JSON.stringify(data.votes[pid]));
         });
       }
 
-      // Dispara eventos novos recebidos da rede
-      if (Array.isArray(data.events)) {
+      // 4. Despacha eventos recebidos da rede para todos os listeners locais
+      if (Array.isArray(data.events) && data.events.length > 0) {
         data.events.forEach(evt => {
-          if (this.channel) {
-            this.channel.postMessage({
-              type: evt.type,
-              sessionId: sessionId,
-              ...evt.payload,
-              timestamp: evt.timestamp
-            });
-          }
+          this._dispatchLocalEvent({
+            id: evt.id,
+            type: evt.type,
+            sessionId: sessionId,
+            payload: evt.payload || {},
+            timestamp: evt.timestamp
+          });
         });
       }
     } catch (e) {
-      // Servidor sem suporte a /api/sync ou offline
+      // Offline ou servidor estático
     }
   }
 
   async sendLocalServerEvent(type, sessionId, payload = {}) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const eventObj = {
+      type: type,
+      sessionId: normSessionId,
+      payload: payload,
+      timestamp: Date.now()
+    };
+
+    // Dispara localmente de imediato para feedback instantâneo
+    this._dispatchLocalEvent(eventObj);
+
+    if (this.channel) {
+      try {
+        this.channel.postMessage(eventObj);
+      } catch(e) {}
+    }
+
+    const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'http://127.0.0.1:8000';
+    const baseUrl = origin.startsWith('http') ? origin : 'http://127.0.0.1:8000';
+
     try {
-      await fetch('/api/sync', {
+      await fetch(`${baseUrl}/api/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -157,6 +178,29 @@ export class RealtimeEngine {
         })
       });
     } catch (e) {}
+  }
+
+  onEvent(callback) {
+    this.eventListeners.push(callback);
+    return () => {
+      this.eventListeners = this.eventListeners.filter(cb => cb !== callback);
+    };
+  }
+
+  _dispatchLocalEvent(eventObj) {
+    this.eventListeners.forEach(cb => {
+      try { cb(eventObj); } catch(err) { console.error('Erro no listener de evento:', err); }
+    });
+  }
+
+  _handleIncomingRawMessage(msg) {
+    if (!msg || !msg.sessionId) return;
+    const normSessionId = msg.sessionId.trim().toUpperCase();
+
+    if (msg.type === 'SESSION_UPDATE' || msg.type === 'SESSION_STATE_UPDATE') {
+      this._triggerSessionListeners(normSessionId, msg.data || msg.payload);
+    }
+    this._dispatchLocalEvent(msg);
   }
 
   async setSlide(sessionId, slideIndex, slideData = null) {
@@ -243,88 +287,49 @@ export class RealtimeEngine {
 
   sendReaction(sessionId, emoji) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
-    if (this.channel) {
-      this.channel.postMessage({
-        type: 'REACTION_SENT',
-        sessionId: normSessionId,
-        emoji: emoji,
-        timestamp: Date.now()
-      });
-    }
     this.sendLocalServerEvent('REACTION_SENT', normSessionId, { emoji: emoji });
   }
 
   sendVote(sessionId, pollId, optionId, uid) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
     const payload = { pollId, optionId, uid, timestamp: Date.now() };
-    if (this.channel) {
-      this.channel.postMessage({
-        type: 'VOTE_CAST',
-        sessionId: normSessionId,
-        ...payload
-      });
-    }
     this.sendLocalServerEvent('VOTE_CAST', normSessionId, payload);
   }
 
   sendQuestion(sessionId, question) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
-    if (this.channel) {
-      this.channel.postMessage({
-        type: 'NEW_QUESTION',
-        sessionId: normSessionId,
-        question: question
-      });
-    }
     this.sendLocalServerEvent('NEW_QUESTION', normSessionId, { question: question });
+  }
+
+  sendQuestionStatus(sessionId, questionId, status, answered = null) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const payload = { questionId, status };
+    if (answered !== null) payload.answered = answered;
+    this.sendLocalServerEvent('QUESTION_STATUS_CHANGE', normSessionId, payload);
+  }
+
+  sendClearQuestions(sessionId) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    this.sendLocalServerEvent('CLEAR_ALL_QUESTIONS', normSessionId, {});
   }
 
   sendPollReset(sessionId, pollId) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
-    if (this.channel) {
-      this.channel.postMessage({
-        type: 'VOTE_RESET',
-        sessionId: normSessionId,
-        pollId: pollId
-      });
-    }
     this.sendLocalServerEvent('RESET_POLL', normSessionId, { pollId: pollId });
   }
 
   sendAllPollsReset(sessionId) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
-    if (this.channel) {
-      this.channel.postMessage({
-        type: 'VOTE_RESET',
-        sessionId: normSessionId
-      });
-    }
     this.sendLocalServerEvent('RESET_ALL_POLLS', normSessionId, {});
   }
 
   sendQRHostChange(sessionId, customHost) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
-    if (this.channel) {
-      this.channel.postMessage({
-        type: 'QR_HOST_CONFIG_CHANGED',
-        sessionId: normSessionId,
-        customHost: customHost,
-        timestamp: Date.now()
-      });
-    }
     this.sendLocalServerEvent('QR_HOST_CONFIG_CHANGED', normSessionId, { customHost: customHost });
   }
 
   sendPresentationSwitch(sessionId, newPresentationId) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
-    if (this.channel) {
-      this.channel.postMessage({
-        type: 'SWITCH_ACTIVE_PRESENTATION',
-        sessionId: normSessionId,
-        presentationId: newPresentationId,
-        timestamp: Date.now()
-      });
-    }
     this.sendLocalServerEvent('SWITCH_ACTIVE_PRESENTATION', normSessionId, { presentationId: newPresentationId });
 
     this.updateSessionState(sessionId, {
@@ -354,17 +359,8 @@ export class RealtimeEngine {
         lastPing: Date.now()
       };
 
-      if (this.channel) {
-        this.channel.postMessage({
-          type: 'PRESENCE_PING',
-          sessionId: normSessionId,
-          ...presencePayload
-        });
-      }
-
       this.sendLocalServerEvent('PRESENCE_PING', normSessionId, presencePayload);
 
-      // Salva no registro de presença local
       const key = `session_presence_${normSessionId}`;
       let map = {};
       try {
@@ -374,7 +370,6 @@ export class RealtimeEngine {
 
       map[pid] = presencePayload;
 
-      // Limpa presenças antigas (> 15s)
       const now = Date.now();
       Object.keys(map).forEach(k => {
         if (now - map[k].lastPing > 15000) delete map[k];
@@ -442,15 +437,6 @@ export class RealtimeEngine {
       } catch (e) {}
     }
     this._triggerSessionListeners(sessionId, state);
-  }
-
-  _handleIncomingMessage(msg) {
-    if (!msg || !msg.sessionId) return;
-    const normSessionId = msg.sessionId.trim().toUpperCase();
-
-    if (msg.type === 'SESSION_UPDATE') {
-      this._triggerSessionListeners(normSessionId, msg.data);
-    }
   }
 
   _triggerSessionListeners(sessionId, data) {

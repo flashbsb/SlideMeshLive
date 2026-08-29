@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 """
-Servidor HTTP Local com Hub de Sincronização em Tempo Real (LAN / Wi-Fi)
+Servidor HTTP Local com Hub de Sincronização em Tempo Real Sequencial (LAN / Wi-Fi)
 Plataforma de Apresentação HTML Interativa Sincronizada
-
-Fornece:
-1. Servidor de arquivos estáticos sem cache (no-cache headers).
-2. Hub de eventos e estados de sessão (/api/sync) para sincronização instantânea
-   entre Celulares e Computadores na mesma rede local, 100% offline e sem dependências externas.
 """
 
 import os
@@ -20,13 +15,13 @@ from urllib.parse import urlparse, parse_qs
 
 # Memória central de sincronização em tempo real do servidor local
 SERVER_STATE = {
-    "sessions": {},      # sessionId -> { state: {}, events: [] }
-    "max_events": 500
+    "sessions": {},
+    "max_events": 1000
 }
 
 class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
-        # Desativa cache para garantir que os celulares sempre recebam a versão mais recente dos scripts
+        # Desativa cache para garantir entrega em tempo real de assets
         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
         self.send_header('Pragma', 'no-cache')
         self.send_header('Expires', '0')
@@ -42,31 +37,36 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         
-        # Endpoint de Sincronização em Tempo Real
+        # Endpoint de Sincronização em Tempo Real Sequencial
         if parsed.path == '/api/sync':
             qs = parse_qs(parsed.query)
-            session_id = qs.get('session', ['SDWAN2026'])[0].strip().toUpperCase() if hasattr(str, 'toUpperCase') else qs.get('session', ['SDWAN2026'])[0].strip().upper()
-            since_ts = int(qs.get('since', [0])[0])
+            session_id = qs.get('session', ['SDWAN2026'])[0].strip().upper()
+            since_id = int(qs.get('since_id', [0])[0])
 
             session_data = SERVER_STATE["sessions"].setdefault(session_id, {
-                "state": {},
+                "state": { "currentSlide": 0, "slideId": 1, "pollStatus": "open", "showResults": False },
                 "events": [],
                 "questions": [],
                 "votes": {},
-                "presence": {}
+                "presence": {},
+                "last_event_id": 0
             })
 
-            # Filtra eventos novos desde o timestamp solicitado
-            new_events = [e for e in session_data["events"] if e.get("timestamp", 0) > since_ts]
+            # Filtra eventos novos com ID sequencial maior que since_id
+            new_events = [e for e in session_data["events"] if e.get("id", 0) > since_id]
+
+            now_ms = int(time.time() * 1000)
+            active_presence = len([p for p in session_data["presence"].values() if (now_ms - p.get("lastPing", 0)) < 15000])
 
             response_data = {
                 "sessionId": session_id,
-                "serverTime": int(time.time() * 1000),
+                "serverTime": now_ms,
+                "lastEventId": session_data["last_event_id"],
                 "state": session_data["state"],
                 "events": new_events,
                 "questions": session_data["questions"],
                 "votes": session_data["votes"],
-                "presenceCount": len([p for p in session_data["presence"].values() if (time.time() * 1000 - p.get("lastPing", 0)) < 15000])
+                "presenceCount": active_presence
             }
 
             self.send_response(200)
@@ -94,26 +94,31 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 now_ts = int(time.time() * 1000)
 
                 session_data = SERVER_STATE["sessions"].setdefault(session_id, {
-                    "state": {},
+                    "state": { "currentSlide": 0, "slideId": 1, "pollStatus": "open", "showResults": False },
                     "events": [],
                     "questions": [],
                     "votes": {},
-                    "presence": {}
+                    "presence": {},
+                    "last_event_id": 0
                 })
 
+                session_data["last_event_id"] += 1
+                event_id = session_data["last_event_id"]
+
                 event_record = {
+                    "id": event_id,
                     "type": msg_type,
                     "sessionId": session_id,
                     "payload": payload,
                     "timestamp": now_ts
                 }
 
-                # Atualiza dados específicos conforme o tipo de mensagem
-                if msg_type == 'SESSION_STATE_UPDATE':
+                # Atualiza memória de estado conforme o tipo de mensagem
+                if msg_type in ('SESSION_STATE_UPDATE', 'SESSION_UPDATE'):
                     session_data["state"].update(payload)
                 elif msg_type == 'NEW_QUESTION':
                     q = payload.get('question')
-                    if q:
+                    if q and not any(existing.get('id') == q.get('id') for existing in session_data["questions"]):
                         session_data["questions"].append(q)
                 elif msg_type == 'QUESTION_STATUS_CHANGE':
                     qid = payload.get('questionId')
@@ -133,14 +138,15 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                     pid = payload.get('pollId')
                     if pid:
                         vote_list = session_data["votes"].setdefault(pid, [])
-                        # Evita voto duplicado pelo mesmo UID
                         uid = payload.get('uid')
                         if not any(v.get('uid') == uid for v in vote_list):
                             vote_list.append(payload)
-                elif msg_type == 'RESET_POLL':
+                elif msg_type in ('RESET_POLL', 'VOTE_RESET'):
                     pid = payload.get('pollId')
                     if pid and pid in session_data["votes"]:
                         session_data["votes"][pid] = []
+                    elif not pid:
+                        session_data["votes"] = {}
                 elif msg_type == 'RESET_ALL_POLLS':
                     session_data["votes"] = {}
                 elif msg_type == 'PRESENCE_PING':
@@ -152,7 +158,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                             "lastPing": now_ts
                         }
 
-                # Registra evento na fila
+                # Adiciona na fila sequencial
                 session_data["events"].append(event_record)
                 if len(session_data["events"]) > SERVER_STATE["max_events"]:
                     session_data["events"] = session_data["events"][-SERVER_STATE["max_events"]:]
@@ -160,7 +166,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
                 self.end_headers()
-                self.wfile.write(json.dumps({"success": True, "timestamp": now_ts}).encode('utf-8'))
+                self.wfile.write(json.dumps({"success": True, "eventId": event_id, "timestamp": now_ts}).encode('utf-8'))
                 return
             except Exception as err:
                 self.send_response(400)
@@ -173,7 +179,6 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def log_message(self, format, *args):
-        # Suprime logs repetitivos de polling
         if len(args) > 0 and '/api/sync' in str(args[0]):
             return
         sys.stderr.write(f"[{self.log_date_time_string()}] {args[0]} {args[1]}\n")
@@ -204,7 +209,7 @@ def main():
     httpd = HTTPServer(server_address, LiveSyncHTTPRequestHandler)
 
     print("=" * 72)
-    print(" 📡 PLATAFORMA DE APRESENTAÇÃO ONLINE - SERVIDOR REALTIME ATIVO")
+    print(" 📡 PLATAFORMA DE APRESENTAÇÃO ONLINE - SERVIDOR REALTIME SEQUENCIAL")
     print("=" * 72)
     print(f" 💻 Acesso Local no Computador (Navegador):")
     print(f"    Portal Inicial:     http://localhost:{port}/")
@@ -215,7 +220,7 @@ def main():
     print(f"    http://{local_ip}:{port}/")
     print(f"    Link Direto Celular: http://{local_ip}:{port}/audience/?presentation=sdwan-cpe-unificado&session=SDWAN2026")
     print("=" * 72)
-    print(" ⚡ Hub de Sincronização Local (/api/sync) ativo: Celulares e Telão sincronizados!")
+    print(" ⚡ Hub Sequencial (/api/sync) ativo: Celulares e Telão sincronizados!")
     print(" Pressione Ctrl+C para encerrar o servidor.\n")
 
     try:

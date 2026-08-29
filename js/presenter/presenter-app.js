@@ -121,33 +121,27 @@ class PresenterApp {
         this.handleRemoteSessionUpdate(state);
       });
 
-      // Escuta eventos em tempo real
-      if (this.realtime.channel) {
-        this.realtime.channel.addEventListener('message', (e) => {
-          if (!e.data || e.data.sessionId !== this.sessionId) return;
-          if (e.data.type === 'REACTION_SENT') {
-            this.spawnFloatingReaction(e.data.emoji);
-          } else if (e.data.type === 'VOTE_CAST' || e.data.type === 'VOTE_RESET') {
-            this.updatePollResultsInStage();
-          } else if (e.data.type === 'QUESTION_STATUS_CHANGE' || e.data.type === 'NEW_QUESTION') {
-            this.updateQuestionsDrawer();
-          } else if (e.data.type === 'QR_HOST_CONFIG_CHANGED') {
-            this.setupQRCodes();
-          } else if (e.data.type === 'SWITCH_ACTIVE_PRESENTATION') {
-            if (e.data.presentationId && e.data.presentationId !== this.presentationId) {
-              window.location.href = `?presentation=${encodeURIComponent(e.data.presentationId)}&session=${encodeURIComponent(this.sessionId)}`;
-            }
-          }
-        });
-      }
+      // Escuta unificada de eventos em tempo real
+      this.realtime.onEvent((event) => {
+        if (!event || event.sessionId !== this.sessionId) return;
+        const type = event.type;
+        const payload = event.payload || event;
 
-      window.addEventListener('storage', (e) => {
-        if (e.key && (e.key.startsWith(`session_votes_${this.sessionId}`) || e.key.startsWith(`vote_`))) {
+        if (type === 'REACTION_SENT') {
+          this.spawnFloatingReaction(payload.emoji || event.emoji);
+        } else if (type === 'VOTE_CAST' || type === 'VOTE_RESET' || type === 'RESET_POLL' || type === 'RESET_ALL_POLLS') {
           this.updatePollResultsInStage();
-        } else if (e.key && e.key.startsWith(`session_questions_${this.sessionId}`)) {
+        } else if (type === 'QUESTION_STATUS_CHANGE' || type === 'NEW_QUESTION' || type === 'CLEAR_ALL_QUESTIONS') {
           this.updateQuestionsDrawer();
-        } else if (e.key && e.key.startsWith(`session_qr_host_${this.sessionId}`)) {
+        } else if (type === 'SESSION_STATE_UPDATE' || type === 'SESSION_UPDATE') {
+          this.handleRemoteSessionUpdate(payload);
+        } else if (type === 'QR_HOST_CONFIG_CHANGED') {
           this.setupQRCodes();
+        } else if (type === 'SWITCH_ACTIVE_PRESENTATION') {
+          const newPid = payload.presentationId || event.presentationId;
+          if (newPid && newPid !== this.presentationId) {
+            window.location.href = `?presentation=${encodeURIComponent(newPid)}&session=${encodeURIComponent(this.sessionId)}`;
+          }
         }
       });
 

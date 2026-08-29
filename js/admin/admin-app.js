@@ -159,30 +159,18 @@ class AdminApp {
       this.updatePresenceMetrics();
       setInterval(() => this.updatePresenceMetrics(), 4000);
 
-      // Escuta eventos em tempo real
-      if (this.realtime.channel) {
-        this.realtime.channel.addEventListener('message', (e) => {
-          if (!e.data || e.data.sessionId !== this.sessionId) return;
-          if (e.data.type === 'NEW_QUESTION' || e.data.type === 'QUESTION_STATUS_CHANGE') {
-            this.renderModerationList();
-          } else if (e.data.type === 'VOTE_CAST' || e.data.type === 'VOTE_RESET') {
-            this.renderPollsList();
-          } else if (e.data.type === 'PRESENCE_PING') {
-            this.updatePresenceMetrics();
-          } else if (e.data.type === 'QR_HOST_CONFIG_CHANGED') {
-            this.setupQRCode();
-          }
-        });
-      }
+      // Escuta unificada de eventos em tempo real
+      this.realtime.onEvent((event) => {
+        if (!event || event.sessionId !== this.sessionId) return;
+        const type = event.type;
 
-      window.addEventListener('storage', (e) => {
-        if (e.key && e.key.startsWith(`session_questions_${this.sessionId}`)) {
+        if (type === 'NEW_QUESTION' || type === 'QUESTION_STATUS_CHANGE' || type === 'CLEAR_ALL_QUESTIONS') {
           this.renderModerationList();
-        } else if (e.key && (e.key.startsWith(`session_votes_${this.sessionId}`) || e.key.startsWith(`vote_`))) {
+        } else if (type === 'VOTE_CAST' || type === 'VOTE_RESET' || type === 'RESET_POLL' || type === 'RESET_ALL_POLLS') {
           this.renderPollsList();
-        } else if (e.key && e.key.startsWith(`session_presence_${this.sessionId}`)) {
+        } else if (type === 'PRESENCE_PING') {
           this.updatePresenceMetrics();
-        } else if (e.key && e.key.startsWith(`session_qr_host_${this.sessionId}`)) {
+        } else if (type === 'QR_HOST_CONFIG_CHANGED') {
           this.setupQRCode();
         }
       });
