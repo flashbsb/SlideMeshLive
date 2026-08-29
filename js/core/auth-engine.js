@@ -287,18 +287,14 @@ export class AuthEngine {
       }
     }
     
-    // Fallback: Identificação Google amigável
-    const namePrompt = prompt('Digite seu Nome / E-mail para identificação no evento:', 'Participante Convidado');
-    if (namePrompt && namePrompt.trim()) {
-      return this.signInWithCustomName(namePrompt.trim());
-    }
-
-    const mockUid = 'goog_' + Math.random().toString(36).substring(2, 12);
+    // Fallback: Identificação direta amigável sem window.prompt() bloqueante
+    const mockUid = 'goog_' + Math.random().toString(36).substring(2, 10);
+    const mockAlias = this._generateAnonymousAlias(mockUid);
     const mockUser = {
       uid: mockUid,
       email: 'participante@evento.local',
-      displayName: 'Participante Conectado',
-      anonymousAlias: 'Participante Conectado',
+      displayName: mockAlias,
+      anonymousAlias: mockAlias,
       provider: 'google_local',
       role: 'participant',
       photoURL: null,

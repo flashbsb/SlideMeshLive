@@ -22,6 +22,7 @@ export class RealtimeEngine {
     this.participantId = this._generateParticipantId();
     this.presenceTimer = null;
     this.lastProcessedEventId = 0;
+    this._locallyDispatchedIds = new Set();
 
     this.init();
   }
@@ -88,6 +89,7 @@ export class RealtimeEngine {
   }
 
   _startLocalHttpPolling() {
+    this.syncWithLocalServer(); // Sincronização inicial instantânea (M01)
     setInterval(() => {
       this.syncWithLocalServer();
     }, 750);
@@ -105,6 +107,10 @@ export class RealtimeEngine {
       
       if (data.lastEventId) {
         this.lastProcessedEventId = Math.max(this.lastProcessedEventId, data.lastEventId);
+      }
+      if (Array.isArray(data.events) && data.events.length > 0) {
+        const maxId = Math.max(...data.events.map(e => e.id || 0));
+        this.lastProcessedEventId = Math.max(this.lastProcessedEventId, maxId);
       }
 
       // 1. Atualiza estado da sessão
@@ -129,9 +135,10 @@ export class RealtimeEngine {
         });
       }
 
-      // 4. Despacha eventos recebidos da rede para todos os listeners locais
+      // 4. Despacha eventos recebidos da rede para todos os listeners locais (filtrando os já despachados localmente)
       if (Array.isArray(data.events) && data.events.length > 0) {
-        data.events.forEach(evt => {
+        const newEvents = data.events.filter(e => !e.id || !this._locallyDispatchedIds.has(e.id));
+        newEvents.forEach(evt => {
           this._dispatchLocalEvent({
             id: evt.id,
             type: evt.type,
@@ -168,7 +175,7 @@ export class RealtimeEngine {
     const baseUrl = origin.startsWith('http') ? origin : 'http://127.0.0.1:8000';
 
     try {
-      await fetch(`${baseUrl}/api/sync`, {
+      const res = await fetch(`${baseUrl}/api/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -177,6 +184,15 @@ export class RealtimeEngine {
           payload: payload
         })
       });
+      if (res.ok) {
+        const result = await res.json();
+        if (result && result.eventId) {
+          this._locallyDispatchedIds.add(result.eventId);
+          if (this._locallyDispatchedIds.size > 200) {
+            this._locallyDispatchedIds = new Set([...this._locallyDispatchedIds].slice(-100));
+          }
+        }
+      }
     } catch (e) {}
   }
 
@@ -316,6 +332,29 @@ export class RealtimeEngine {
   sendPollReset(sessionId, pollId) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
     this.sendLocalServerEvent('RESET_POLL', normSessionId, { pollId: pollId });
+  }
+
+  async deleteFirebaseNode(path) {
+    if (!this.isFirebaseReady || !this.db) return;
+    try {
+      await this.firebaseFns.remove(this.firebaseFns.ref(this.db, path));
+    } catch (e) {
+      console.warn('[RealtimeEngine] deleteFirebaseNode erro:', e);
+    }
+  }
+
+  async setFirebaseNode(path, value) {
+    if (!this.isFirebaseReady || !this.db) return;
+    try {
+      await this.firebaseFns.set(this.firebaseFns.ref(this.db, path), value);
+    } catch (e) {
+      console.warn('[RealtimeEngine] setFirebaseNode erro:', e);
+    }
+  }
+
+  sendUserBlocked(sessionId, uid, isBlocked) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    this.sendLocalServerEvent('USER_BLOCKED_STATUS', normSessionId, { uid, isBlocked });
   }
 
   sendAllPollsReset(sessionId) {

@@ -164,7 +164,15 @@ class AdminApp {
         if (!event || event.sessionId !== this.sessionId) return;
         const type = event.type;
 
-        if (type === 'NEW_QUESTION' || type === 'QUESTION_STATUS_CHANGE' || type === 'CLEAR_ALL_QUESTIONS') {
+        if (type === 'NEW_QUESTION') {
+          this.playNotificationChime();
+          const pendingTab = document.getElementById('admin-tab-pending');
+          if (pendingTab) {
+            pendingTab.classList.add('animate-pulse');
+            setTimeout(() => pendingTab.classList.remove('animate-pulse'), 3000);
+          }
+          this.renderModerationList();
+        } else if (type === 'QUESTION_STATUS_CHANGE' || type === 'CLEAR_ALL_QUESTIONS') {
           this.renderModerationList();
         } else if (type === 'VOTE_CAST' || type === 'VOTE_RESET' || type === 'RESET_POLL' || type === 'RESET_ALL_POLLS') {
           this.renderPollsList();
@@ -257,7 +265,7 @@ class AdminApp {
     if (participants.length === 0) {
       this.dom.participantsList.innerHTML = `
         <div style="color: var(--text-muted); font-size: 11.5px; text-align: center; padding: 10px;">
-          ${i18n.t('admin.no_questions')}
+          ${i18n.t('admin.no_participants')}
         </div>
       `;
       return;
@@ -311,6 +319,7 @@ class AdminApp {
   }
 
   renderModerationList() {
+    this.updateModerationTabBadges();
     const allQuestions = this.moderation.getQuestions(this.sessionId);
 
     const filtered = allQuestions.filter(q => {
@@ -414,23 +423,60 @@ class AdminApp {
     }).join('');
   }
 
+  updateModerationTabBadges() {
+    const allQuestions = this.moderation.getQuestions(this.sessionId);
+    const pendingCount = allQuestions.filter(q => q.status === 'pending').length;
+    const approvedCount = allQuestions.filter(q => (q.status === 'approved' || q.status === 'featured') && !q.answered).length;
+    const answeredCount = allQuestions.filter(q => q.answered === true).length;
+    const rejectedCount = allQuestions.filter(q => q.status === 'rejected').length;
+
+    const tabPending = document.getElementById('admin-tab-pending');
+    const tabApproved = document.getElementById('admin-tab-approved');
+    const tabAnswered = document.getElementById('admin-tab-answered');
+    const tabRejected = document.getElementById('admin-tab-rejected');
+
+    if (tabPending) tabPending.textContent = `${i18n.t('admin.tab_pending')}${pendingCount > 0 ? ` (${pendingCount})` : ''}`;
+    if (tabApproved) tabApproved.textContent = `${i18n.t('admin.tab_approved')}${approvedCount > 0 ? ` (${approvedCount})` : ''}`;
+    if (tabAnswered) tabAnswered.textContent = `${i18n.t('admin.tab_answered')}${answeredCount > 0 ? ` (${answeredCount})` : ''}`;
+    if (tabRejected) tabRejected.textContent = `${i18n.t('admin.tab_rejected')}${rejectedCount > 0 ? ` (${rejectedCount})` : ''}`;
+  }
+
+  playNotificationChime() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // A5
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.36);
+    } catch (e) {}
+  }
+
   renderPollsList() {
     if (!this.dom.pollsContainer || !this.engine.slidesData) return;
 
     const polls = [];
-    this.engine.slidesData.slides.forEach(s => {
+    this.engine.slidesData.slides.forEach((s, idx) => {
       if (s.interaction && s.interaction.poll) {
         polls.push({
           slideId: s.id,
           slideTitle: s.title,
           poll: s.interaction.poll,
-          isCurrentSlide: (this.engine.currentSlideIndex === s.id - 1)
+          isCurrentSlide: (idx === this.engine.currentSlideIndex)
         });
       }
     });
 
     if (polls.length === 0) {
-      this.dom.pollsContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 12px;">Nenhuma enquete cadastrada nesta apresentação.</div>`;
+      this.dom.pollsContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 12px;">${i18n.t('admin.no_polls')}</div>`;
       return;
     }
 
@@ -460,9 +506,9 @@ class AdminApp {
         <div class="card" style="padding: 14px; background: ${isCurrent ? 'var(--bg-tertiary)' : 'var(--bg-secondary)'}; border: ${isCurrent ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-subtle)'};">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <span class="badge ${isCurrent ? 'badge-accent' : ''}" style="font-size: 10px;">
-              ${isCurrent ? '⭐ SLIDE ATUAL' : `Slide ${item.slideId}`}
+              ${isCurrent ? i18n.t('admin.slide_actual_badge') : `Slide ${item.slideId}`}
             </span>
-            <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">${res.totalVotes} voto(s)</span>
+            <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">${i18n.t('admin.votes_count', { count: res.totalVotes })}</span>
           </div>
           <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px;">${item.poll.question}</div>
           <div>${barsHtml}</div>

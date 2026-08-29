@@ -105,15 +105,57 @@ export class QREngine {
           colorLight: "#ffffff",
           correctLevel: window.QRCode.CorrectLevel ? window.QRCode.CorrectLevel.M : 0
         });
-      } else {
-        containerElement.innerHTML = `
-          <div style="font-size: 11px; color: var(--text-muted); padding: 10px; text-align: center;">
-            QR Code indisponível offline sem biblioteca.
-          </div>
-        `;
+        return;
       }
     } catch (e) {
-      console.warn('Erro ao renderizar QR Code:', e);
+      console.warn('Erro ao renderizar QR Code com biblioteca:', e);
+    }
+
+    // Fallback rico quando a biblioteca QR Code não estiver disponível (M04)
+    const containerId = 'qr-fallback-' + Math.random().toString(36).substring(2, 8);
+    containerElement.innerHTML = `
+      <div id="${containerId}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; background: rgba(15,23,42,0.85); border: 1.5px dashed var(--border-medium); border-radius: 8px; text-align: center; gap: 8px;">
+        <div style="font-size: 20px;">📱</div>
+        <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); line-height: 1.3;">
+          Acesso Direto à Audiência
+        </div>
+        <a href="${url}" target="_blank" style="font-size: 11px; color: var(--accent-primary); word-break: break-all; max-width: 220px; text-decoration: underline;">
+          ${url}
+        </a>
+        <button type="button" class="btn btn-sm" style="padding: 4px 10px; font-size: 11px; margin-top: 2px; border-color: var(--accent-primary); color: #c7d2fe;">
+          📋 Copiar Link
+        </button>
+      </div>
+    `;
+
+    const btnCopy = containerElement.querySelector('button');
+    if (btnCopy) {
+      btnCopy.addEventListener('click', async (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(url);
+          } else {
+            const tempInput = document.createElement('input');
+            tempInput.value = url;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+          }
+          btnCopy.textContent = '✓ Copiado!';
+          btnCopy.style.borderColor = '#34d399';
+          btnCopy.style.color = '#34d399';
+          setTimeout(() => {
+            btnCopy.textContent = '📋 Copiar Link';
+            btnCopy.style.borderColor = 'var(--accent-primary)';
+            btnCopy.style.color = '#c7d2fe';
+          }, 2500);
+        } catch (err) {
+          btnCopy.textContent = '✕ Erro ao copiar';
+        }
+      });
     }
   }
 }

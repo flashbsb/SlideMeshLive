@@ -6,10 +6,9 @@
  */
 
 export class SecurityGuard {
-  constructor(sessionId) {
-    this.sessionId = sessionId;
-    this.questionCooldownMs = 25000; // 25 segundos de intervalo entre perguntas
-    this.maxPendingQuestionsPerUser = 3;
+  constructor(options = {}) {
+    this.questionCooldownMs = options.questionCooldownMs || 25000; // 25 segundos de intervalo entre perguntas
+    this.maxPendingQuestionsPerUser = options.maxPendingQuestionsPerUser || 3;
   }
 
   /**

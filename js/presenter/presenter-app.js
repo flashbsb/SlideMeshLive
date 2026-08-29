@@ -354,6 +354,14 @@ class PresenterApp {
       }
     }
 
+    if (state.pollStatus) {
+      this.pollState.pollStatus = state.pollStatus;
+      if (this.dom.btnStagePollToggle) {
+        this.dom.btnStagePollToggle.textContent =
+          state.pollStatus === 'open' ? '🔴 Fechar Votação' : '🟢 Abrir Votação';
+      }
+    }
+
     if (state.featuredQuestion) {
       this.showFeaturedQuestion(state.featuredQuestion);
     } else {

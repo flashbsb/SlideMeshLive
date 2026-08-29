@@ -147,6 +147,21 @@ export class SessionManager {
       if (qRaw) questions = JSON.parse(qRaw);
     } catch (e) {}
 
+    // Presença e Audiência (M06)
+    let presenceMap = {};
+    try {
+      const pRaw = localStorage.getItem(`session_presence_${normId}`);
+      if (pRaw) presenceMap = JSON.parse(pRaw);
+    } catch (e) {}
+
+    const participantsList = Object.values(presenceMap);
+    const presenceStats = {
+      total: participantsList.length,
+      authenticated: participantsList.filter(p => p.isAuthenticated).length,
+      anonymous: participantsList.filter(p => !p.isAuthenticated).length,
+      list: participantsList
+    };
+
     // Votos de enquetes
     const pollsSummary = [];
     if (slidesData && slidesData.slides) {
@@ -191,9 +206,11 @@ export class SessionManager {
       sessionId: normId,
       exportedAt: new Date().toISOString(),
       summary: {
+        totalParticipants: presenceStats.total,
         totalQuestionsReceived: questions.length,
         totalPolls: pollsSummary.length
       },
+      presence: presenceStats,
       polls: pollsSummary,
       questions: questions
     };
@@ -206,8 +223,15 @@ export class SessionManager {
     const report = this.compileSessionReport(sessionId, slidesData);
     let csv = '\uFEFF'; // BOM para compatibilidade com acentos no Excel
 
-    // Seção 1: Enquetes
-    csv += '--- ENQUETES E VOTAÇÕES ---\n';
+    // Seção 1: Presença / Participantes
+    csv += '--- AUDIÊNCIA E PARTICIPANTES ---\n';
+    csv += 'UID;Nome / Apelido;Autenticado;Tipo\n';
+    report.presence.list.forEach(p => {
+      csv += `"${p.uid || '---'}";"${(p.alias || 'Participante').replace(/"/g, '""')}";"${p.isAuthenticated ? 'SIM' : 'NÃO'}";"${p.isAuthenticated ? 'Conta' : 'Anônimo'}"\n`;
+    });
+
+    // Seção 2: Enquetes
+    csv += '\n--- ENQUETES E VOTAÇÕES ---\n';
     csv += 'Slide;Enquete;Opção ID;Opção Texto;Votos Computados;Percentual (%)\n';
     report.polls.forEach(p => {
       p.options.forEach(opt => {
@@ -215,6 +239,7 @@ export class SessionManager {
       });
     });
 
+    // Seção 3: Perguntas
     csv += '\n--- PERGUNTAS RECEBIDAS DA AUDIÊNCIA ---\n';
     csv += 'ID;Horário;Autor;Status;Respondida;Pergunta\n';
     report.questions.forEach(q => {
@@ -232,6 +257,7 @@ export class SessionManager {
     const report = this.compileSessionReport(sessionId, slidesData);
     let md = `# Relatório Executivo da Apresentação - Sessão #${report.sessionId}\n\n`;
     md += `* **Data de Exportação:** ${new Date(report.exportedAt).toLocaleString()}\n`;
+    md += `* **Participantes Registrados:** ${report.summary.totalParticipants} (${report.presence.authenticated} identificados, ${report.presence.anonymous} anônimos)\n`;
     md += `* **Total de Enquetes:** ${report.summary.totalPolls}\n`;
     md += `* **Total de Perguntas Recebidas:** ${report.summary.totalQuestionsReceived}\n\n`;
     md += `---\n\n## 📊 Resultados das Enquetes\n\n`;

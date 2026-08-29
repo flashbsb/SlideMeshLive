@@ -234,6 +234,8 @@ class AudienceApp {
       if (this.isLiveSync) {
         this.engine.goToSlide(this.presenterSlideIndex);
         this.renderAudienceSlide();
+      } else if (this.engine.currentSlideIndex === this.presenterSlideIndex) {
+        this.hideSyncToast();
       } else {
         this.showSyncToast();
       }
@@ -790,13 +792,19 @@ class AudienceApp {
       this.dom.btnLocalLogin.addEventListener('click', async () => {
         const u = this.dom.inputLocalUsername.value;
         const p = this.dom.inputLocalPassword.value;
-        const ok = await this.auth.signInWithLocalPassword(u, p);
-        if (ok) {
-          this.dom.authModal.classList.remove('active');
-          this.updateAuthStatusUI();
-          this.renderAudienceSlide();
-        } else {
-          this.dom.localLoginError.style.display = 'block';
+        try {
+          const user = await this.auth.signInWithLocalPassword(u, p);
+          if (user) {
+            this.dom.authModal.classList.remove('active');
+            if (this.dom.localLoginError) this.dom.localLoginError.style.display = 'none';
+            this.updateAuthStatusUI();
+            this.renderAudienceSlide();
+          }
+        } catch (e) {
+          if (this.dom.localLoginError) {
+            this.dom.localLoginError.textContent = `✕ ${e.message || 'Usuário ou senha incorretos.'}`;
+            this.dom.localLoginError.style.display = 'block';
+          }
         }
       });
     }

@@ -213,20 +213,6 @@ export class ModerationEngine {
     return this.getQuestions(sessionId).filter(q => q.uid === uid);
   }
 
-  /**
-   * Verifica se o usuário está bloqueado
-   */
-  isUserBlocked(sessionId, uid) {
-    if (!uid) return false;
-    const blockedRaw = localStorage.getItem(`session_blocked_users_${sessionId}`);
-    if (!blockedRaw) return false;
-    try {
-      const list = JSON.parse(blockedRaw);
-      return Array.isArray(list) && list.includes(uid);
-    } catch (e) {
-      return false;
-    }
-  }
 
   /**
    * Apresentador/Admin: Exclui permanentemente uma pergunta individual
