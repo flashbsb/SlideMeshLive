@@ -1,0 +1,5 @@
+# Requisitos Python para Servidor Local de Apresentações
+# Instalação: pip install -r requirements.txt
+
+# Servidor com suporte a live-reload e watch de alterações (opcional)
+livereload>=2.6.3

@@ -154,11 +154,23 @@ export class SessionManager {
         if (s.interaction && s.interaction.poll) {
           const poll = s.interaction.poll;
           const votesRaw = localStorage.getItem(`session_votes_${normId}_${poll.id}`);
-          const votesMap = votesRaw ? JSON.parse(votesRaw) : {};
-          const totalVotes = Object.keys(votesMap).length;
+          let votesList = [];
+          if (votesRaw) {
+            try {
+              const parsed = JSON.parse(votesRaw);
+              if (Array.isArray(parsed)) {
+                votesList = parsed;
+              } else if (typeof parsed === 'object') {
+                votesList = Object.entries(parsed).map(([uid, val]) => {
+                  return typeof val === 'object' ? { uid, optionId: val.optionId } : { uid, optionId: val };
+                });
+              }
+            } catch (e) {}
+          }
 
-          const optionsStats = poll.options.map(opt => {
-            const count = Object.values(votesMap).filter(v => v === opt.id).length;
+          const totalVotes = votesList.length;
+          const optionsStats = (poll.options || []).map(opt => {
+            const count = votesList.filter(v => (v.optionId === opt.id || v === opt.id)).length;
             const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
             return { id: opt.id, text: opt.text, votes: count, percentage: pct };
           });

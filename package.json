@@ -1,0 +1,26 @@
+{
+  "name": "plataforma-apresentacao-online",
+  "version": "1.0.0",
+  "description": "Plataforma de Apresentação HTML Interativa e Sincronizada Multi-Apresentação",
+  "type": "module",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx -y serve . -l 8080 -s",
+    "dev": "npx -y live-server --port=8080 --no-browser --entry-file=index.html",
+    "serve": "npx -y serve . -l 8080",
+    "py": "python3 server.py"
+  },
+  "keywords": [
+    "presentation",
+    "realtime",
+    "slides",
+    "firebase",
+    "audience-interaction"
+  ],
+  "author": "Engenharia de Soluções",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "serve": "^14.2.4"
+  }
+}

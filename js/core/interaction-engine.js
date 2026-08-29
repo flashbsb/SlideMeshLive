@@ -182,13 +182,8 @@ export class InteractionEngine {
     }
 
     // 3. Atualiza Firebase
-    if (this.realtime.isFirebaseReady && window.firebase) {
-      try {
-        const db = window.firebase.database();
-        await db.ref(`sessions/${sessionId}/votes/${pollId}`).remove();
-      } catch (err) {
-        console.warn('Erro ao zerar enquete no Firebase:', err);
-      }
+    if (this.realtime.isFirebaseReady) {
+      await this.realtime.deleteFirebaseNode(`sessions/${sessionId}/votes/${pollId}`);
     }
   }
 

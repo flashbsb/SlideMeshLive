@@ -74,17 +74,59 @@ export class RealtimeEngine {
     if (isFirebaseConfigured) {
       try {
         const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
-        const { getDatabase, ref, set, update, onValue, push, onDisconnect, serverTimestamp } = 
+        const { getDatabase, ref, set, update, onValue, push, remove, onDisconnect, serverTimestamp } = 
           await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js');
 
         const app = initializeApp(this.config.firebase);
         this.db = getDatabase(app);
-        this.firebaseFns = { ref, set, update, onValue, push, onDisconnect, serverTimestamp };
+        this.firebaseFns = { ref, set, update, onValue, push, remove, onDisconnect, serverTimestamp };
         this.isFirebaseReady = true;
         console.log('[RealtimeEngine] Conectado ao Firebase Realtime Database');
       } catch (err) {
         console.warn('[RealtimeEngine] Firebase não inicializado, usando canal local:', err);
         this.isFirebaseReady = false;
+      }
+    }
+  }
+
+  /**
+   * Helper para remover nó no Firebase
+   */
+  async deleteFirebaseNode(path) {
+    if (this.isFirebaseReady && this.db && this.firebaseFns) {
+      try {
+        const nodeRef = this.firebaseFns.ref(this.db, path);
+        await this.firebaseFns.remove(nodeRef);
+      } catch (e) {
+        console.warn(`[RealtimeEngine] Erro ao deletar nó ${path}:`, e);
+      }
+    }
+  }
+
+  /**
+   * Helper para atualizar nó no Firebase
+   */
+  async updateFirebaseNode(path, data) {
+    if (this.isFirebaseReady && this.db && this.firebaseFns) {
+      try {
+        const nodeRef = this.firebaseFns.ref(this.db, path);
+        await this.firebaseFns.update(nodeRef, data);
+      } catch (e) {
+        console.warn(`[RealtimeEngine] Erro ao atualizar nó ${path}:`, e);
+      }
+    }
+  }
+
+  /**
+   * Helper para setar nó no Firebase
+   */
+  async setFirebaseNode(path, data) {
+    if (this.isFirebaseReady && this.db && this.firebaseFns) {
+      try {
+        const nodeRef = this.firebaseFns.ref(this.db, path);
+        await this.firebaseFns.set(nodeRef, data);
+      } catch (e) {
+        console.warn(`[RealtimeEngine] Erro ao setar nó ${path}:`, e);
       }
     }
   }
@@ -299,6 +341,22 @@ export class RealtimeEngine {
     }
   }
 
+  /**
+   * Propaga notificação de bloqueio/desbloqueio de usuário
+   */
+  sendUserBlocked(sessionId, uid, isBlocked) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    if (this.channel) {
+      this.channel.postMessage({
+        type: 'USER_BLOCKED_STATUS',
+        sessionId: normSessionId,
+        uid: uid,
+        isBlocked: isBlocked,
+        timestamp: Date.now()
+      });
+    }
+  }
+
   stopPresence() {
     if (this.presenceTimer) {
       clearInterval(this.presenceTimer);
@@ -319,7 +377,7 @@ export class RealtimeEngine {
     if (!data) return;
     const normSessionId = (sessionId || '').trim().toUpperCase();
     
-    // Evita loop com o mesmo timestamp exato
+    // Evita loop apenas se o timestamp recebido for estritamente mais antigo
     if (data.updatedAt) {
       const lastTime = this.lastProcessedTimestamp.get(normSessionId) || 0;
       if (data.updatedAt < lastTime) return;

@@ -27,7 +27,7 @@ class AdminApp {
 
     // DOM Elements
     this.dom = {
-      presTitle: document.getElementById('admin-pres-title'),
+      presSelector: document.getElementById('admin-pres-selector'),
       sessionCode: document.getElementById('admin-session-code'),
       slideIndicator: document.getElementById('admin-slide-indicator'),
       currentSlideTitle: document.getElementById('admin-current-slide-title'),
@@ -83,8 +83,29 @@ class AdminApp {
     this.init();
   }
 
+  async loadCatalogOptions() {
+    if (!this.dom.presSelector) return;
+    try {
+      const res = await fetch('../presentations/catalog.json?t=' + Date.now());
+      if (res.ok) {
+        const data = await res.json();
+        const list = data.presentations || [];
+        if (list.length > 0) {
+          this.dom.presSelector.innerHTML = list.map(p => `
+            <option value="${p.id}" ${p.id === this.presentationId ? 'selected' : ''}>
+              ${p.title}
+            </option>
+          `).join('');
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar catálogo de apresentações:', e);
+    }
+  }
+
   async init() {
     this.bindEvents();
+    await this.loadCatalogOptions();
     this.setupQRCode();
     this.checkAdminProtection();
 
@@ -94,7 +115,9 @@ class AdminApp {
 
     try {
       await this.engine.loadPresentation(this.presentationId);
-      this.dom.presTitle.textContent = this.engine.manifest.title || 'Apresentação';
+      if (this.dom.presSelector) {
+        this.dom.presSelector.value = this.presentationId;
+      }
 
       // Registra a sessão atual no histórico
       this.sessionManager.saveSessionToHistory({
@@ -501,6 +524,16 @@ class AdminApp {
   }
 
   bindEvents() {
+    // Alternância de Apresentação
+    if (this.dom.presSelector) {
+      this.dom.presSelector.addEventListener('change', (e) => {
+        const newPresId = e.target.value;
+        if (newPresId && newPresId !== this.presentationId) {
+          window.location.href = `?presentation=${encodeURIComponent(newPresId)}&session=${encodeURIComponent(this.sessionId)}`;
+        }
+      });
+    }
+
     // Navegação Remota
     if (this.dom.btnPrev) {
       this.dom.btnPrev.addEventListener('click', async () => {

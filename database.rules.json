@@ -2,27 +2,22 @@
   "rules": {
     "sessions": {
       "$sessionId": {
-        // Leitura pública do estado da sessão e slides para os smartphones conectados
+        // Leitura pública em tempo real do estado da sessão para telões e smartphones
         ".read": true,
 
-        // Apenas o apresentador pode alterar o estado do slide, status da sessão e enquetes
-        "currentSlide": {
-          ".write": "auth != null || !data.exists()"
-        },
-        "status": {
-          ".write": "auth != null || !data.exists()"
-        },
-        "activePoll": {
-          ".write": "auth != null || !data.exists()"
-        },
-        "pollStatus": {
-          ".write": "auth != null || !data.exists()"
-        },
-        "showResults": {
-          ".write": "auth != null || !data.exists()"
-        },
+        // Estado da Apresentação e Enquetes (Palestrante e Mesa Técnica)
+        "currentSlide": { ".write": "auth != null || !data.exists()" },
+        "slideId": { ".write": "auth != null || !data.exists()" },
+        "slideTitle": { ".write": "auth != null || !data.exists()" },
+        "status": { ".write": "auth != null || !data.exists()" },
+        "activePoll": { ".write": "auth != null || !data.exists()" },
+        "pollStatus": { ".write": "auth != null || !data.exists()" },
+        "showResults": { ".write": "auth != null || !data.exists()" },
+        "showFinalAnalytics": { ".write": "auth != null || !data.exists()" },
+        "featuredQuestion": { ".write": "auth != null || !data.exists()" },
+        "updatedAt": { ".write": "auth != null || !data.exists()" },
 
-        // Registro de presença do participante (Fase 2)
+        // Registro de presença do participante
         "participants": {
           "$participantId": {
             ".write": true,
@@ -30,24 +25,24 @@
           }
         },
 
-        // Votação com voto único por UID autenticado (Fase 4)
+        // Votação com voto único garantido por UID
         "votes": {
+          ".write": "auth != null || !data.exists()",
           "$pollId": {
+            ".write": "auth != null || !data.exists()",
             "$uid": {
-              // Somente o usuário autenticado pode gravar seu próprio voto
-              ".write": "auth != null && auth.uid == $uid && root.child('sessions').child($sessionId).child('pollStatus').val() == 'open'",
-              // Voto único: não permite sobrescrever se já existir
+              ".write": "auth != null && auth.uid == $uid",
               ".validate": "!data.exists() && newData.hasChildren(['optionId', 'timestamp'])"
             }
           }
         },
 
-        // Perguntas do público (Fase 5)
+        // Perguntas do público com suporte a moderação
         "questions": {
+          ".write": "auth != null || !data.exists()",
           "$questionId": {
-            // Qualquer usuário autenticado pode submeter uma pergunta
-            ".write": "auth != null && root.child('sessions').child($sessionId).child('status').val() == 'running'",
-            ".validate": "newData.hasChildren(['text', 'uid', 'status', 'timestamp'])"
+            ".write": "auth != null || !data.exists()",
+            ".validate": "newData.hasChildren(['text', 'uid', 'status', 'timestamp']) || !newData.exists()"
           }
         }
       }

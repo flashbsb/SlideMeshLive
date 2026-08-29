@@ -226,13 +226,8 @@ export class ModerationEngine {
     }
 
     // Atualiza Firebase se ativo
-    if (this.realtime.isFirebaseReady && window.firebase) {
-      try {
-        const db = window.firebase.database();
-        await db.ref(`sessions/${sessionId}/questions/${questionId}`).remove();
-      } catch (err) {
-        console.warn('Erro ao deletar pergunta no Firebase:', err);
-      }
+    if (this.realtime.isFirebaseReady) {
+      await this.realtime.deleteFirebaseNode(`sessions/${sessionId}/questions/${questionId}`);
     }
   }
 
@@ -251,13 +246,8 @@ export class ModerationEngine {
       });
     }
 
-    if (this.realtime.isFirebaseReady && window.firebase) {
-      try {
-        const db = window.firebase.database();
-        await db.ref(`sessions/${sessionId}/questions`).remove();
-      } catch (err) {
-        console.warn('Erro ao limpar perguntas no Firebase:', err);
-      }
+    if (this.realtime.isFirebaseReady) {
+      await this.realtime.deleteFirebaseNode(`sessions/${sessionId}/questions`);
     }
   }
 
@@ -285,13 +275,8 @@ export class ModerationEngine {
       });
     }
 
-    if (this.realtime.isFirebaseReady && window.firebase) {
-      try {
-        const db = window.firebase.database();
-        await db.ref(`sessions/${sessionId}/questions/${questionId}/answered`).set(target.answered);
-      } catch (err) {
-        console.warn('Erro ao atualizar status de respondida no Firebase:', err);
-      }
+    if (this.realtime.isFirebaseReady) {
+      await this.realtime.setFirebaseNode(`sessions/${sessionId}/questions/${questionId}/answered`, target.answered);
     }
 
     return target.answered;
@@ -310,7 +295,9 @@ export class ModerationEngine {
    * Apresentador: Bloqueia ou desbloqueia um participante
    */
   toggleBlockUser(sessionId, uid) {
-    return this.guard.toggleBlockUser(sessionId, uid);
+    const isBlocked = this.guard.toggleBlockUser(sessionId, uid);
+    this.realtime.sendUserBlocked(sessionId, uid, isBlocked);
+    return isBlocked;
   }
 
   isUserBlocked(sessionId, uid) {

@@ -1,0 +1,9 @@
+services:
+  apresentacao:
+    build: .
+    container_name: apresentacao-online
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/usr/share/nginx/html:ro
+    restart: unless-stopped

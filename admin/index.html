@@ -20,9 +20,12 @@
   <header class="admin-header">
     <div style="display: flex; align-items: center; gap: 14px;">
       <span class="badge" style="background: rgba(129, 140, 248, 0.2); border-color: rgba(129, 140, 248, 0.4); color: #c7d2fe;">
-        🛡️ MESA TÉCNICA & MODERAÇÃO
+        🛡️ MESA TÉCNICA
       </span>
-      <h1 style="font-size: 15px; font-weight: 700; color: #ffffff;" id="admin-pres-title">Carregando...</h1>
+      <select id="admin-pres-selector" style="background: rgba(15,23,42,0.85); border: 1px solid var(--border-medium); color: #ffffff; padding: 4px 8px; border-radius: 6px; font-size: 13px; font-weight: 600; outline: none; cursor: pointer;">
+        <option value="sdwan-cpe-unificado">Adoção do SD-WAN Edge (NTP)</option>
+        <option value="treinamento-interno-pin">Treinamento Técnico (PIN 7482)</option>
+      </select>
     </div>
 
     <!-- Métricas de Presença em Tempo Real no Header -->

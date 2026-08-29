@@ -113,12 +113,22 @@ class AudienceApp {
           if (!e.data || e.data.sessionId !== this.sessionId) return;
           if ((e.data.type === 'VOTE_CAST' || e.data.type === 'VOTE_RESET') && this.pollState.showResults) {
             this.updateView();
+          } else if (e.data.type === 'USER_BLOCKED_STATUS') {
+            const currentUid = this.auth.user ? this.auth.user.uid : this.realtime.participantId;
+            if (e.data.uid === currentUid) {
+              if (e.data.isBlocked) {
+                alert('Sua participação nesta sessão foi suspensa pelo moderador.');
+              }
+              this.updateView();
+            }
           }
         });
       }
 
       window.addEventListener('storage', (e) => {
         if (e.key && e.key.startsWith(`session_votes_${this.sessionId}`) && this.pollState.showResults) {
+          this.updateView();
+        } else if (e.key && e.key.startsWith(`session_blocked_users_${this.sessionId}`)) {
           this.updateView();
         }
       });
