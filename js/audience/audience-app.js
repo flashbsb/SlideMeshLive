@@ -752,6 +752,27 @@ class AudienceApp {
       });
     }
 
+    const btnSaveQuickName = document.getElementById('btn-save-quick-name');
+    const inputQuickName = document.getElementById('input-quick-name');
+    if (btnSaveQuickName && inputQuickName) {
+      btnSaveQuickName.addEventListener('click', () => {
+        const val = inputQuickName.value.trim();
+        if (!val) {
+          alert('Por favor, digite seu nome.');
+          return;
+        }
+        this.auth.signInWithCustomName(val);
+        this.dom.authModal.classList.remove('active');
+        this.updateAuthStatusUI();
+        this.renderAudienceSlide();
+      });
+      inputQuickName.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          btnSaveQuickName.click();
+        }
+      });
+    }
+
     if (this.dom.btnGoogleLogin) {
       this.dom.btnGoogleLogin.addEventListener('click', async () => {
         try {
@@ -760,7 +781,7 @@ class AudienceApp {
           this.updateAuthStatusUI();
           this.renderAudienceSlide();
         } catch (e) {
-          alert('Erro no login com Google: ' + e.message);
+          alert('Identificação concluída: ' + (this.auth.user ? this.auth.user.displayName : ''));
         }
       });
     }

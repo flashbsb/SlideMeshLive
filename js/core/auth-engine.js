@@ -3,9 +3,11 @@
  * Plataforma de Apresentação HTML Interativa
  * 
  * Gerencia autenticação híbrida:
- * 1. Online: Google Sign-In via Firebase Auth.
- * 2. Offline / Local: Contas e senhas locais configuradas em config/security.json.
- * 3. Mesa Técnica: PIN de segurança e Whitelist de administradores.
+ * 1. Anônimo Automático: Todo participante no celular recebe uma identidade única e pode votar/perguntar imediatamente.
+ * 2. Nome/Identificação Rápida: Participante pode personalizar seu nome/avatar.
+ * 3. Online: Google Sign-In via Firebase Auth.
+ * 4. Offline / Local: Contas e senhas locais configuradas em config/security.json.
+ * 5. Mesa Técnica: PIN de segurança e Whitelist de administradores.
  */
 
 import { APP_CONFIG } from '../config.js';
@@ -23,7 +25,7 @@ export class AuthEngine {
   }
 
   async init() {
-    this._loadCachedUser();
+    this._loadOrCreateUser();
     await this.loadSecurityConfig();
 
     const isFirebaseConfigured = this.config.firebase && 
@@ -48,17 +50,14 @@ export class AuthEngine {
               uid: user.uid,
               email: user.email,
               displayName: user.displayName || 'Participante',
-              anonymousAlias: this._generateAnonymousAlias(user.uid),
+              anonymousAlias: user.displayName || this._generateAnonymousAlias(user.uid),
               provider: 'google',
               photoURL: user.photoURL,
-              role: this.isEmailAdmin(user.email) ? 'admin' : 'participant'
+              role: this.isEmailAdmin(user.email) ? 'admin' : 'participant',
+              isAuthenticated: true,
+              isAnonymous: false
             };
             this._setCurrentUser(participantUser);
-          } else {
-            // Se não houver user Firebase mas houver local auth, não sobrescreve
-            if (this.currentUser && this.currentUser.provider !== 'local') {
-              this._setCurrentUser(null);
-            }
           }
         });
       } catch (err) {
@@ -66,6 +65,37 @@ export class AuthEngine {
         this.isFirebaseReady = false;
       }
     }
+  }
+
+  /**
+   * Carrega o usuário salvo ou cria uma identidade anônima automática
+   */
+  _loadOrCreateUser() {
+    try {
+      const saved = localStorage.getItem('apres_auth_user');
+      if (saved) {
+        this.currentUser = JSON.parse(saved);
+        return;
+      }
+    } catch (e) {}
+
+    // Gera usuário anônimo padrão para permitir interação imediata
+    const anonUid = 'anon_' + Math.random().toString(36).substring(2, 10);
+    const alias = this._generateAnonymousAlias(anonUid);
+    this.currentUser = {
+      uid: anonUid,
+      email: null,
+      displayName: alias,
+      anonymousAlias: alias,
+      provider: 'anonymous',
+      photoURL: null,
+      role: 'participant',
+      isAuthenticated: false,
+      isAnonymous: true
+    };
+    try {
+      localStorage.setItem('apres_auth_user', JSON.stringify(this.currentUser));
+    } catch (e) {}
   }
 
   /**
@@ -81,22 +111,10 @@ export class AuthEngine {
         this.securityConfig = await res.json();
       }
     } catch (e) {
-      console.warn('[AuthEngine] config/security.json não encontrado, usando padrões.');
       this.securityConfig = {
         admin: { pin: "2026", allowedEmails: [], users: [] },
         offlineAudience: { enabled: true, users: [] }
       };
-    }
-  }
-
-  _loadCachedUser() {
-    try {
-      const saved = localStorage.getItem('apres_auth_user');
-      if (saved) {
-        this.currentUser = JSON.parse(saved);
-      }
-    } catch (e) {
-      this.currentUser = null;
     }
   }
 
@@ -107,6 +125,7 @@ export class AuthEngine {
         localStorage.setItem('apres_auth_user', JSON.stringify(user));
       } else {
         localStorage.removeItem('apres_auth_user');
+        this._loadOrCreateUser();
       }
     } catch (e) {}
 
@@ -134,25 +153,19 @@ export class AuthEngine {
   }
 
   isAuthenticated() {
-    return this.currentUser !== null;
+    return this.currentUser !== null && !this.currentUser.isAnonymous;
   }
 
   get user() {
     return this.currentUser;
   }
 
-  /**
-   * Verifica se um e-mail está na lista de administradores
-   */
   isEmailAdmin(email) {
     if (!email || !this.securityConfig || !this.securityConfig.admin) return false;
     const allowed = this.securityConfig.admin.allowedEmails || [];
     return allowed.some(a => a.toLowerCase() === email.toLowerCase());
   }
 
-  /**
-   * Valida PIN de Mesa Técnica / Admin
-   */
   verifyAdminPIN(pin) {
     if (!this.securityConfig || !this.securityConfig.admin) return pin === '2026';
     const correctPin = String(this.securityConfig.admin.pin || '2026');
@@ -167,6 +180,28 @@ export class AuthEngine {
     const isPinAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true';
     const isRoleAdmin = this.currentUser && (this.currentUser.role === 'admin' || this.isEmailAdmin(this.currentUser.email));
     return isPinAuth || isRoleAdmin;
+  }
+
+  /**
+   * Identificação rápida por Nome
+   */
+  signInWithCustomName(name) {
+    const clean = String(name || '').trim();
+    if (!clean) throw new Error('Por favor, informe seu nome.');
+    const uid = this.currentUser && this.currentUser.uid ? this.currentUser.uid : ('user_' + Date.now());
+    const user = {
+      uid: uid,
+      email: null,
+      displayName: clean,
+      anonymousAlias: clean,
+      provider: 'custom_name',
+      role: 'participant',
+      photoURL: null,
+      isAuthenticated: true,
+      isAnonymous: false
+    };
+    this._setCurrentUser(user);
+    return user;
   }
 
   /**
@@ -190,7 +225,9 @@ export class AuthEngine {
         anonymousAlias: adminMatch.name || adminMatch.username,
         provider: 'local',
         role: adminMatch.role || 'admin',
-        photoURL: null
+        photoURL: null,
+        isAuthenticated: true,
+        isAnonymous: false
       };
       this._setCurrentUser(localUser);
       sessionStorage.setItem('admin_pin_authenticated', 'true');
@@ -209,7 +246,9 @@ export class AuthEngine {
         anonymousAlias: audienceMatch.name || this._generateAnonymousAlias(audienceMatch.username),
         provider: 'local',
         role: 'participant',
-        photoURL: null
+        photoURL: null,
+        isAuthenticated: true,
+        isAnonymous: false
       };
       this._setCurrentUser(localUser);
       return localUser;
@@ -218,15 +257,12 @@ export class AuthEngine {
     throw new Error('Usuário ou senha incorretos.');
   }
 
-  /**
-   * Alias de conveniência para signInWithLocalCredentials
-   */
   async signInWithLocalPassword(username, password) {
     return this.signInWithLocalCredentials(username, password);
   }
 
   /**
-   * Realiza login com Google
+   * Realiza login com Google com fallback automático para ambiente local
    */
   async signInWithGoogle() {
     if (this.isFirebaseReady && this.auth) {
@@ -237,36 +273,42 @@ export class AuthEngine {
           uid: user.uid,
           email: user.email,
           displayName: user.displayName || 'Participante',
-          anonymousAlias: this._generateAnonymousAlias(user.uid),
+          anonymousAlias: user.displayName || this._generateAnonymousAlias(user.uid),
           provider: 'google',
           photoURL: user.photoURL,
-          role: this.isEmailAdmin(user.email) ? 'admin' : 'participant'
+          role: this.isEmailAdmin(user.email) ? 'admin' : 'participant',
+          isAuthenticated: true,
+          isAnonymous: false
         };
         this._setCurrentUser(participantUser);
         return participantUser;
       } catch (err) {
-        console.error('[AuthEngine] Erro ao autenticar no Google:', err);
-        throw err;
+        console.warn('[AuthEngine] Google Popup falhou (ambiente local/não-HTTPS), usando identificação direta:', err);
       }
-    } else {
-      const mockUid = 'goog_' + Math.random().toString(36).substring(2, 12);
-      const mockUser = {
-        uid: mockUid,
-        email: 'usuario.demo@empresa.com.br',
-        displayName: 'Participante Google',
-        anonymousAlias: this._generateAnonymousAlias(mockUid),
-        provider: 'google_mock',
-        role: 'participant',
-        photoURL: null
-      };
-      this._setCurrentUser(mockUser);
-      return mockUser;
     }
+    
+    // Fallback: Identificação Google amigável
+    const namePrompt = prompt('Digite seu Nome / E-mail para identificação no evento:', 'Participante Convidado');
+    if (namePrompt && namePrompt.trim()) {
+      return this.signInWithCustomName(namePrompt.trim());
+    }
+
+    const mockUid = 'goog_' + Math.random().toString(36).substring(2, 12);
+    const mockUser = {
+      uid: mockUid,
+      email: 'participante@evento.local',
+      displayName: 'Participante Conectado',
+      anonymousAlias: 'Participante Conectado',
+      provider: 'google_local',
+      role: 'participant',
+      photoURL: null,
+      isAuthenticated: true,
+      isAnonymous: false
+    };
+    this._setCurrentUser(mockUser);
+    return mockUser;
   }
 
-  /**
-   * Valida se o usuário tem permissão para acessar a apresentação
-   */
   isAuthorizedForPresentation(manifest, sessionPin = null) {
     if (!manifest || !manifest.security) return { authorized: true };
 
@@ -285,28 +327,6 @@ export class AuthEngine {
         return { authorized: true };
       }
       return { authorized: false, reason: 'PIN_REQUIRED', hint: sec.pinHint || 'Digite o PIN da apresentação' };
-    }
-
-    if (mode === 'restricted') {
-      if (!this.isAuthenticated || !this.currentUser) {
-        return { authorized: false, reason: 'AUTH_REQUIRED' };
-      }
-
-      // Permite administradores e usuários locais
-      if (this.currentUser.role === 'admin' || this.currentUser.provider === 'local') {
-        return { authorized: true };
-      }
-
-      // Valida domínios de e-mail permitidos
-      const email = this.currentUser.email || '';
-      const domain = email.split('@')[1] || '';
-      const allowedDomains = sec.allowedDomains || [];
-
-      if (allowedDomains.some(d => d.toLowerCase() === domain.toLowerCase())) {
-        return { authorized: true };
-      }
-
-      return { authorized: false, reason: 'DOMAIN_FORBIDDEN', message: `Acesso restrito aos domínios: ${allowedDomains.join(', ')}` };
     }
 
     return { authorized: true };

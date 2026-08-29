@@ -20,11 +20,9 @@ export class ModerationEngine {
    * Participante: Envia uma nova pergunta para a fila de moderação
    */
   async submitQuestion(sessionId, text) {
-    if (!this.auth.isAuthenticated || !this.auth.user) {
-      throw new Error('É necessário estar identificado para enviar perguntas.');
-    }
-
-    const uid = this.auth.user.uid;
+    const user = this.auth ? this.auth.getCurrentUser() : null;
+    const uid = user ? user.uid : ('anon_' + Math.random().toString(36).substring(2, 8));
+    const authorAlias = (user && user.displayName) || (user && user.anonymousAlias) || 'Participante';
 
     // Proteção contra abuso e Rate Limiting
     const check = this.guard.canUserSubmitQuestion(sessionId, uid);
@@ -33,8 +31,8 @@ export class ModerationEngine {
     }
 
     const cleanText = (text || '').trim();
-    if (cleanText.length < 5) {
-      throw new Error('A pergunta deve ter pelo menos 5 caracteres.');
+    if (cleanText.length < 3) {
+      throw new Error('A pergunta deve ter pelo menos 3 caracteres.');
     }
     if (cleanText.length > 300) {
       throw new Error('A pergunta não pode exceder 300 caracteres.');
@@ -46,7 +44,7 @@ export class ModerationEngine {
       id: questionId,
       text: cleanText,
       uid: uid,
-      authorAlias: this.auth.user.anonymousAlias || 'Participante',
+      authorAlias: authorAlias,
       status: 'pending', // 'pending', 'approved', 'featured', 'rejected'
       timestamp: Date.now()
     };
@@ -54,7 +52,7 @@ export class ModerationEngine {
     // 1. Registra timestamp para rate limit
     this.guard.recordQuestionSubmission(sessionId, uid);
 
-    // 1. Salva no pool de perguntas local da sessão
+    // 2. Salva no pool de perguntas local da sessão
     const storageKey = `session_questions_${sessionId}`;
     let questions = [];
     try {
@@ -65,8 +63,8 @@ export class ModerationEngine {
     questions.push(questionPayload);
     localStorage.setItem(storageKey, JSON.stringify(questions));
 
-    // 2. Se Firebase estiver ativo, grava no Realtime Database
-    if (this.realtime.isFirebaseReady && this.realtime.db) {
+    // 3. Se Firebase estiver ativo, grava no Realtime Database
+    if (this.realtime && this.realtime.isFirebaseReady && this.realtime.db) {
       try {
         const qRef = this.realtime.firebaseFns.ref(
           this.realtime.db, 
@@ -77,19 +75,13 @@ export class ModerationEngine {
           timestamp: this.realtime.firebaseFns.serverTimestamp()
         });
       } catch (err) {
-        console.error('[ModerationEngine] Erro Firebase question:', err);
+        console.warn('[ModerationEngine] Erro Firebase question:', err);
       }
     }
 
-    // 3. Notifica via canal em tempo real
-    if (this.realtime.channel) {
-      try {
-        this.realtime.channel.postMessage({
-          type: 'NEW_QUESTION',
-          sessionId: sessionId,
-          question: questionPayload
-        });
-      } catch (e) {}
+    // 4. Notifica via RealtimeEngine (Hub local /api/sync e BroadcastChannel)
+    if (this.realtime) {
+      this.realtime.sendQuestion(sessionId, questionPayload);
     }
 
     return questionPayload;

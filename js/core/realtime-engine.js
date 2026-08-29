@@ -2,11 +2,11 @@
  * Realtime Synchronization Engine
  * Plataforma de Apresentação HTML Interativa
  * 
- * Sincronização ultra-robusta em tempo real:
- * 1. BroadcastChannel (baixa latência)
+ * Sincronização ultra-robusta em tempo real em 4 camadas:
+ * 1. BroadcastChannel (baixa latência na mesma máquina)
  * 2. Window Storage Event (garantia nativa entre abas/janelas)
- * 3. Polling de verificação de timestamp (redundância local)
- * 4. Firebase Realtime Database (internet / múltiplos dispositivos remotos)
+ * 3. Hub HTTP Local /api/sync (sincronização Wi-Fi/LAN entre Celulares e Computadores 100% offline)
+ * 4. Firebase Realtime Database (internet / múltiplos locais remotos)
  */
 
 import { APP_CONFIG } from '../config.js';
@@ -21,6 +21,8 @@ export class RealtimeEngine {
     this.participantId = this._generateParticipantId();
     this.presenceTimer = null;
     this.lastProcessedTimestamp = new Map();
+    this.lastSyncTimestamp = 0;
+    this.isHttpSyncActive = false;
 
     this.init();
   }
@@ -44,26 +46,25 @@ export class RealtimeEngine {
             this._handleIncomingMessage(event.data);
           }
         };
-      } catch (e) {
-        console.warn('[RealtimeEngine] BroadcastChannel indisponível:', e);
-      }
+      } catch (e) {}
     }
 
-    // 2. Registra listener nativo de Storage (disparado entre abas/janelas)
+    // 2. Registra listener nativo de Storage
     window.addEventListener('storage', (e) => {
       if (e.key && e.key.startsWith('session_state_') && e.newValue) {
         try {
           const sessionId = e.key.replace('session_state_', '');
           const data = JSON.parse(e.newValue);
           this._triggerSessionListeners(sessionId, data);
-        } catch (err) {
-          console.error('[RealtimeEngine] Erro ao processar storage event:', err);
-        }
+        } catch (err) {}
       }
     });
 
     // 3. Inicializa Firebase de forma assíncrona se configurado
     this._initFirebase();
+
+    // 4. Inicializa Hub de Sincronização Local HTTP (/api/sync)
+    this._initLocalHttpSync();
   }
 
   async _initFirebase() {
@@ -81,254 +82,165 @@ export class RealtimeEngine {
         this.db = getDatabase(app);
         this.firebaseFns = { ref, set, update, onValue, push, remove, onDisconnect, serverTimestamp };
         this.isFirebaseReady = true;
-        console.log('[RealtimeEngine] Conectado ao Firebase Realtime Database');
       } catch (err) {
-        console.warn('[RealtimeEngine] Firebase não inicializado, usando canal local:', err);
         this.isFirebaseReady = false;
       }
     }
   }
 
-  /**
-   * Helper para remover nó no Firebase
-   */
-  async deleteFirebaseNode(path) {
-    if (this.isFirebaseReady && this.db && this.firebaseFns) {
-      try {
-        const nodeRef = this.firebaseFns.ref(this.db, path);
-        await this.firebaseFns.remove(nodeRef);
-      } catch (e) {
-        console.warn(`[RealtimeEngine] Erro ao deletar nó ${path}:`, e);
+  _initLocalHttpSync() {
+    // Inicia polling leve a cada 1200ms para manter todos os celulares e computadores sincronizados via Wi-Fi
+    setInterval(() => {
+      this.syncWithLocalServer();
+    }, 1200);
+  }
+
+  async syncWithLocalServer() {
+    const sessionId = (sessionStorage.getItem('apres_active_session') || localStorage.getItem('active_presentation_session') || 'SDWAN2026').trim().toUpperCase();
+    try {
+      const res = await fetch(`/api/sync?session=${encodeURIComponent(sessionId)}&since=${this.lastSyncTimestamp}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      this.lastSyncTimestamp = data.serverTime || Date.now();
+
+      // Aplica estado da sessão se for mais recente
+      if (data.state && Object.keys(data.state).length > 0) {
+        const localRaw = localStorage.getItem(`session_state_${sessionId}`);
+        let localState = {};
+        try { if (localRaw) localState = JSON.parse(localRaw); } catch(e){}
+        
+        const merged = { ...localState, ...data.state };
+        localStorage.setItem(`session_state_${sessionId}`, JSON.stringify(merged));
+        this._triggerSessionListeners(sessionId, merged);
       }
+
+      // Aplica perguntas consolidadas
+      if (Array.isArray(data.questions) && data.questions.length > 0) {
+        localStorage.setItem(`session_questions_${sessionId}`, JSON.stringify(data.questions));
+      }
+
+      // Aplica votos consolidados
+      if (data.votes && typeof data.votes === 'object') {
+        Object.keys(data.votes).forEach(pid => {
+          localStorage.setItem(`session_votes_${sessionId}_${pid}`, JSON.stringify(data.votes[pid]));
+        });
+      }
+
+      // Dispara eventos novos recebidos da rede
+      if (Array.isArray(data.events)) {
+        data.events.forEach(evt => {
+          if (this.channel) {
+            this.channel.postMessage({
+              type: evt.type,
+              sessionId: sessionId,
+              ...evt.payload,
+              timestamp: evt.timestamp
+            });
+          }
+        });
+      }
+    } catch (e) {
+      // Servidor sem suporte a /api/sync ou offline
     }
   }
 
-  /**
-   * Helper para atualizar nó no Firebase
-   */
-  async updateFirebaseNode(path, data) {
-    if (this.isFirebaseReady && this.db && this.firebaseFns) {
-      try {
-        const nodeRef = this.firebaseFns.ref(this.db, path);
-        await this.firebaseFns.update(nodeRef, data);
-      } catch (e) {
-        console.warn(`[RealtimeEngine] Erro ao atualizar nó ${path}:`, e);
-      }
-    }
+  async sendLocalServerEvent(type, sessionId, payload = {}) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    try {
+      await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: type,
+          sessionId: normSessionId,
+          payload: payload
+        })
+      });
+    } catch (e) {}
   }
 
-  /**
-   * Helper para setar nó no Firebase
-   */
-  async setFirebaseNode(path, data) {
-    if (this.isFirebaseReady && this.db && this.firebaseFns) {
-      try {
-        const nodeRef = this.firebaseFns.ref(this.db, path);
-        await this.firebaseFns.set(nodeRef, data);
-      } catch (e) {
-        console.warn(`[RealtimeEngine] Erro ao setar nó ${path}:`, e);
-      }
-    }
-  }
-
-  /**
-   * Apresentador: Atualiza e propaga o estado da sessão
-   */
-  async updateSessionState(sessionId, sessionState) {
+  async setSlide(sessionId, slideIndex, slideData = null) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
     const payload = {
-      ...sessionState,
-      sessionId: normSessionId,
-      updatedAt: Date.now()
+      currentSlide: slideIndex,
+      slideId: (slideData && slideData.id) || (slideIndex + 1),
+      slideTitle: (slideData && slideData.title) || `Slide ${slideIndex + 1}`,
+      updatedAt: Date.now(),
+      updatedBy: 'presenter'
     };
 
-    // 1. Grava no LocalStorage (dispara evento storage nas outras abas)
-    try {
-      localStorage.setItem(`session_state_${normSessionId}`, JSON.stringify(payload));
-      localStorage.setItem('active_presentation_session', normSessionId);
-    } catch (e) {}
+    this._saveSessionStateLocally(normSessionId, payload);
+    this._broadcastSessionUpdate(normSessionId, payload);
+    this.sendLocalServerEvent('SESSION_STATE_UPDATE', normSessionId, payload);
 
-    // 2. Emite via BroadcastChannel
-    if (this.channel) {
-      try {
-        this.channel.postMessage({
-          type: 'SESSION_UPDATE',
-          sessionId: normSessionId,
-          data: payload
-        });
-      } catch (e) {}
-    }
-
-    // 3. Se Firebase estiver ativo, envia para a nuvem
     if (this.isFirebaseReady && this.db) {
       try {
         const sessionRef = this.firebaseFns.ref(this.db, `sessions/${normSessionId}`);
-        await this.firebaseFns.update(sessionRef, payload);
-      } catch (err) {
-        console.error('[RealtimeEngine] Erro Firebase update:', err);
-      }
+        await this.firebaseFns.update(sessionRef, {
+          ...payload,
+          updatedAt: this.firebaseFns.serverTimestamp()
+        });
+      } catch (err) {}
     }
-
-    // 4. Executa callbacks locais
-    this._triggerSessionListeners(normSessionId, payload);
   }
 
-  /**
-   * Apresentador: Atualiza o slide ativo
-   */
-  async setSlide(sessionId, slideIndex, slideData = {}) {
-    await this.updateSessionState(sessionId, {
-      currentSlide: slideIndex,
-      slideId: slideData.id || (slideIndex + 1),
-      slideTitle: slideData.title || '',
-      status: 'running'
-    });
+  async updateSessionState(sessionId, stateUpdates = {}) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const currentLocal = this._loadSessionStateLocally(normSessionId) || {};
+    const merged = {
+      ...currentLocal,
+      ...stateUpdates,
+      updatedAt: Date.now()
+    };
+
+    this._saveSessionStateLocally(normSessionId, merged);
+    this._broadcastSessionUpdate(normSessionId, merged);
+    this.sendLocalServerEvent('SESSION_STATE_UPDATE', normSessionId, merged);
+
+    if (this.isFirebaseReady && this.db) {
+      try {
+        const sessionRef = this.firebaseFns.ref(this.db, `sessions/${normSessionId}`);
+        await this.firebaseFns.update(sessionRef, {
+          ...stateUpdates,
+          updatedAt: this.firebaseFns.serverTimestamp()
+        });
+      } catch (err) {}
+    }
   }
 
-  /**
-   * Participante e Apresentador: Escuta alterações de estado de uma sessão
-   */
   subscribeToSession(sessionId, callback) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    sessionStorage.setItem('apres_active_session', normSessionId);
 
     if (!this.sessionListeners.has(normSessionId)) {
       this.sessionListeners.set(normSessionId, []);
     }
     this.sessionListeners.get(normSessionId).push(callback);
 
-    // Se houver estado já salvo no localStorage, executa imediatamente
-    const cached = localStorage.getItem(`session_state_${normSessionId}`);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        callback(parsed);
-      } catch (e) {}
+    const initial = this._loadSessionStateLocally(normSessionId);
+    if (initial) {
+      callback(initial);
     }
 
-    // Listener redundante por polling curto (garantia absoluta contra throttle de abas em background)
-    const pollInterval = setInterval(() => {
-      const currentRaw = localStorage.getItem(`session_state_${normSessionId}`);
-      if (currentRaw) {
-        try {
-          const current = JSON.parse(currentRaw);
-          const lastTime = this.lastProcessedTimestamp.get(normSessionId) || 0;
-          if (current.updatedAt && current.updatedAt > lastTime) {
-            this._triggerSessionListeners(normSessionId, current);
-          }
-        } catch (e) {}
-      }
-    }, 400);
-
-    // Se Firebase estiver ativo, registra listener no banco em nuvem
     if (this.isFirebaseReady && this.db) {
       try {
         const sessionRef = this.firebaseFns.ref(this.db, `sessions/${normSessionId}`);
         this.firebaseFns.onValue(sessionRef, (snapshot) => {
           const val = snapshot.val();
           if (val) {
+            this._saveSessionStateLocally(normSessionId, val);
             this._triggerSessionListeners(normSessionId, val);
           }
         });
-      } catch (e) {}
+      } catch (err) {}
     }
 
-    // Retorna função para cancelar inscrição
     return () => {
-      clearInterval(pollInterval);
       const list = this.sessionListeners.get(normSessionId) || [];
       this.sessionListeners.set(normSessionId, list.filter(cb => cb !== callback));
     };
   }
 
-  /**
-   * Participante: Registra presença com metadados de autenticação
-   */
-  startPresence(sessionId, isPresenter = false, userMeta = null) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
-    
-    const notifyPresence = () => {
-      const payload = {
-        participantId: this.participantId,
-        sessionId: normSessionId,
-        isPresenter: isPresenter,
-        isAuthenticated: !!(userMeta && userMeta.uid),
-        uid: (userMeta && userMeta.uid) || this.participantId,
-        alias: (userMeta && userMeta.anonymousAlias) || 'Participante Anônimo',
-        lastSeen: Date.now()
-      };
-
-      // Grava no registry de presença local
-      try {
-        const presenceKey = `session_presence_${normSessionId}`;
-        let map = {};
-        const raw = localStorage.getItem(presenceKey);
-        if (raw) map = JSON.parse(raw);
-        map[this.participantId] = payload;
-        
-        // Limpa usuários inativos há mais de 45 segundos
-        const now = Date.now();
-        Object.keys(map).forEach(k => {
-          if (now - map[k].lastSeen > 45000) delete map[k];
-        });
-        localStorage.setItem(presenceKey, JSON.stringify(map));
-      } catch (e) {}
-
-      if (this.channel) {
-        try {
-          this.channel.postMessage({
-            type: 'PRESENCE_PING',
-            sessionId: normSessionId,
-            data: payload
-          });
-        } catch (e) {}
-      }
-
-      if (this.isFirebaseReady && this.db) {
-        try {
-          const participantRef = this.firebaseFns.ref(this.db, `sessions/${normSessionId}/participants/${this.participantId}`);
-          this.firebaseFns.set(participantRef, {
-            ...payload,
-            lastSeen: this.firebaseFns.serverTimestamp(),
-            active: true
-          });
-          this.firebaseFns.onDisconnect(participantRef).remove();
-        } catch (e) {}
-      }
-    };
-
-    notifyPresence();
-    this.presenceTimer = setInterval(notifyPresence, this.config.sync.heartbeatIntervalMs || 10000);
-  }
-
-  /**
-   * Obtém estatísticas consolidadas de participantes online
-   */
-  getOnlineStats(sessionId) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
-    try {
-      const raw = localStorage.getItem(`session_presence_${normSessionId}`);
-      if (!raw) return { total: 0, authenticated: 0, anonymous: 0, list: [] };
-      const map = JSON.parse(raw);
-      const now = Date.now();
-      
-      const list = Object.values(map).filter(p => !p.isPresenter && (now - p.lastSeen < 45000));
-      const authenticated = list.filter(p => p.isAuthenticated).length;
-      const anonymous = list.length - authenticated;
-
-      return {
-        total: list.length,
-        authenticated: authenticated,
-        anonymous: anonymous,
-        list: list
-      };
-    } catch (e) {
-      return { total: 0, authenticated: 0, anonymous: 0, list: [] };
-    }
-  }
-
-  /**
-   * Emite uma reação instantânea (emoji)
-   */
   sendReaction(sessionId, emoji) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
     if (this.channel) {
@@ -339,27 +251,57 @@ export class RealtimeEngine {
         timestamp: Date.now()
       });
     }
+    this.sendLocalServerEvent('REACTION_SENT', normSessionId, { emoji: emoji });
   }
 
-  /**
-   * Propaga notificação de bloqueio/desbloqueio de usuário
-   */
-  sendUserBlocked(sessionId, uid, isBlocked) {
+  sendVote(sessionId, pollId, optionId, uid) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const payload = { pollId, optionId, uid, timestamp: Date.now() };
+    if (this.channel) {
+      this.channel.postMessage({
+        type: 'VOTE_CAST',
+        sessionId: normSessionId,
+        ...payload
+      });
+    }
+    this.sendLocalServerEvent('VOTE_CAST', normSessionId, payload);
+  }
+
+  sendQuestion(sessionId, question) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
     if (this.channel) {
       this.channel.postMessage({
-        type: 'USER_BLOCKED_STATUS',
+        type: 'NEW_QUESTION',
         sessionId: normSessionId,
-        uid: uid,
-        isBlocked: isBlocked,
-        timestamp: Date.now()
+        question: question
       });
     }
+    this.sendLocalServerEvent('NEW_QUESTION', normSessionId, { question: question });
   }
 
-  /**
-   * Propaga alteração de Host/IP do QR Code para o Telão e Mesa Técnica
-   */
+  sendPollReset(sessionId, pollId) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    if (this.channel) {
+      this.channel.postMessage({
+        type: 'VOTE_RESET',
+        sessionId: normSessionId,
+        pollId: pollId
+      });
+    }
+    this.sendLocalServerEvent('RESET_POLL', normSessionId, { pollId: pollId });
+  }
+
+  sendAllPollsReset(sessionId) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    if (this.channel) {
+      this.channel.postMessage({
+        type: 'VOTE_RESET',
+        sessionId: normSessionId
+      });
+    }
+    this.sendLocalServerEvent('RESET_ALL_POLLS', normSessionId, {});
+  }
+
   sendQRHostChange(sessionId, customHost) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
     if (this.channel) {
@@ -370,11 +312,9 @@ export class RealtimeEngine {
         timestamp: Date.now()
       });
     }
+    this.sendLocalServerEvent('QR_HOST_CONFIG_CHANGED', normSessionId, { customHost: customHost });
   }
 
-  /**
-   * Mesa Técnica: Propaga comando de transição sincronizada de apresentação para todos
-   */
   sendPresentationSwitch(sessionId, newPresentationId) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
     if (this.channel) {
@@ -385,6 +325,8 @@ export class RealtimeEngine {
         timestamp: Date.now()
       });
     }
+    this.sendLocalServerEvent('SWITCH_ACTIVE_PRESENTATION', normSessionId, { presentationId: newPresentationId });
+
     this.updateSessionState(sessionId, {
       presentationId: newPresentationId,
       currentSlide: 0,
@@ -396,11 +338,110 @@ export class RealtimeEngine {
     });
   }
 
+  startPresence(sessionId, isPresenter = false, uid = null, alias = null, isAuthenticated = false) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const pid = uid || this.participantId;
+    const userAlias = alias || `Participante #${pid.substring(pid.length - 4)}`;
+
+    this.stopPresence();
+
+    const sendPing = () => {
+      const presencePayload = {
+        uid: pid,
+        alias: userAlias,
+        isPresenter: isPresenter,
+        isAuthenticated: isAuthenticated,
+        lastPing: Date.now()
+      };
+
+      if (this.channel) {
+        this.channel.postMessage({
+          type: 'PRESENCE_PING',
+          sessionId: normSessionId,
+          ...presencePayload
+        });
+      }
+
+      this.sendLocalServerEvent('PRESENCE_PING', normSessionId, presencePayload);
+
+      // Salva no registro de presença local
+      const key = `session_presence_${normSessionId}`;
+      let map = {};
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw) map = JSON.parse(raw);
+      } catch (e) {}
+
+      map[pid] = presencePayload;
+
+      // Limpa presenças antigas (> 15s)
+      const now = Date.now();
+      Object.keys(map).forEach(k => {
+        if (now - map[k].lastPing > 15000) delete map[k];
+      });
+
+      try {
+        localStorage.setItem(key, JSON.stringify(map));
+      } catch (e) {}
+    };
+
+    sendPing();
+    this.presenceTimer = setInterval(sendPing, 4000);
+  }
+
   stopPresence() {
     if (this.presenceTimer) {
       clearInterval(this.presenceTimer);
       this.presenceTimer = null;
     }
+  }
+
+  getOnlineStats(sessionId) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const key = `session_presence_${normSessionId}`;
+    let map = {};
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) map = JSON.parse(raw);
+    } catch (e) {}
+
+    const now = Date.now();
+    const active = Object.values(map).filter(p => (now - p.lastPing) <= 15000 && !p.isPresenter);
+
+    return {
+      total: active.length,
+      authenticated: active.filter(p => p.isAuthenticated).length,
+      anonymous: active.filter(p => !p.isAuthenticated).length,
+      list: active
+    };
+  }
+
+  _saveSessionStateLocally(sessionId, state) {
+    try {
+      localStorage.setItem(`session_state_${sessionId}`, JSON.stringify(state));
+    } catch (e) {}
+  }
+
+  _loadSessionStateLocally(sessionId) {
+    try {
+      const raw = localStorage.getItem(`session_state_${sessionId}`);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  _broadcastSessionUpdate(sessionId, state) {
+    if (this.channel) {
+      try {
+        this.channel.postMessage({
+          type: 'SESSION_UPDATE',
+          sessionId: sessionId,
+          data: state
+        });
+      } catch (e) {}
+    }
+    this._triggerSessionListeners(sessionId, state);
   }
 
   _handleIncomingMessage(msg) {
@@ -415,21 +456,9 @@ export class RealtimeEngine {
   _triggerSessionListeners(sessionId, data) {
     if (!data) return;
     const normSessionId = (sessionId || '').trim().toUpperCase();
-    
-    // Evita loop apenas se o timestamp recebido for estritamente mais antigo
-    if (data.updatedAt) {
-      const lastTime = this.lastProcessedTimestamp.get(normSessionId) || 0;
-      if (data.updatedAt < lastTime) return;
-      this.lastProcessedTimestamp.set(normSessionId, data.updatedAt);
-    }
-
-    const callbacks = this.sessionListeners.get(normSessionId) || [];
-    callbacks.forEach(cb => {
-      try {
-        cb(data);
-      } catch (err) {
-        console.error('[RealtimeEngine] Erro callback de sessão:', err);
-      }
+    const listeners = this.sessionListeners.get(normSessionId) || [];
+    listeners.forEach(cb => {
+      try { cb(data); } catch (e) {}
     });
   }
 }

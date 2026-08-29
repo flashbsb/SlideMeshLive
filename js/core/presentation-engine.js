@@ -208,7 +208,7 @@ export class PresentationEngine {
   }
 
   /**
-   * Helper para retornar a string HTML do slide do apresentador
+   * Helper para retornar a string HTML do slide do apresentador (com suporte a enquetes)
    */
   renderSlideHtml(slide = null) {
     const s = slide || this.currentSlide;
@@ -224,6 +224,30 @@ export class PresentationEngine {
         </li>
       `).join('');
 
+    let pollHtml = '';
+    if (s.interaction && s.interaction.poll) {
+      const poll = s.interaction.poll;
+      const optionsHtml = (poll.options || []).map(opt => `
+        <div style="background: rgba(15,23,42,0.7); border: 1.5px solid var(--border-medium); padding: 12px 18px; border-radius: var(--radius-md); display: flex; align-items: center; gap: 12px;">
+          <span class="badge badge-accent" style="font-size: 13px; font-weight: 800; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; padding: 0;">${opt.id}</span>
+          <span style="font-size: 15px; font-weight: 600; color: #ffffff;">${opt.text}</span>
+        </div>
+      `).join('');
+
+      pollHtml = `
+        <div class="presenter-poll-box animate-fade-in" style="margin-top: 24px; background: rgba(15,23,42,0.85); border: 2px solid var(--accent-primary); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span class="badge badge-live" style="font-size: 11px;">📊 VOTAÇÃO AO VIVO NO CELULAR</span>
+            <span style="font-size: 12px; color: var(--accent-primary); font-family: var(--font-mono);">Aponte a câmera para votar</span>
+          </div>
+          <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 16px;">${poll.question}</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+            ${optionsHtml}
+          </div>
+        </div>
+      `;
+    }
+
     return `
       <div class="slide-content-wrapper animate-slide-next">
         <div class="slide-tag">${s.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
@@ -231,6 +255,7 @@ export class PresentationEngine {
         <ul class="slide-bullets">
           ${bulletsHtml}
         </ul>
+        ${pollHtml}
       </div>
     `;
   }
