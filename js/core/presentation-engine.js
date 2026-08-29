@@ -202,9 +202,37 @@ export class PresentationEngine {
     if (notesElement) {
       notesElement.innerHTML = `
         <div class="speaker-notes-title">Notas do Orador:</div>
-        <p>${slide.presenter.notes || 'Nenhuma nota específica para este slide.'}</p>
+        <p>${(slide.presenter && slide.presenter.notes) || slide.speakerNotes || 'Nenhuma nota específica para este slide.'}</p>
       `;
     }
+  }
+
+  /**
+   * Helper para retornar a string HTML do slide do apresentador
+   */
+  renderSlideHtml(slide = null) {
+    const s = slide || this.currentSlide;
+    if (!s) return '';
+    const presenter = s.presenter || {};
+    const bullets = presenter.bullets || s.bullets || [];
+
+    const bulletsHtml = bullets
+      .map(b => `
+        <li class="slide-bullet-item animate-fade-in">
+          <span class="bullet-icon"></span>
+          <span>${b}</span>
+        </li>
+      `).join('');
+
+    return `
+      <div class="slide-content-wrapper animate-slide-next">
+        <div class="slide-tag">${s.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
+        <h1 class="slide-headline">${presenter.headline || s.headline || s.title}</h1>
+        <ul class="slide-bullets">
+          ${bulletsHtml}
+        </ul>
+      </div>
+    `;
   }
 
   /**

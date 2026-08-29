@@ -227,8 +227,9 @@ class PresenterApp {
 
     // Notas do Orador no Púlpito
     if (this.dom.notes) {
-      this.dom.notes.innerHTML = slide && slide.speakerNotes 
-        ? slide.speakerNotes.replace(/\n/g, '<br>')
+      const notes = (slide && slide.presenter && slide.presenter.notes) || (slide && slide.speakerNotes);
+      this.dom.notes.innerHTML = notes 
+        ? notes.replace(/\n/g, '<br>')
         : `<em style="color: var(--text-muted);">${i18n.t('presenter.no_notes')}</em>`;
     }
 

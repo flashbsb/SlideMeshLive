@@ -315,18 +315,33 @@ class AudienceApp {
 
     if (!this.dom.contentArea || !slide) return;
 
+    const headline = (slide.presenter && slide.presenter.headline) || (slide.audience && (slide.audience.headline || slide.audience.summary)) || slide.headline || '';
+    const summary = (slide.audience && slide.audience.summary) || '';
+    const sections = (slide.audience && slide.audience.sections) || [];
+    const presenterBullets = (slide.presenter && slide.presenter.bullets) || slide.bullets || [];
+
     let html = '';
 
     // Cabeçalho do Slide
     html += `
       <div class="card" style="margin-bottom: 16px;">
-        <span class="badge badge-accent" style="margin-bottom: 8px;">Slide ${slide.id}</span>
-        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px; line-height: 1.3;">
-          ${slide.title}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span class="badge badge-accent">Slide ${slide.id || current}</span>
+          ${slide.tag ? `<span class="badge" style="font-size: 10px;">${slide.tag}</span>` : ''}
+        </div>
+        <h2 style="font-size: 19px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px; line-height: 1.3;">
+          ${slide.title || 'Slide ' + current}
         </h2>
-        <p style="font-size: 13.5px; color: var(--accent-primary); font-weight: 600; line-height: 1.4;">
-          ${slide.headline}
-        </p>
+        ${headline ? `
+          <p style="font-size: 13.5px; color: var(--accent-primary); font-weight: 600; line-height: 1.4;">
+            ${headline}
+          </p>
+        ` : ''}
+        ${summary && summary !== headline ? `
+          <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 8px; line-height: 1.5;">
+            ${summary}
+          </p>
+        ` : ''}
       </div>
     `;
 
@@ -335,17 +350,60 @@ class AudienceApp {
       html += this.renderPollComponent(slide.interaction.poll);
     }
 
-    // Seção de Aprofundamento do Slide
-    if (slide.bullets && slide.bullets.length > 0) {
+    // Seções de Detalhamento do Público (Textos, Listas, Tabelas)
+    if (sections.length > 0) {
+      sections.forEach(sec => {
+        let contentHtml = '';
+        if (sec.type === 'text') {
+          contentHtml = `<p style="font-size: 13.5px; color: var(--text-primary); line-height: 1.5;">${sec.content}</p>`;
+        } else if (sec.type === 'list' && Array.isArray(sec.items)) {
+          contentHtml = `
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-primary);">
+              ${sec.items.map(item => `
+                <li style="display: flex; align-items: flex-start; gap: 8px; line-height: 1.4;">
+                  <span style="color: var(--accent-primary); font-size: 14px;">▹</span>
+                  <span>${item}</span>
+                </li>
+              `).join('')}
+            </ul>
+          `;
+        } else if (sec.type === 'table' && sec.headers && sec.rows) {
+          const ths = sec.headers.map(h => `<th style="padding: 6px 10px; border-bottom: 1px solid var(--border-subtle); color: var(--accent-primary); font-size: 11px; text-align: left;">${h}</th>`).join('');
+          const trs = sec.rows.map(row => `
+            <tr>
+              ${row.map(cell => `<td style="padding: 6px 10px; border-bottom: 1px solid var(--border-subtle); font-size: 12px; color: var(--text-primary);">${cell}</td>`).join('')}
+            </tr>
+          `).join('');
+          contentHtml = `
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead><tr>${ths}</tr></thead>
+                <tbody>${trs}</tbody>
+              </table>
+            </div>
+          `;
+        }
+
+        html += `
+          <div class="card" style="margin-bottom: 16px;">
+            <h3 style="font-size: 12.5px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 10px;">
+              ${sec.title}
+            </h3>
+            ${contentHtml}
+          </div>
+        `;
+      });
+    } else if (presenterBullets.length > 0) {
+      // Fallback para os tópicos do apresentador
       html += `
         <div class="card" style="margin-bottom: 16px;">
-          <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 12px;">
-            Pontos-Chave & Aprofundamento
+          <h3 style="font-size: 12.5px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 10px;">
+            Pontos Principais
           </h3>
-          <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
-            ${slide.bullets.map(b => `
-              <li style="font-size: 13.5px; color: var(--text-primary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.4;">
-                <span style="color: var(--accent-primary); font-size: 14px; line-height: 1.2;">▹</span>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px;">
+            ${presenterBullets.map(b => `
+              <li style="font-size: 13px; color: var(--text-primary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.4;">
+                <span style="color: var(--accent-primary); font-size: 14px;">▹</span>
                 <span>${b}</span>
               </li>
             `).join('')}
@@ -358,12 +416,12 @@ class AudienceApp {
     if (slide.resources && slide.resources.length > 0) {
       html += `
         <div class="card" style="margin-bottom: 16px;">
-          <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 10px;">
+          <h3 style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 10px;">
             Materiais Complementares
           </h3>
           <div style="display: flex; flex-direction: column; gap: 8px;">
             ${slide.resources.map(r => `
-              <a href="${r.url}" target="_blank" class="btn btn-sm" style="justify-content: space-between; font-size: 12.5px; padding: 10px 14px;">
+              <a href="${r.url}" target="_blank" class="btn btn-sm" style="justify-content: space-between; font-size: 12px; padding: 8px 12px;">
                 <span>📄 ${r.title}</span>
                 <span style="color: var(--accent-primary);">Acessar ↗</span>
               </a>
