@@ -59,6 +59,12 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 new_events = [e for e in session_data["events"] if e.get("id", 0) > since_id]
 
                 now_ms = int(time.time() * 1000)
+                # NE05: limpa participantes inativos (> 60s) do mapa de presença
+                PRESENCE_TIMEOUT_MS = 60000
+                stale_uids = [uid for uid, p in session_data["presence"].items() if (now_ms - p.get("lastPing", 0)) >= PRESENCE_TIMEOUT_MS]
+                for uid in stale_uids:
+                    del session_data["presence"][uid]
+
                 active_presence = len([p for p in session_data["presence"].values() if (now_ms - p.get("lastPing", 0)) < 15000])
 
                 response_data = {
@@ -115,6 +121,12 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                                 "isAuthenticated": payload.get('isAuthenticated', False),
                                 "lastPing": now_ts
                             }
+                        event_id = 0
+                    elif msg_type == 'PRESENCE_LEAVE':
+                        # NE03: remove participante imediatamente no logout
+                        uid = payload.get('uid')
+                        if uid and uid in session_data["presence"]:
+                            del session_data["presence"][uid]
                         event_id = 0
                     else:
                         session_data["last_event_id"] += 1

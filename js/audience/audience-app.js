@@ -835,6 +835,13 @@ class AudienceApp {
 
     if (this.dom.btnLogout) {
       this.dom.btnLogout.addEventListener('click', async () => {
+        // NE03: capturar uid antes do logout para enviar evento de saída ao servidor
+        const leavingUser = this.auth.getCurrentUser();
+        if (leavingUser && leavingUser.uid) {
+          this.realtime.sendLocalServerEvent('PRESENCE_LEAVE', this.sessionId, {
+            uid: leavingUser.uid
+          });
+        }
         await this.auth.signOut();
         this.dom.profileModal.classList.remove('active');
         this.updateAuthStatusUI();
@@ -873,6 +880,13 @@ class AudienceApp {
         this.renderAudienceSlide();
       } catch (err) {
         console.warn('[AudienceApp] Erro ao executar voto pendente:', err);
+      }
+    } else if (action.type === 'question' && action.text) {
+      try {
+        await this.moderation.submitQuestion(this.sessionId, action.text);
+        this.renderMyQuestionsList();
+      } catch (err) {
+        console.warn('[AudienceApp] Erro ao executar pergunta pendente:', err);
       }
     }
   }

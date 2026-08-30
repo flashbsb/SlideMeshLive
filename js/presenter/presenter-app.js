@@ -349,6 +349,10 @@ class PresenterApp {
       this.updateSlideView();
     }
 
+    if (typeof state.activePollId !== 'undefined') {
+      this.pollState.activePollId = state.activePollId;
+    }
+
     if (typeof state.showResults === 'boolean') {
       this.pollState.showResults = state.showResults;
       if (this.pollState.showResults) {
