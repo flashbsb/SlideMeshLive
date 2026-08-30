@@ -672,7 +672,7 @@ class AudienceApp {
     if (this.dom.navPrev) {
       this.dom.navPrev.addEventListener('click', () => {
         this.isLiveSync = false;
-        this.dom.btnSync.classList.remove('active');
+        if (this.dom.btnSync) this.dom.btnSync.classList.remove('active'); // guard null
         this.engine.prevSlide();
         this.renderAudienceSlide();
         if (this.engine.currentSlideIndex !== this.presenterSlideIndex) {
@@ -686,7 +686,7 @@ class AudienceApp {
     if (this.dom.navNext) {
       this.dom.navNext.addEventListener('click', () => {
         this.isLiveSync = false;
-        this.dom.btnSync.classList.remove('active');
+        if (this.dom.btnSync) this.dom.btnSync.classList.remove('active'); // guard null
         this.engine.nextSlide();
         this.renderAudienceSlide();
         if (this.engine.currentSlideIndex !== this.presenterSlideIndex) {
@@ -827,6 +827,11 @@ class AudienceApp {
     if (this.dom.btnSubmitSessionPin) {
       this.dom.btnSubmitSessionPin.addEventListener('click', () => this.unlockWithPIN());
     }
+
+    // NB09: ouvir evento do AuthEngine para abrir modal de nome após login Google offline
+    window.addEventListener('auth:request-name', () => {
+      if (this.dom.authModal) this.dom.authModal.classList.add('active');
+    });
   }
 }
 

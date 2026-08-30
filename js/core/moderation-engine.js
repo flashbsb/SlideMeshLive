@@ -171,6 +171,10 @@ export class ModerationEngine {
         });
       } catch (e) {}
     }
+    // Extra-A: propagar remoção de destaque para rede local via hub HTTP
+    if (this.realtime) {
+      this.realtime.sendQuestionStatus(sessionId, null, 'clear_featured');
+    }
   }
 
   /**
@@ -296,6 +300,10 @@ export class ModerationEngine {
         questionId: questionId,
         answered: target.answered
       });
+    }
+    // Extra-B: propagar toggle de respondida para rede local via hub HTTP
+    if (this.realtime) {
+      this.realtime.sendQuestionStatus(sessionId, questionId, 'answered_toggle', target.answered);
     }
 
     if (this.realtime.isFirebaseReady) {
