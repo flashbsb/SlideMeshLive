@@ -119,8 +119,12 @@ export class RealtimeEngine {
         let localState = {};
         try { if (localRaw) localState = JSON.parse(localRaw); } catch(e){}
         const merged = { ...localState, ...data.state };
-        localStorage.setItem(`session_state_${sessionId}`, JSON.stringify(merged));
-        this._triggerSessionListeners(sessionId, merged);
+        const mergedStr = JSON.stringify(merged);
+        // NB05: só notifica listeners se o estado realmente mudou
+        if (mergedStr !== localRaw) {
+          localStorage.setItem(`session_state_${sessionId}`, mergedStr);
+          this._triggerSessionListeners(sessionId, merged);
+        }
       }
 
       // 2. Atualiza perguntas consolidadas
@@ -162,13 +166,16 @@ export class RealtimeEngine {
       timestamp: Date.now()
     };
 
-    // Dispara localmente de imediato para feedback instantâneo
-    this._dispatchLocalEvent(eventObj);
+    // NB01: PRESENCE_PING não tem efeito visual — não despachar localmente
+    // (polui listeners de onEvent e causa re-renders desnecessários no Admin)
+    if (type !== 'PRESENCE_PING') {
+      this._dispatchLocalEvent(eventObj);
 
-    if (this.channel) {
-      try {
-        this.channel.postMessage(eventObj);
-      } catch(e) {}
+      if (this.channel) {
+        try {
+          this.channel.postMessage(eventObj);
+        } catch(e) {}
+      }
     }
 
     const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'http://127.0.0.1:8000';

@@ -138,6 +138,10 @@ export class ModerationEngine {
         });
       } catch (e) {}
     }
+    // NB06: propagar para rede local via hub HTTP (celulares recebem em < 2s)
+    if (this.realtime) {
+      this.realtime.sendQuestionStatus(sessionId, questionId, status);
+    }
   }
 
   /**
@@ -232,6 +236,13 @@ export class ModerationEngine {
         questionId: questionId
       });
     }
+    // NB07: propagar exclusão para rede local via hub HTTP
+    if (this.realtime) {
+      this.realtime.sendLocalServerEvent('QUESTION_STATUS_CHANGE', sessionId, {
+        questionId: questionId,
+        status: 'deleted'
+      });
+    }
 
     // Atualiza Firebase se ativo
     if (this.realtime.isFirebaseReady) {
@@ -252,6 +263,10 @@ export class ModerationEngine {
         sessionId: sessionId,
         action: 'cleared_all'
       });
+    }
+    // NB07: propagar limpeza total para rede local via hub HTTP
+    if (this.realtime) {
+      this.realtime.sendClearQuestions(sessionId);
     }
 
     if (this.realtime.isFirebaseReady) {

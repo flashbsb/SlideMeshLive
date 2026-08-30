@@ -281,7 +281,7 @@ class AdminApp {
               <span>${p.alias || 'Participante'}</span>
             </div>
             <div style="font-size: 9.5px; color: var(--text-muted);">
-              ${p.isAuthenticated ? 'Google Auth' : 'Anônimo'} • ID: ${p.uid.substring(0, 8)}...
+              ${p.provider === 'google' ? 'Google' : p.provider === 'local' ? 'Local' : p.isAuthenticated ? 'Identificado' : 'Anônimo'} • ID: ${p.uid.substring(0, 8)}...
             </div>
           </div>
           <button class="btn btn-sm btn-admin-ban" data-uid="${p.uid}" style="padding: 2px 6px; font-size: 10px; border-color: ${isBlocked ? 'rgba(16,185,129,0.4)' : 'rgba(239,68,68,0.4)'}; color: ${isBlocked ? '#6ee7b7' : '#fca5a5'};">
@@ -294,12 +294,20 @@ class AdminApp {
 
   handleSessionUpdate(state) {
     if (!state) return;
+    // NB02: renderizar condicionalmente — só quando o estado relevante mudou
+    let needsPollRender = false;
+    let needsModerationRender = false;
+
     if (typeof state.currentSlide === 'number' && this.engine.currentSlideIndex !== state.currentSlide) {
       this.engine.goToSlide(state.currentSlide);
       this.updateView();
+      needsPollRender = true; // nova enquete pode estar no novo slide
     }
-    this.renderPollsList();
-    this.renderModerationList();
+    if ('pollStatus' in state || 'showResults' in state) needsPollRender = true;
+    if ('featuredQuestion' in state) needsModerationRender = true;
+
+    if (needsPollRender) this.renderPollsList();
+    if (needsModerationRender) this.renderModerationList();
   }
 
   updateView() {

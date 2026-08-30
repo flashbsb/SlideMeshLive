@@ -143,8 +143,7 @@ class AudienceApp {
           if (newPid && newPid !== this.presentationId) {
             window.location.href = `?presentation=${encodeURIComponent(newPid)}&session=${encodeURIComponent(this.sessionId)}`;
           }
-        } else if (type === 'SESSION_STATE_UPDATE' || type === 'SESSION_UPDATE') {
-          this.handleRemoteSessionUpdate(payload);
+          // NB04: SESSION_STATE_UPDATE removido — já tratado por subscribeToSession
         }
       });
 
@@ -189,7 +188,9 @@ class AudienceApp {
   }
 
   checkSessionProtection() {
-    if (this.engine.manifest.security && this.engine.manifest.security.requirePIN) {
+    const sec = this.engine.manifest && this.engine.manifest.security;
+    // NB12: suporta tanto mode:'pin' (AuthEngine) quanto requirePIN (legado)
+    if (sec && (sec.mode === 'pin' || sec.requirePIN)) {
       const isUnlocked = sessionStorage.getItem(`unlocked_session_${this.sessionId}`);
       if (!isUnlocked) {
         if (this.dom.sessionPinModal) {
@@ -228,12 +229,14 @@ class AudienceApp {
 
   handleRemoteSessionUpdate(state) {
     if (!state) return;
+    // NB03: consolidar em 1 render ao invés de até 3x separados
+    let needsRender = false;
 
     if (typeof state.currentSlide === 'number') {
       this.presenterSlideIndex = state.currentSlide;
       if (this.isLiveSync) {
         this.engine.goToSlide(this.presenterSlideIndex);
-        this.renderAudienceSlide();
+        needsRender = true;
       } else if (this.engine.currentSlideIndex === this.presenterSlideIndex) {
         this.hideSyncToast();
       } else {
@@ -243,12 +246,12 @@ class AudienceApp {
 
     if (typeof state.showResults === 'boolean') {
       this.pollState.showResults = state.showResults;
-      this.renderAudienceSlide();
+      needsRender = true;
     }
 
     if (state.pollStatus) {
       this.pollState.pollStatus = state.pollStatus;
-      this.renderAudienceSlide();
+      needsRender = true;
     }
 
     if (state.featuredQuestion) {
@@ -266,6 +269,8 @@ class AudienceApp {
     if (state.showFinalAnalytics) {
       this.renderFinalAnalytics();
     }
+
+    if (needsRender) this.renderAudienceSlide(); // NB03: render único consolidado
   }
 
   showFeaturedQuestion(question) {
@@ -545,7 +550,7 @@ class AudienceApp {
 
   resyncToLive() {
     this.isLiveSync = true;
-    this.dom.btnSync.classList.add('active');
+    if (this.dom.btnSync) this.dom.btnSync.classList.add('active'); // NB08: guard null
     this.engine.goToSlide(this.presenterSlideIndex);
     this.hideSyncToast();
     this.renderAudienceSlide();

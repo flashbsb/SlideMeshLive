@@ -289,12 +289,11 @@ export class AuthEngine {
     
     // Fallback: Identificação direta amigável sem window.prompt() bloqueante
     const mockUid = 'goog_' + Math.random().toString(36).substring(2, 10);
-    const mockAlias = this._generateAnonymousAlias(mockUid);
     const mockUser = {
       uid: mockUid,
       email: 'participante@evento.local',
-      displayName: mockAlias,
-      anonymousAlias: mockAlias,
+      displayName: null,         // NB09: será preenchido após o usuário digitar o nome
+      anonymousAlias: null,
       provider: 'google_local',
       role: 'participant',
       photoURL: null,
@@ -302,6 +301,8 @@ export class AuthEngine {
       isAnonymous: false
     };
     this._setCurrentUser(mockUser);
+    // NB09: emitir evento para que a UI abra o modal de coleta de nome
+    window.dispatchEvent(new CustomEvent('auth:request-name', { detail: { user: mockUser } }));
     return mockUser;
   }
 
