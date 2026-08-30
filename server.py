@@ -106,7 +106,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                         "last_event_id": 0
                     })
 
-                    # B11: PRESENCE_PING atualiza presença sem poluir a fila de eventos
+                    # B11 / ND05: PRESENCE_PING atualiza presença sem poluir a fila de eventos e sem segurar lock no I/O
                     if msg_type == 'PRESENCE_PING':
                         uid = payload.get('uid')
                         if uid:
@@ -115,72 +115,68 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                                 "isAuthenticated": payload.get('isAuthenticated', False),
                                 "lastPing": now_ts
                             }
-                        self.send_response(200)
-                        self.send_header('Content-Type', 'application/json; charset=utf-8')
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"success": True, "eventId": 0, "timestamp": now_ts}).encode('utf-8'))
-                        return
+                        event_id = 0
+                    else:
+                        session_data["last_event_id"] += 1
+                        event_id = session_data["last_event_id"]
 
-                    session_data["last_event_id"] += 1
-                    event_id = session_data["last_event_id"]
+                        event_record = {
+                            "id": event_id,
+                            "type": msg_type,
+                            "sessionId": session_id,
+                            "payload": payload,
+                            "timestamp": now_ts
+                        }
 
-                    event_record = {
-                        "id": event_id,
-                        "type": msg_type,
-                        "sessionId": session_id,
-                        "payload": payload,
-                        "timestamp": now_ts
-                    }
-
-                    # Atualiza memória de estado conforme o tipo de mensagem
-                    if msg_type in ('SESSION_STATE_UPDATE', 'SESSION_UPDATE'):
-                        session_data["state"].update(payload)
-                    elif msg_type == 'NEW_QUESTION':
-                        q = payload.get('question')
-                        if q and not any(existing.get('id') == q.get('id') for existing in session_data["questions"]):
-                            session_data["questions"].append(q)
-                    elif msg_type == 'QUESTION_STATUS_CHANGE':
-                        qid = payload.get('questionId')
-                        new_status = payload.get('status')
-                        if new_status == 'clear_featured':
-                            for q in session_data["questions"]:
-                                if q.get('status') == 'featured':
-                                    q['status'] = 'approved'
-                        elif qid:
-                            for q in session_data["questions"]:
-                                if q.get('id') == qid:
-                                    if new_status == 'deleted':
-                                        session_data["questions"].remove(q)
-                                    else:
-                                        if new_status and new_status != 'answered_toggle':
-                                            q['status'] = new_status
-                                        if 'answered' in payload:
-                                            q['answered'] = payload['answered']
-                                    break
-                    elif msg_type == 'CLEAR_ALL_QUESTIONS':
-                        session_data["questions"] = []
-                    elif msg_type == 'VOTE_CAST':
-                        pid = payload.get('pollId')
-                        if pid:
-                            vote_list = session_data["votes"].setdefault(pid, [])
-                            uid = payload.get('uid')
-                            if not any(v.get('uid') == uid for v in vote_list):
-                                vote_list.append(payload)
-                    elif msg_type in ('RESET_POLL', 'VOTE_RESET'):
-                        pid = payload.get('pollId')
-                        if pid and pid in session_data["votes"]:
-                            session_data["votes"][pid] = []
-                        elif not pid:
+                        # Atualiza memória de estado conforme o tipo de mensagem
+                        if msg_type in ('SESSION_STATE_UPDATE', 'SESSION_UPDATE'):
+                            session_data["state"].update(payload)
+                        elif msg_type == 'NEW_QUESTION':
+                            q = payload.get('question')
+                            if q and not any(existing.get('id') == q.get('id') for existing in session_data["questions"]):
+                                session_data["questions"].append(q)
+                        elif msg_type == 'QUESTION_STATUS_CHANGE':
+                            qid = payload.get('questionId')
+                            new_status = payload.get('status')
+                            if new_status == 'clear_featured':
+                                for q in session_data["questions"]:
+                                    if q.get('status') == 'featured':
+                                        q['status'] = 'approved'
+                            elif qid:
+                                for q in session_data["questions"]:
+                                    if q.get('id') == qid:
+                                        if new_status == 'deleted':
+                                            session_data["questions"].remove(q)
+                                        else:
+                                            if new_status and new_status != 'answered_toggle':
+                                                q['status'] = new_status
+                                            if 'answered' in payload:
+                                                q['answered'] = payload['answered']
+                                        break
+                        elif msg_type == 'CLEAR_ALL_QUESTIONS':
+                            session_data["questions"] = []
+                        elif msg_type == 'VOTE_CAST':
+                            pid = payload.get('pollId')
+                            if pid:
+                                vote_list = session_data["votes"].setdefault(pid, [])
+                                uid = payload.get('uid')
+                                if not any(v.get('uid') == uid for v in vote_list):
+                                    vote_list.append(payload)
+                        elif msg_type in ('RESET_POLL', 'VOTE_RESET'):
+                            pid = payload.get('pollId')
+                            if pid and pid in session_data["votes"]:
+                                session_data["votes"][pid] = []
+                            elif not pid:
+                                session_data["votes"] = {}
+                        elif msg_type == 'RESET_ALL_POLLS':
                             session_data["votes"] = {}
-                    elif msg_type == 'RESET_ALL_POLLS':
-                        session_data["votes"] = {}
-                    elif msg_type == 'USER_BLOCKED_STATUS':
-                        pass
+                        elif msg_type == 'USER_BLOCKED_STATUS':
+                            pass
 
-                    # Adiciona na fila sequencial
-                    session_data["events"].append(event_record)
-                    if len(session_data["events"]) > SERVER_STATE["max_events"]:
-                        session_data["events"] = session_data["events"][-SERVER_STATE["max_events"]:]
+                        # Adiciona na fila sequencial
+                        session_data["events"].append(event_record)
+                        if len(session_data["events"]) > SERVER_STATE["max_events"]:
+                            session_data["events"] = session_data["events"][-SERVER_STATE["max_events"]:]
 
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json; charset=utf-8')

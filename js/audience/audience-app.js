@@ -196,7 +196,7 @@ class AudienceApp {
         if (this.dom.sessionPinModal) {
           this.dom.sessionPinModal.classList.add('active');
           if (this.dom.sessionPinHint) {
-            this.dom.sessionPinHint.textContent = `Apresentação "${this.engine.manifest.title}" protegida por PIN.`;
+            this.dom.sessionPinHint.textContent = (sec && sec.pinHint) ? sec.pinHint : `Apresentação "${this.engine.manifest.title}" protegida por PIN.`;
           }
         }
       }
@@ -648,6 +648,10 @@ class AudienceApp {
   }
 
   sendReaction(emoji) {
+    const currentUser = this.auth.getCurrentUser();
+    if (currentUser && this.moderation.isUserBlocked(this.sessionId, currentUser.uid)) {
+      return;
+    }
     this.realtime.sendReaction(this.sessionId, emoji);
   }
 
@@ -777,6 +781,7 @@ class AudienceApp {
         const user = this.auth.getCurrentUser();
         if (user) {
           this.realtime.startPresence(this.sessionId, false, user.uid, user.displayName, user.isAuthenticated);
+          this._executePendingAction();
         }
       });
       inputQuickName.addEventListener('keypress', (e) => {
@@ -797,6 +802,7 @@ class AudienceApp {
             this.updateAuthStatusUI();
             this.renderAudienceSlide();
             this.realtime.startPresence(this.sessionId, false, user.uid, user.displayName, user.isAuthenticated);
+            this._executePendingAction();
           }
         } catch (e) {
           alert('Identificação concluída: ' + (this.auth.user ? this.auth.user.displayName : ''));
@@ -815,6 +821,8 @@ class AudienceApp {
             if (this.dom.localLoginError) this.dom.localLoginError.style.display = 'none';
             this.updateAuthStatusUI();
             this.renderAudienceSlide();
+            this.realtime.startPresence(this.sessionId, false, user.uid, user.displayName, user.isAuthenticated);
+            this._executePendingAction();
           }
         } catch (e) {
           if (this.dom.localLoginError) {
@@ -831,6 +839,7 @@ class AudienceApp {
         this.dom.profileModal.classList.remove('active');
         this.updateAuthStatusUI();
         this.renderAudienceSlide();
+        this.realtime.startPresence(this.sessionId, false, null, null, false);
       });
     }
 
@@ -852,6 +861,20 @@ class AudienceApp {
         }
       }
     });
+  }
+
+  async _executePendingAction() {
+    if (!this.pendingAction) return;
+    const action = this.pendingAction;
+    this.pendingAction = null;
+    if (action.type === 'vote' && action.pollId && action.optId) {
+      try {
+        await this.interaction.castVote(this.sessionId, action.pollId, action.optId);
+        this.renderAudienceSlide();
+      } catch (err) {
+        console.warn('[AudienceApp] Erro ao executar voto pendente:', err);
+      }
+    }
   }
 }
 

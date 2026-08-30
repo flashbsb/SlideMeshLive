@@ -133,9 +133,13 @@ class PresenterApp {
           this.updatePollResultsInStage();
         } else if (type === 'QUESTION_STATUS_CHANGE' || type === 'NEW_QUESTION' || type === 'CLEAR_ALL_QUESTIONS') {
           this.updateQuestionsDrawer();
-        } else if (type === 'SESSION_STATE_UPDATE' || type === 'SESSION_UPDATE') {
-          this.handleRemoteSessionUpdate(payload);
         } else if (type === 'QR_HOST_CONFIG_CHANGED') {
+          const customHost = payload.customHost || event.customHost;
+          if (customHost) {
+            QREngine.setCustomHost(this.sessionId, customHost);
+          } else {
+            QREngine.resetCustomHost(this.sessionId);
+          }
           this.setupQRCodes();
         } else if (type === 'SWITCH_ACTIVE_PRESENTATION') {
           const newPid = payload.presentationId || event.presentationId;
