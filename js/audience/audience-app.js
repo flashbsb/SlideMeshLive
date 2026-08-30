@@ -772,6 +772,12 @@ class AudienceApp {
         this.dom.authModal.classList.remove('active');
         this.updateAuthStatusUI();
         this.renderAudienceSlide();
+
+        // NC06: reiniciar presença com o novo alias identificado
+        const user = this.auth.getCurrentUser();
+        if (user) {
+          this.realtime.startPresence(this.sessionId, false, user.uid, user.displayName, user.isAuthenticated);
+        }
       });
       inputQuickName.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -783,10 +789,15 @@ class AudienceApp {
     if (this.dom.btnGoogleLogin) {
       this.dom.btnGoogleLogin.addEventListener('click', async () => {
         try {
-          await this.auth.signInWithGoogle();
-          this.dom.authModal.classList.remove('active');
-          this.updateAuthStatusUI();
-          this.renderAudienceSlide();
+          const user = await this.auth.signInWithGoogle();
+          // NC02: só fecha o modal se a autenticação retornou nome válido.
+          // No fallback local (displayName null), auth:request-name mantém o modal aberto e foca no campo.
+          if (user && user.displayName) {
+            this.dom.authModal.classList.remove('active');
+            this.updateAuthStatusUI();
+            this.renderAudienceSlide();
+            this.realtime.startPresence(this.sessionId, false, user.uid, user.displayName, user.isAuthenticated);
+          }
         } catch (e) {
           alert('Identificação concluída: ' + (this.auth.user ? this.auth.user.displayName : ''));
         }
@@ -828,9 +839,18 @@ class AudienceApp {
       this.dom.btnSubmitSessionPin.addEventListener('click', () => this.unlockWithPIN());
     }
 
-    // NB09: ouvir evento do AuthEngine para abrir modal de nome após login Google offline
+    // NC01: ouvir evento do AuthEngine para abrir modal e focar no campo de nome rápido
     window.addEventListener('auth:request-name', () => {
-      if (this.dom.authModal) this.dom.authModal.classList.add('active');
+      if (this.dom.authModal) {
+        this.dom.authModal.classList.add('active');
+        const inputQuickName = document.getElementById('input-quick-name');
+        if (inputQuickName) {
+          setTimeout(() => {
+            inputQuickName.focus();
+            inputQuickName.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+        }
+      }
     });
   }
 }

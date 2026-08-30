@@ -138,9 +138,11 @@ export class ModerationEngine {
         });
       } catch (e) {}
     }
-    // NB06: propagar para rede local via hub HTTP (celulares recebem em < 2s)
+    // NB06 / NC03: propagar para rede local via hub HTTP com status e answered (celulares recebem em < 2s)
     if (this.realtime) {
-      this.realtime.sendQuestionStatus(sessionId, questionId, status);
+      const targetQ = questions.find(q => q.id === questionId);
+      const answeredVal = targetQ ? (targetQ.answered || false) : false;
+      this.realtime.sendQuestionStatus(sessionId, questionId, status, answeredVal);
     }
   }
 

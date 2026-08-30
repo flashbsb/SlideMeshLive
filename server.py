@@ -142,15 +142,21 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                     elif msg_type == 'QUESTION_STATUS_CHANGE':
                         qid = payload.get('questionId')
                         new_status = payload.get('status')
-                        for q in session_data["questions"]:
-                            if q.get('id') == qid:
-                                if new_status == 'deleted':
-                                    session_data["questions"].remove(q)
-                                else:
-                                    q['status'] = new_status
-                                    if 'answered' in payload:
-                                        q['answered'] = payload['answered']
-                                break
+                        if new_status == 'clear_featured':
+                            for q in session_data["questions"]:
+                                if q.get('status') == 'featured':
+                                    q['status'] = 'approved'
+                        elif qid:
+                            for q in session_data["questions"]:
+                                if q.get('id') == qid:
+                                    if new_status == 'deleted':
+                                        session_data["questions"].remove(q)
+                                    else:
+                                        if new_status and new_status != 'answered_toggle':
+                                            q['status'] = new_status
+                                        if 'answered' in payload:
+                                            q['answered'] = payload['answered']
+                                    break
                     elif msg_type == 'CLEAR_ALL_QUESTIONS':
                         session_data["questions"] = []
                     elif msg_type == 'VOTE_CAST':
