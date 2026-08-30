@@ -176,7 +176,7 @@ class AdminApp {
           this.renderModerationList();
         } else if (type === 'VOTE_CAST' || type === 'VOTE_RESET' || type === 'RESET_POLL' || type === 'RESET_ALL_POLLS') {
           this.renderPollsList();
-        } else if (type === 'PRESENCE_PING') {
+        } else if (type === 'PRESENCE_LEAVE') {
           this.updatePresenceMetrics();
         } else if (type === 'QR_HOST_CONFIG_CHANGED') {
           this.setupQRCode();

@@ -20,6 +20,7 @@ SERVER_STATE = {
     "max_events": 1000
 }
 _STATE_LOCK = threading.Lock()
+PRESENCE_TIMEOUT_MS = 30000  # Janela de timeout único para poda e contagem (30s)
 
 class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
@@ -59,8 +60,6 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 new_events = [e for e in session_data["events"] if e.get("id", 0) > since_id]
 
                 now_ms = int(time.time() * 1000)
-                # NF04: timeout único de 30s para poda e contagem de presença ativa
-                PRESENCE_TIMEOUT_MS = 30000
                 stale_uids = [uid for uid, p in session_data["presence"].items() if (now_ms - p.get("lastPing", 0)) >= PRESENCE_TIMEOUT_MS]
                 for uid in stale_uids:
                     del session_data["presence"][uid]

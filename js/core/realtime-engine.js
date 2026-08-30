@@ -171,6 +171,10 @@ export class RealtimeEngine {
     if (type !== 'PRESENCE_PING') {
       this._dispatchLocalEvent(eventObj);
 
+      if (type === 'PRESENCE_LEAVE' && payload.uid) {
+        this._removeFromLocalPresence(normSessionId, payload.uid);
+      }
+
       if (this.channel) {
         try {
           this.channel.postMessage(eventObj);
@@ -418,7 +422,7 @@ export class RealtimeEngine {
 
       const now = Date.now();
       Object.keys(map).forEach(k => {
-        if (now - map[k].lastPing > 15000) delete map[k];
+        if (now - map[k].lastPing > 30000) delete map[k];
       });
 
       try {
@@ -447,7 +451,7 @@ export class RealtimeEngine {
     } catch (e) {}
 
     const now = Date.now();
-    const active = Object.values(map).filter(p => (now - p.lastPing) <= 15000 && !p.isPresenter);
+    const active = Object.values(map).filter(p => (now - p.lastPing) <= 30000 && !p.isPresenter);
 
     return {
       total: active.length,
@@ -492,5 +496,21 @@ export class RealtimeEngine {
     listeners.forEach(cb => {
       try { cb(data); } catch (e) {}
     });
+  }
+
+  _removeFromLocalPresence(sessionId, uid) {
+    if (!sessionId || !uid) return;
+    const normSessionId = (sessionId || '').trim().toUpperCase();
+    const key = `session_presence_${normSessionId}`;
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const map = JSON.parse(raw);
+        if (map[uid]) {
+          delete map[uid];
+          localStorage.setItem(key, JSON.stringify(map));
+        }
+      }
+    } catch (e) {}
   }
 }
