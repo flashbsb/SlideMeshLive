@@ -846,7 +846,7 @@ class AudienceApp {
         this.dom.profileModal.classList.remove('active');
         this.updateAuthStatusUI();
         this.renderAudienceSlide();
-        this.realtime.startPresence(this.sessionId, false, null, null, false);
+        this.realtime.stopPresence(); // NF01: após logout parar presença
       });
     }
 
@@ -880,13 +880,6 @@ class AudienceApp {
         this.renderAudienceSlide();
       } catch (err) {
         console.warn('[AudienceApp] Erro ao executar voto pendente:', err);
-      }
-    } else if (action.type === 'question' && action.text) {
-      try {
-        await this.moderation.submitQuestion(this.sessionId, action.text);
-        this.renderMyQuestionsList();
-      } catch (err) {
-        console.warn('[AudienceApp] Erro ao executar pergunta pendente:', err);
       }
     }
   }

@@ -351,6 +351,13 @@ class PresenterApp {
 
     if (typeof state.activePollId !== 'undefined') {
       this.pollState.activePollId = state.activePollId;
+      // NF03 / NF05: sincronizar visibilidade do dock com estado remoto
+      if (this.dom.stagePollDock) {
+        this.dom.stagePollDock.style.display = state.activePollId ? 'flex' : 'none';
+      }
+      if (state.activePollId) {
+        this.updatePollResultsInStage();
+      }
     }
 
     if (typeof state.showResults === 'boolean') {
