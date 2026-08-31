@@ -2,6 +2,18 @@
   "version": "1.0.0",
   "presentations": [
     {
+      "id": "slidemesh-showcase",
+      "code": "SLIDEMESH-DEMO-2026",
+      "title": "SlideMeshLive: A Mágica das Apresentações Interativas",
+      "subtitle": "Guia Demonstrativo Oficial de Recursos & Experiência em Tempo Real",
+      "description": "Apresentação oficial demonstrativa da plataforma com enquetes interativas ao vivo, moderação de perguntas, atalhos de palco, modo púlpito e sincronização mobile instantânea.",
+      "defaultSession": "SHOWCASE2026",
+      "totalSlides": 10,
+      "securityMode": "public",
+      "securityLabel": "⭐ Demonstração Oficial (Aberta)",
+      "badgeClass": "badge-live"
+    },
+    {
       "id": "sdwan-cpe-unificado",
       "code": "NTP-ENG-SDWAN-2026",
       "title": "Adoção do SD-WAN Edge como CPE Único e Unificado",
