@@ -443,9 +443,10 @@
     import { i18n } from './js/core/i18n-engine.js';
     import { theme, THEMES } from './js/core/theme-engine.js';
 
-    // Obter arquivo especificado na URL ou usar README.md por padrão
+    // Obter arquivo especificado na URL ou usar README conforme idioma ativo
     const params = new URLSearchParams(window.location.search);
-    const docFile = params.get('file') || 'README.md';
+    let explicitFile = params.get('file');
+    let docFile = explicitFile || (i18n.language === 'pt-BR' ? 'README.pt-BR.md' : 'README.md');
 
     function updateLanguageButton() {
       const btn = document.getElementById('btn-docs-lang');
@@ -721,6 +722,12 @@
       const nextLang = i18n.language === 'pt-BR' ? 'en-US' : 'pt-BR';
       i18n.setLanguage(nextLang);
       updateLanguageButton();
+
+      // Se estiver vendo README, alterna automaticamente a versão do idioma
+      if (!explicitFile || docFile.includes('README')) {
+        docFile = nextLang === 'pt-BR' ? 'README.pt-BR.md' : 'README.md';
+        loadMarkdownDoc();
+      }
     });
 
     document.getElementById('btn-docs-theme')?.addEventListener('click', () => {

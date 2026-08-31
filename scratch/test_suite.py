@@ -134,6 +134,7 @@ def test_essential_files_presence():
         "server.py",
         "tools/import_presentation.py",
         "README.md",
+        "README.pt-BR.md",
         "plan/PLANO_MESTRE_ANALISE_E_IMPLANTACAO.md"
     ]
     for f in files:
@@ -691,14 +692,23 @@ def test_phase4_mobile_haptics_and_a11y_high_contrast():
 
 def test_readme_and_documentation_consistency():
     print_section("6. Consistência da Documentação e Ausência de Termos Legados")
-    readme_path = os.path.join(BASE_DIR, "README.md")
-    with open(readme_path, "r", encoding="utf-8") as f:
-        readme = f.read()
+    readme_en_path = os.path.join(BASE_DIR, "README.md")
+    readme_pt_path = os.path.join(BASE_DIR, "README.pt-BR.md")
+
+    with open(readme_en_path, "r", encoding="utf-8") as f:
+        readme_en = f.read()
+
+    with open(readme_pt_path, "r", encoding="utf-8") as f:
+        readme_pt = f.read()
         
-    assert "apresentacaoonline" not in readme, "Encontrada referência legada 'apresentacaoonline' no README.md!"
-    assert "SlideMeshLive" in readme, "Nome oficial 'SlideMeshLive' ausente no README.md"
-    assert "cd /home/flashbsb/projetos/SlideMeshLive" in readme, "Caminho oficial de terminal ausente no README.md"
-    print("✓ README.md 100% padronizado com o branding e caminhos de diretório oficiais.")
+    for name, content in [("README.md", readme_en), ("README.pt-BR.md", readme_pt)]:
+        assert "apresentacaoonline" not in content, f"Encontrada referência legada 'apresentacaoonline' em {name}!"
+        assert "SlideMeshLive" in content, f"Nome oficial 'SlideMeshLive' ausente em {name}"
+        assert "cd /home/flashbsb/projetos/SlideMeshLive" in content, f"Caminho oficial de terminal ausente em {name}"
+        assert "README.pt-BR.md" in content, f"Link para versão em português ausente em {name}"
+        assert "README.md" in content, f"Link para versão em inglês ausente em {name}"
+
+    print("✓ README.md (EN) e README.pt-BR.md (PT) 100% padronizados, bilíngues e sem termos legados.")
 
 def test_presentation_import_endpoint():
     print_section("10. Importação Dinâmica de Apresentações (POST /api/presentations/import)")

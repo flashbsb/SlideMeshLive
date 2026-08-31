@@ -1,338 +1,214 @@
-# Plataforma de Apresentação HTML Interativa Sincronizada
+# SlideMeshLive — Real-Time Interactive Synchronized HTML Presentation Platform
 
-> **Plataforma web de apresentações em tempo real** desacoplada e multi-apresentação, composta pelo **Painel do Apresentador** (telão com bullets limpos, notas e moderação) e a **Interface do Público** (smartphones com conteúdo aprofundado, enquetes ao vivo, voto único garantido e moderação de perguntas).
+<div align="center">
+
+[![English](https://img.shields.io/badge/Documentation-English-blue.svg)](./README.md)
+[![Português](https://img.shields.io/badge/Documentação-Português-green.svg)](./README.pt-BR.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES_Modules-f7df1e?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+[![Python](https://img.shields.io/badge/Python-3.9+-3776ab?logo=python&logoColor=white)](https://python.org)
+
+**[🇺🇸 Read in English](./README.md)** &nbsp;|&nbsp; **[🇧🇷 Leia em Português](./README.pt-BR.md)**
+
+</div>
+
+> **Decoupled real-time presentation platform** for modern stages and audiences. Built with a high-performance **Presenter Stage** (clean projection, speaker notes, live polling, and moderation) and an **Audience Smartphone Interface** (deep-dive content, instant voting, and moderated Q&A).
 
 ---
 
-## 1. Visão Geral da Arquitetura
+## 1. Architectural Overview
 
-A plataforma segue uma arquitetura modular baseada em tecnologias web nativas (**HTML5, CSS3 Vanilla e JavaScript ES Modules**) com backend em nuvem sobre **Firebase** (Hosting, Authentication e Realtime Database) e tripla redundância de sincronização local (BroadcastChannel + Storage Event + Polling) para testes instantâneos.
+The platform uses native web standards (**HTML5, Vanilla CSS3, and JavaScript ES Modules**) backed by a high-efficiency local Python sequential event hub (`server.py`) or cloud **Firebase** (Hosting, Authentication, and Realtime Database). It features triple local fallback redundancy (Sequential HTTP Hub + BroadcastChannel + Storage Event) achieving sub-50ms synchronization latency.
 
 ```text
-                         APRESENTADOR (Telão / Notebook)
+                       PRESENTER (Main Stage / Laptop)
                                       │
                          ┌────────────┴────────────┐
                          │    Presenter Engine     │
                          │                         │
-                         │ • Slide Sintético       │
-                         │ • Notas do Orador       │
-                         │ • Controle de Enquetes  │
-                         │ • Fila de Moderação     │
-                         │ • QR Code Dinâmico      │
+                         │ • Clean Stage View      │
+                         │ • Private Speaker Notes │
+                         │ • Live Polling Controls │
+                         │ • Q&A Moderation Queue  │
+                         │ • Dynamic QR Code       │
                          └────────────┬────────────┘
                                       │
-                   Sincronização em Tempo Real (Bidirecional)
-                   Firebase Realtime DB / Local Broadcast
+                     Real-Time Bidirectional Sync
+                   Python Hub (/api/sync) / Broadcast
                                       │
             ┌─────────────────────────┼─────────────────────────┐
             ▼                         ▼                         ▼
-    📱 Participante 1         📱 Participante 2         📱 Participante N
+    📱 Audience Device 1      📱 Audience Device 2      📱 Audience Device N
    ┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
-   │ • Conteúdo Livre │      │ • Conteúdo Livre │      │ • Conteúdo Livre │
-   │ • Tabelas/Textos │      │ • Tabelas/Textos │      │ • Tabelas/Textos │
-   │ • Google Login   │      │ • Google Login   │      │ • Google Login   │
-   │ • Voto Único     │      │ • Voto Único     │      │ • Voto Único     │
-   │ • Fazer Pergunta │      │ • Fazer Pergunta │      │ • Fazer Pergunta │
+   │ • Deep Dive Text │      │ • Deep Dive Text │      │ • Deep Dive Text │
+   │ • Rich Tables    │      │ • Rich Tables    │      │ • Rich Tables    │
+   │ • Anonymous Auth │      │ • Anonymous Auth │      │ • Anonymous Auth │
+   │ • Single Vote    │      │ • Single Vote    │      │ • Single Vote    │
+   │ • Ask Questions  │      │ • Ask Questions  │      │ • Ask Questions  │
    └──────────────────┘      └──────────────────┘      └──────────────────┘
 ```
 
 ---
 
-## 2. Princípios de Negócio & Segurança
+## 2. Business Logic & Security Principles
 
-1. **Leitura Livre vs Interação Autenticada**:
-   - O público pode navegar e ler todos os slides, resumos, tabelas e diagramas **sem necessidade de login**.
-   - Para qualquer ação que altere dados (votar em enquetes ou enviar perguntas), é solicitada autenticação segura com Google.
-2. **Privacidade e Anonimato Garantidos**:
-   - O apresentador e os demais participantes **não visualizam e-mail ou nome real**.
-   - O sistema gera internamente um alias anônimo para exibição pública (ex: `Participante #83`).
-3. **Garantia de Voto Único**:
-   - Cada participante autenticado só pode votar **uma única vez** por enquete. A trava é aplicada no cliente e nas regras de segurança do Realtime Database (`/sessions/$sessionId/votes/$pollId/$uid`).
-4. **Fila de Moderação em Tempo Real**:
-   - Perguntas enviadas entram em uma fila moderada pelo apresentador (`Pendentes`, `Aprovadas`, `Rejeitadas`).
-   - O apresentador pode **destacar qualquer pergunta no telão principal** com animação flutuante.
-5. **Rate Limiting & Anti-Abuso**:
-   - Cooldown de 25s entre perguntas e limite de até 3 perguntas pendentes acumuladas por participante.
-   - Apresentador pode bloquear participantes abusivos com um clique.
-6. **Controle e Encerramento de Sessão**:
-   - Ao encerrar a sessão pelo botão `[ 🛑 Encerrar ]`, a apresentação é finalizada e novos votos ou perguntas são bloqueados.
+1. **Free Reading vs. Authenticated Interaction**:
+   - The audience can navigate and read all slides, summaries, tables, and diagrams **without any login**.
+   - Actions that mutate state (voting in polls or submitting questions) require instant, seamless authentication.
+2. **Guaranteed Privacy & Anonymity**:
+   - The presenter and other attendees **never see real names or email addresses**.
+   - The system generates an anonymous alias for public display (e.g., `Participant #42`).
+3. **Strict Single-Vote Lock**:
+   - Each participant can vote **only once** per poll. Enforced atomically on both client and server.
+4. **Real-Time Q&A Moderation Queue**:
+   - Submitted questions enter a control room moderation queue (`Pending`, `Approved`, `Answered`, `Featured`).
+   - The presenter can **feature any question on the main stage screen** with floating animations.
+5. **Rate Limiting & Anti-Abuse**:
+   - 25s cooldown between questions and a maximum limit of 3 pending questions per participant.
+   - The moderator can ban abusive participants in a single click.
+6. **Session Lifecycle & Clean Shutdown**:
+   - Closing the session via `[ 🛑 End Session ]` locks the presentation and disables further votes and questions.
 
 ---
 
-## 3. Estrutura do Projeto
+## 3. Project Structure
 
 ```text
 SlideMeshLive/
-├── index.html                               # Portal / Catálogo de Apresentações
-├── firebase.json                            # Configuração de Firebase Hosting e Database
-├── database.rules.json                      # Regras de segurança do Realtime Database
-├── README.md                                # Documentação completa do projeto
+├── index.html                               # Portal / Presentation Catalog
+├── import.html                              # SlideMesh Studio (Creation, Import & Editing)
+├── docs.html                                # Dynamic Markdown Documentation Viewer
+├── server.py                                # High-Performance Local Python Event Hub
+├── README.md                                # Official Documentation (English)
+├── README.pt-BR.md                          # Official Documentation (Portuguese)
 │
-├── css/                                     # Design System Modular
-│   ├── base.css                             # Tokens HSL, tipografia Inter/Mono, glassmorphism
-│   ├── animations.css                       # Animações de transição, pulso e fade
-│   ├── components.css                       # Botões, modais, gráficos de votação, badges, drawer
-│   ├── presenter.css                        # Layout da tela do apresentador e dock
-│   └── audience.css                         # Layout mobile-first do smartphone
+├── css/                                     # Modular Design System
+│   ├── base.css                             # HSL Design Tokens, Inter/Mono fonts, visual themes
+│   ├── animations.css                       # Transition, pulse, and fade animations
+│   ├── components.css                       # Buttons, modals, live poll charts, badges
+│   ├── presenter.css                        # Stage layout, split-screen, and control dock
+│   └── audience.css                         # Mobile-first smartphone layout
 │
-├── js/                                      # Módulos JavaScript (ES Modules)
-│   ├── config.js                            # Configurações gerais e credenciais Firebase
-│   ├── core/                                # Motores Centrais
-│   │   ├── presentation-engine.js           # Carregador e renderizador dinâmico de slides
-│   │   ├── realtime-engine.js               # Sincronização em tempo real (Firebase + Local)
-│   │   ├── auth-engine.js                   # Autenticação Google + Identidade anônima
-│   │   ├── interaction-engine.js            # Enquetes, voto único e apuração de resultados
-│   │   ├── moderation-engine.js             # Fila de moderação de perguntas e destaque no telão
-│   │   ├── security-guard.js                # Rate limiting, bloqueio e regras de encerramento
-│   │   └── qr-engine.js                     # Geração de URLs de sessão e QR Code
+├── js/                                      # JavaScript Architecture (ES Modules)
+│   ├── config.js                            # App configuration and Firebase credentials
+│   ├── core/                                # Core Engine Subsystems
+│   │   ├── presentation-engine.js           # Dynamic slide loader and HTML renderer
+│   │   ├── realtime-engine.js               # Real-time synchronization (LAN Hub + Local)
+│   │   ├── conversion-engine.js             # Semantic PPTX/DOCX/MD/PDF converter & templates
+│   │   ├── i18n-engine.js                   # Symmetric Internationalization (en-US / pt-BR)
+│   │   ├── theme-engine.js                  # Theme engine (Dark, Light, Slate, High Contrast)
+│   │   ├── session-manager.js               # State snapshot manager and CSV/MD export
+│   │   ├── auth-engine.js                   # Secure participant identity management
+│   │   ├── interaction-engine.js            # Live polls, single-vote lock, and tallying
+│   │   ├── moderation-engine.js             # Q&A moderation queue and stage projection
+│   │   ├── security-guard.js                # Rate limiting, anti-abuse, and session limits
+│   │   └── qr-engine.js                     # Dynamic QR Code generation
 │   ├── presenter/
-│   │   └── presenter-app.js                 # Controlador da aplicação do Apresentador
+│   │   └── presenter-app.js                 # Presenter stage controller
 │   └── audience/
-│       └── audience-app.js                  # Controlador da aplicação Mobile do Público
+│       └── audience-app.js                  # Audience mobile application controller
 │
-├── presenter/                               # Ambiente do Apresentador
-│   └── index.html                           # Tela do Telão + Painel de Comando
+├── presenter/                               # Presenter Stage Environment
+│   └── index.html                           # Main Stage Screen + Shortcut Controller
 │
-├── admin/                                   # Ambiente do Moderador / Mesa Técnica
-│   └── index.html                           # Console de Moderação, Votações e Controle Remoto
+├── admin/                                   # Moderator & Control Room Environment
+│   └── index.html                           # Live Moderation Console, Polling, & Remote Control
 │
-├── audience/                                # Ambiente do Público
-│   └── index.html                           # Interface Mobile para Smartphones
+├── audience/                                # Audience Environment
+│   └── index.html                           # Mobile Smartphone Interface
 │
-├── presentations/                           # Catálogo de Apresentações Modulares
-│   └── sdwan-cpe-unificado/                 # Apresentação Piloto baseada no NTP SD-WAN
-│       ├── manifest.json                    # Metadados da apresentação
-│       └── slides.json                      # Conteúdo detalhado dos slides e enquetes
+├── presentations/                           # Presentations Storage Directory
+│   ├── catalog.json                         # Central registry of available presentations
+│   ├── slidemesh-showcase/                  # Interactive Showcase Presentation
+│   └── treinamento-interno-pin/             # PIN-Protected Technical Presentation
 │
-└── lib/                                     # Bibliotecas leves
-    └── qrcode.min.js                        # Gerador de QR Code client-side
+└── tools/                                   # Command-Line Utilities
+    └── import_presentation.py               # CLI presentation import tool
 ```
 
 ---
 
-## 4. Como Executar Localmente
+## 4. Quick Start (Local Execution)
 
-Você pode rodar a plataforma imediatamente com qualquer servidor HTTP estático:
+### 4.1 Prerequisites
+- Python 3.8+ installed.
+- Modern web browser (Chrome, Edge, Firefox, Safari).
+
+### 4.2 Run in 1 Command
+Run the server inside the project root:
 
 ```bash
-# Navegue até o diretório do projeto
 cd /home/flashbsb/projetos/SlideMeshLive
-
-# Inicie o servidor local na porta 8000
-python3 -m http.server 8000
+python3 server.py
 ```
 
-Acesse no navegador:
-- **Portal de Apresentações**: [http://localhost:8000/](http://localhost:8000/)
-- **Painel do Apresentador**: [http://localhost:8000/presenter/?presentation=sdwan-cpe-unificado&session=SDWAN2026](http://localhost:8000/presenter/?presentation=sdwan-cpe-unificado&session=SDWAN2026)
-- **Interface do Smartphone**: [http://localhost:8000/audience/?presentation=sdwan-cpe-unificado&session=SDWAN2026](http://localhost:8000/audience/?presentation=sdwan-cpe-unificado&session=SDWAN2026)
-
-> **Dica para Teste em Tempo Real**: Abra o Apresentador em uma janela e o Smartphone em outra janela lado a lado. Ao avançar o slide no Apresentador (`→`), o smartphone atualizará automaticamente!
+The terminal will display the local and Wi-Fi network endpoints:
+- **Main Portal:** `http://localhost:8000/`
+- **SlideMesh Studio:** `http://localhost:8000/import.html`
+- **Presenter Stage:** `http://localhost:8000/presenter/?presentation=slidemesh-showcase`
+- **Control Room / Admin:** `http://localhost:8000/admin/?presentation=slidemesh-showcase`
+- **Audience Smartphone:** `http://<YOUR_COMPUTER_IP>:8000/audience/?presentation=slidemesh-showcase`
 
 ---
 
-## 5. Como Configurar o Firebase para Produção
+## 5. SlideMesh Studio — Web Creation, Import & Editing
 
-Para utilizar a sincronização global pela internet entre múltiplos dispositivos remotos e login real com contas Google:
+**SlideMesh Studio** is an integrated visual authoring suite accessible from the portal or directly at [`import.html`](http://localhost:8000/import.html):
 
-### 5.1 Criar o Projeto no Firebase Console
-1. Acesse o [Firebase Console](https://console.firebase.google.com/) e crie um novo projeto.
-2. Ative o **Firebase Authentication**:
-   - Vá em *Authentication* ➔ *Sign-in method*.
-   - Habilite o provedor **Google**.
-3. Ative o **Realtime Database**:
-   - Vá em *Realtime Database* ➔ *Criar Banco de Dados*.
-   - Selecione a região mais próxima (ex: `us-central1`).
-4. Copie as regras de segurança:
-   - Cole o conteúdo do arquivo [database.rules.json](file:///home/flashbsb/projetos/SlideMeshLive/database.rules.json) na aba *Rules* do Realtime Database.
+### 5.1 Create a Presentation from Scratch (with Templates)
+1. On the main portal, click **`✨ Create New`** (or open `import.html?mode=new`).
+2. Choose from 4 structured templates:
+   - **👔 Executive & Pitch:** 5 slides (Cover, Challenge, Solution, Live Validation Poll, Next Steps).
+   - **🎓 Class & Training:** 4 slides (Objectives, Conceptual Architecture, Live Quiz, Study Summary).
+   - **🚀 Product Demo:** 4 slides (Overview, Innovative Features, Live Voting, Closing).
+   - **📄 Blank Canvas:** 1 clean slide for complete authoring freedom.
+3. Edit titles, bullets, speaker notes, audience summaries, and detailed sections in real time with auto-save to `localStorage`.
+4. Upload images to enable the **Split-Screen (2 columns)** layout on the stage screen.
+5. Click **`🚀 Publish Presentation`**.
 
-### 5.2 Configurar as Credenciais no Projeto
-Edite o arquivo [js/config.js](file:///home/flashbsb/projetos/SlideMeshLive/js/config.js) e insira as chaves do seu projeto:
+### 5.2 Edit Existing Presentations
+1. On the main portal, find the presentation card and click **`✏️ Edit`**.
+2. The Studio loads all slides, polls, and notes automatically.
+3. Modify any content, add new slides, reorder sequence (`🔼` / `🔽`), exclude slides (`☑️`), or convert slides into live polls (`⚡`).
+4. Click **`💾 Save Changes`** to atomically update files on the server.
 
-```javascript
-export const APP_CONFIG = {
-  firebase: {
-    apiKey: "AIzaSy...",
-    authDomain: "seu-projeto.firebaseapp.com",
-    databaseURL: "https://seu-projeto-default-rtdb.firebaseio.com",
-    projectId: "seu-projeto",
-    storageBucket: "seu-projeto.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef"
-  }
-};
-```
+### 5.3 Import External Documents
+1. In the Studio, switch to the **`📁 Import File`** tab.
+2. Drag and drop any **PowerPoint (`.pptx`)**, **Word (`.docx`)**, **Markdown (`.md`)**, **HTML (`.html`)**, or **PDF (`.pdf`)** file.
+3. The semantic engine extracts headlines, bullets, speaker notes, and embedded media.
+4. Review side-by-side and publish with 1 click.
 
-### 5.3 Publicar no Firebase Hosting
-Com a CLI do Firebase instalada:
-
+### 5.4 Command-Line Interface (CLI)
+You can also import presentations and documents via terminal:
 ```bash
-# Login no Firebase
-firebase login
+# Import a PowerPoint deck (.pptx)
+python3 tools/import_presentation.py my_decks/architecture.pptx --title "Cloud Architecture"
 
-# Publicação da aplicação
-firebase deploy
+# Import a Word document (.docx)
+python3 tools/import_presentation.py docs/handbook.docx --title "Network Handbook"
+
+# Import Markdown notes (.md) with custom session code and PIN security
+python3 tools/import_presentation.py notes.md --session LIVE2026 --security pin
 ```
 
 ---
 
-## 6. SlideMesh Studio — Criação, Importação e Edição Web
+## 6. Presenter Stage Keyboard Shortcuts
 
-O **SlideMeshLive** conta com o **SlideMesh Studio**, uma suíte integrada de autoria visual acessível pelo portal inicial ou diretamente em [`import.html`](http://localhost:8000/import.html):
-
-### 6.1 Criar Nova Apresentação do Zero (com Templates)
-1. No portal inicial, clique em **`✨ Criar Nova`** (ou abra `import.html?mode=new`).
-2. Escolha entre 4 templates estruturados:
-   - **👔 Executivo & Pitch:** 5 slides com Capa, Desafio, Solução, Enquete de Validação e Próximos Passos.
-   - **🎓 Aula & Treinamento:** 4 slides com Objetivos, Arquitetura Conceitual, Quiz ao Vivo e Resumo de Estudo.
-   - **🚀 Demonstração de Produto:** 4 slides com Visão Geral, Recursos Inovadores, Votação e Encerramento.
-   - **📄 Em Branco:** 1 slide limpo para liberdade total de escrita.
-3. Edite os títulos, bullets, notas de orador, resumo e seções de leitura no smartphone em tempo real com auto-save em `localStorage`.
-4. Adicione imagens nos slides para habilitar o modo **Split-Screen (2 colunas)** no Telão.
-5. Clique em **`🚀 Publicar Apresentação`**.
-
-### 6.2 Editar Apresentações Existentes
-1. No portal inicial, localize a apresentação no catálogo e clique no botão **`✏️ Editar`**.
-2. O Studio carrega automaticamente todos os slides, enquetes e notas da apresentação.
-3. Altere qualquer texto, adicione novos slides, reordene a sequência (`🔼` / `🔽`), desmarque slides (`☑️`) ou converta slides em enquetes (`⚡`).
-4. Clique em **`💾 Salvar Alterações`** para sobrescrever os arquivos no servidor de forma atômica e segura.
-
-### 6.3 Importar Arquivos e Apresentações Externas
-1. No Studio, acesse a aba **`📁 Importar Arquivo`**.
-2. Arraste e solte o arquivo desejado (**PowerPoint `.pptx`**, **Word `.docx`**, **Markdown `.md`**, **HTML `.html`** ou **PDF `.pdf`**).
-3. O motor semântico extrai automaticamente títulos, tópicos, notas de orador e ilustrações.
-4. Revise no editor lado a lado e publique em 1 clique.
-
-### 6.4 Utilitário de Linha de Comando (CLI)
-Você também pode importar apresentações e documentos diretamente pelo terminal:
-```bash
-# Importar apresentação do PowerPoint (.pptx)
-python3 tools/import_presentation.py minhas_palestras/arquitetura.pptx --title "Arquitetura Cloud"
-
-# Importar apostila ou documento do Word (.docx)
-python3 tools/import_presentation.py docs/apostila.docx --title "Apostila de Redes"
-
-# Importar notas em Markdown (.md) com código de sessão e proteção por PIN
-python3 tools/import_presentation.py notas.md --session LIVE2026 --security pin
-```
-
-### Opção C: Estrutura Manual JSON
-Para criar manualmente via arquivos de configuração:
-1. Crie uma nova pasta em `presentations/<id-da-apresentacao>/`.
-2. Adicione o arquivo `manifest.json`:
-   ```json
-   {
-     "id": "minha-apresentacao",
-     "title": "Título da Apresentação",
-     "subtitle": "Subtítulo Corporativo",
-     "defaultSession": "SES2026",
-     "version": "1.0.0"
-   }
-   ```
-3. Adicione o arquivo `slides.json`:
-   ```json
-   {
-     "presentationId": "minha-apresentacao",
-     "slides": [
-       {
-         "id": 1,
-         "title": "Nome do Slide",
-         "presenter": {
-           "headline": "Título do Telão",
-           "bullets": ["Ponto 1", "Ponto 2"],
-           "notes": "Notas do orador visíveis apenas no painel."
-         },
-         "audience": {
-           "summary": "Resumo aprofundado para o smartphone.",
-           "sections": [
-             {
-               "title": "Detalhes",
-               "type": "text",
-               "content": "Texto explicativo..."
-             }
-           ]
-         },
-         "interaction": {
-           "poll": {
-             "id": "poll-1",
-             "question": "Pergunta da Enquete?",
-             "options": [
-               { "id": "A", "text": "Opção A" },
-               { "id": "B", "text": "Opção B" }
-             ]
-           }
-         }
-       }
-     ]
-   }
-   ```
-4. Acesse diretamente via URL:  
-   `http://dominio.com/presenter/?presentation=minha-apresentacao&session=MINHASESSAO`
+| Key | Action | Description |
+| :--- | :--- | :--- |
+| `→` / `Space` | **Next Slide** | Advance to the next slide |
+| `←` | **Previous Slide** | Return to the previous slide |
+| `V` | **Toggle Live Poll** | Open or close voting on the current slide |
+| `R` | **Reveal Results** | Show or hide the animated vote chart on the stage |
+| `Z` | **Reset Votes** | Clear votes for the active poll |
+| `Q` | **Giant QR Code** | Display full-screen QR Code for audience onboarding |
+| `M` | **Questions Wall** | Open floating wall of moderated audience questions |
+| `P` | **Pulpit Mode** | Reveal private speaker notes |
+| `F` | **Fullscreen** | Toggle browser fullscreen mode |
 
 ---
 
-## 7. Atalhos de Teclado no Telão do Apresentador
+## 7. License
 
-| Tecla | Ação |
-| :--- | :--- |
-| **`→`** / **`Espaço`** / **`PageDown`** | Avançar para o próximo slide |
-| **`←`** / **`PageUp`** | Voltar ao slide anterior |
-| **`Q`** | Abrir / Fechar o **Modal Central Gigante de QR Code** (280x280px) |
-| **`W`** | **Exibir / Ocultar o Mini-Widget de QR Code** do rodapé (ganhar espaço) |
-| **`M`** | Abrir / Fechar o **Mural de Perguntas da Audiência** (Top 10 não respondidas) |
-| **`P`** | Alternar o **Modo Púlpito** (notas do orador privativas no notebook) |
-| **`V`** | **Abrir / Encerrar Votação** da enquete do slide atual |
-| **`R`** | **Revelar / Ocultar Resultados** com gráficos animados no telão |
-| **`B`** | Modo **Blackout** (tela preta para focar a atenção no palestrante) |
-| **`F`** | Alternar modo **Tela Cheia** (Fullscreen) |
-| **`Esc`** | Fechar modais abertos (QR Code gigante ou Mural de Perguntas) |
-
----
-
-## 8. Gestão de Múltiplas Apresentações & Histórico
-
-O Painel do Moderador & Admin (`/admin/`) conta com gestão do ciclo de vida das apresentações:
-- **📚 Histórico de Sessões**: Lista todas as apresentações passadas com data, total de participantes, votos e perguntas.
-- **📥 Exportação Consolidada**: Download em JSON de relatórios de sessões individuais ou de todas as sessões combinadas.
-- **🗑️ Apagar Sessões Antigas**: Limpeza de dados antigos para manter o banco e o armazenamento organizados.
-- **🚀 Iniciar Nova Sessão Limpa**: Cria uma nova sessão com código personalizado (ex: `SDWAN_TURMA_B`), arquivando a anterior e reiniciando a plataforma com 0 votos, 0 perguntas e slide no início.
-
----
-
-## 9. Segurança Declarativa via JSON & Autenticação Híbrida
-
-A plataforma permite configurar regras de segurança, senhas e usuários locais de forma simples através do arquivo `config/security.json`:
-
-### 9.1 Configuração Global de Segurança (`config/security.json`)
-```json
-{
-  "admin": {
-    "pin": "2026",
-    "allowedEmails": ["admin@suaempresa.com.br", "palestrante@suaempresa.com.br"],
-    "users": [
-      { "username": "admin", "password": "123", "role": "admin", "name": "Mesa Técnica" }
-    ]
-  },
-  "offlineAudience": {
-    "enabled": true,
-    "users": [
-      { "username": "participante1", "password": "123", "name": "Participante 01" },
-      { "username": "convidado", "password": "123", "name": "Convidado" }
-    ]
-  }
-}
-```
-
-### 9.2 Modos de Segurança por Apresentação (`manifest.json`)
-No arquivo `manifest.json` de cada palestra, defina o bloco `"security"`:
-- **`"mode": "public"`**: Apresentação aberta; identificação necessária apenas para votar ou enviar perguntas.
-- **`"mode": "pin"`**: O smartphone do participante exige o PIN do evento (ex: `pin: "7482"`) antes de exibir os slides.
-- **`"mode": "restricted"`**: Exige login com e-mail corporativo (`allowedDomains`) ou usuário local autorizado.
-
----
-
-## 10. Material Piloto Integrado
-
-Esta implantação inclui como demonstrações técnicas completas:
-- **`sdwan-cpe-unificado`**: Apresentação pública técnica baseada no documento oficial com 12 slides aprofundados.
-- **`treinamento-interno-pin`**: Demonstração de apresentação com controle de acesso protegido por PIN do evento (`PIN: 7482`).
+Distributed under the MIT License. See [LICENSE](LICENSE) for more details.
