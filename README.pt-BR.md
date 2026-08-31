@@ -12,24 +12,24 @@
 
 </div>
 
-> **Plataforma web de apresentações em tempo real** desacoplada e multi-apresentação, composta pelo **Painel do Apresentador** (telão com bullets limpos, notas e moderação) e a **Interface do Público** (smartphones com conteúdo aprofundado, enquetes ao vivo, voto único garantido e moderação de perguntas).
+> **Plataforma web de apresentações em tempo real** desacoplada e multi-apresentação, composta pelo **Painel do Apresentador** (telão com bullets limpos, modo split-screen, notas e moderação), **Mesa Técnica / Admin** (controle remoto, moderação de perguntas e exportação de relatórios) e a **Interface do Público** (smartphones com conteúdo aprofundado, enquetes ao vivo, voto único garantido e feedback tátil).
 
 ---
 
 ## 1. Visão Geral da Arquitetura
 
-A plataforma segue uma arquitetura modular baseada em tecnologias web nativas (**HTML5, CSS3 Vanilla e JavaScript ES Modules**) com backend em Python local de alta performance (`server.py`) ou nuvem sobre **Firebase** (Hosting, Authentication e Realtime Database), contando com tripla redundância de sincronização local (Hub HTTP Sequencial + BroadcastChannel + Storage Event) com latência inferior a 50ms.
+O **SlideMeshLive** foi concebido com uma arquitetura modular baseada em tecnologias web nativas (**HTML5, CSS3 Vanilla e JavaScript ES Modules**) e um servidor local de alta performance em Python (`server.py`) com tripla redundância de sincronização (Hub HTTP Sequencial + BroadcastChannel + Storage Event) para latência inferior a 50ms na rede local (LAN / Wi-Fi), dispensando conexão com a internet ou servidores externos.
 
 ```text
-                         APRESENTADOR (Telão / Notebook)
+                       APRESENTADOR (Telão / Notebook)
                                       │
                          ┌────────────┴────────────┐
                          │    Presenter Engine     │
                          │                         │
-                         │ • Slide Sintético       │
-                         │ • Notas do Orador       │
+                         │ • Slide Clean & Split   │
+                         │ • Modo Púlpito & Timer  │
                          │ • Controle de Enquetes  │
-                         │ • Fila de Moderação     │
+                         │ • Mural de Perguntas    │
                          │ • QR Code Dinâmico      │
                          └────────────┬────────────┘
                                       │
@@ -38,36 +38,40 @@ A plataforma segue uma arquitetura modular baseada em tecnologias web nativas (*
                                       │
             ┌─────────────────────────┼─────────────────────────┐
             ▼                         ▼                         ▼
-    📱 Participante 1         📱 Participante 2         📱 Participante N
-   ┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
-   │ • Conteúdo Livre │      │ • Conteúdo Livre │      │ • Conteúdo Livre │
-   │ • Tabelas/Textos │      │ • Tabelas/Textos │      │ • Tabelas/Textos │
-   │ • Google Login   │      │ • Google Login   │      │ • Google Login   │
-   │ • Voto Único     │      │ • Voto Único     │      │ • Voto Único     │
-   │ • Fazer Pergunta │      │ • Fazer Pergunta │      │ • Fazer Pergunta │
-   └──────────────────┘      └──────────────────┘      └──────────────────┘
+    🛡️ Mesa Técnica (Admin)   📱 Smartphone 1           📱 Smartphone N
+   ┌──────────────────────┐  ┌──────────────────┐      ┌──────────────────┐
+   │ • Navegação Remota   │  │ • Leitura Livre  │      │ • Leitura Livre  │
+   │ • Moderação 4 Fases  │  │ • Resumo & Texto │      │ • Resumo & Texto │
+   │ • Ajuste Host QR     │  │ • Voto Único     │      │ • Voto Único     │
+   │ • Exportação CSV/MD  │  │ • Fazer Pergunta │      │ • Fazer Pergunta │
+   │ • Projeção Analytics │  │ • Feedback Tátil │      │ • Feedback Tátil │
+   └──────────────────────┘  └──────────────────┘      └──────────────────┘
 ```
 
 ---
 
 ## 2. Princípios de Negócio & Segurança
 
-1. **Leitura Livre vs Interação Autenticada**:
-   - O público pode navegar e ler todos os slides, resumos, tabelas e diagramas **sem necessidade de login**.
-   - Para qualquer ação que altere dados (votar em enquetes ou enviar perguntas), é solicitada autenticação segura com Google ou identificação de participante.
-2. **Privacidade e Anonimato Garantidos**:
-   - O apresentador e os demais participantes **não visualizam e-mail ou nome real**.
-   - O sistema gera internamente um alias anônimo para exibição pública (ex: `Participante #83`).
-3. **Garantia de Voto Único**:
-   - Cada participante autenticado só pode votar **uma única vez** por enquete. A trava é aplicada atomicamente no cliente e no servidor.
-4. **Fila de Moderação em Tempo Real**:
-   - Perguntas enviadas entram em uma fila moderada na mesa técnica (`Pendentes`, `Aprovadas`, `Respondidas`, `Destaque`).
-   - O apresentador pode **destacar qualquer pergunta no telão principal** com animação flutuante.
-5. **Rate Limiting & Anti-Abuso**:
+1. **Operação 100% Autônoma Offline (Rede Local / Wi-Fi)**:
+   - A plataforma opera perfeitamente sem internet. O servidor Python local gerencia presenças, votos, enquetes e perguntas na rede local.
+2. **Leitura Livre vs. Interação com Identidade Segura**:
+   - O público navega e lê todos os slides, resumos, tabelas e diagramas **sem necessidade de cadastro ou login externo**.
+   - Para interações que alteram estado (votar em enquetes ou enviar perguntas), o sistema utiliza identidade de participante com trava criptográfica de voto único.
+3. **Privacidade e Anonimato Garantidos**:
+   - O apresentador e a plateia **não visualizam dados pessoais ou e-mails**.
+   - O sistema gera internamente um alias público amigável (ex: `Participante #83`).
+4. **Garantia Rigorosa de Voto Único**:
+   - Cada participante autenticado só pode votar **uma única vez** por enquete, com validação atômica no cliente e no servidor.
+5. **Mesa Técnica e Moderação em 4 Fases**:
+   - Perguntas do público passam pelo fluxo de moderação: `Pendentes` ➔ `Aprovadas` ➔ `Em Destaque` ➔ `Respondidas`.
+   - O moderador ou apresentador pode **destacar qualquer pergunta no telão principal** com animação flutuante.
+6. **Rate Limiting & Proteção Anti-Abuso (SecurityGuard)**:
    - Cooldown de 25s entre perguntas e limite de até 3 perguntas pendentes acumuladas por participante.
-   - Apresentador pode bloquear participantes abusivos com um clique.
-6. **Controle e Encerramento de Sessão**:
-   - Ao encerrar a sessão pelo botão `[ 🛑 Encerrar ]`, a apresentação é finalizada e novos votos ou perguntas são bloqueados.
+   - A mesa técnica pode suspender participantes abusivos em 1 clique.
+7. **Resiliência e Snapshot de Estado em Disco**:
+   - O servidor Python grava snapshots atômicos (`snapshot_state.json`), preservando votos e perguntas em caso de reinicialização.
+8. **Exportação de Dados e Relatório Executivo**:
+   - A mesa técnica exporta relatórios completos de participação em formatos **CSV estruturado** e **Markdown executivo**.
 
 ---
 
@@ -75,22 +79,23 @@ A plataforma segue uma arquitetura modular baseada em tecnologias web nativas (*
 
 ```text
 SlideMeshLive/
-├── index.html                               # Portal / Catálogo de Apresentações
+├── index.html                               # Portal Inicial / Catálogo de Apresentações
 ├── import.html                              # SlideMesh Studio (Criação, Importação e Edição)
 ├── docs.html                                # Visualizador Dinâmico de Documentação Markdown
 ├── server.py                                # Servidor Local em Python com Hub HTTP Sequencial
-├── README.md                                # Documentação oficial em Inglês
-├── README.pt-BR.md                          # Documentação oficial em Português
+├── README.md                                # Documentação Oficial (Inglês)
+├── README.pt-BR.md                          # Documentação Oficial (Português)
 │
 ├── css/                                     # Design System Modular
-│   ├── base.css                             # Tokens HSL, tipografia Inter/Mono, temas visuais
-│   ├── animations.css                       # Animações de transição, pulso e fade
-│   ├── components.css                       # Botões, modais, gráficos de votação, badges
-│   ├── presenter.css                        # Layout da tela do apresentador e dock
-│   └── audience.css                         # Layout mobile-first do smartphone
+│   ├── base.css                             # Tokens HSL, tipografia Inter/Mono, 4 temas visuais
+│   ├── animations.css                       # Animações de transição, pulso, floating e fade
+│   ├── components.css                       # Botões, modais, gráficos de votação, badges, drawer
+│   ├── presenter.css                        # Layout da tela do apresentador, split-screen e dock
+│   ├── audience.css                         # Layout mobile-first do smartphone com haptics
+│   └── admin.css                            # Layout da Mesa Técnica / Console de Moderação
 │
 ├── js/                                      # Módulos JavaScript (ES Modules)
-│   ├── config.js                            # Configurações gerais e credenciais Firebase
+│   ├── config.js                            # Configurações de ambiente e credenciais
 │   ├── core/                                # Motores Centrais
 │   │   ├── presentation-engine.js           # Carregador e renderizador dinâmico de slides
 │   │   ├── realtime-engine.js               # Sincronização em tempo real (Hub LAN + Local)
@@ -100,26 +105,28 @@ SlideMeshLive/
 │   │   ├── session-manager.js               # Gestor de snapshots e exportação CSV/MD
 │   │   ├── auth-engine.js                   # Identidade segura de participante
 │   │   ├── interaction-engine.js            # Enquetes, voto único e apuração de resultados
-│   │   ├── moderation-engine.js             # Fila de moderação de perguntas e destaque
-│   │   ├── security-guard.js                # Rate limiting, bloqueio e regras de sessão
+│   │   ├── moderation-engine.js             # Fila de moderação de perguntas e destaque no telão
+│   │   ├── security-guard.js                # Rate limiting, bloqueio e regras de encerramento
 │   │   └── qr-engine.js                     # Geração de URLs de sessão e QR Code
 │   ├── presenter/
 │   │   └── presenter-app.js                 # Controlador da aplicação do Apresentador
-│   └── audience/
-│       └── audience-app.js                  # Controlador da aplicação Mobile do Público
+│   ├── audience/
+│   │   └── audience-app.js                  # Controlador da aplicação Mobile do Público
+│   └── admin/
+│       └── admin-app.js                     # Controlador da Mesa Técnica / Moderador
 │
 ├── presenter/                               # Ambiente do Telão / Apresentador
 │   └── index.html                           # Tela do Telão + Painel de Atalhos
 │
 ├── admin/                                   # Ambiente do Moderador / Mesa Técnica
-│   └── index.html                           # Console de Moderação, Votações e Controle
+│   └── index.html                           # Console de Moderação, Votações e Controle Remoto
 │
 ├── audience/                                # Ambiente do Público
 │   └── index.html                           # Interface Mobile para Smartphones
 │
 ├── presentations/                           # Diretório de Apresentações
 │   ├── catalog.json                         # Registro central de apresentações disponíveis
-│   ├── slidemesh-showcase/                  # Apresentação Demonstrativa
+│   ├── slidemesh-showcase/                  # Apresentação Demonstrativa Oficial
 │   └── treinamento-interno-pin/             # Demonstração Protegida por PIN
 │
 └── tools/                                   # Utilitários CLI
@@ -142,25 +149,25 @@ cd /home/flashbsb/projetos/SlideMeshLive
 python3 server.py
 ```
 
-O terminal exibirá os endereços locais e de rede Wi-Fi para conexão:
+O terminal exibirá os links de acesso local e na rede Wi-Fi:
 - **Portal Inicial:** `http://localhost:8000/`
 - **SlideMesh Studio:** `http://localhost:8000/import.html`
-- **Telão Apresentador:** `http://localhost:8000/presenter/?presentation=slidemesh-showcase`
-- **Mesa Técnica / Admin:** `http://localhost:8000/admin/?presentation=slidemesh-showcase`
-- **Celular do Público:** `http://<IP_DO_SEU_COMPUTADOR>:8000/audience/?presentation=slidemesh-showcase`
+- **Telão Apresentador:** `http://localhost:8000/presenter/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+- **Mesa Técnica / Admin:** `http://localhost:8000/admin/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+- **Celular do Público:** `http://<IP_DO_SEU_COMPUTADOR>:8000/audience/?presentation=slidemesh-showcase&session=SHOWCASE2026`
 
 ---
 
 ## 5. SlideMesh Studio — Criação, Importação e Edição Web
 
-O **SlideMeshLive** conta com o **SlideMesh Studio**, uma suíte integrada de autoria visual acessível pelo portal inicial ou diretamente em [`import.html`](http://localhost:8000/import.html):
+O **SlideMesh Studio** (`import.html`) é uma suíte integrada de autoria visual acessível pelo portal inicial:
 
 ### 5.1 Criar Nova Apresentação do Zero (com Templates)
 1. No portal inicial, clique em **`✨ Criar Nova`** (ou abra `import.html?mode=new`).
 2. Escolha entre 4 templates estruturados:
-   - **👔 Executivo & Pitch:** 5 slides com Capa, Desafio, Solução, Enquete de Validação e Próximos Passos.
-   - **🎓 Aula & Treinamento:** 4 slides com Objetivos, Arquitetura Conceitual, Quiz ao Vivo e Resumo de Estudo.
-   - **🚀 Demonstração de Produto:** 4 slides com Visão Geral, Recursos Inovadores, Votação e Encerramento.
+   - **👔 Executivo & Pitch:** 5 slides (Capa, Desafio, Solução, Enquete de Validação e Próximos Passos).
+   - **🎓 Aula & Treinamento:** 4 slides (Objetivos, Arquitetura Conceitual, Quiz ao Vivo e Resumo de Estudo).
+   - **🚀 Demonstração de Produto:** 4 slides (Visão Geral, Recursos Inovadores, Votação e Encerramento).
    - **📄 Em Branco:** 1 slide limpo para liberdade total de escrita.
 3. Edite os títulos, bullets, notas de orador, resumo e seções de leitura no smartphone em tempo real com auto-save em `localStorage`.
 4. Adicione imagens nos slides para habilitar o modo **Split-Screen (2 colunas)** no Telão.
@@ -197,18 +204,29 @@ python3 tools/import_presentation.py notas.md --session LIVE2026 --security pin
 
 | Tecla | Ação | Descrição |
 | :--- | :--- | :--- |
-| `→` / `Espaço` | **Próximo Slide** | Avança para o próximo slide |
-| `←` | **Slide Anterior** | Retorna ao slide anterior |
-| `V` | **Alternar Votação** | Abre/fecha a votação da enquete |
-| `R` | **Revelar Resultados** | Mostra/oculta o gráfico de votos no telão |
-| `Z` | **Zerar Votos** | Reinicia os votos da enquete atual |
-| `Q` | **QR Code Gigante** | Exibe o QR Code em tela cheia para a plateia |
-| `M` | **Mural de Perguntas** | Abre o mural flutuante de perguntas moderadas |
-| `P` | **Modo Púlpito** | Exibe as notas privadas do orador |
+| `→` / `Espaço` / `PageDown` | **Próximo Slide** | Avança para o próximo slide |
+| `←` / `PageUp` | **Slide Anterior** | Retorna ao slide anterior |
 | `F` | **Tela Cheia** | Alterna o modo tela cheia do navegador |
+| `P` | **Modo Púlpito** | Exibe as notas privadas do orador e timer de palco |
+| `Q` | **QR Code Gigante** | Exibe o QR Code em tela cheia central para a plateia |
+| `W` | **Alternar Mini QR** | Oculta/exibe o mini QR Code no rodapé da projeção |
+| `M` | **Mural de Perguntas** | Abre o mural flutuante de perguntas moderadas |
+| `V` | **Alternar Votação** | Abre/fecha a votação da enquete no slide atual |
+| `R` | **Revelar Resultados** | Mostra/oculta o gráfico animado de votos no telão |
+| `B` | **Modo Blackout** | Escurece a tela para direcionar o foco total ao palestrante |
+| `Esc` | **Fechar Modais** | Fecha o mural de perguntas ou o QR Code gigante |
 
 ---
 
-## 7. Licença
+## 7. Design System & Acessibilidade
+
+- **4 Temas Visuais Modernos:** `Dark` (Padrão), `Light`, `Slate` e `High Contrast` (WCAG 2.2 AAA).
+- **Feedback Tátil (Haptics):** Suporte a `navigator.vibrate` ao votar e enviar perguntas pelo smartphone.
+- **Tipografia Otimizada:** Fontes `Inter` para legibilidade de texto e `JetBrains Mono` para códigos e números.
+- **Simetria i18n:** Suporte completo e instantâneo a **Português (pt-BR)** e **Inglês (en-US)**.
+
+---
+
+## 8. Licença
 
 Distribuído sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.

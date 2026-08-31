@@ -12,13 +12,13 @@
 
 </div>
 
-> **Decoupled real-time presentation platform** for modern stages and audiences. Built with a high-performance **Presenter Stage** (clean projection, speaker notes, live polling, and moderation) and an **Audience Smartphone Interface** (deep-dive content, instant voting, and moderated Q&A).
+> **Decoupled real-time presentation platform** for modern stages and audiences. Built with a high-performance **Presenter Stage** (clean projection, split-screen mode, speaker notes, and moderation), **Control Room / Admin** (remote control, Q&A moderation queue, and executive reporting), and an **Audience Smartphone Interface** (deep-dive content, instant voting, haptic feedback, and moderated Q&A).
 
 ---
 
 ## 1. Architectural Overview
 
-The platform uses native web standards (**HTML5, Vanilla CSS3, and JavaScript ES Modules**) backed by a high-efficiency local Python sequential event hub (`server.py`) or cloud **Firebase** (Hosting, Authentication, and Realtime Database). It features triple local fallback redundancy (Sequential HTTP Hub + BroadcastChannel + Storage Event) achieving sub-50ms synchronization latency.
+**SlideMeshLive** was engineered with a modular architecture based on native web standards (**HTML5, Vanilla CSS3, and JavaScript ES Modules**) and a high-performance local Python backend (`server.py`) featuring triple local fallback redundancy (Sequential HTTP Event Hub + BroadcastChannel + Storage Event) achieving sub-50ms synchronization latency on local networks (LAN / Wi-Fi) without external cloud dependencies.
 
 ```text
                        PRESENTER (Main Stage / Laptop)
@@ -26,10 +26,10 @@ The platform uses native web standards (**HTML5, Vanilla CSS3, and JavaScript ES
                          ┌────────────┴────────────┐
                          │    Presenter Engine     │
                          │                         │
-                         │ • Clean Stage View      │
-                         │ • Private Speaker Notes │
+                         │ • Clean & Split Screen  │
+                         │ • Pulpit Mode & Timer   │
                          │ • Live Polling Controls │
-                         │ • Q&A Moderation Queue  │
+                         │ • Q&A Questions Wall    │
                          │ • Dynamic QR Code       │
                          └────────────┬────────────┘
                                       │
@@ -38,36 +38,41 @@ The platform uses native web standards (**HTML5, Vanilla CSS3, and JavaScript ES
                                       │
             ┌─────────────────────────┼─────────────────────────┐
             ▼                         ▼                         ▼
-    📱 Audience Device 1      📱 Audience Device 2      📱 Audience Device N
-   ┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
-   │ • Deep Dive Text │      │ • Deep Dive Text │      │ • Deep Dive Text │
-   │ • Rich Tables    │      │ • Rich Tables    │      │ • Rich Tables    │
-   │ • Anonymous Auth │      │ • Anonymous Auth │      │ • Anonymous Auth │
-   │ • Single Vote    │      │ • Single Vote    │      │ • Single Vote    │
-   │ • Ask Questions  │      │ • Ask Questions  │      │ • Ask Questions  │
-   └──────────────────┘      └──────────────────┘      └──────────────────┘
+    🛡️ Control Room (Admin)   📱 Audience Device 1      📱 Audience Device N
+   ┌──────────────────────┐  ┌──────────────────┐      ┌──────────────────┐
+   │ • Remote Slide Nav   │  │ • Deep Dive Text │      │ • Deep Dive Text │
+   │ • 4-Phase Moderation │  │ • Rich Tables    │      │ • Rich Tables    │
+   │ • Dynamic QR Host    │  │ • Anonymous Auth │      │ • Anonymous Auth │
+   │ • CSV/MD Export      │  │ • Single Vote    │      │ • Single Vote    │
+   │ • Stage Analytics    │  │ • Ask Questions  │      │ • Ask Questions  │
+   └──────────────────────┘  │ • Haptic Haptics │      │ • Haptic Haptics │
+                             └──────────────────┘      └──────────────────┘
 ```
 
 ---
 
 ## 2. Business Logic & Security Principles
 
-1. **Free Reading vs. Authenticated Interaction**:
-   - The audience can navigate and read all slides, summaries, tables, and diagrams **without any login**.
-   - Actions that mutate state (voting in polls or submitting questions) require instant, seamless authentication.
-2. **Guaranteed Privacy & Anonymity**:
+1. **100% Autonomous Offline Operation (Local Area Network / Wi-Fi)**:
+   - Operates completely without internet. The local Python server manages presence heartbeats, single-vote locks, live polls, and audience questions locally.
+2. **Free Reading vs. Secure Authenticated Interaction**:
+   - The audience can navigate and read all slides, summaries, tables, and diagrams **without any signup or login**.
+   - Interactive mutations (voting in polls or submitting questions) use secure participant identity with single-vote locking.
+3. **Guaranteed Privacy & Anonymity**:
    - The presenter and other attendees **never see real names or email addresses**.
-   - The system generates an anonymous alias for public display (e.g., `Participant #42`).
-3. **Strict Single-Vote Lock**:
+   - The system generates an anonymous alias for public display (e.g., `Participant #83`).
+4. **Strict Single-Vote Lock**:
    - Each participant can vote **only once** per poll. Enforced atomically on both client and server.
-4. **Real-Time Q&A Moderation Queue**:
-   - Submitted questions enter a control room moderation queue (`Pending`, `Approved`, `Answered`, `Featured`).
-   - The presenter can **feature any question on the main stage screen** with floating animations.
-5. **Rate Limiting & Anti-Abuse**:
+5. **4-Phase Q&A Moderation Queue**:
+   - Audience questions flow through: `Pending` ➔ `Approved` ➔ `Featured` ➔ `Answered`.
+   - The moderator or presenter can **feature any question on the main stage screen** with floating animations.
+6. **Rate Limiting & Anti-Abuse (SecurityGuard)**:
    - 25s cooldown between questions and a maximum limit of 3 pending questions per participant.
-   - The moderator can ban abusive participants in a single click.
-6. **Session Lifecycle & Clean Shutdown**:
-   - Closing the session via `[ 🛑 End Session ]` locks the presentation and disables further votes and questions.
+   - The moderator can suspend abusive participants in a single click.
+7. **Session Resilience & Disk State Snapshotting**:
+   - The Python server saves atomic disk snapshots (`snapshot_state.json`), preserving votes and questions across unexpected restarts.
+8. **Data Export & Executive Reporting**:
+   - The control room exports complete session engagement reports in **Structured CSV** and **Executive Markdown** formats.
 
 ---
 
@@ -75,22 +80,23 @@ The platform uses native web standards (**HTML5, Vanilla CSS3, and JavaScript ES
 
 ```text
 SlideMeshLive/
-├── index.html                               # Portal / Presentation Catalog
+├── index.html                               # Main Portal / Presentation Catalog
 ├── import.html                              # SlideMesh Studio (Creation, Import & Editing)
 ├── docs.html                                # Dynamic Markdown Documentation Viewer
-├── server.py                                # High-Performance Local Python Event Hub
+├── server.py                                # Local Python Server with Sequential HTTP Hub
 ├── README.md                                # Official Documentation (English)
 ├── README.pt-BR.md                          # Official Documentation (Portuguese)
 │
 ├── css/                                     # Modular Design System
-│   ├── base.css                             # HSL Design Tokens, Inter/Mono fonts, visual themes
-│   ├── animations.css                       # Transition, pulse, and fade animations
-│   ├── components.css                       # Buttons, modals, live poll charts, badges
+│   ├── base.css                             # HSL Design Tokens, Inter/Mono fonts, 4 visual themes
+│   ├── animations.css                       # Transition, pulse, floating, and fade animations
+│   ├── components.css                       # Buttons, modals, live poll charts, badges, drawer
 │   ├── presenter.css                        # Stage layout, split-screen, and control dock
-│   └── audience.css                         # Mobile-first smartphone layout
+│   ├── audience.css                         # Mobile-first smartphone layout with haptics
+│   └── admin.css                            # Control Room / Moderation Console layout
 │
 ├── js/                                      # JavaScript Architecture (ES Modules)
-│   ├── config.js                            # App configuration and Firebase credentials
+│   ├── config.js                            # App configuration and environment credentials
 │   ├── core/                                # Core Engine Subsystems
 │   │   ├── presentation-engine.js           # Dynamic slide loader and HTML renderer
 │   │   ├── realtime-engine.js               # Real-time synchronization (LAN Hub + Local)
@@ -105,8 +111,10 @@ SlideMeshLive/
 │   │   └── qr-engine.js                     # Dynamic QR Code generation
 │   ├── presenter/
 │   │   └── presenter-app.js                 # Presenter stage controller
-│   └── audience/
-│       └── audience-app.js                  # Audience mobile application controller
+│   ├── audience/
+│   │   └── audience-app.js                  # Audience mobile application controller
+│   └── admin/
+│       └── admin-app.js                     # Control Room / Moderator controller
 │
 ├── presenter/                               # Presenter Stage Environment
 │   └── index.html                           # Main Stage Screen + Shortcut Controller
@@ -119,7 +127,7 @@ SlideMeshLive/
 │
 ├── presentations/                           # Presentations Storage Directory
 │   ├── catalog.json                         # Central registry of available presentations
-│   ├── slidemesh-showcase/                  # Interactive Showcase Presentation
+│   ├── slidemesh-showcase/                  # Official Showcase Presentation
 │   └── treinamento-interno-pin/             # PIN-Protected Technical Presentation
 │
 └── tools/                                   # Command-Line Utilities
@@ -145,15 +153,15 @@ python3 server.py
 The terminal will display the local and Wi-Fi network endpoints:
 - **Main Portal:** `http://localhost:8000/`
 - **SlideMesh Studio:** `http://localhost:8000/import.html`
-- **Presenter Stage:** `http://localhost:8000/presenter/?presentation=slidemesh-showcase`
-- **Control Room / Admin:** `http://localhost:8000/admin/?presentation=slidemesh-showcase`
-- **Audience Smartphone:** `http://<YOUR_COMPUTER_IP>:8000/audience/?presentation=slidemesh-showcase`
+- **Presenter Stage:** `http://localhost:8000/presenter/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+- **Control Room / Admin:** `http://localhost:8000/admin/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+- **Audience Smartphone:** `http://<YOUR_COMPUTER_IP>:8000/audience/?presentation=slidemesh-showcase&session=SHOWCASE2026`
 
 ---
 
 ## 5. SlideMesh Studio — Web Creation, Import & Editing
 
-**SlideMesh Studio** is an integrated visual authoring suite accessible from the portal or directly at [`import.html`](http://localhost:8000/import.html):
+**SlideMesh Studio** (`import.html`) is an integrated visual authoring suite accessible from the portal:
 
 ### 5.1 Create a Presentation from Scratch (with Templates)
 1. On the main portal, click **`✨ Create New`** (or open `import.html?mode=new`).
@@ -197,18 +205,29 @@ python3 tools/import_presentation.py notes.md --session LIVE2026 --security pin
 
 | Key | Action | Description |
 | :--- | :--- | :--- |
-| `→` / `Space` | **Next Slide** | Advance to the next slide |
-| `←` | **Previous Slide** | Return to the previous slide |
-| `V` | **Toggle Live Poll** | Open or close voting on the current slide |
-| `R` | **Reveal Results** | Show or hide the animated vote chart on the stage |
-| `Z` | **Reset Votes** | Clear votes for the active poll |
-| `Q` | **Giant QR Code** | Display full-screen QR Code for audience onboarding |
-| `M` | **Questions Wall** | Open floating wall of moderated audience questions |
-| `P` | **Pulpit Mode** | Reveal private speaker notes |
+| `→` / `Space` / `PageDown` | **Next Slide** | Advance to the next slide |
+| `←` / `PageUp` | **Previous Slide** | Return to the previous slide |
 | `F` | **Fullscreen** | Toggle browser fullscreen mode |
+| `P` | **Pulpit Mode** | Reveal private speaker notes and presentation timer |
+| `Q` | **Giant QR Code** | Display full-screen central QR Code for audience onboarding |
+| `W` | **Toggle Mini QR** | Hide/show the mini QR Code in the projection footer |
+| `M` | **Questions Wall** | Open floating wall of moderated audience questions |
+| `V` | **Toggle Live Poll** | Open or close voting on the active slide |
+| `R` | **Reveal Results** | Show or hide the animated vote chart on the stage |
+| `B` | **Blackout Mode** | Blank the stage screen to redirect full audience focus to the speaker |
+| `Esc` | **Close Modals** | Close the questions wall or giant QR modal |
 
 ---
 
-## 7. License
+## 7. Design System & Accessibility
+
+- **4 Modern Visual Themes:** `Dark` (Default), `Light`, `Slate`, and `High Contrast` (WCAG 2.2 AAA).
+- **Haptic Touch Feedback:** Native `navigator.vibrate` on smartphone vote casts and question submissions.
+- **Tailored Typography:** `Inter` font for text clarity and `JetBrains Mono` for code blocks and metrics.
+- **Symmetric i18n:** 100% full instant switching between **Portuguese (pt-BR)** and **English (en-US)**.
+
+---
+
+## 8. License
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more details.
