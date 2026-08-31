@@ -13,7 +13,16 @@ import base64
 import socket
 import argparse
 import threading
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+import queue
+import socketserver
+
+try:
+    from http.server import HTTPServer, SimpleHTTPRequestHandler, ThreadingHTTPServer
+except ImportError:
+    from http.server import HTTPServer, SimpleHTTPRequestHandler
+    class ThreadingHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
+        daemon_threads = True
+
 from urllib.parse import urlparse, parse_qs
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -27,6 +36,31 @@ _STATE_LOCK = threading.Lock()
 PRESENCE_TIMEOUT_MS = 30000  # Janela de timeout único para poda e contagem (30s)
 BACKUP_FILE = os.environ.get("SLIDEMESH_BACKUP_FILE", ".session_backup.json")
 PERSIST_ENABLED = False
+
+# Gerenciador de Subscrições SSE por Sessão
+SSE_SUBSCRIBERS = {}  # session_id -> Set[queue.Queue]
+_SSE_LOCK = threading.Lock()
+
+def broadcast_sse(session_id, event_type, data):
+    """
+    Despacha evento via SSE para todos os clientes conectados à sessão especificada.
+    """
+    with _SSE_LOCK:
+        subscribers = list(SSE_SUBSCRIBERS.get(session_id, set()))
+
+    if not subscribers:
+        return
+
+    payload = {
+        "event": event_type,
+        "data": data
+    }
+
+    for q in subscribers:
+        try:
+            q.put_nowait(payload)
+        except (queue.Full, Exception):
+            pass
 
 def save_state_to_disk(filepath=None):
     """
@@ -242,8 +276,78 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
+
+        # Endpoint de Streaming SSE em Tempo Real (Server-Sent Events)
+        if parsed.path == '/api/events':
+            qs = parse_qs(parsed.query)
+            session_id = qs.get('session', ['SDWAN2026'])[0].strip().upper()
+            since_id = int(qs.get('since_id', [0])[0])
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/event-stream; charset=utf-8')
+            self.send_header('Cache-Control', 'no-cache, no-transform, no-store')
+            self.send_header('Connection', 'keep-alive')
+            self.send_header('X-Accel-Buffering', 'no')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+
+            client_queue = queue.Queue(maxsize=200)
+            with _SSE_LOCK:
+                if session_id not in SSE_SUBSCRIBERS:
+                    SSE_SUBSCRIBERS[session_id] = set()
+                SSE_SUBSCRIBERS[session_id].add(client_queue)
+
+            # Envia snapshot inicial de sincronização
+            with _STATE_LOCK:
+                session_data = SERVER_STATE["sessions"].setdefault(session_id, {
+                    "state": { "currentSlide": 0, "slideId": 1, "pollStatus": "open", "showResults": False },
+                    "events": [],
+                    "questions": [],
+                    "votes": {},
+                    "presence": {},
+                    "last_event_id": 0
+                })
+                now_ms = int(time.time() * 1000)
+                init_payload = {
+                    "sessionId": session_id,
+                    "serverTime": now_ms,
+                    "lastEventId": session_data["last_event_id"],
+                    "state": session_data["state"],
+                    "questions": session_data["questions"],
+                    "votes": session_data["votes"],
+                    "presenceCount": len(session_data["presence"])
+                }
+                if since_id > 0:
+                    init_payload["events"] = [e for e in session_data["events"] if e.get("id", 0) > since_id]
+
+            try:
+                init_msg = f"event: sync\ndata: {json.dumps(init_payload, ensure_ascii=False)}\n\n".encode('utf-8')
+                self.wfile.write(init_msg)
+                self.wfile.flush()
+
+                while True:
+                    try:
+                        msg = client_queue.get(timeout=15.0)
+                        ev_name = msg.get("event", "message")
+                        ev_data = json.dumps(msg.get("data", {}), ensure_ascii=False)
+                        chunk = f"event: {ev_name}\ndata: {ev_data}\n\n".encode('utf-8')
+                        self.wfile.write(chunk)
+                        self.wfile.flush()
+                    except queue.Empty:
+                        # Heartbeat para manter socket TCP ativo
+                        self.wfile.write(b": ping\n\n")
+                        self.wfile.flush()
+            except (BrokenPipeError, ConnectionResetError, socket.error, Exception):
+                pass
+            finally:
+                with _SSE_LOCK:
+                    if session_id in SSE_SUBSCRIBERS:
+                        SSE_SUBSCRIBERS[session_id].discard(client_queue)
+                        if not SSE_SUBSCRIBERS[session_id]:
+                            del SSE_SUBSCRIBERS[session_id]
+            return
         
-        # Endpoint de Sincronização em Tempo Real Sequencial
+        # Endpoint de Sincronização em Tempo Real Sequencial (Polling Delta Fallback)
         if parsed.path == '/api/sync':
             qs = parse_qs(parsed.query)
             session_id = qs.get('session', ['SDWAN2026'])[0].strip().upper()
@@ -405,6 +509,27 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                         if len(session_data["events"]) > SERVER_STATE["max_events"]:
                             session_data["events"] = session_data["events"][-SERVER_STATE["max_events"]:]
 
+                    # Snapshot dos dados sob lock para broadcasting seguro
+                    current_state = dict(session_data["state"])
+                    current_questions = list(session_data["questions"])
+                    current_votes = dict(session_data["votes"])
+                    current_presence_count = len(session_data["presence"])
+                    dispatched_event = dict(event_record) if event_id > 0 else None
+
+                # Broadcasting instantâneo SSE para todos os clientes conectados
+                if msg_type in ('PRESENCE_PING', 'PRESENCE_LEAVE'):
+                    broadcast_sse(session_id, "presence", {"presenceCount": current_presence_count})
+                else:
+                    if msg_type in ('SESSION_STATE_UPDATE', 'SESSION_UPDATE'):
+                        broadcast_sse(session_id, "state", current_state)
+                    elif msg_type in ('NEW_QUESTION', 'QUESTION_STATUS_CHANGE', 'CLEAR_ALL_QUESTIONS', 'QUESTION_UPVOTE'):
+                        broadcast_sse(session_id, "questions", current_questions)
+                    elif msg_type in ('VOTE_CAST', 'RESET_POLL', 'RESET_ALL_POLLS', 'VOTE_RESET'):
+                        broadcast_sse(session_id, "votes", current_votes)
+
+                    if dispatched_event:
+                        broadcast_sse(session_id, "event", dispatched_event)
+
                 # Salva snapshot atômico em disco se persistência estiver ativa
                 if PERSIST_ENABLED and msg_type not in ('PRESENCE_PING', 'PRESENCE_LEAVE'):
                     save_state_to_disk()
@@ -493,7 +618,8 @@ def main():
             print(f" 💾 Snapshot de sessões anteriores restaurado com sucesso ({BACKUP_FILE})")
 
     server_address = ('0.0.0.0', port)
-    httpd = HTTPServer(server_address, LiveSyncHTTPRequestHandler)
+    httpd = ThreadingHTTPServer(server_address, LiveSyncHTTPRequestHandler)
+    httpd.daemon_threads = True
 
     print("=" * 72)
     print(" 📡 SlideMeshLive — Servidor de Sincronização em Tempo Real (LAN / Wi-Fi)")

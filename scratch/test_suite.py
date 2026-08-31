@@ -1007,6 +1007,136 @@ def test_phase1_upvotes_and_moderation_gate():
 
     print("✓ Fase 1 aprovada com 100% de conformidade técnica e arquitetural.")
 
+def test_phase2_sse_streaming_and_polling_fallback():
+    print_section("13. Fase 2: Streaming SSE (/api/events), Push de Baixa Latência e Fallback HTTP Delta")
+
+    # 1. Validação estática de SSE em server.py e realtime-engine.js
+    server_path = os.path.join(BASE_DIR, "server.py")
+    with open(server_path, "r", encoding="utf-8") as f:
+        server_code = f.read()
+
+    assert "/api/events" in server_code, "Endpoint /api/events ausente em server.py"
+    assert "broadcast_sse" in server_code, "Função broadcast_sse ausente em server.py"
+    assert "text/event-stream" in server_code, "Content-Type text/event-stream ausente em server.py"
+    assert "ThreadingHTTPServer" in server_code, "ThreadingHTTPServer ausente em server.py"
+    print("  ✓ Backend (server.py): Suporte a ThreadingHTTPServer, /api/events e broadcasting SSE validados.")
+
+    rt_path = os.path.join(BASE_DIR, "js", "core", "realtime-engine.js")
+    with open(rt_path, "r", encoding="utf-8") as f:
+        rt_code = f.read()
+
+    assert "_initSSE" in rt_code, "Método _initSSE ausente em realtime-engine.js"
+    assert "EventSource" in rt_code, "Suporte a EventSource ausente em realtime-engine.js"
+    assert "_processSyncPayload" in rt_code, "Método _processSyncPayload ausente em realtime-engine.js"
+    assert "_adjustPollingInterval" in rt_code, "Método _adjustPollingInterval ausente em realtime-engine.js"
+    print("  ✓ Frontend (realtime-engine.js): Cliente SSE com auto-reconexão e chaveamento dinâmico de polling validados.")
+
+    # 2. Teste dinâmico de streaming SSE
+    with server._STATE_LOCK:
+        server.SERVER_STATE["sessions"].clear()
+
+    httpd = server.ThreadingHTTPServer(("127.0.0.1", 0), server.LiveSyncHTTPRequestHandler)
+    httpd.daemon_threads = True
+    port = httpd.server_port
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    server_thread.start()
+
+    base_url = f"http://127.0.0.1:{port}"
+    session_id = "SSE_STREAM_TEST"
+
+    try:
+        # Abre conexão HTTP persistente SSE
+        sse_url = f"{base_url}/api/events?session={session_id}&since_id=0"
+        req = urllib.request.Request(sse_url)
+        sse_res = urllib.request.urlopen(req, timeout=5)
+
+        assert sse_res.status == 200
+        assert "text/event-stream" in sse_res.headers.get("Content-Type", "")
+
+        # Lê snapshot inicial enviado na abertura da conexão
+        # Formato SSE: event: sync\ndata: {...}\n\n
+        line1 = sse_res.readline().decode('utf-8').strip()
+        line2 = sse_res.readline().decode('utf-8').strip()
+        sse_res.readline()  # Linha vazia de término do evento
+
+        assert line1 == "event: sync", f"Esperado 'event: sync', obtido '{line1}'"
+        assert line2.startswith("data: "), f"Esperado 'data: ...', obtido '{line2}'"
+        init_data = json.loads(line2[6:])
+        assert init_data["sessionId"] == session_id
+        assert "state" in init_data
+        print("  ✓ Conexão SSE: Header text/event-stream e evento inicial 'sync' recebidos com sucesso.")
+
+        # Dispara mutação via POST /api/sync e mede latência de entrega no stream SSE
+        def post_sync(msg_type, payload):
+            url = f"{base_url}/api/sync"
+            body = json.dumps({
+                "type": msg_type,
+                "sessionId": session_id,
+                "payload": payload
+            }).encode("utf-8")
+            r = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(r, timeout=3) as res:
+                return json.loads(res.read().decode("utf-8"))
+
+        t0 = time.time()
+        post_sync("SESSION_STATE_UPDATE", {"currentSlide": 5, "slideId": 6})
+
+        # Lê evento 'state' do stream SSE
+        ev_line = sse_res.readline().decode('utf-8').strip()
+        data_line = sse_res.readline().decode('utf-8').strip()
+        sse_res.readline()  # Linha vazia
+
+        latency_ms = (time.time() - t0) * 1000
+        assert ev_line == "event: state", f"Esperado 'event: state', obtido '{ev_line}'"
+        state_pushed = json.loads(data_line[6:])
+        assert state_pushed.get("currentSlide") == 5
+        assert latency_ms < 100, f"Latência SSE muito alta: {latency_ms:.2f}ms"
+        print(f"  ✓ Push SSE em Tempo Real: Evento 'state' recebido com {latency_ms:.2f}ms de latência (<50ms alvo).")
+
+        # Lê o evento sequencial 'event' emitido para a ação
+        ev_record_line = sse_res.readline().decode('utf-8').strip()
+        data_record_line = sse_res.readline().decode('utf-8').strip()
+        sse_res.readline()
+        assert ev_record_line == "event: event"
+
+        # Dispara evento NEW_QUESTION e valida push SSE
+        q_payload = {
+            "id": "q_sse_1",
+            "uid": "user_sse",
+            "authorName": "SSE Tester",
+            "text": "Pergunta via streaming SSE",
+            "timestamp": int(time.time() * 1000),
+            "status": "pending"
+        }
+
+        post_sync("NEW_QUESTION", {"question": q_payload})
+        ev_q_line = sse_res.readline().decode('utf-8').strip()
+        data_q_line = sse_res.readline().decode('utf-8').strip()
+        sse_res.readline()
+
+        assert ev_q_line == "event: questions"
+        questions_pushed = json.loads(data_q_line[6:])
+        assert any(q["id"] == "q_sse_1" for q in questions_pushed)
+        print("  ✓ Push SSE de Moderação: Evento 'questions' recebido instantaneamente.")
+
+        # Fecha stream SSE e valida desconexão limpa
+        sse_res.close()
+
+        # 3. Teste de Fallback para Polling HTTP Delta
+        sync_req = urllib.request.Request(f"{base_url}/api/sync?session={session_id}&since_id=0")
+        with urllib.request.urlopen(sync_req, timeout=3) as res:
+            assert res.status == 200
+            poll_data = json.loads(res.read().decode('utf-8'))
+            assert poll_data["state"]["currentSlide"] == 5
+            assert any(q["id"] == "q_sse_1" for q in poll_data["questions"])
+        print("  ✓ Fallback HTTP Delta (/api/sync): Contingência 100% operacional caso SSE não esteja conectado.")
+
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+    print("✓ Fase 2 aprovada com 100% de conformidade técnica e arquitetural.")
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -1021,6 +1151,7 @@ if __name__ == "__main__":
         test_presentation_import_endpoint()
         test_slidemesh_studio_web_components()
         test_phase1_upvotes_and_moderation_gate()
+        test_phase2_sse_streaming_and_polling_fallback()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

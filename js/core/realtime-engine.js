@@ -18,12 +18,18 @@ export class RealtimeEngine {
     this.db = null;
     this.channel = null;
     this.currentBroadcastSessionId = null;
-    this.sessionListeners = new Map();
-    this.eventListeners = [];
     this.participantId = this._getOrInitParticipantId();
     this.presenceTimer = null;
     this.lastProcessedEventId = 0;
     this._locallyDispatchedIds = new Set();
+
+    // Transporte SSE e Polling Inteligente (Fase 2)
+    this.isSSESupported = (typeof EventSource !== 'undefined');
+    this.isSSEConnected = false;
+    this.eventSource = null;
+    this.currentSSESessionId = null;
+    this.pollingIntervalMs = 750;
+    this.pollingTimer = null;
 
     this.init();
   }
@@ -91,7 +97,10 @@ export class RealtimeEngine {
     // 1. Inicializa BroadcastChannel isolado por sessão (PB-05)
     this._initBroadcastChannel(initialSession);
 
-    // 2. Storage event nativo
+    // 2. Inicializa transporte Server-Sent Events (SSE) de alta densidade (Fase 2)
+    this._initSSE(initialSession);
+
+    // 3. Storage event nativo
     window.addEventListener('storage', (e) => {
       if (e.key && e.key.startsWith('session_state_') && e.newValue) {
         try {
@@ -102,10 +111,10 @@ export class RealtimeEngine {
       }
     });
 
-    // 3. Inicializa Firebase de forma assíncrona se configurado
+    // 4. Inicializa Firebase de forma assíncrona se configurado
     this._initFirebase();
 
-    // 4. Inicia sincronização sequencial com o servidor local
+    // 5. Inicia sincronização sequencial de contingência com o servidor local
     this._startLocalHttpPolling();
   }
 
@@ -130,11 +139,162 @@ export class RealtimeEngine {
     }
   }
 
-  _startLocalHttpPolling() {
-    this.syncWithLocalServer(); // Sincronização inicial instantânea (M01)
-    setInterval(() => {
+  _initSSE(sessionId) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    if (!this.isSSESupported) return;
+    if (this.currentSSESessionId === normSessionId && this.eventSource && this.eventSource.readyState !== 2) {
+      return;
+    }
+
+    if (this.eventSource) {
+      try { this.eventSource.close(); } catch(e) {}
+      this.eventSource = null;
+    }
+
+    this.currentSSESessionId = normSessionId;
+    const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'http://127.0.0.1:8000';
+    const baseUrl = origin.startsWith('http') ? origin : 'http://127.0.0.1:8000';
+    const sseUrl = `${baseUrl}/api/events?session=${encodeURIComponent(normSessionId)}&since_id=${this.lastProcessedEventId}`;
+
+    try {
+      this.eventSource = new EventSource(sseUrl);
+
+      this.eventSource.onopen = () => {
+        this.isSSEConnected = true;
+        this._adjustPollingInterval(5000);
+      };
+
+      this.eventSource.onerror = () => {
+        this.isSSEConnected = false;
+        this._adjustPollingInterval(750);
+      };
+
+      this.eventSource.addEventListener('sync', (e) => {
+        try {
+          const payload = JSON.parse(e.data);
+          this._processSyncPayload(payload, normSessionId);
+        } catch(err) {}
+      });
+
+      this.eventSource.addEventListener('state', (e) => {
+        try {
+          const stateData = JSON.parse(e.data);
+          this._processSyncPayload({ state: stateData }, normSessionId);
+        } catch(err) {}
+      });
+
+      this.eventSource.addEventListener('questions', (e) => {
+        try {
+          const questionsData = JSON.parse(e.data);
+          this._processSyncPayload({ questions: questionsData }, normSessionId);
+        } catch(err) {}
+      });
+
+      this.eventSource.addEventListener('votes', (e) => {
+        try {
+          const votesData = JSON.parse(e.data);
+          this._processSyncPayload({ votes: votesData }, normSessionId);
+        } catch(err) {}
+      });
+
+      this.eventSource.addEventListener('presence', (e) => {
+        try {
+          const presenceData = JSON.parse(e.data);
+          this._processSyncPayload({ presenceCount: presenceData.presenceCount }, normSessionId);
+        } catch(err) {}
+      });
+
+      this.eventSource.addEventListener('event', (e) => {
+        try {
+          const eventData = JSON.parse(e.data);
+          if (eventData && eventData.id) {
+            this.lastProcessedEventId = Math.max(this.lastProcessedEventId, eventData.id);
+            if (!this._locallyDispatchedIds.has(eventData.id)) {
+              this._dispatchLocalEvent(eventData);
+            }
+          }
+        } catch(err) {}
+      });
+    } catch(e) {
+      this.isSSEConnected = false;
+      this._adjustPollingInterval(750);
+    }
+  }
+
+  _adjustPollingInterval(intervalMs) {
+    if (this.pollingIntervalMs === intervalMs && this.pollingTimer) return;
+    this.pollingIntervalMs = intervalMs;
+    if (this.pollingTimer) {
+      clearInterval(this.pollingTimer);
+    }
+    this.pollingTimer = setInterval(() => {
       this.syncWithLocalServer();
-    }, 750);
+    }, this.pollingIntervalMs);
+  }
+
+  _startLocalHttpPolling() {
+    this.syncWithLocalServer();
+    this._adjustPollingInterval(this.isSSEConnected ? 5000 : 750);
+  }
+
+  _processSyncPayload(data, sessionId) {
+    if (!data || typeof data !== 'object') return;
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+
+    if (data.lastEventId) {
+      this.lastProcessedEventId = Math.max(this.lastProcessedEventId, data.lastEventId);
+    }
+    if (Array.isArray(data.events) && data.events.length > 0) {
+      const maxId = Math.max(...data.events.map(e => e.id || 0));
+      this.lastProcessedEventId = Math.max(this.lastProcessedEventId, maxId);
+    }
+
+    // 1. Atualiza estado da sessão
+    if (data.state && Object.keys(data.state).length > 0) {
+      const localRaw = localStorage.getItem(`session_state_${normSessionId}`);
+      let localState = {};
+      try { if (localRaw) localState = JSON.parse(localRaw); } catch(e){}
+      const merged = { ...localState, ...data.state };
+      const mergedStr = JSON.stringify(merged);
+      if (mergedStr !== localRaw) {
+        localStorage.setItem(`session_state_${normSessionId}`, mergedStr);
+        this._triggerSessionListeners(normSessionId, merged);
+      }
+    }
+
+    // 2. Atualiza perguntas consolidadas se houver alteração
+    if (Array.isArray(data.questions)) {
+      const newQuestionsStr = JSON.stringify(data.questions);
+      const currentQuestionsRaw = localStorage.getItem(`session_questions_${normSessionId}`);
+      if (currentQuestionsRaw !== newQuestionsStr) {
+        localStorage.setItem(`session_questions_${normSessionId}`, newQuestionsStr);
+      }
+    }
+
+    // 3. Atualiza votos consolidados se houver alteração
+    if (data.votes && typeof data.votes === 'object') {
+      Object.keys(data.votes).forEach(pid => {
+        const newVotesStr = JSON.stringify(data.votes[pid]);
+        const currentVotesRaw = localStorage.getItem(`session_votes_${normSessionId}_${pid}`);
+        if (currentVotesRaw !== newVotesStr) {
+          localStorage.setItem(`session_votes_${normSessionId}_${pid}`, newVotesStr);
+        }
+      });
+    }
+
+    // 4. Despacha eventos recebidos da rede para todos os listeners locais
+    if (Array.isArray(data.events) && data.events.length > 0) {
+      const newEvents = data.events.filter(e => !e.id || !this._locallyDispatchedIds.has(e.id));
+      newEvents.forEach(evt => {
+        this._dispatchLocalEvent({
+          id: evt.id,
+          type: evt.type,
+          sessionId: normSessionId,
+          payload: evt.payload || {},
+          timestamp: evt.timestamp
+        });
+      });
+    }
   }
 
   async syncWithLocalServer() {
@@ -146,62 +306,7 @@ export class RealtimeEngine {
       const res = await fetch(`${baseUrl}/api/sync?session=${encodeURIComponent(sessionId)}&since_id=${this.lastProcessedEventId}`);
       if (!res.ok) return;
       const data = await res.json();
-      
-      if (data.lastEventId) {
-        this.lastProcessedEventId = Math.max(this.lastProcessedEventId, data.lastEventId);
-      }
-      if (Array.isArray(data.events) && data.events.length > 0) {
-        const maxId = Math.max(...data.events.map(e => e.id || 0));
-        this.lastProcessedEventId = Math.max(this.lastProcessedEventId, maxId);
-      }
-
-      // 1. Atualiza estado da sessão
-      if (data.state && Object.keys(data.state).length > 0) {
-        const localRaw = localStorage.getItem(`session_state_${sessionId}`);
-        let localState = {};
-        try { if (localRaw) localState = JSON.parse(localRaw); } catch(e){}
-        const merged = { ...localState, ...data.state };
-        const mergedStr = JSON.stringify(merged);
-        // NB05: só notifica listeners se o estado realmente mudou
-        if (mergedStr !== localRaw) {
-          localStorage.setItem(`session_state_${sessionId}`, mergedStr);
-          this._triggerSessionListeners(sessionId, merged);
-        }
-      }
-
-      // 2. Atualiza perguntas consolidadas se houver alteração
-      if (Array.isArray(data.questions)) {
-        const newQuestionsStr = JSON.stringify(data.questions);
-        const currentQuestionsRaw = localStorage.getItem(`session_questions_${sessionId}`);
-        if (currentQuestionsRaw !== newQuestionsStr) {
-          localStorage.setItem(`session_questions_${sessionId}`, newQuestionsStr);
-        }
-      }
-
-      // 3. Atualiza votos consolidados se houver alteração
-      if (data.votes && typeof data.votes === 'object') {
-        Object.keys(data.votes).forEach(pid => {
-          const newVotesStr = JSON.stringify(data.votes[pid]);
-          const currentVotesRaw = localStorage.getItem(`session_votes_${sessionId}_${pid}`);
-          if (currentVotesRaw !== newVotesStr) {
-            localStorage.setItem(`session_votes_${sessionId}_${pid}`, newVotesStr);
-          }
-        });
-      }
-
-      // 4. Despacha eventos recebidos da rede para todos os listeners locais (filtrando os já despachados localmente)
-      if (Array.isArray(data.events) && data.events.length > 0) {
-        const newEvents = data.events.filter(e => !e.id || !this._locallyDispatchedIds.has(e.id));
-        newEvents.forEach(evt => {
-          this._dispatchLocalEvent({
-            id: evt.id,
-            type: evt.type,
-            sessionId: sessionId,
-            payload: evt.payload || {},
-            timestamp: evt.timestamp
-          });
-        });
-      }
+      this._processSyncPayload(data, sessionId);
     } catch (e) {
       // Offline ou servidor estático
     }
@@ -333,6 +438,7 @@ export class RealtimeEngine {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
     sessionStorage.setItem('apres_active_session', normSessionId);
     this._initBroadcastChannel(normSessionId);
+    this._initSSE(normSessionId);
 
     if (!this.sessionListeners.has(normSessionId)) {
       this.sessionListeners.set(normSessionId, []);
