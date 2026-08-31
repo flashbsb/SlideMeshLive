@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 280" width="100%" height="100%" style="background: linear-gradient(135deg, #090d16 0%, #1e1b4b 100%); border-radius: 12px; font-family: system-ui, -apple-system, sans-serif;">
+  <style>
+    @keyframes pulseData {
+      0% { transform: translateX(0); opacity: 0.2; }
+      50% { opacity: 1; }
+      100% { transform: translateX(340px); opacity: 0.2; }
+    }
+    @keyframes pulseReverse {
+      0% { transform: translateX(340px); opacity: 0.2; }
+      50% { opacity: 1; }
+      100% { transform: translateX(0); opacity: 0.2; }
+    }
+    .data-dot-forward {
+      animation: pulseData 2s infinite ease-in-out;
+    }
+    .data-dot-backward {
+      animation: pulseReverse 2s infinite ease-in-out;
+    }
+  </style>
+
+  <text x="410" y="32" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="700" letter-spacing="2">DEMONSTRAÇÃO DE SINCRONISMO ULTRA-RÁPIDO EM TEMPO REAL (&lt;50ms)</text>
+
+  <!-- Presenter Node -->
+  <g transform="translate(60, 60)">
+    <rect width="180" height="170" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+    <text x="90" y="35" text-anchor="middle" font-size="28">🖥️</text>
+    <text x="90" y="65" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="800">TELÃO / PALCO</text>
+    <rect x="20" y="85" width="140" height="24" rx="4" fill="#0284c7" fill-opacity="0.3"/>
+    <text x="90" y="101" text-anchor="middle" fill="#38bdf8" font-size="10.5" font-weight="700">Slide #4 Avançou</text>
+    <text x="90" y="130" text-anchor="middle" fill="#94a3b8" font-size="10">Dispara evento de sync</text>
+    <text x="90" y="150" text-anchor="middle" fill="#34d399" font-size="9.5">BroadcastChannel</text>
+  </g>
+
+  <!-- Data Streams Flow -->
+  <g transform="translate(240, 100)">
+    <!-- Forward line (Slide update) -->
+    <line x1="20" y1="20" x2="340" y2="20" stroke="#38bdf8" stroke-width="3" stroke-dasharray="8,6"/>
+    <circle cx="20" cy="20" r="7" fill="#38bdf8" class="data-dot-forward"/>
+    <text x="180" y="12" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="700">SLIDE_CHANGE ➔ 0ms</text>
+
+    <!-- Backward line (Votes & Questions) -->
+    <line x1="20" y1="80" x2="340" y2="80" stroke="#a855f7" stroke-width="3" stroke-dasharray="8,6"/>
+    <circle cx="20" cy="80" r="7" fill="#a855f7" class="data-dot-backward"/>
+    <text x="180" y="102" text-anchor="middle" fill="#c084fc" font-size="10" font-weight="700">VOTE / QUESTION ➔ 20ms</text>
+  </g>
+
+  <!-- Audience Node -->
+  <g transform="translate(580, 60)">
+    <rect width="180" height="170" rx="12" fill="#0f172a" stroke="#a855f7" stroke-width="2"/>
+    <text x="90" y="35" text-anchor="middle" font-size="28">📱</text>
+    <text x="90" y="65" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="800">SMARTPHONE</text>
+    <rect x="20" y="85" width="140" height="24" rx="4" fill="#7e22ce" fill-opacity="0.3"/>
+    <text x="90" y="101" text-anchor="middle" fill="#c084fc" font-size="10.5" font-weight="700">Slide Atualizado!</text>
+    <text x="90" y="130" text-anchor="middle" fill="#94a3b8" font-size="10">Voto computado</text>
+    <text x="90" y="150" text-anchor="middle" fill="#34d399" font-size="9.5">Vibração háptica ✓</text>
+  </g>
+</svg>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 340" width="100%" height="100%" style="background: linear-gradient(135deg, #0b0f19 0%, #0f172a 100%); border-radius: 12px; font-family: system-ui, -apple-system, sans-serif;">
+  <defs>
+    <linearGradient id="hubGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <filter id="glowPulse" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <text x="410" y="32" text-anchor="middle" fill="#94a3b8" font-size="13" font-weight="700" letter-spacing="2">MALHA DE SINCRONIZAÇÃO EM TEMPO REAL (QUAD-LAYER MESH)</text>
+
+  <!-- Left: Presenter Stage -->
+  <g transform="translate(40, 70)">
+    <rect width="200" height="230" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+    <rect x="0" y="0" width="200" height="36" rx="10" fill="#0284c7" fill-opacity="0.3"/>
+    <text x="100" y="24" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="800">🖥️ TELÃO DO PALCO</text>
+    
+    <text x="20" y="65" fill="#e2e8f0" font-size="11" font-weight="700">• Alta Legibilidade</text>
+    <text x="20" y="85" fill="#94a3b8" font-size="10.5">Bullets sintetizados</text>
+    
+    <text x="20" y="120" fill="#e2e8f0" font-size="11" font-weight="700">• Gráficos ao Vivo</text>
+    <text x="20" y="140" fill="#94a3b8" font-size="10.5">Votação instantânea</text>
+
+    <text x="20" y="175" fill="#e2e8f0" font-size="11" font-weight="700">• Perguntas em Destaque</text>
+    <text x="20" y="195" fill="#94a3b8" font-size="10.5">Banner flutuante</text>
+  </g>
+
+  <!-- Center: Hub Local / BroadcastChannel -->
+  <g transform="translate(310, 85)">
+    <rect width="200" height="200" rx="16" fill="#0f172a" stroke="url(#hubGrad)" stroke-width="2.5" filter="url(#glowPulse)"/>
+    <circle cx="100" cy="55" r="28" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+    <text x="100" y="62" text-anchor="middle" font-size="24">⚡</text>
+    
+    <text x="100" y="105" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="800">HUB DE SINCRONIA</text>
+    <text x="100" y="125" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="600">BroadcastChannel (0ms)</text>
+    <text x="100" y="143" text-anchor="middle" fill="#a5b4fc" font-size="10.5">Storage Events</text>
+    <text x="100" y="161" text-anchor="middle" fill="#94a3b8" font-size="10.5">Hub HTTP /api/sync</text>
+    <text x="100" y="179" text-anchor="middle" fill="#34d399" font-size="10">Firebase RTDB (Opcional)</text>
+  </g>
+
+  <!-- Right: Audience Mobile -->
+  <g transform="translate(580, 70)">
+    <rect width="200" height="230" rx="10" fill="#1e293b" stroke="#818cf8" stroke-width="2"/>
+    <rect x="0" y="0" width="200" height="36" rx="10" fill="#4f46e5" fill-opacity="0.3"/>
+    <text x="100" y="24" text-anchor="middle" fill="#a5b4fc" font-size="13" font-weight="800">📱 SMARTPHONE</text>
+
+    <text x="20" y="65" fill="#e2e8f0" font-size="11" font-weight="700">• Detalhamento Técnico</text>
+    <text x="20" y="85" fill="#94a3b8" font-size="10.5">Tabelas e links</text>
+    
+    <text x="20" y="120" fill="#e2e8f0" font-size="11" font-weight="700">• Voto Único com 1 Toque</text>
+    <text x="20" y="140" fill="#94a3b8" font-size="10.5">Feedback háptico</text>
+
+    <text x="20" y="175" fill="#e2e8f0" font-size="11" font-weight="700">• Envio de Dúvidas</text>
+    <text x="20" y="195" fill="#94a3b8" font-size="10.5">Pseudônimo anônimo</text>
+  </g>
+
+  <!-- Connection Lines & Arrows -->
+  <!-- Left to Center -->
+  <line x1="240" y1="185" x2="310" y2="185" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="6,4"/>
+  <circle cx="275" cy="185" r="4" fill="#38bdf8"/>
+
+  <!-- Center to Right -->
+  <line x1="510" y1="185" x2="580" y2="185" stroke="#818cf8" stroke-width="2.5" stroke-dasharray="6,4"/>
+  <circle cx="545" cy="185" r="4" fill="#818cf8"/>
+</svg>

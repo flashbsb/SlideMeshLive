@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 340" width="100%" height="100%" style="background: linear-gradient(135deg, #061e1b 0%, #0f172a 100%); border-radius: 12px; font-family: system-ui, -apple-system, sans-serif;">
+  <defs>
+    <radialGradient id="wifiPulse" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#047857" stop-opacity="0.1"/>
+    </radialGradient>
+  </defs>
+
+  <text x="410" y="32" text-anchor="middle" fill="#34d399" font-size="13" font-weight="700" letter-spacing="2">INFRAESTRUTURA AIR-GAPPED: 100% OPERACIONAL SEM INTERNET</text>
+
+  <!-- Router in Center -->
+  <g transform="translate(360, 60)">
+    <circle cx="50" cy="50" r="48" fill="url(#wifiPulse)" stroke="#10b981" stroke-width="2"/>
+    <text x="50" y="58" text-anchor="middle" font-size="32">📡</text>
+    <text x="50" y="115" text-anchor="middle" fill="#6ee7b7" font-size="12" font-weight="800">ROTEADOR WI-FI LOCAL</text>
+    <text x="50" y="132" text-anchor="middle" fill="#94a3b8" font-size="10">Zero Saída para Internet</text>
+  </g>
+
+  <!-- Laptop Presenter (Left) -->
+  <g transform="translate(50, 80)">
+    <rect width="220" height="150" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+    <text x="110" y="30" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="800">💻 NOTEBOOK DO ORADOR</text>
+    <text x="20" y="65" fill="#e2e8f0" font-size="11">Roda `python3 server.py`</text>
+    <text x="20" y="85" fill="#94a3b8" font-size="10.5">IP Local: `192.168.1.100`</text>
+    <text x="20" y="110" fill="#34d399" font-size="11 font-weight=700">✓ Snapshot atômico (--persist)</text>
+    <text x="20" y="130" fill="#94a3b8" font-size="10">Tolerância a reboot</text>
+  </g>
+
+  <!-- Smartphones (Right) -->
+  <g transform="translate(550, 80)">
+    <rect width="220" height="150" rx="10" fill="#0f172a" stroke="#818cf8" stroke-width="2"/>
+    <text x="110" y="30" text-anchor="middle" fill="#a5b4fc" font-size="13" font-weight="800">📱 500+ SMARTPHONES</text>
+    <text x="20" y="65" fill="#e2e8f0" font-size="11">Conectam no IP do Wi-Fi</text>
+    <text x="20" y="85" fill="#94a3b8" font-size="10.5">Zero consumo de 4G/5G</text>
+    <text x="20" y="110" fill="#34d399" font-size="11 font-weight=700">✓ Votos e Perguntas em LAN</text>
+    <text x="20" y="130" fill="#94a3b8" font-size="10">Hub HTTP sequencial local</text>
+  </g>
+
+  <!-- Badges Below -->
+  <g transform="translate(50, 255)">
+    <rect width="720" height="60" rx="8" fill="#064e3b" fill-opacity="0.4" stroke="#059669"/>
+    <text x="360" y="26" text-anchor="middle" fill="#6ee7b7" font-size="12" font-weight="800">🌲 AUDITÓRIOS SUBTERRÂNEOS • RETIROS NO MEIO DA FLORESTA • SALAS SEGURAS (SCIF)</text>
+    <text x="360" y="46" text-anchor="middle" fill="#cbd5e1" font-size="11">Se a nuvem cair ou o link internacional romper, o SlideMeshLive continua 100% no ar!</text>
+  </g>
+</svg>

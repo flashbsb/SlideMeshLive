@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320" width="100%" height="100%" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); border-radius: 12px; font-family: system-ui, -apple-system, sans-serif;">
+  <defs>
+    <filter id="neonKey" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <text x="410" y="32" text-anchor="middle" fill="#94a3b8" font-size="13" font-weight="700" letter-spacing="2">CENTRAL DE ATALHOS MÁGICOS DO APRESENTADOR</text>
+
+  <!-- Key Row 1 -->
+  <!-- [Q] -->
+  <g transform="translate(40, 60)">
+    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2" filter="url(#neonKey)"/>
+    <text x="40" y="38" text-anchor="middle" fill="#38bdf8" font-size="22" font-weight="900">Q</text>
+    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">QR Gigante</text>
+  </g>
+
+  <!-- [W] -->
+  <g transform="translate(135, 60)">
+    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2" filter="url(#neonKey)"/>
+    <text x="40" y="38" text-anchor="middle" fill="#38bdf8" font-size="22" font-weight="900">W</text>
+    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Mini QR</text>
+  </g>
+
+  <!-- [M] -->
+  <g transform="translate(230, 60)">
+    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#818cf8" stroke-width="2" filter="url(#neonKey)"/>
+    <text x="40" y="38" text-anchor="middle" fill="#818cf8" font-size="22" font-weight="900">M</text>
+    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Mural Dúvidas</text>
+  </g>
+
+  <!-- [P] -->
+  <g transform="translate(325, 60)">
+    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#818cf8" stroke-width="2" filter="url(#neonKey)"/>
+    <text x="40" y="38" text-anchor="middle" fill="#818cf8" font-size="22" font-weight="900">P</text>
+    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Púlpito/Notas</text>
+  </g>
+
+  <!-- [V] -->
+  <g transform="translate(420, 60)">
+    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="2" filter="url(#neonKey)"/>
+    <text x="40" y="38" text-anchor="middle" fill="#34d399" font-size="22" font-weight="900">V</text>
+    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Abrir Enquete</text>
+  </g>
+
+  <!-- [R] -->
+  <g transform="translate(515, 60)">
+    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="2" filter="url(#neonKey)"/>
+    <text x="40" y="38" text-anchor="middle" fill="#34d399" font-size="22" font-weight="900">R</text>
+    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Ver Gráficos</text>
+  </g>
+
+  <!-- [B] -->
+  <g transform="translate(610, 60)">
+    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#f43f5e" stroke-width="2" filter="url(#neonKey)"/>
+    <text x="40" y="38" text-anchor="middle" fill="#f43f5e" font-size="22" font-weight="900">B</text>
+    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Blackout Tela</text>
+  </g>
+
+  <!-- [F] -->
+  <g transform="translate(705, 60)">
+    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#fbbf24" stroke-width="2" filter="url(#neonKey)"/>
+    <text x="40" y="38" text-anchor="middle" fill="#fbbf24" font-size="22" font-weight="900">F</text>
+    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Fullscreen</text>
+  </g>
+
+  <!-- Navigation Bar Info -->
+  <g transform="translate(40, 160)">
+    <rect width="745" height="130" rx="10" fill="#0f172a" stroke="#334155"/>
+    <text x="25" y="30" fill="#38bdf8" font-size="12" font-weight="800">🎮 NAVEGAÇÃO DE SLIDES:</text>
+    <text x="25" y="55" fill="#cbd5e1" font-size="11">• [ Seta Direita / Barra de Espaço / Page Down ] ➔ Avança para o próximo slide</text>
+    <text x="25" y="75" fill="#cbd5e1" font-size="11">• [ Seta Esquerda / Page Up ] ➔ Retorna ao slide anterior</text>
+    <text x="25" y="95" fill="#cbd5e1" font-size="11">• [ Esc ] ➔ Fecha instantaneamente modais, gavetas e painéis flutuantes</text>
+    <text x="25" y="115" fill="#34d399" font-size="11 font-weight=600">⚡ Resposta em menos de 10 milissegundos sem recarregar nenhuma página</text>
+  </g>
+</svg>
