@@ -863,11 +863,13 @@
         }
 
         const manifest = await resMan.json();
-        const slides = await resSlides.json();
+        manifest.id = manifest.id || slug;
+        const rawSlides = await resSlides.json();
+        const slidesArray = Array.isArray(rawSlides) ? rawSlides : (rawSlides.slides || []);
 
         currentConvertedData = {
           manifest: manifest,
-          slides: slides,
+          slides: slidesArray,
           assets: []
         };
         currentConvertedData.slides.forEach(s => s.included = true);
