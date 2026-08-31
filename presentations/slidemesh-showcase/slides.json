@@ -1,0 +1,346 @@
+{
+  "presentationId": "slidemesh-showcase",
+  "title": "SlideMeshLive: A Mágica das Apresentações Interativas",
+  "slides": [
+    {
+      "id": 1,
+      "slug": "abertura-morte-ao-powerpoint",
+      "tag": "BEM-VINDO AO SLIDEMESHLIVE",
+      "title": "A Morte pelo PowerPoint e o Renascimento da Atenção",
+      "presenter": {
+        "headline": "Cansado de ver 90% da sua plateia rolando o feed do celular?",
+        "bullets": [
+          "O modelo tradicional de slides estáticos de 30 anos atrás já não engaja mais ninguém",
+          "Se a plateia não larga o smartphone, coloque a apresentação dentro do smartphone dela",
+          "Aponte a câmera para o QR Code agora mesmo e participe desta experiência ao vivo!"
+        ],
+        "notes": "Dê as boas-vindas com energia! Brinque com a plateia sobre palestras monótonas e peça para todos apontarem a câmera para o QR Code no canto da tela ou aperte [Q] para abrir o QR gigante central."
+      },
+      "audience": {
+        "summary": "Você conectou com sucesso à demonstração oficial do SlideMeshLive! A partir de agora, seu celular é seu copiloto nesta apresentação.",
+        "sections": [
+          {
+            "title": "O Que é o SlideMeshLive?",
+            "type": "text",
+            "content": "O SlideMeshLive é uma plataforma web open source de apresentações em tempo real que transforma o público passivo em participante ativo através de enquetes ao vivo, perguntas moderadas e sincronização instantânea."
+          },
+          {
+            "title": "Como Funciona Sua Participação",
+            "type": "list",
+            "items": [
+              "Conforme o orador avança os slides no telão, seu smartphone acompanha automaticamente.",
+              "Quando houver enquetes, você vota com 1 toque e vê os resultados calculados na hora.",
+              "Use o botão '💬 Perguntar' no rodapé a qualquer momento para enviar dúvidas à mesa técnica.",
+              "Toque nos botões de tema (🌙/☀️) e idioma (🇧🇷/🇺🇸) no topo para personalizar sua visualização."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "slug": "enquete-quebra-gelo",
+      "tag": "INTERATIVIDADE AO VIVO",
+      "title": "O Diagnóstico da Audiência: Como Você se Sente em Reuniões?",
+      "presenter": {
+        "headline": "Vamos medir a temperatura do auditório em tempo real!",
+        "bullets": [
+          "Votação aberta instantaneamente para todos os celulares conectados",
+          "Garantia de 1 voto único por participante (sem duplicidades ou robôs)",
+          "Aperte a tecla [R] para revelar os gráficos animados de votação no telão"
+        ],
+        "notes": "Avise que a enquete já está aberta nos celulares. Aguarde alguns segundos enquanto os votos sobem no indicador do rodapé e aperte [R] para surpreender a plateia com os resultados no telão!"
+      },
+      "audience": {
+        "summary": "Selecione sua resposta abaixo. Seu voto é computado instantaneamente e aparecerá no gráfico do telão!",
+        "sections": [
+          {
+            "title": "Democracia em Tempo Real",
+            "type": "text",
+            "content": "Todas as enquetes do SlideMeshLive contam com apuração matemática em milissegundos e trava de voto único para garantir resultados legítimos."
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll-quebra-gelo",
+          "question": "Qual é o seu comportamento padrão em apresentações e reuniões convencionais?",
+          "options": [
+            { "id": "A", "text": "Lutando bravamente contra o sono pós-almoço 🥱" },
+            { "id": "B", "text": "Fingindo que estou anotando, mas olhando memes 📱" },
+            { "id": "C", "text": "Tentando decifrar blocos de texto minúsculo no telão 🔍" },
+            { "id": "D", "text": "Desejando que o palestrante usasse o SlideMeshLive! 🚀" }
+          ]
+        }
+      }
+    },
+    {
+      "id": 3,
+      "slug": "dois-mundos-telao-mobile",
+      "tag": "ARQUITETURA DE EXPERIÊNCIA",
+      "title": "Telão para Inspirar, Celular para Aprofundar",
+      "presenter": {
+        "headline": "Chega de poluição visual e slides ilegíveis no projetor",
+        "bullets": [
+          "No Telão: Tipografia generosa, bullets sintetizados e alto contraste para o auditório",
+          "No Celular: Tabelas detalhadas, diagramas, referências e links complementares",
+          "O participante estuda os detalhes técnicos sem perder o contato visual com o palestrante"
+        ],
+        "notes": "Explique que nunca mais o palestrante precisa pedir desculpas dizendo 'sei que a fonte está pequena para quem está no fundo da sala'. A tabela completa está na palma da mão de cada um."
+      },
+      "audience": {
+        "summary": "Veja abaixo a tabela comparativa detalhada que seria impossível ler confortavelmente em um telão distante.",
+        "sections": [
+          {
+            "title": "Comparativo: Apresentação Tradicional vs SlideMeshLive",
+            "type": "table",
+            "headers": ["Critério", "Apresentação Tradicional", "SlideMeshLive"],
+            "rows": [
+              ["Engajamento", "Passivo (apenas ouvinte)", "Ativo (votos, reações e perguntas)"],
+              ["Detalhamento", "Telão poluído com fonte minúscula", "Telão sintético + Smartphone aprofundado"],
+              ["Perguntas", "Microfone sem fio caótico no auditório", "Fila moderada com destaque flutuante no telão"],
+              ["Instalação", "Softwares pesados e problemas de pen-drive", "100% Web Nativo (HTML5 / ES Modules)"],
+              ["Custo & Licença", "Assinaturas caras por apresentador em dólar", "Open Source, Gratuito e Auto-Hospedável"]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "slug": "moderacao-perguntas-inteligentes",
+      "tag": "COMUNICAÇÃO BIDIRECIONAL",
+      "title": "Perguntas da Audiência: Moderação em Tempo Real & Destaque",
+      "presenter": {
+        "headline": "Dê voz aos tímidos e controle total aos organizadores",
+        "bullets": [
+          "Envio de dúvidas diretamente pelo botão [💬 Perguntar] no smartphone",
+          "Proteção anti-abuso: Cooldown de 25s e limite de 3 perguntas pendentes acumuladas",
+          "A Mesa Técnica aprova com 1 clique e projeta perguntas em destaque flutuante no telão!"
+        ],
+        "notes": "Convide a audiência a clicar no botão [Perguntar] no rodapé do celular e enviar uma dúvida ou elogio agora mesmo. Mostre o atalho [M] para abrir o mural de perguntas ou aprove uma pergunta pelo /admin/ para exibi-la no telão."
+      },
+      "audience": {
+        "summary": "Envie uma pergunta de teste agora mesmo! Toque no botão 'Perguntar' na barra inferior do smartphone.",
+        "sections": [
+          {
+            "title": "Fila Inteligente de Perguntas",
+            "type": "text",
+            "content": "Sua dúvida é enviada com pseudônimo anônimo seguro (ex: Participante #842), analisada pela mesa técnica e pode surgir em destaque no telão principal com animação flutuante!"
+          },
+          {
+            "title": "Estados da Pergunta",
+            "type": "list",
+            "items": [
+              "⏳ Moderação: Aguardando análise da mesa técnica.",
+              "💬 Aprovada: Visível no mural geral de perguntas da sessão.",
+              "⭐ No Telão: Projetada em destaque para todo o auditório.",
+              "✓ Respondida: Marcada como respondida pelo palestrante."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "slug": "modo-pulpito-e-atalhos",
+      "tag": "PRODUTIVIDADE DO ORADOR",
+      "title": "Modo Púlpito: Controle o Palco com Apenas Uma Mão",
+      "presenter": {
+        "headline": "Tudo o que você precisa a um toque de tecla no notebook",
+        "bullets": [
+          "Tecla [P]: Ativa o Púlpito com Notas do Orador privativas e seletor rápido de miniaturas",
+          "Tecla [Q]: Abre o QR Code gigante no centro da tela para novos participantes",
+          "Tecla [M]: Abre o mural de perguntas aprovadas da plateia",
+          "Tecla [B]: Modo Blackout (tela preta teatral para focar todos os olhares em você)"
+        ],
+        "notes": "Demonstre ao vivo: aperte a tecla [B] para apagar o telão momentaneamente e depois aperte [B] de novo para voltar. Em seguida, mostre o painel de notas com [P] e o mural de perguntas com [M]."
+      },
+      "audience": {
+        "summary": "Guia de referência rápida dos atalhos de teclado do SlideMeshLive.",
+        "sections": [
+          {
+            "title": "Atalhos de Teclado no Telão do Apresentador",
+            "type": "list",
+            "items": [
+              "[ → / Espaço / PgDn ] : Avançar para o próximo slide",
+              "[ ← / PgUp ] : Retornar ao slide anterior",
+              "[ Q ] : Abrir / fechar Modal Central Gigante de QR Code",
+              "[ W ] : Exibir / ocultar Mini-Widget de QR Code no rodapé",
+              "[ M ] : Abrir Mural de Perguntas da Audiência",
+              "[ P ] : Alternar Modo Púlpito (Notas privadas e Miniaturas)",
+              "[ V ] : Abrir ou encerrar votação da enquete",
+              "[ R ] : Revelar ou ocultar gráficos de resultados no telão",
+              "[ B ] : Modo Blackout (tela preta para focar no orador)",
+              "[ F ] : Alternar Modo Tela Cheia (Fullscreen)",
+              "[ Esc ] : Fechar qualquer modal ou gaveta aberta"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "slug": "mesa-tecnica-admin-console",
+      "tag": "CONTROLE & OPERAÇÃO",
+      "title": "Mesa Técnica: O Co-Piloto Perfeito para Grandes Eventos",
+      "presenter": {
+        "headline": "Deixe a moderação, o controle e os relatórios com a equipe técnica",
+        "bullets": [
+          "Painel dedicado em /admin/ protegido por PIN de segurança ou login administrativo",
+          "Gestão de participantes online, estatísticas de presença e bloqueio instantâneo de abusos",
+          "Exportação multiformato ao final do evento: relatórios em JSON, CSV para Excel e Markdown"
+        ],
+        "notes": "Ressalte que em grandes eventos o palestrante não precisa se preocupar com moderação; um operador na mesa técnica gerencia as enquetes e perguntas em segundo plano sem atrapalhar a fala."
+      },
+      "audience": {
+        "summary": "A Mesa Técnica garante que tudo corra com segurança, fluidez e estabilidade durante todo o evento.",
+        "sections": [
+          {
+            "title": "Recursos da Mesa Técnica (/admin/)",
+            "type": "list",
+            "items": [
+              "Monitoramento de audiência ao vivo (total de participantes online, identificados e anônimos).",
+              "Projeção sincronizada de apresentações para todos os participantes com 1 clique.",
+              "Controle mestre de enquetes (abrir, fechar, projetar resultados e zerar votos).",
+              "Fila de moderação categorizada com abas de pendentes, aprovadas, respondidas e rejeitadas.",
+              "Download consolidado do relatório da sessão em JSON, CSV e Markdown executivo."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "slug": "resiliencia-offline-lan",
+      "tag": "ENGENHARIA ROBUSTA",
+      "title": "100% Offline, Zero Nuvem Obrigatória e Sem Dependência de Internet",
+      "presenter": {
+        "headline": "Apresente com segurança máxima em qualquer infraestrutura",
+        "bullets": [
+          "Servidor HTTP leve em Python 3 (server.py) com hub sequencial de sincronização local",
+          "Funciona em rede Wi-Fi local sem nenhuma conexão externa à internet",
+          "Se a energia oscilar, a flag --persist restaura todo o histórico de votos e perguntas intacto"
+        ],
+        "notes": "Muitos eventos corporativos têm Wi-Fi instável ou redes fechadas sem saída para a internet. O SlideMeshLive foi projetado desde o dia 1 para operar com perfeição nesse cenário crítico."
+      },
+      "audience": {
+        "summary": "Tecnologia de ponta em transporte quádruplo: BroadcastChannel nativo + LocalStorage events + Hub HTTP LAN sequencial + Nuvem Firebase opcional.",
+        "sections": [
+          {
+            "title": "Pilares da Arquitetura Zero-Fricção",
+            "type": "list",
+            "items": [
+              "Sem builds ou compilações: Código 100% legível em HTML5, CSS3 Vanilla e ES Modules.",
+              "Zero instalação para o público: Funciona em qualquer navegador de smartphone (iOS/Android).",
+              "Sincronização em 4 camadas com fallback automático de transporte.",
+              "Tolerância a falhas com gravação atômica em disco de snapshots da sessão."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "slug": "temas-e-acessibilidade",
+      "tag": "DESIGN SYSTEM & A11Y",
+      "title": "Do Dark Mode Cyberpunk ao Alto Contraste de Acessibilidade",
+      "presenter": {
+        "headline": "Design inclusivo, responsivo e adaptável a qualquer iluminação",
+        "bullets": [
+          "4 temas nativos HSL: Dark (Slate moderno), Light (Claro editorial), Slate e High Contrast (WCAG AAA)",
+          "Internacionalização reativa com 1 toque: Português do Brasil (pt-BR) e Inglês (en-US)",
+          "Feedback tátil háptico no smartphone para confirmação de votos e perguntas"
+        ],
+        "notes": "Convide todos a tocarem no ícone de tema [🌙/☀️] no topo do celular para testar a mudança visual instantânea sem recarregar a página."
+      },
+      "audience": {
+        "summary": "Toque nos botões de idioma e tema no topo da tela para experimentar a reatividade instantânea!",
+        "sections": [
+          {
+            "title": "Temas Visuais Disponíveis",
+            "type": "list",
+            "items": [
+              "🌙 Dark (Padrão): Fundo escuro profundo com acentos ciano neon para auditórios escuros.",
+              "☀️ Light: Fundo claro nítido para salas de aula e ambientes muito iluminados.",
+              "🪐 Slate: Tons sofisticados de carvão e índigo para apresentações executivas.",
+              "👁️ High Contrast: Preto puro com elementos em amarelo elétrico seguindo as diretrizes WCAG AAA de acessibilidade."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "slug": "enquete-avaliacao-final",
+      "tag": "AVALIAÇÃO & ENCERRAMENTO",
+      "title": "O Veredito: Você Adotaria o SlideMeshLive em Suas Apresentações?",
+      "presenter": {
+        "headline": "Chegamos ao final da nossa demonstração interativa!",
+        "bullets": [
+          "Votação final aberta nos smartphones de todos os participantes",
+          "Projeção do Resumo Analítico da Sessão com total consolidado de votos e perguntas",
+          "Convite especial para a comunidade Open Source no GitHub"
+        ],
+        "notes": "Abra a última votação e finalize demonstrando o botão [📢 Projetar Resumo no Telão] que exibe o card analítico final com as métricas consolidadas da apresentação."
+      },
+      "audience": {
+        "summary": "Deixe seu voto final sobre o que achou da plataforma e veja o resumo da sessão!",
+        "sections": [
+          {
+            "title": "Obrigado por Participar!",
+            "type": "text",
+            "content": "Sua participação foi fundamental para demonstrar o poder das apresentações em tempo real. Vote na enquete abaixo e veja o resultado no telão!"
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll-avaliacao-final",
+          "question": "Qual é a sua impressão geral sobre a experiência com o SlideMeshLive?",
+          "options": [
+            { "id": "A", "text": "Incrível! Quero usar na minha próxima palestra ou aula 🌟" },
+            { "id": "B", "text": "Excelente alternativa aos softwares proprietários caros 💡" },
+            { "id": "C", "text": "Muito prático para reuniões técnicas e alinhamentos de time 🎯" },
+            { "id": "D", "text": "Vou clonar o repositório e deixar uma estrela no GitHub agora! ⭐" }
+          ]
+        }
+      }
+    },
+    {
+      "id": 10,
+      "slug": "github-call-to-action",
+      "tag": "OPEN SOURCE COMMUNITY",
+      "title": "Junte-se à Revolução das Apresentações Interativas",
+      "presenter": {
+        "headline": "Clone, customize e crie suas próprias apresentações em minutos",
+        "bullets": [
+          "Repositório oficial no GitHub: github.com/flashbsb/SlideMeshLive",
+          "Para criar sua palestra: basta adicionar uma pasta em presentations/<sua-palestra>/",
+          "Licença Open Source — Contribuições, novos temas e ideias são muito bem-vindos!"
+        ],
+        "notes": "Agradeça a todos pelo engajamento e aplausos. Enfatize que o projeto é 100% aberto, extensível e pronto para ser utilizado em qualquer organização."
+      },
+      "audience": {
+        "summary": "Obrigado por participar! Acesse os links abaixo para salvar o código e criar suas próprias apresentações.",
+        "sections": [
+          {
+            "title": "Links e Recursos Oficiais",
+            "type": "list",
+            "items": [
+              "⭐ Repositório GitHub: https://github.com/flashbsb/SlideMeshLive",
+              "📖 Guia de Criação de Apresentações no README.md",
+              "🚀 Crie sua própria palestra adicionando uma pasta em presentations/<nome>/"
+            ]
+          }
+        ]
+      },
+      "resources": [
+        {
+          "title": "Repositório no GitHub (SlideMeshLive)",
+          "url": "https://github.com/flashbsb/SlideMeshLive"
+        }
+      ]
+    }
+  ]
+}

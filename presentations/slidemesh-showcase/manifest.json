@@ -1,0 +1,20 @@
+{
+  "id": "slidemesh-showcase",
+  "code": "SLIDEMESH-DEMO-2026",
+  "title": "SlideMeshLive: A Mágica das Apresentações Interativas",
+  "subtitle": "Guia Demonstrativo Oficial de Recursos & Experiência em Tempo Real",
+  "version": "1.0.0",
+  "author": "SlideMeshLive Open Source Community",
+  "description": "Apresentação oficial demonstrativa da plataforma SlideMeshLive com enquetes ao vivo, moderação de perguntas, atalhos de púlpito e sincronização instantânea.",
+  "theme": {
+    "primaryColor": "#38bdf8",
+    "accentColor": "#818cf8"
+  },
+  "security": {
+    "mode": "public",
+    "requireAuthForInteraction": false,
+    "description": "Apresentação pública demonstrativa aberta para todos os participantes."
+  },
+  "defaultSession": "SHOWCASE2026",
+  "tags": ["Demonstração", "Showcase", "Tutorial", "Open Source", "Interativo"]
+}
