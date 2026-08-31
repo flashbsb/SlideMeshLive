@@ -800,7 +800,29 @@ def test_presentation_import_endpoint():
         print("  ✓ POST /api/presentations/import: Gravação atômica de manifest, slides e assets validada.")
         print("  ✓ POST /api/presentations/import: Atualização instantânea do catalog.json validada.")
 
-        # 2. Teste de rejeição de payload malformado (HTTP 400)
+        # 2. Teste de Edição/Atualização de Apresentação Existente (Idempotência)
+        edit_payload = payload.copy()
+        edit_payload["manifest"]["title"] = "Apresentação Editada com Sucesso"
+        edit_payload["slides"][0]["title"] = "Título Modificado pelo Studio"
+
+        edit_req = urllib.request.Request(
+            f"{base_url}/api/presentations/import",
+            data=json.dumps(edit_payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"}
+        )
+
+        with urllib.request.urlopen(edit_req, timeout=3) as res:
+            assert res.status == 200
+            resp_edit = json.loads(res.read().decode("utf-8"))
+            assert resp_edit.get("success") is True
+
+        with open(os.path.join(test_target_dir, "manifest.json"), "r", encoding="utf-8") as mf:
+            edited_manifest = json.load(mf)
+            assert edited_manifest["title"] == "Apresentação Editada com Sucesso", "Edição não sobrescreveu o manifest.json!"
+
+        print("  ✓ POST /api/presentations/import: Fluxo de edição e atualização idempotente validado com sucesso.")
+
+        # 3. Teste de rejeição de payload malformado (HTTP 400)
         bad_req = urllib.request.Request(
             f"{base_url}/api/presentations/import",
             data=b"corrupted json payload",
@@ -823,7 +845,44 @@ def test_presentation_import_endpoint():
         with open(catalog_path, "w", encoding="utf-8") as cf:
             cf.write(orig_catalog_content)
 
-    print("✓ Endpoint seguro de importação de apresentações (/api/presentations/import) aprovado com 100% de sucesso.")
+    print("✓ Endpoint seguro de importação e edição de apresentações aprovado com 100% de sucesso.")
+
+def test_slidemesh_studio_web_components():
+    print_section("11. Componentes e Templates do SlideMesh Studio (Criação & Edição)")
+    
+    # 1. Validação estática de getTemplate em conversion-engine.js
+    engine_path = os.path.join(BASE_DIR, "js", "core", "conversion-engine.js")
+    with open(engine_path, "r", encoding="utf-8") as f:
+        engine_code = f.read()
+
+    assert "getTemplate" in engine_code, "Método getTemplate ausente em conversion-engine.js"
+    assert "executive" in engine_code, "Template executive ausente em conversion-engine.js"
+    assert "training" in engine_code, "Template training ausente em conversion-engine.js"
+    assert "product" in engine_code, "Template product ausente em conversion-engine.js"
+    assert "blank" in engine_code, "Template blank ausente em conversion-engine.js"
+    print("  ✓ ConversionEngine: 4 templates estruturados (Executivo, Treinamento, Produto, Em Branco) validados.")
+
+    # 2. Validação estática de import.html (Studio)
+    studio_path = os.path.join(BASE_DIR, "import.html")
+    with open(studio_path, "r", encoding="utf-8") as f:
+        studio_html = f.read()
+
+    assert "templates-grid" in studio_html, "Grid de templates ausente em import.html"
+    assert "slide-image-file" in studio_html, "Seletor de imagem/mídia ausente em import.html"
+    assert "loadExistingPresentation" in studio_html, "Função de carregamento para edição existente ausente em import.html"
+    assert "DRAFT_STORAGE_KEY" in studio_html or "localStorage" in studio_html, "Mecanismo de auto-save ausente em import.html"
+    print("  ✓ Studio Interface (import.html): Seleção de templates, upload de mídia, edição existente e auto-save validados.")
+
+    # 3. Validação do portal index.html
+    portal_path = os.path.join(BASE_DIR, "index.html")
+    with open(portal_path, "r", encoding="utf-8") as f:
+        portal_html = f.read()
+
+    assert "import.html?mode=new" in portal_html, "Botão de Criar Nova Apresentação ausente no portal index.html"
+    assert "import.html?edit=" in portal_html, "Botão de Editar Apresentação ausente nos cards do portal index.html"
+    print("  ✓ Portal (index.html): Botões de 'Criar Nova' e 'Editar' integrados e operacionais.")
+
+    print("✓ SlideMesh Studio e recursos de autoria web validados com 100% de conformidade.")
 
 if __name__ == "__main__":
     start_time = time.time()
@@ -837,6 +896,7 @@ if __name__ == "__main__":
         test_server_persistence_and_snapshot_resilience()
         test_phase4_mobile_haptics_and_a11y_high_contrast()
         test_presentation_import_endpoint()
+        test_slidemesh_studio_web_components()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

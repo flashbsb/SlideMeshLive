@@ -762,6 +762,458 @@ export class ConversionEngine {
 
     return baseResult;
   }
+
+  /* ==========================================================================
+     GERADOR DE TEMPLATES PRÉ-FABRICADOS (CRIAÇÃO DO ZERO)
+     ========================================================================== */
+  getTemplate(type = 'executive') {
+    const defaultManifest = {
+      id: `apresentacao-${type}-${Date.now().toString().slice(-4)}`,
+      code: `${type.toUpperCase()}-2026`,
+      title: 'Nova Apresentação Interativa',
+      subtitle: 'Criada no SlideMesh Studio',
+      description: 'Apresentação com sincronização em tempo real para telão e smartphones.',
+      defaultSession: `SES${Math.floor(1000 + Math.random() * 9000)}`,
+      totalSlides: 0,
+      securityMode: 'public',
+      securityLabel: 'Pública',
+      badgeClass: 'badge-accent',
+      theme: { accentColor: '#38bdf8', background: '#0b0f19' },
+      security: { mode: 'public' }
+    };
+
+    let slides = [];
+
+    if (type === 'executive') {
+      defaultManifest.title = 'Apresentação Executiva & Estratégica';
+      defaultManifest.subtitle = 'Proposta de Valor, Diferenciais e Próximos Passos';
+      slides = [
+        {
+          id: 1,
+          slug: 'slide-1',
+          tag: 'VISÃO GERAL',
+          title: 'Apresentação Executiva & Estratégica',
+          included: true,
+          presenter: {
+            headline: 'Apresentação Executiva & Estratégica',
+            bullets: [
+              'Contexto de mercado e posicionamento competitivo',
+              'Oportunidade de expansão e ganhos de eficiência',
+              'Acompanhe o material detalhado pelo celular'
+            ],
+            notes: 'Abertura: agradecer a presença de todos e convidar a apontar a câmera para o QR Code.'
+          },
+          audience: {
+            summary: 'Síntese executiva dos objetivos e escopo estratégico da apresentação.',
+            sections: [
+              {
+                title: 'Contexto Estratégico',
+                type: 'text',
+                content: 'Neste encontro apresentaremos as diretrizes prioritárias de crescimento e inovação para o próximo ciclo operacional.'
+              }
+            ]
+          }
+        },
+        {
+          id: 2,
+          slug: 'slide-2',
+          tag: 'DESAFIO',
+          title: 'O Cenário Atual e os Principais Desafios',
+          included: true,
+          presenter: {
+            headline: 'O Cenário Atual e os Principais Desafios',
+            bullets: [
+              'Processos manuais e lentidão operacional',
+              'Falta de visibilidade centralizada em tempo real',
+              'Custos crescentes com ferramentas legadas'
+            ],
+            notes: 'Enfatizar as dores mais sentidas pela equipe e o impacto direto nos resultados.'
+          },
+          audience: {
+            summary: 'Diagnóstico das restrições e gargalos identificados na operação.',
+            sections: [
+              {
+                title: 'Detalhamento dos Gargalos',
+                type: 'text',
+                content: 'A fragmentação de ferramentas causa retrabalho e dificulta o alinhamento entre as áreas de negócio e tecnologia.'
+              }
+            ]
+          }
+        },
+        {
+          id: 3,
+          slug: 'slide-3',
+          tag: 'SOLUÇÃO',
+          title: 'Nossa Proposta de Valor e Diferenciais',
+          included: true,
+          presenter: {
+            headline: 'Nossa Proposta de Valor e Diferenciais',
+            bullets: [
+              'Arquitetura unificada e sincronização instantânea',
+              'Operação 100% resiliente em rede local sem dependência externa',
+              'Redução de até 40% no tempo de ciclo operacional'
+            ],
+            notes: 'Apresentar os diferenciais competitivos e a simplicidade de adoção.'
+          },
+          audience: {
+            summary: 'Pilares arquiteturais e ganhos tangíveis com a nova abordagem.',
+            sections: [
+              {
+                title: 'Pilares de Transformação',
+                type: 'text',
+                content: 'A integração fluida entre dispositivos garante engajamento da equipe e decisões baseadas em dados em tempo real.'
+              }
+            ]
+          }
+        },
+        {
+          id: 4,
+          slug: 'slide-4',
+          tag: 'INTERAÇÃO AO VIVO',
+          title: 'Qual área deve ser priorizada no projeto piloto?',
+          included: true,
+          presenter: {
+            headline: 'Qual área deve ser priorizada no projeto piloto?',
+            bullets: [
+              'Vote agora pelo seu smartphone',
+              'Os resultados serão projetados instantaneamente no telão',
+              'Participe para definir o cronograma da primeira fase'
+            ],
+            notes: 'Pressionar a tecla [V] para abrir a votação e [R] para revelar o gráfico animado de resultados.'
+          },
+          interaction: {
+            poll: {
+              id: 'poll-prioridade-piloto',
+              question: 'Qual área deve ser priorizada no projeto piloto?',
+              options: [
+                { id: 'A', text: 'Operações e Logística' },
+                { id: 'B', text: 'Engenharia e Infraestrutura' },
+                { id: 'C', text: 'Atendimento ao Cliente' },
+                { id: 'D', text: 'Gestão e Controladoria' }
+              ]
+            }
+          },
+          audience: {
+            summary: 'Selecione a opção desejada para votar ao vivo.',
+            sections: [
+              {
+                title: 'Critérios de Escolha',
+                type: 'text',
+                content: 'Considere o retorno sobre o investimento e o tempo de implementação ao votar.'
+              }
+            ]
+          }
+        },
+        {
+          id: 5,
+          slug: 'slide-5',
+          tag: 'PRÓXIMOS PASSOS',
+          title: 'Plano de Ação e Próximos Passos',
+          included: true,
+          presenter: {
+            headline: 'Plano de Ação e Próximos Passos',
+            bullets: [
+              'Semana 1-2: Alinhamento e homologação do ambiente piloto',
+              'Semana 3-4: Treinamento prático e go-live inicial',
+              'Envie suas dúvidas no botão Perguntar do celular'
+            ],
+            notes: 'Conclusão: abrir o mural de perguntas com a tecla [M] para responder aos participantes.'
+          },
+          audience: {
+            summary: 'Cronograma de entregas e canais de comunicação.',
+            sections: [
+              {
+                title: 'Contato e Suporte',
+                type: 'text',
+                content: 'Dúvidas podem ser enviadas diretamente pelo botão Perguntar no rodapé da tela.'
+              }
+            ]
+          }
+        }
+      ];
+    } else if (type === 'training') {
+      defaultManifest.title = 'Treinamento Técnico & Capacitação';
+      defaultManifest.subtitle = 'Conceitos Fundamentais, Laboratório e Quiz de Fixação';
+      slides = [
+        {
+          id: 1,
+          slug: 'slide-1',
+          tag: 'AULA 1',
+          title: 'Treinamento Técnico & Capacitação',
+          included: true,
+          presenter: {
+            headline: 'Treinamento Técnico & Capacitação',
+            bullets: [
+              'Objetivos pedagógicos e competências da sessão',
+              'Acesso ao material didático interativo pelo celular',
+              'Quiz prático ao final para fixação'
+            ],
+            notes: 'Apresentação do instrutor e orientações iniciais.'
+          },
+          audience: {
+            summary: 'Guia do aluno com anotações e exercícios.',
+            sections: [
+              {
+                title: 'Ementa do Treinamento',
+                type: 'text',
+                content: 'Capacitação prática com foco em metodologias ágeis e arquiteturas modernas.'
+              }
+            ]
+          }
+        },
+        {
+          id: 2,
+          slug: 'slide-2',
+          tag: 'CONCEITOS',
+          title: 'Fundamentos de Arquitetura e Protocolos',
+          included: true,
+          presenter: {
+            headline: 'Fundamentos de Arquitetura e Protocolos',
+            bullets: [
+              'Comunicação bidirecional e isolamento de canais',
+              'Sincronização de relógio e sequenciamento de eventos',
+              'Mecanismos de fallback e tolerância a falhas'
+            ],
+            notes: 'Explicar a importância da baixa latência em eventos de missão crítica.'
+          },
+          audience: {
+            summary: 'Resumo teórico dos padrões e fluxos de dados.',
+            sections: [
+              {
+                title: 'Notas de Estudo',
+                type: 'text',
+                content: 'A integridade dos pacotes é assegurada por validação de integridade nos hubs de sincronização.'
+              }
+            ]
+          }
+        },
+        {
+          id: 3,
+          slug: 'slide-3',
+          tag: 'QUIZ INTERATIVO',
+          title: 'Quiz: Qual é a principal vantagem de operar em rede local?',
+          included: true,
+          presenter: {
+            headline: 'Quiz: Qual é a principal vantagem de operar em rede local?',
+            bullets: [
+              'Responda no seu smartphone em 30 segundos',
+              'Teste seus conhecimentos sem sair do lugar',
+              'Acompanhe o ranking da turma no telão'
+            ],
+            notes: 'Iniciar o quiz e comentar as respostas com o grupo.'
+          },
+          interaction: {
+            poll: {
+              id: 'poll-quiz-tecnico',
+              question: 'Qual é a principal vantagem de operar em rede local?',
+              options: [
+                { id: 'A', text: 'Independência total de internet e nuvem externa' },
+                { id: 'B', text: 'Maior custo de licenciamento' },
+                { id: 'C', text: 'Necessidade de servidores pesados' },
+                { id: 'D', text: 'Apenas para computadores antigos' }
+              ]
+            }
+          },
+          audience: {
+            summary: 'Responda ao quiz selecionando a alternativa correta.',
+            sections: [
+              {
+                title: 'Dica do Instrutor',
+                type: 'text',
+                content: 'Lembre-se do que discutimos sobre resiliência em auditórios sem sinal Wi-Fi externo.'
+              }
+            ]
+          }
+        },
+        {
+          id: 4,
+          slug: 'slide-4',
+          tag: 'CONCLUSÃO',
+          title: 'Encerramento e Próximos Módulos',
+          included: true,
+          presenter: {
+            headline: 'Encerramento e Próximos Módulos',
+            bullets: [
+              'Parabéns pela conclusão do módulo!',
+              'Consulte o resumo das anotações no celular',
+              'Espaço aberto para dúvidas e feedback'
+            ],
+            notes: 'Agradecer a participação e responder às perguntas enviadas na mesa técnica.'
+          },
+          audience: {
+            summary: 'Certificado de participação e material complementar.',
+            sections: [
+              {
+                title: 'Recursos Adicionais',
+                type: 'text',
+                content: 'Consulte a documentação completa no portal SlideMeshLive para continuar aprendendo.'
+              }
+            ]
+          }
+        }
+      ];
+    } else if (type === 'product') {
+      defaultManifest.title = 'Demonstração de Produto & Lançamento';
+      defaultManifest.subtitle = 'Recursos Inovadores, Experiência ao Vivo e Feedback';
+      slides = [
+        {
+          id: 1,
+          slug: 'slide-1',
+          tag: 'LANÇAMENTO',
+          title: 'Apresentamos a Nova Geração do Produto',
+          included: true,
+          presenter: {
+            headline: 'Apresentamos a Nova Geração do Produto',
+            bullets: [
+              'Interface redesenhada com foco em produtividade',
+              'Performance até 3x mais veloz',
+              'Experiência sincronizada para palestrantes e audiência'
+            ],
+            notes: 'Abertura empolgante com foco em inovação e facilidade de uso.'
+          },
+          audience: {
+            summary: 'Visão geral do novo lançamento e principais novidades.',
+            sections: [
+              {
+                title: 'Visão Geral do Produto',
+                type: 'text',
+                content: 'Construído do zero para oferecer simplicidade, rapidez e elegância em todas as etapas.'
+              }
+            ]
+          }
+        },
+        {
+          id: 2,
+          slug: 'slide-2',
+          tag: 'RECURSOS',
+          title: 'Principais Recursos & Inovações',
+          included: true,
+          presenter: {
+            headline: 'Principais Recursos & Inovações',
+            bullets: [
+              'Design System com 4 temas modernos (Dark, Light, Slate, High Contrast)',
+              'Modo Púlpito com notas privadas para o palestrante',
+              'Importação em 1 clique de PPTX, Word e Markdown'
+            ],
+            notes: 'Demonstrar na prática a alternância de temas e o modo tela cheia.'
+          },
+          audience: {
+            summary: 'Especificações técnicas e compatibilidade de plataformas.',
+            sections: [
+              {
+                title: 'Destaques de Engenharia',
+                type: 'text',
+                content: 'Compatível com qualquer navegador moderno sem necessidade de instalar extensões.'
+              }
+            ]
+          }
+        },
+        {
+          id: 3,
+          slug: 'slide-3',
+          tag: 'OPINIÃO AO VIVO',
+          title: 'Qual recurso você achou mais impactante?',
+          included: true,
+          presenter: {
+            headline: 'Qual recurso você achou mais impactante?',
+            bullets: [
+              'Sua opinião direciona nosso roadmap de evolução',
+              'Vote agora pelo celular',
+              'Veja os votos subindo em tempo real no telão'
+            ],
+            notes: 'Estimular a plateia a votar e comentar as preferências mais populares.'
+          },
+          interaction: {
+            poll: {
+              id: 'poll-recurso-favorito',
+              question: 'Qual recurso você achou mais impactante?',
+              options: [
+                { id: 'A', text: 'Sincronização offline instantânea' },
+                { id: 'B', text: 'Modo Split-Screen e Púlpito' },
+                { id: 'C', text: 'Enquetes interativas ao vivo' },
+                { id: 'D', text: 'Importador dinâmico de PPTX e Word' }
+              ]
+            }
+          },
+          audience: {
+            summary: 'Vote no recurso que você mais gostou.',
+            sections: [
+              {
+                title: 'Sua Opinião Importa',
+                type: 'text',
+                content: 'O recurso mais votado receberá prioridade de expansão nas próximas atualizações.'
+              }
+            ]
+          }
+        },
+        {
+          id: 4,
+          slug: 'slide-4',
+          tag: 'FECHAMENTO',
+          title: 'Experimente Hoje Mesmo e Crie Sua Apresentação',
+          included: true,
+          presenter: {
+            headline: 'Experimente Hoje Mesmo e Crie Sua Apresentação',
+            bullets: [
+              '100% gratuito e de código aberto no GitHub',
+              'Inicie em menos de 1 minuto em qualquer computador',
+              'Obrigado pela presença!'
+            ],
+            notes: 'Finalizar com agradecimentos e convite para testar a ferramenta.'
+          },
+          audience: {
+            summary: 'Links para download, documentação e comunidade.',
+            sections: [
+              {
+                title: 'Comece Agora',
+                type: 'text',
+                content: 'Acesse o repositório oficial no GitHub para clonar o projeto e criar suas apresentações.'
+              }
+            ]
+          }
+        }
+      ];
+    } else if (type === 'blank') {
+      // Template em Branco
+      defaultManifest.title = 'Minha Nova Apresentação';
+      defaultManifest.subtitle = 'Criada no SlideMeshLive';
+      slides = [
+        {
+          id: 1,
+          slug: 'slide-1',
+          tag: 'SEÇÃO 1',
+          title: 'Título do Primeiro Slide',
+          included: true,
+          presenter: {
+            headline: 'Título do Primeiro Slide',
+            bullets: [
+              'Adicione aqui os tópicos que serão projetados no telão',
+              'Clique em "+ Novo Marcador" para incluir mais pontos'
+            ],
+            notes: 'Notas e anotações privadas do orador para este slide.'
+          },
+          audience: {
+            summary: 'Resumo deste slide para o smartphone do público.',
+            sections: [
+              {
+                title: 'Conteúdo Detalhado',
+                type: 'text',
+                content: 'Texto explicativo completo que os participantes poderão ler em seus celulares.'
+              }
+            ]
+          }
+        }
+      ];
+    }
+
+    defaultManifest.totalSlides = slides.length;
+    return {
+      manifest: defaultManifest,
+      slides: slides,
+      assets: []
+    };
+  }
 }
 
 export const conversionEngine = new ConversionEngine();
+

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Assistente de Importação &amp; Conversão | SlideMeshLive</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📤</text></svg>">
+  <title>SlideMesh Studio — Criação &amp; Importação | SlideMeshLive</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -24,11 +24,11 @@
       flex-direction: column;
     }
 
-    .import-header {
+    .studio-header {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(11, 15, 25, 0.9);
+      background: rgba(11, 15, 25, 0.92);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border-subtle);
       padding: 12px 28px;
@@ -38,7 +38,7 @@
       gap: 16px;
     }
 
-    .import-brand {
+    .studio-brand {
       display: flex;
       align-items: center;
       gap: 10px;
@@ -48,21 +48,34 @@
       font-size: 15px;
     }
 
-    .import-container {
-      max-width: 1380px;
+    .studio-container {
+      max-width: 1480px;
       width: 100%;
       margin: 0 auto;
-      padding: 24px 20px 80px;
+      padding: 20px 16px 80px;
       flex: 1;
     }
 
+    /* Barra de Notificação de Rascunho */
+    .draft-alert-banner {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid var(--accent-primary);
+      border-radius: var(--radius-md);
+      padding: 12px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
     /* Etapas do Assistente */
-    .import-steps-bar {
+    .studio-steps-bar {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 16px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .step-badge {
@@ -90,6 +103,75 @@
       background: rgba(16, 185, 129, 0.15);
       border-color: rgba(16, 185, 129, 0.4);
       color: #6ee7b7;
+    }
+
+    /* Abas de Origem na Etapa 1 */
+    .origin-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .origin-tab-btn {
+      padding: 10px 24px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 700;
+      background: var(--bg-secondary);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .origin-tab-btn:hover {
+      border-color: var(--border-medium);
+      color: var(--text-primary);
+    }
+
+    .origin-tab-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--accent-primary);
+      color: #ffffff;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    /* Grid de Templates Pré-Fabricados */
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .template-card {
+      background: var(--bg-secondary);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      cursor: pointer;
+      transition: all var(--transition-normal);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .template-card:hover {
+      border-color: var(--accent-primary);
+      background: rgba(56, 189, 248, 0.06);
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px -10px var(--accent-glow);
+    }
+
+    .template-card-icon {
+      font-size: 36px;
+      margin-bottom: 4px;
     }
 
     /* Zona de Drag & Drop */
@@ -125,48 +207,49 @@
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-lg);
-      padding: 20px 24px;
-      margin-bottom: 24px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 16px;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 14px;
       align-items: flex-end;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
 
     .form-label {
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 700;
       color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
-    .form-input, .form-select {
+    .form-input, .form-select, .form-textarea {
       background: #090d16;
       border: 1.5px solid var(--border-medium);
       border-radius: var(--radius-md);
-      padding: 10px 14px;
+      padding: 8px 12px;
       color: var(--text-primary);
-      font-size: 13.5px;
+      font-size: 13px;
       outline: none;
       transition: border-color var(--transition-fast);
+      font-family: inherit;
     }
 
-    .form-input:focus, .form-select:focus {
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
       border-color: var(--accent-primary);
     }
 
     /* Layout do Editor Lado a Lado */
     .editor-layout {
       display: grid;
-      grid-template-columns: 320px 1fr 360px;
-      gap: 20px;
+      grid-template-columns: 310px 1fr 380px;
+      gap: 18px;
       align-items: start;
     }
 
@@ -175,24 +258,25 @@
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-lg);
-      padding: 16px;
-      max-height: calc(100vh - 220px);
+      padding: 14px;
+      max-height: calc(100vh - 180px);
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .slide-item-card {
       background: rgba(15, 23, 42, 0.6);
       border: 1.5px solid var(--border-subtle);
       border-radius: var(--radius-md);
-      padding: 12px;
+      padding: 10px 12px;
       cursor: pointer;
       transition: all var(--transition-fast);
       display: flex;
       flex-direction: column;
       gap: 6px;
+      position: relative;
     }
 
     .slide-item-card:hover {
@@ -206,6 +290,12 @@
       box-shadow: 0 0 12px var(--accent-glow);
     }
 
+    .slide-item-card.slide-excluded {
+      opacity: 0.45;
+      background: rgba(15, 23, 42, 0.2);
+      border-style: dashed;
+    }
+
     .slide-item-header {
       display: flex;
       justify-content: space-between;
@@ -216,7 +306,7 @@
     }
 
     .slide-item-title {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 700;
       color: var(--text-primary);
       white-space: nowrap;
@@ -224,26 +314,92 @@
       text-overflow: ellipsis;
     }
 
-    /* Área Central de Pré-Visualização do Telão */
+    .slide-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+      padding-top: 6px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .btn-icon-action {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-icon-action:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Coluna Central: Telão e Editor do Telão */
+    .stage-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
     .preview-stage-container {
       background: #0b0f19;
       border: 1.5px solid var(--border-medium);
       border-radius: var(--radius-lg);
-      padding: 24px;
-      min-height: 520px;
+      padding: 20px;
+      min-height: 420px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.6);
       display: flex;
       flex-direction: column;
     }
 
+    .edit-box-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Coluna Direita: Smartphone e Editor do Smartphone */
+    .phone-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
     .preview-phone-container {
       background: #0f172a;
       border: 1.5px solid var(--border-medium);
-      border-radius: 36px;
-      padding: 20px 14px;
-      max-height: 600px;
+      border-radius: 32px;
+      padding: 18px 12px;
+      max-height: 520px;
       overflow-y: auto;
       box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+    }
+
+    .bullet-edit-row, .poll-opt-row, .section-edit-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .media-preview-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #090d16;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      margin-top: 6px;
     }
 
     @media (max-width: 1200px) {
@@ -259,13 +415,13 @@
 <body>
 
   <!-- Header Superior -->
-  <header class="import-header">
+  <header class="studio-header">
     <div style="display: flex; align-items: center; gap: 16px;">
-      <a href="./" class="import-brand" title="Voltar ao Portal">
+      <a href="./" class="studio-brand" title="Voltar ao Portal">
         <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-primary); box-shadow: 0 0 8px var(--accent-primary);"></span>
         <span>SlideMeshLive</span>
       </a>
-      <span class="badge badge-accent" style="font-size: 11px;" data-i18n="import.header_badge">📤 Assistente de Importação &amp; Conversão</span>
+      <span class="badge badge-accent" id="header-studio-badge" style="font-size: 11px;" data-i18n="import.header_badge">🎨 SlideMesh Studio — Criação &amp; Importação</span>
     </div>
 
     <div style="display: flex; align-items: center; gap: 10px;">
@@ -275,12 +431,24 @@
     </div>
   </header>
 
-  <main class="import-container">
+  <main class="studio-container">
+    <!-- Banner de Rascunho Detectado -->
+    <div id="draft-alert-banner" class="draft-alert-banner animate-fade-in" style="display: none;">
+      <div>
+        <div style="font-size: 13.5px; font-weight: 800; color: #ffffff;" data-i18n="import.draft_alert_title">Rascunho não salvo encontrado!</div>
+        <div style="font-size: 12px; color: var(--text-secondary);" data-i18n="import.draft_alert_desc">Deseja restaurar as edições anteriores do SlideMesh Studio?</div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-sm btn-primary" id="btn-restore-draft" data-i18n="import.btn_restore_draft">Restaurar Rascunho</button>
+        <button type="button" class="btn btn-sm" id="btn-discard-draft" style="color: #f87171;" data-i18n="import.btn_discard_draft">Descartar</button>
+      </div>
+    </div>
+
     <!-- Barra de Etapas -->
-    <div class="import-steps-bar">
+    <div class="studio-steps-bar">
       <div class="step-badge active" id="step-badge-1">
         <span>1</span>
-        <span data-i18n="import.step_1">Selecionar Arquivo</span>
+        <span data-i18n="import.step_1">Origem &amp; Templates</span>
       </div>
       <div class="step-badge" id="step-badge-2">
         <span>2</span>
@@ -292,38 +460,110 @@
       </div>
     </div>
 
-    <!-- ETAPA 1: Drag & Drop Zone -->
+    <!-- ETAPA 1: Seleção de Origem (Criar do Zero vs Importar) -->
     <section id="section-step-1" class="animate-fade-in">
-      <div class="drop-zone" id="drop-zone-box">
-        <input type="file" id="file-input" style="display: none;" accept=".pptx,.docx,.md,.markdown,.html,.htm,.pdf">
-        <span class="drop-icon">📂</span>
-        <h2 style="font-size: 24px; font-weight: 800; color: #ffffff; margin-bottom: 10px;" data-i18n="import.drop_title">
-          Arraste e Solte seu Arquivo Aqui
-        </h2>
-        <p style="font-size: 14px; color: var(--text-secondary); max-width: 500px; margin: 0 auto 24px; line-height: 1.5;" data-i18n="import.drop_desc">
-          Suporte completo a apresentações e documentos com extração inteligente de títulos, tópicos, notas do orador e imagens.
-        </p>
+      <!-- Seletor de Abas da Etapa 1 -->
+      <div class="origin-tabs">
+        <button type="button" class="origin-tab-btn active" id="tab-btn-create" data-tab="create">
+          <span>✨</span>
+          <span data-i18n="import.tab_create">Criar do Zero</span>
+        </button>
+        <button type="button" class="origin-tab-btn" id="tab-btn-import" data-tab="import">
+          <span>📁</span>
+          <span data-i18n="import.tab_import">Importar Arquivo</span>
+        </button>
+      </div>
 
-        <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
-          <button type="button" class="btn btn-primary" id="btn-browse-file" style="padding: 12px 28px; font-size: 14px; font-weight: 700;">
-            <span data-i18n="import.btn_choose_file">📁 Escolher Arquivo do Computador</span>
-          </button>
-          <button type="button" class="btn btn-secondary" id="btn-demo-sample" style="padding: 12px 20px; font-size: 14px;">
-            <span>✨ Testar com Exemplo Demo</span>
-          </button>
+      <!-- Conteúdo da Aba 1: Templates Pré-Fabricados -->
+      <div id="tab-content-create" class="animate-fade-in">
+        <div class="templates-grid">
+          <!-- Template 1: Executivo & Pitch -->
+          <div class="template-card" data-template="executive">
+            <div class="template-card-icon">👔</div>
+            <h3 style="font-size: 16px; font-weight: 800; color: #ffffff;" data-i18n="import.tmpl_executive_title">Executivo &amp; Pitch</h3>
+            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;" data-i18n="import.tmpl_executive_desc">
+              Capa, desafio, solução, enquete de validação e próximos passos.
+            </p>
+            <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge" style="font-size: 10px; background: rgba(56,189,248,0.15); color: #38bdf8;">5 Slides</span>
+              <span style="font-size: 12px; font-weight: 700; color: var(--accent-primary);">Usar Template →</span>
+            </div>
+          </div>
+
+          <!-- Template 2: Aula & Treinamento -->
+          <div class="template-card" data-template="training">
+            <div class="template-card-icon">🎓</div>
+            <h3 style="font-size: 16px; font-weight: 800; color: #ffffff;" data-i18n="import.tmpl_training_title">Aula &amp; Treinamento</h3>
+            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;" data-i18n="import.tmpl_training_desc">
+              Objetivos, arquitetura conceitual, quiz ao vivo e resumo.
+            </p>
+            <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge" style="font-size: 10px; background: rgba(16,185,129,0.15); color: #6ee7b7;">4 Slides</span>
+              <span style="font-size: 12px; font-weight: 700; color: var(--accent-primary);">Usar Template →</span>
+            </div>
+          </div>
+
+          <!-- Template 3: Demonstração de Produto -->
+          <div class="template-card" data-template="product">
+            <div class="template-card-icon">🚀</div>
+            <h3 style="font-size: 16px; font-weight: 800; color: #ffffff;" data-i18n="import.tmpl_product_title">Demonstração de Produto</h3>
+            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;" data-i18n="import.tmpl_product_desc">
+              Visão geral, recursos inovadores, votação e encerramento.
+            </p>
+            <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge" style="font-size: 10px; background: rgba(168,85,247,0.15); color: #d8b4fe;">4 Slides</span>
+              <span style="font-size: 12px; font-weight: 700; color: var(--accent-primary);">Usar Template →</span>
+            </div>
+          </div>
+
+          <!-- Template 4: Em Branco -->
+          <div class="template-card" data-template="blank">
+            <div class="template-card-icon">📄</div>
+            <h3 style="font-size: 16px; font-weight: 800; color: #ffffff;" data-i18n="import.tmpl_blank_title">Em Branco</h3>
+            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;" data-i18n="import.tmpl_blank_desc">
+              Comece com um slide limpo para criar sua apresentação livremente.
+            </p>
+            <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge" style="font-size: 10px; background: rgba(148,163,184,0.15); color: #94a3b8;">1 Slide</span>
+              <span style="font-size: 12px; font-weight: 700; color: var(--accent-primary);">Criar do Zero →</span>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
-          <span class="badge" style="background: rgba(239,68,68,0.15); color: #fca5a5; border-color: rgba(239,68,68,0.3);">📊 PowerPoint (.pptx)</span>
-          <span class="badge" style="background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.3);">📄 Word (.docx)</span>
-          <span class="badge" style="background: rgba(16,185,129,0.15); color: #6ee7b7; border-color: rgba(16,185,129,0.3);">📝 Markdown (.md)</span>
-          <span class="badge" style="background: rgba(245,158,11,0.15); color: #fcd34d; border-color: rgba(245,158,11,0.3);">🌐 HTML (.html)</span>
-          <span class="badge" style="background: rgba(168,85,247,0.15); color: #d8b4fe; border-color: rgba(168,85,247,0.3);">📕 Adobe PDF (.pdf)</span>
+      <!-- Conteúdo da Aba 2: Importador de Arquivos -->
+      <div id="tab-content-import" style="display: none;" class="animate-fade-in">
+        <div class="drop-zone" id="drop-zone-box">
+          <input type="file" id="file-input" style="display: none;" accept=".pptx,.docx,.md,.markdown,.html,.htm,.pdf">
+          <span class="drop-icon">📂</span>
+          <h2 style="font-size: 24px; font-weight: 800; color: #ffffff; margin-bottom: 10px;" data-i18n="import.drop_title">
+            Arraste e Solte seu Arquivo Aqui
+          </h2>
+          <p style="font-size: 14px; color: var(--text-secondary); max-width: 500px; margin: 0 auto 24px; line-height: 1.5;" data-i18n="import.drop_desc">
+            Suporte completo a apresentações e documentos com extração inteligente de títulos, tópicos, notas do orador e imagens.
+          </p>
+
+          <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-primary" id="btn-browse-file" style="padding: 12px 28px; font-size: 14px; font-weight: 700;">
+              <span data-i18n="import.btn_choose_file">📁 Escolher Arquivo do Computador</span>
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-demo-sample" style="padding: 12px 20px; font-size: 14px;">
+              <span>✨ Testar com Exemplo Demo</span>
+            </button>
+          </div>
+
+          <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
+            <span class="badge" style="background: rgba(239,68,68,0.15); color: #fca5a5; border-color: rgba(239,68,68,0.3);">📊 PowerPoint (.pptx)</span>
+            <span class="badge" style="background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.3);">📄 Word (.docx)</span>
+            <span class="badge" style="background: rgba(16,185,129,0.15); color: #6ee7b7; border-color: rgba(16,185,129,0.3);">📝 Markdown (.md)</span>
+            <span class="badge" style="background: rgba(245,158,11,0.15); color: #fcd34d; border-color: rgba(245,158,11,0.3);">🌐 HTML (.html)</span>
+            <span class="badge" style="background: rgba(168,85,247,0.15); color: #d8b4fe; border-color: rgba(168,85,247,0.3);">📕 Adobe PDF (.pdf)</span>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ETAPA 2: Mapeador e Pré-Visualizador Lado a Lado -->
+    <!-- ETAPA 2: Mapeador e Editor Lado a Lado -->
     <section id="section-step-2" style="display: none;" class="animate-fade-in">
       <!-- Barra Superior de Configuração -->
       <div class="config-card">
@@ -342,42 +582,144 @@
             <option value="pin" data-i18n="import.sec_pin">Protegida por PIN</option>
           </select>
         </div>
+        <div class="form-group" style="text-align: center;">
+          <span class="badge badge-accent" id="slide-stats-badge" style="padding: 6px 12px; font-size: 11.5px;">0 incluídos</span>
+        </div>
         <div class="form-group">
           <button class="btn btn-primary" id="btn-publish-all" style="padding: 10px 18px; font-weight: 800;">
-            <span data-i18n="import.btn_publish">🚀 Publicar Apresentação</span>
+            <span id="btn-publish-text" data-i18n="import.btn_publish">🚀 Publicar Apresentação</span>
           </button>
         </div>
       </div>
 
       <!-- Editor e Pré-visualizador Grid -->
       <div class="editor-layout">
-        <!-- Coluna 1: Lista de Slides -->
+        <!-- Coluna 1: Lista de Slides com Reordenação e Exclusão -->
         <aside class="slides-sidebar">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 11.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;" data-i18n="import.slides_extracted">Slides Extraídos</span>
-            <span class="badge badge-accent" id="slide-count-badge">0</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 11.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;" data-i18n="import.slides_extracted">Slides da Apresentação</span>
+            <button type="button" class="btn btn-sm btn-primary" id="btn-add-new-slide" style="font-size: 11px; padding: 2px 8px;">
+              <span data-i18n="import.btn_add_slide">+ Adicionar</span>
+            </button>
           </div>
           <div id="slides-list-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
         </aside>
 
-        <!-- Coluna 2: Telão do Apresentador (Preview) -->
-        <section class="preview-stage-container">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
-            <span style="font-size: 12px; font-weight: 800; color: #38bdf8; letter-spacing: 1px;" data-i18n="import.stage_preview_title">🖥️ TELÃO DO APRESENTADOR (CLEAN STAGE)</span>
-            <button class="btn btn-sm" id="btn-toggle-poll-action" style="font-size: 11.5px; padding: 4px 10px;">
-              <span data-i18n="import.btn_convert_poll">⚡ Converter em Enquete</span>
-            </button>
-          </div>
-          <div id="stage-preview-target" style="flex: 1; display: flex; flex-direction: column; justify-content: center;"></div>
-        </section>
+        <!-- Coluna 2: Telão do Apresentador (Preview + Editor) -->
+        <div class="stage-column">
+          <!-- Preview do Telão -->
+          <section class="preview-stage-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+              <span style="font-size: 12px; font-weight: 800; color: #38bdf8; letter-spacing: 1px;" data-i18n="import.stage_preview_title">🖥️ TELÃO DO APRESENTADOR (CLEAN STAGE)</span>
+              <button type="button" class="btn btn-sm" id="btn-toggle-poll-action" style="font-size: 11.5px; padding: 3px 10px;">
+                <span data-i18n="import.btn_convert_poll">⚡ Converter em Enquete</span>
+              </button>
+            </div>
+            <div id="stage-preview-target" style="flex: 1; display: flex; flex-direction: column; justify-content: center;"></div>
+          </section>
 
-        <!-- Coluna 3: Smartphone do Participante (Preview) -->
-        <aside class="preview-phone-container">
-          <div style="text-align: center; font-size: 11.5px; font-weight: 800; color: #a855f7; margin-bottom: 12px; letter-spacing: 1px;" data-i18n="import.phone_preview_title">
-            📱 SMARTPHONE DA AUDIÊNCIA
-          </div>
-          <div id="phone-preview-target"></div>
-        </aside>
+          <!-- Formulário de Edição do Slide (Telão) -->
+          <section class="edit-box-card">
+            <div style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px;" data-i18n="import.edit_stage_title">
+              ✏️ Editar Conteúdo do Telão
+            </div>
+
+            <div style="display: grid; grid-template-columns: 140px 1fr; gap: 10px;">
+              <div class="form-group">
+                <label class="form-label" data-i18n="import.slide_tag_label">Tag / Seção:</label>
+                <input type="text" id="edit-slide-tag" class="form-input" placeholder="Ex: SEÇÃO 1">
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="import.slide_title_label">Título do Slide:</label>
+                <input type="text" id="edit-slide-title" class="form-input" placeholder="Título projetado no telão">
+              </div>
+            </div>
+
+            <!-- Bullets do Telão -->
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="form-label" data-i18n="import.bullets_label">Tópicos / Bullets (Telão):</label>
+                <button type="button" class="btn btn-sm" id="btn-add-bullet" style="font-size: 10.5px; padding: 2px 6px;" data-i18n="import.btn_add_bullet">
+                  + Novo Marcador
+                </button>
+              </div>
+              <div id="bullets-container" style="display: flex; flex-direction: column; gap: 6px;"></div>
+            </div>
+
+            <!-- Upload de Mídia / Imagem no Slide (Split-Screen) -->
+            <div class="form-group">
+              <label class="form-label" data-i18n="import.media_label">🖼️ Mídia do Slide (Modo Split-Screen no Telão):</label>
+              <input type="file" id="slide-image-file" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display: none;">
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn btn-sm btn-secondary" id="btn-trigger-media-upload" style="font-size: 11.5px; padding: 4px 10px;" data-i18n="import.btn_choose_image">
+                  📁 Escolher Imagem
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" id="btn-remove-media" style="font-size: 11.5px; padding: 4px 10px; display: none;" data-i18n="import.btn_remove_image">
+                  🗑️ Remover Imagem
+                </button>
+              </div>
+              <div id="media-preview-container" class="media-preview-box" style="display: none;">
+                <img id="media-preview-img" src="" alt="Preview" style="max-height: 48px; border-radius: 4px; border: 1px solid var(--border-subtle);">
+                <span id="media-preview-name" style="font-size: 11.5px; color: var(--text-secondary); word-break: break-all;"></span>
+              </div>
+            </div>
+
+            <!-- Editor de Enquete (Se ativa) -->
+            <div id="poll-editor-box" style="display: none; background: rgba(56,189,248,0.06); border: 1px solid var(--border-medium); border-radius: var(--radius-md); padding: 12px;">
+              <div class="form-group" style="margin-bottom: 8px;">
+                <label class="form-label" data-i18n="import.poll_question_label">Pergunta da Enquete:</label>
+                <input type="text" id="edit-poll-question" class="form-input" placeholder="Pergunta para a audiência votar">
+              </div>
+              <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <label class="form-label" data-i18n="import.poll_options_label">Opções de Resposta:</label>
+                  <button type="button" class="btn btn-sm" id="btn-add-poll-opt" style="font-size: 10.5px; padding: 2px 6px;" data-i18n="import.btn_add_option">
+                    + Adicionar Opção
+                  </button>
+                </div>
+                <div id="poll-options-container" style="display: flex; flex-direction: column; gap: 6px;"></div>
+              </div>
+            </div>
+
+            <!-- Notas Privadas do Orador -->
+            <div class="form-group">
+              <label class="form-label" data-i18n="import.speaker_notes_label">Notas Privadas do Orador (Modo Púlpito [P]):</label>
+              <textarea id="edit-slide-notes" class="form-textarea" rows="2" placeholder="Notas e orientações visíveis apenas para o apresentador..."></textarea>
+            </div>
+          </section>
+        </div>
+
+        <!-- Coluna 3: Smartphone do Participante (Preview + Editor) -->
+        <div class="phone-column">
+          <aside class="preview-phone-container">
+            <div style="text-align: center; font-size: 11.5px; font-weight: 800; color: #a855f7; margin-bottom: 12px; letter-spacing: 1px;" data-i18n="import.phone_preview_title">
+              📱 SMARTPHONE DA AUDIÊNCIA
+            </div>
+            <div id="phone-preview-target"></div>
+          </aside>
+
+          <!-- Formulário de Edição do Smartphone -->
+          <section class="edit-box-card">
+            <div style="font-size: 12.5px; font-weight: 800; color: #d8b4fe; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px;" data-i18n="import.edit_phone_title">
+              ✏️ Editar Conteúdo do Smartphone
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="import.phone_summary_label">Resumo da Audiência:</label>
+              <textarea id="edit-phone-summary" class="form-textarea" rows="2" placeholder="Resumo exibido no topo do smartphone..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="form-label" data-i18n="import.phone_sections_label">Seções de Texto Detalhado:</label>
+                <button type="button" class="btn btn-sm" id="btn-add-phone-section" style="font-size: 10.5px; padding: 2px 6px;" data-i18n="import.btn_add_section">
+                  + Nova Seção
+                </button>
+              </div>
+              <div id="phone-sections-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            </div>
+          </section>
+        </div>
       </div>
     </section>
 
@@ -411,6 +753,8 @@
 
     let currentConvertedData = null;
     let selectedSlideIndex = 0;
+    let isEditingExisting = false;
+    const DRAFT_STORAGE_KEY = 'slidemesh_studio_draft';
 
     function updateLanguageButton() {
       const btn = document.getElementById('btn-import-lang');
@@ -429,12 +773,146 @@
       i18n.applyTranslations();
       updateLanguageButton();
       updateThemeButton();
+      updateSlideStats();
     }
 
-    // Inicialização da página
+    function updateSlideStats() {
+      if (!currentConvertedData || !currentConvertedData.slides) return;
+      const total = currentConvertedData.slides.length;
+      const included = currentConvertedData.slides.filter(s => s.included !== false).length;
+      const badge = document.getElementById('slide-stats-badge');
+      if (badge) {
+        badge.textContent = i18n.t('import.stats_slides_count', { included, total });
+        badge.className = included > 0 ? 'badge badge-accent' : 'badge badge-danger';
+      }
+    }
+
+    function saveDraftToStorage() {
+      if (!currentConvertedData) return;
+      try {
+        localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(currentConvertedData));
+      } catch (e) {
+        // LocalStorage quota or disabled
+      }
+    }
+
+    // Inicialização da Página
     applyTranslations();
 
-    // Gerenciamento de Drag & Drop e Seleção de Arquivo
+    // Verificação de Parâmetros de URL (?edit=slug ou ?mode=new)
+    const urlParams = new URLSearchParams(window.location.search);
+    const editSlug = urlParams.get('edit');
+    const modeParam = urlParams.get('mode');
+    const templateParam = urlParams.get('template');
+
+    if (editSlug) {
+      loadExistingPresentation(editSlug);
+    } else if (modeParam === 'new') {
+      const tmpl = templateParam || 'executive';
+      currentConvertedData = conversionEngine.getTemplate(tmpl);
+      setupStep2Review();
+    } else {
+      // Verifica se existe rascunho anterior
+      const savedDraft = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (savedDraft) {
+        try {
+          const parsed = JSON.parse(savedDraft);
+          if (parsed && parsed.slides && parsed.slides.length > 0) {
+            document.getElementById('draft-alert-banner').style.display = 'flex';
+          }
+        } catch (e) {}
+      }
+    }
+
+    // Restaurar / Descartar Rascunho
+    document.getElementById('btn-restore-draft')?.addEventListener('click', () => {
+      try {
+        const savedDraft = localStorage.getItem(DRAFT_STORAGE_KEY);
+        if (savedDraft) {
+          currentConvertedData = JSON.parse(savedDraft);
+          document.getElementById('draft-alert-banner').style.display = 'none';
+          setupStep2Review();
+        }
+      } catch (e) {
+        alert('Erro ao restaurar rascunho.');
+      }
+    });
+
+    document.getElementById('btn-discard-draft')?.addEventListener('click', () => {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+      document.getElementById('draft-alert-banner').style.display = 'none';
+    });
+
+    // Carregar Apresentação Existente para Edição
+    async function loadExistingPresentation(slug) {
+      try {
+        document.getElementById('section-step-1').innerHTML = `
+          <div class="animate-pulse" style="padding: 60px 0; text-align: center;">
+            <span style="font-size: 40px;">⏳</span>
+            <h3 style="font-size: 18px; color: var(--accent-primary); margin-top: 12px;">Carregando apresentação "${slug}"...</h3>
+          </div>
+        `;
+
+        const [resMan, resSlides] = await Promise.all([
+          fetch(`./presentations/${slug}/manifest.json`),
+          fetch(`./presentations/${slug}/slides.json`)
+        ]);
+
+        if (!resMan.ok || !resSlides.ok) {
+          throw new Error('Apresentação não encontrada no servidor.');
+        }
+
+        const manifest = await resMan.json();
+        const slides = await resSlides.json();
+
+        currentConvertedData = {
+          manifest: manifest,
+          slides: slides,
+          assets: []
+        };
+        currentConvertedData.slides.forEach(s => s.included = true);
+        isEditingExisting = true;
+
+        const headerBadge = document.getElementById('header-studio-badge');
+        if (headerBadge) {
+          headerBadge.textContent = `✏️ Editando: ${manifest.title}`;
+          headerBadge.className = 'badge badge-live';
+        }
+
+        const publishBtnText = document.getElementById('btn-publish-text');
+        if (publishBtnText) {
+          publishBtnText.textContent = i18n.t('import.btn_save_changes');
+        }
+
+        setupStep2Review();
+      } catch (err) {
+        alert('Erro ao carregar apresentação: ' + err.message);
+        location.href = './';
+      }
+    }
+
+    // Alternância de Abas na Etapa 1
+    const tabBtns = document.querySelectorAll('.origin-tab-btn');
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        document.getElementById('tab-content-create').style.display = tab === 'create' ? 'block' : 'none';
+        document.getElementById('tab-content-import').style.display = tab === 'import' ? 'block' : 'none';
+      });
+    });
+
+    // Seleção de Template na Aba "Criar do Zero"
+    document.querySelectorAll('.template-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const tmplType = card.dataset.template;
+        currentConvertedData = conversionEngine.getTemplate(tmplType);
+        setupStep2Review();
+      });
+    });
+
+    // Drag & Drop e Seleção de Arquivo na Aba "Importar"
     const dropZone = document.getElementById('drop-zone-box');
     const fileInput = document.getElementById('file-input');
     const btnBrowse = document.getElementById('btn-browse-file');
@@ -488,7 +966,7 @@
       });
     }
 
-    // Carregamento de Exemplo Demonstrativo
+    // Carregamento de Demonstração
     if (btnDemo) {
       btnDemo.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -523,6 +1001,7 @@
             </div>
           `;
           currentConvertedData = await conversionEngine.convert(demoMd, 'palestra-demonstracao.md');
+          currentConvertedData.slides.forEach(s => s.included = true);
           setupStep2Review();
         } catch (err) {
           alert('Erro ao carregar demonstração: ' + err.message);
@@ -550,6 +1029,7 @@
         }
 
         currentConvertedData = await conversionEngine.convert(fileData, file.name);
+        currentConvertedData.slides.forEach(s => s.included = true);
         setupStep2Review();
       } catch (err) {
         alert('Erro ao converter arquivo: ' + err.message);
@@ -565,38 +1045,501 @@
       document.getElementById('step-badge-1').classList.add('done');
       document.getElementById('step-badge-2').classList.add('active');
 
-      document.getElementById('cfg-title').value = currentConvertedData.manifest.title;
-      document.getElementById('cfg-session').value = currentConvertedData.manifest.defaultSession;
-      document.getElementById('slide-count-badge').textContent = currentConvertedData.slides.length;
+      document.getElementById('cfg-title').value = currentConvertedData.manifest.title || '';
+      document.getElementById('cfg-session').value = currentConvertedData.manifest.defaultSession || '';
+      if (currentConvertedData.manifest.security?.mode) {
+        document.getElementById('cfg-security').value = currentConvertedData.manifest.security.mode;
+      }
 
+      selectedSlideIndex = 0;
       renderSlidesSidebar();
+      loadActiveSlideIntoEditors();
       renderActiveSlidePreview();
       applyTranslations();
+      saveDraftToStorage();
     }
 
+    // Renderiza a Barra Lateral de Slides
     function renderSlidesSidebar() {
       const container = document.getElementById('slides-list-container');
       if (!container) return;
 
-      container.innerHTML = currentConvertedData.slides.map((s, idx) => `
-        <div class="slide-item-card ${idx === selectedSlideIndex ? 'active' : ''}" data-index="${idx}">
-          <div class="slide-item-header">
-            <span>SLIDE ${idx + 1}</span>
-            ${s.interaction?.poll ? '<span class="badge badge-live" style="font-size: 9px;">📊 ENQUETE</span>' : ''}
+      container.innerHTML = currentConvertedData.slides.map((s, idx) => {
+        const isIncluded = s.included !== false;
+        const isSelected = idx === selectedSlideIndex;
+        const pollBadge = s.interaction?.poll ? '<span class="badge badge-live" style="font-size: 9px;">📊 ENQUETE</span>' : '';
+        const mediaBadge = s.presenter?.media ? '<span class="badge" style="font-size: 9px; background: rgba(168,85,247,0.15); color: #d8b4fe;">🖼️ MÍDIA</span>' : '';
+        const statusBadge = !isIncluded ? `<span class="badge badge-danger" style="font-size: 9px;">${i18n.t('import.slide_excluded')}</span>` : '';
+
+        return `
+          <div class="slide-item-card ${isSelected ? 'active' : ''} ${!isIncluded ? 'slide-excluded' : ''}" data-index="${idx}">
+            <div class="slide-item-header">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <input type="checkbox" class="slide-toggle-checkbox" data-index="${idx}" ${isIncluded ? 'checked' : ''} title="Marcar/Desmarcar da importação">
+                <span>SLIDE ${idx + 1}</span>
+              </div>
+              <div style="display: flex; gap: 4px; align-items: center;">
+                ${mediaBadge}
+                ${pollBadge}
+                ${statusBadge}
+              </div>
+            </div>
+            <div class="slide-item-title">${s.title || s.presenter?.headline || 'Sem título'}</div>
+            <div class="slide-item-actions">
+              <button type="button" class="btn-icon-action btn-move-up" data-index="${idx}" title="${i18n.t('import.btn_move_up')}" ${idx === 0 ? 'disabled' : ''}>🔼</button>
+              <button type="button" class="btn-icon-action btn-move-down" data-index="${idx}" title="${i18n.t('import.btn_move_down')}" ${idx === currentConvertedData.slides.length - 1 ? 'disabled' : ''}>🔽</button>
+              <button type="button" class="btn-icon-action btn-dup-slide" data-index="${idx}" title="${i18n.t('import.btn_dup_slide')}">📋</button>
+              <button type="button" class="btn-icon-action btn-del-slide" data-index="${idx}" title="${i18n.t('import.btn_del_slide')}" style="color: #f87171;">🗑️</button>
+            </div>
           </div>
-          <div class="slide-item-title">${s.title || 'Sem título'}</div>
+        `;
+      }).join('');
+
+      // Eventos dos cards
+      container.querySelectorAll('.slide-item-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+          selectedSlideIndex = parseInt(card.dataset.index, 10);
+          renderSlidesSidebar();
+          loadActiveSlideIntoEditors();
+          renderActiveSlidePreview();
+        });
+      });
+
+      // Toggle Incluir/Desmarcar Checkbox
+      container.querySelectorAll('.slide-toggle-checkbox').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+          e.stopPropagation();
+          const idx = parseInt(chk.dataset.index, 10);
+          currentConvertedData.slides[idx].included = chk.checked;
+          renderSlidesSidebar();
+          updateSlideStats();
+          saveDraftToStorage();
+        });
+      });
+
+      // Subir slide
+      container.querySelectorAll('.btn-move-up').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.index, 10);
+          if (idx > 0) {
+            const temp = currentConvertedData.slides[idx];
+            currentConvertedData.slides[idx] = currentConvertedData.slides[idx - 1];
+            currentConvertedData.slides[idx - 1] = temp;
+            if (selectedSlideIndex === idx) selectedSlideIndex = idx - 1;
+            else if (selectedSlideIndex === idx - 1) selectedSlideIndex = idx;
+            renderSlidesSidebar();
+            renderActiveSlidePreview();
+            saveDraftToStorage();
+          }
+        });
+      });
+
+      // Descer slide
+      container.querySelectorAll('.btn-move-down').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.index, 10);
+          if (idx < currentConvertedData.slides.length - 1) {
+            const temp = currentConvertedData.slides[idx];
+            currentConvertedData.slides[idx] = currentConvertedData.slides[idx + 1];
+            currentConvertedData.slides[idx + 1] = temp;
+            if (selectedSlideIndex === idx) selectedSlideIndex = idx + 1;
+            else if (selectedSlideIndex === idx + 1) selectedSlideIndex = idx;
+            renderSlidesSidebar();
+            renderActiveSlidePreview();
+            saveDraftToStorage();
+          }
+        });
+      });
+
+      // Duplicar slide
+      container.querySelectorAll('.btn-dup-slide').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.index, 10);
+          const cloned = JSON.parse(JSON.stringify(currentConvertedData.slides[idx]));
+          cloned.title += ' (Cópia)';
+          if (cloned.presenter) cloned.presenter.headline = cloned.title;
+          currentConvertedData.slides.splice(idx + 1, 0, cloned);
+          selectedSlideIndex = idx + 1;
+          renderSlidesSidebar();
+          loadActiveSlideIntoEditors();
+          renderActiveSlidePreview();
+          updateSlideStats();
+          saveDraftToStorage();
+        });
+      });
+
+      // Excluir slide
+      container.querySelectorAll('.btn-del-slide').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.index, 10);
+          if (currentConvertedData.slides.length <= 1) {
+            alert('A apresentação precisa manter ao menos 1 slide.');
+            return;
+          }
+          currentConvertedData.slides.splice(idx, 1);
+          if (selectedSlideIndex >= currentConvertedData.slides.length) {
+            selectedSlideIndex = currentConvertedData.slides.length - 1;
+          }
+          renderSlidesSidebar();
+          loadActiveSlideIntoEditors();
+          renderActiveSlidePreview();
+          updateSlideStats();
+          saveDraftToStorage();
+        });
+      });
+
+      updateSlideStats();
+    }
+
+    // Adicionar Novo Slide em Branco
+    document.getElementById('btn-add-new-slide')?.addEventListener('click', () => {
+      const newNum = currentConvertedData.slides.length + 1;
+      const newSlide = {
+        id: newNum,
+        slug: `slide-${newNum}`,
+        tag: `SEÇÃO ${newNum}`,
+        title: `Novo Slide ${newNum}`,
+        included: true,
+        presenter: {
+          headline: `Novo Slide ${newNum}`,
+          bullets: ['Primeiro ponto de destaque', 'Segundo ponto de discussão'],
+          notes: 'Notas adicionadas pelo assistente.'
+        },
+        audience: {
+          summary: `Resumo do Novo Slide ${newNum}.`,
+          sections: [
+            {
+              title: 'Detalhes',
+              type: 'text',
+              content: 'Texto detalhado para visualização mobile no smartphone.'
+            }
+          ]
+        }
+      };
+
+      currentConvertedData.slides.push(newSlide);
+      selectedSlideIndex = currentConvertedData.slides.length - 1;
+      renderSlidesSidebar();
+      loadActiveSlideIntoEditors();
+      renderActiveSlidePreview();
+      updateSlideStats();
+      saveDraftToStorage();
+    });
+
+    // Carrega dados do slide ativo nos formulários de edição
+    function loadActiveSlideIntoEditors() {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (!slide) return;
+
+      // Telão Form
+      document.getElementById('edit-slide-tag').value = slide.tag || `SEÇÃO ${selectedSlideIndex + 1}`;
+      document.getElementById('edit-slide-title').value = slide.presenter?.headline || slide.title || '';
+      document.getElementById('edit-slide-notes').value = slide.presenter?.notes || '';
+
+      // Bullets
+      renderBulletsEditor(slide);
+
+      // Mídia / Imagem
+      renderMediaEditor(slide);
+
+      // Poll
+      const pollBox = document.getElementById('poll-editor-box');
+      if (slide.interaction?.poll) {
+        pollBox.style.display = 'block';
+        document.getElementById('edit-poll-question').value = slide.interaction.poll.question || '';
+        renderPollOptionsEditor(slide);
+      } else {
+        pollBox.style.display = 'none';
+      }
+
+      // Smartphone Form
+      document.getElementById('edit-phone-summary').value = slide.audience?.summary || '';
+      renderPhoneSectionsEditor(slide);
+
+      // Atualiza botão de alternância de enquete
+      const btnPoll = document.getElementById('btn-toggle-poll-action');
+      if (slide.interaction?.poll) {
+        btnPoll.innerHTML = `<span data-i18n="import.btn_remove_poll">❌ Remover Enquete</span>`;
+        btnPoll.className = 'btn btn-sm btn-danger';
+      } else {
+        btnPoll.innerHTML = `<span data-i18n="import.btn_convert_poll">⚡ Converter em Enquete</span>`;
+        btnPoll.className = 'btn btn-sm btn-primary';
+      }
+    }
+
+    // Renderiza Editor de Bullets do Telão
+    function renderBulletsEditor(slide) {
+      const container = document.getElementById('bullets-container');
+      if (!container) return;
+      const bullets = slide.presenter?.bullets || [];
+
+      container.innerHTML = bullets.map((b, bIdx) => `
+        <div class="bullet-edit-row">
+          <input type="text" class="form-input bullet-input" data-bidx="${bIdx}" value="${b.replace(/"/g, '&quot;')}" style="flex: 1;">
+          <button type="button" class="btn btn-sm btn-danger btn-del-bullet" data-bidx="${bIdx}" style="padding: 4px 8px;">✕</button>
         </div>
       `).join('');
 
-      container.querySelectorAll('.slide-item-card').forEach(card => {
-        card.addEventListener('click', () => {
-          selectedSlideIndex = parseInt(card.dataset.index, 10);
-          renderSlidesSidebar();
+      container.querySelectorAll('.bullet-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const bIdx = parseInt(input.dataset.bidx, 10);
+          slide.presenter.bullets[bIdx] = input.value;
           renderActiveSlidePreview();
+          saveDraftToStorage();
+        });
+      });
+
+      container.querySelectorAll('.btn-del-bullet').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const bIdx = parseInt(btn.dataset.bidx, 10);
+          slide.presenter.bullets.splice(bIdx, 1);
+          renderBulletsEditor(slide);
+          renderActiveSlidePreview();
+          saveDraftToStorage();
         });
       });
     }
 
+    // Adicionar Bullet
+    document.getElementById('btn-add-bullet')?.addEventListener('click', () => {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (!slide) return;
+      if (!slide.presenter) slide.presenter = {};
+      if (!slide.presenter.bullets) slide.presenter.bullets = [];
+      slide.presenter.bullets.push('Novo tópico projetado');
+      renderBulletsEditor(slide);
+      renderActiveSlidePreview();
+      saveDraftToStorage();
+    });
+
+    // Renderiza e gerencia Mídia / Imagem
+    const slideImageInput = document.getElementById('slide-image-file');
+    const btnTriggerUpload = document.getElementById('btn-trigger-media-upload');
+    const btnRemoveMedia = document.getElementById('btn-remove-media');
+    const mediaPreviewBox = document.getElementById('media-preview-container');
+    const mediaPreviewImg = document.getElementById('media-preview-img');
+    const mediaPreviewName = document.getElementById('media-preview-name');
+
+    btnTriggerUpload?.addEventListener('click', () => {
+      slideImageInput?.click();
+    });
+
+    slideImageInput?.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (re) => {
+        const base64Data = re.target.result;
+        const slide = currentConvertedData.slides[selectedSlideIndex];
+        if (!slide.presenter) slide.presenter = {};
+
+        const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        slide.presenter.media = {
+          type: 'image',
+          src: base64Data,
+          alt: file.name
+        };
+
+        if (!currentConvertedData.assets) currentConvertedData.assets = [];
+        currentConvertedData.assets.push({
+          filename: cleanName,
+          data: base64Data
+        });
+
+        renderMediaEditor(slide);
+        renderSlidesSidebar();
+        renderActiveSlidePreview();
+        saveDraftToStorage();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    btnRemoveMedia?.addEventListener('click', () => {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (slide && slide.presenter && slide.presenter.media) {
+        delete slide.presenter.media;
+        renderMediaEditor(slide);
+        renderSlidesSidebar();
+        renderActiveSlidePreview();
+        saveDraftToStorage();
+      }
+    });
+
+    function renderMediaEditor(slide) {
+      if (slide.presenter?.media?.src) {
+        mediaPreviewBox.style.display = 'flex';
+        btnRemoveMedia.style.display = 'inline-block';
+        mediaPreviewImg.src = slide.presenter.media.src;
+        mediaPreviewName.textContent = slide.presenter.media.alt || 'Imagem vinculada ao slide';
+      } else {
+        mediaPreviewBox.style.display = 'none';
+        btnRemoveMedia.style.display = 'none';
+        mediaPreviewImg.src = '';
+        mediaPreviewName.textContent = '';
+      }
+    }
+
+    // Renderiza Editor de Opções de Enquete
+    function renderPollOptionsEditor(slide) {
+      const container = document.getElementById('poll-options-container');
+      if (!container || !slide.interaction?.poll) return;
+      const opts = slide.interaction.poll.options || [];
+
+      container.innerHTML = opts.map((opt, oIdx) => `
+        <div class="poll-opt-row">
+          <span class="poll-letter-badge" style="width: 22px; height: 22px; font-size: 11px;">${opt.id}</span>
+          <input type="text" class="form-input poll-opt-input" data-oidx="${oIdx}" value="${opt.text.replace(/"/g, '&quot;')}" style="flex: 1;">
+          <button type="button" class="btn btn-sm btn-danger btn-del-poll-opt" data-oidx="${oIdx}" style="padding: 4px 8px;">✕</button>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.poll-opt-input').forEach(input => {
+        input.addEventListener('input', () => {
+          const oIdx = parseInt(input.dataset.oidx, 10);
+          slide.interaction.poll.options[oIdx].text = input.value;
+          renderActiveSlidePreview();
+          saveDraftToStorage();
+        });
+      });
+
+      container.querySelectorAll('.btn-del-poll-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const oIdx = parseInt(btn.dataset.oidx, 10);
+          slide.interaction.poll.options.splice(oIdx, 1);
+          renderPollOptionsEditor(slide);
+          renderActiveSlidePreview();
+          saveDraftToStorage();
+        });
+      });
+    }
+
+    // Adicionar Opção na Enquete
+    document.getElementById('btn-add-poll-opt')?.addEventListener('click', () => {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (!slide || !slide.interaction?.poll) return;
+      const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+      const nextLetter = letters[slide.interaction.poll.options.length] || 'X';
+      slide.interaction.poll.options.push({ id: nextLetter, text: `Opção ${nextLetter}` });
+      renderPollOptionsEditor(slide);
+      renderActiveSlidePreview();
+      saveDraftToStorage();
+    });
+
+    // Renderiza Editor de Seções do Celular
+    function renderPhoneSectionsEditor(slide) {
+      const container = document.getElementById('phone-sections-container');
+      if (!container) return;
+      const sections = slide.audience?.sections || [];
+
+      container.innerHTML = sections.map((sec, sIdx) => `
+        <div class="card" style="padding: 10px; margin-bottom: 8px; border-color: var(--border-medium);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <input type="text" class="form-input section-title-input" data-sidx="${sIdx}" value="${(sec.title || '').replace(/"/g, '&quot;')}" placeholder="Título da Seção" style="font-weight: 700; flex: 1; font-size: 12px;">
+            <button type="button" class="btn btn-sm btn-danger btn-del-section" data-sidx="${sIdx}" style="padding: 2px 6px; margin-left: 8px;">🗑️</button>
+          </div>
+          <textarea class="form-textarea section-content-input" data-sidx="${sIdx}" rows="2" placeholder="Texto da seção..." style="width: 100%; font-size: 12px;">${sec.content || ''}</textarea>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.section-title-input').forEach(input => {
+        input.addEventListener('input', () => {
+          const sIdx = parseInt(input.dataset.sidx, 10);
+          slide.audience.sections[sIdx].title = input.value;
+          renderActiveSlidePreview();
+          saveDraftToStorage();
+        });
+      });
+
+      container.querySelectorAll('.section-content-input').forEach(input => {
+        input.addEventListener('input', () => {
+          const sIdx = parseInt(input.dataset.sidx, 10);
+          slide.audience.sections[sIdx].content = input.value;
+          renderActiveSlidePreview();
+          saveDraftToStorage();
+        });
+      });
+
+      container.querySelectorAll('.btn-del-section').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const sIdx = parseInt(btn.dataset.sidx, 10);
+          slide.audience.sections.splice(sIdx, 1);
+          renderPhoneSectionsEditor(slide);
+          renderActiveSlidePreview();
+          saveDraftToStorage();
+        });
+      });
+    }
+
+    // Adicionar Seção no Celular
+    document.getElementById('btn-add-phone-section')?.addEventListener('click', () => {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (!slide) return;
+      if (!slide.audience) slide.audience = {};
+      if (!slide.audience.sections) slide.audience.sections = [];
+      slide.audience.sections.push({
+        title: `Nova Seção ${slide.audience.sections.length + 1}`,
+        type: 'text',
+        content: 'Conteúdo detalhado para leitura no smartphone.'
+      });
+      renderPhoneSectionsEditor(slide);
+      renderActiveSlidePreview();
+      saveDraftToStorage();
+    });
+
+    // Inputs de Edição em Tempo Real
+    document.getElementById('edit-slide-tag')?.addEventListener('input', (e) => {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (slide) {
+        slide.tag = e.target.value;
+        renderActiveSlidePreview();
+        saveDraftToStorage();
+      }
+    });
+
+    document.getElementById('edit-slide-title')?.addEventListener('input', (e) => {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (slide) {
+        slide.title = e.target.value;
+        if (slide.presenter) slide.presenter.headline = e.target.value;
+        renderSlidesSidebar();
+        renderActiveSlidePreview();
+        saveDraftToStorage();
+      }
+    });
+
+    document.getElementById('edit-slide-notes')?.addEventListener('input', (e) => {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (slide && slide.presenter) {
+        slide.presenter.notes = e.target.value;
+        saveDraftToStorage();
+      }
+    });
+
+    document.getElementById('edit-poll-question')?.addEventListener('input', (e) => {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (slide && slide.interaction?.poll) {
+        slide.interaction.poll.question = e.target.value;
+        renderActiveSlidePreview();
+        saveDraftToStorage();
+      }
+    });
+
+    document.getElementById('edit-phone-summary')?.addEventListener('input', (e) => {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (slide && slide.audience) {
+        slide.audience.summary = e.target.value;
+        renderActiveSlidePreview();
+        saveDraftToStorage();
+      }
+    });
+
+    // Renderização dos Previews (Telão + Celular)
     function renderActiveSlidePreview() {
       const slide = currentConvertedData.slides[selectedSlideIndex];
       if (!slide) return;
@@ -609,9 +1552,9 @@
       const phoneTarget = document.getElementById('phone-preview-target');
       let sectionsHtml = (slide.audience?.sections || []).map(sec => {
         if (sec.type === 'text') {
-          return `<div class="card" style="margin-bottom: 12px; padding: 14px;"><h4 style="font-size: 13px; color: var(--accent-primary); margin-bottom: 6px;">${sec.title}</h4><p style="font-size: 12px; line-height: 1.5; color: var(--text-secondary);">${sec.content}</p></div>`;
+          return `<div class="card" style="margin-bottom: 10px; padding: 12px;"><h4 style="font-size: 12.5px; color: var(--accent-primary); margin-bottom: 4px;">${sec.title || ''}</h4><p style="font-size: 11.5px; line-height: 1.5; color: var(--text-secondary);">${sec.content || ''}</p></div>`;
         } else if (sec.type === 'table') {
-          return `<div class="card" style="margin-bottom: 12px; padding: 12px;"><h4 style="font-size: 13px; color: var(--accent-primary); margin-bottom: 6px;">${sec.title}</h4><div style="font-size: 11px; overflow-x: auto;">Tabela (${sec.rows?.length || 0} linhas)</div></div>`;
+          return `<div class="card" style="margin-bottom: 10px; padding: 10px;"><h4 style="font-size: 12.5px; color: var(--accent-primary); margin-bottom: 4px;">${sec.title || ''}</h4><div style="font-size: 11px;">Tabela (${sec.rows?.length || 0} linhas)</div></div>`;
         }
         return '';
       }).join('');
@@ -619,33 +1562,29 @@
       let pollHtml = '';
       if (slide.interaction?.poll) {
         pollHtml = `
-          <div class="card" style="margin-bottom: 12px; padding: 14px; border-color: var(--accent-primary);">
+          <div class="card" style="margin-bottom: 12px; padding: 12px; border-color: var(--accent-primary);">
             <div class="badge badge-live" style="font-size: 10px; margin-bottom: 6px;">📊 Votação Aberta</div>
-            <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">${slide.interaction.poll.question}</div>
-            ${slide.interaction.poll.options.map(opt => `<button class="poll-option-btn" style="padding: 8px 12px; font-size: 12px; margin-bottom: 6px;"><span class="poll-letter-badge" style="width: 20px; height: 20px; font-size: 11px;">${opt.id}</span><span>${opt.text}</span></button>`).join('')}
+            <div style="font-size: 12.5px; font-weight: 700; margin-bottom: 8px;">${slide.interaction.poll.question}</div>
+            ${slide.interaction.poll.options.map(opt => `<button class="poll-option-btn" style="padding: 6px 10px; font-size: 11.5px; margin-bottom: 5px;"><span class="poll-letter-badge" style="width: 18px; height: 18px; font-size: 10px;">${opt.id}</span><span>${opt.text}</span></button>`).join('')}
           </div>
         `;
       }
 
+      let mediaHtml = '';
+      if (slide.presenter?.media?.src) {
+        mediaHtml = `<div style="margin-bottom: 10px; text-align: center;"><img src="${slide.presenter.media.src}" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-subtle);"></div>`;
+      }
+
       phoneTarget.innerHTML = `
-        <div style="padding: 4px;">
-          <div class="badge badge-accent" style="font-size: 10px; margin-bottom: 8px;">${slide.tag || 'SLIDE ' + (selectedSlideIndex + 1)}</div>
-          <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 8px; color: #ffffff;">${slide.title}</h3>
-          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">${slide.audience?.summary || ''}</p>
+        <div style="padding: 2px;">
+          <div class="badge badge-accent" style="font-size: 9.5px; margin-bottom: 6px;">${slide.tag || 'SLIDE ' + (selectedSlideIndex + 1)}</div>
+          <h3 style="font-size: 14px; font-weight: 800; margin-bottom: 6px; color: #ffffff;">${slide.title}</h3>
+          <p style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 10px;">${slide.audience?.summary || ''}</p>
+          ${mediaHtml}
           ${pollHtml}
           ${sectionsHtml}
         </div>
       `;
-
-      // Atualiza botão de alternância de enquete
-      const btnPoll = document.getElementById('btn-toggle-poll-action');
-      if (slide.interaction?.poll) {
-        btnPoll.innerHTML = `<span data-i18n="import.btn_remove_poll">❌ Remover Enquete</span>`;
-        btnPoll.className = 'btn btn-sm btn-danger';
-      } else {
-        btnPoll.innerHTML = `<span data-i18n="import.btn_convert_poll">⚡ Converter em Enquete</span>`;
-        btnPoll.className = 'btn btn-sm btn-primary';
-      }
     }
 
     // Alternar Enquete no Slide Ativo
@@ -671,31 +1610,55 @@
       }
 
       renderSlidesSidebar();
+      loadActiveSlideIntoEditors();
       renderActiveSlidePreview();
+      saveDraftToStorage();
     });
 
-    // Publicar no Servidor
+    // Publicar ou Salvar no Servidor
     document.getElementById('btn-publish-all')?.addEventListener('click', async () => {
+      const activeSlides = currentConvertedData.slides.filter(s => s.included !== false);
+      if (activeSlides.length === 0) {
+        alert(i18n.t('import.alert_no_slides'));
+        return;
+      }
+
       const btn = document.getElementById('btn-publish-all');
       btn.disabled = true;
       btn.textContent = i18n.t('import.btn_publishing');
+
+      // Re-indexa IDs dos slides incluídos
+      activeSlides.forEach((s, idx) => {
+        s.id = idx + 1;
+        s.slug = s.slug || `slide-${idx + 1}`;
+      });
 
       // Atualiza configurações com valores dos inputs
       currentConvertedData.manifest.title = document.getElementById('cfg-title').value || currentConvertedData.manifest.title;
       currentConvertedData.manifest.defaultSession = document.getElementById('cfg-session').value || currentConvertedData.manifest.defaultSession;
       currentConvertedData.manifest.security.mode = document.getElementById('cfg-security').value;
+      currentConvertedData.manifest.totalSlides = activeSlides.length;
+
+      const payload = {
+        manifest: currentConvertedData.manifest,
+        slides: activeSlides,
+        assets: currentConvertedData.assets || []
+      };
 
       try {
         const res = await fetch('/api/presentations/import', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(currentConvertedData)
+          body: JSON.stringify(payload)
         });
 
         const data = await res.json();
         if (!res.ok || !data.success) {
           throw new Error(data.error || 'Falha ao salvar apresentação no servidor.');
         }
+
+        // Limpa o rascunho de auto-save após salvar
+        localStorage.removeItem(DRAFT_STORAGE_KEY);
 
         // Exibe Etapa 3 de Sucesso
         document.getElementById('section-step-2').style.display = 'none';

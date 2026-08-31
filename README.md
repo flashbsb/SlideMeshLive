@@ -176,17 +176,35 @@ firebase deploy
 
 ---
 
-## 6. Como Criar e Importar Novas Apresentações
+## 6. SlideMesh Studio — Criação, Importação e Edição Web
 
-O **SlideMeshLive** oferece três formas ágeis e intuitivas para adicionar ou migrar conteúdos existentes:
+O **SlideMeshLive** conta com o **SlideMesh Studio**, uma suíte integrada de autoria visual acessível pelo portal inicial ou diretamente em [`import.html`](http://localhost:8000/import.html):
 
-### Opção A: Assistente Visual Web (Recomendado)
-1. Acesse o portal inicial e clique no botão **`📤 Importar`** ou abra [`import.html`](http://localhost:8000/import.html).
+### 6.1 Criar Nova Apresentação do Zero (com Templates)
+1. No portal inicial, clique em **`✨ Criar Nova`** (ou abra `import.html?mode=new`).
+2. Escolha entre 4 templates estruturados:
+   - **👔 Executivo & Pitch:** 5 slides com Capa, Desafio, Solução, Enquete de Validação e Próximos Passos.
+   - **🎓 Aula & Treinamento:** 4 slides com Objetivos, Arquitetura Conceitual, Quiz ao Vivo e Resumo de Estudo.
+   - **🚀 Demonstração de Produto:** 4 slides com Visão Geral, Recursos Inovadores, Votação e Encerramento.
+   - **📄 Em Branco:** 1 slide limpo para liberdade total de escrita.
+3. Edite os títulos, bullets, notas de orador, resumo e seções de leitura no smartphone em tempo real com auto-save em `localStorage`.
+4. Adicione imagens nos slides para habilitar o modo **Split-Screen (2 colunas)** no Telão.
+5. Clique em **`🚀 Publicar Apresentação`**.
+
+### 6.2 Editar Apresentações Existentes
+1. No portal inicial, localize a apresentação no catálogo e clique no botão **`✏️ Editar`**.
+2. O Studio carrega automaticamente todos os slides, enquetes e notas da apresentação.
+3. Altere qualquer texto, adicione novos slides, reordene a sequência (`🔼` / `🔽`), desmarque slides (`☑️`) ou converta slides em enquetes (`⚡`).
+4. Clique em **`💾 Salvar Alterações`** para sobrescrever os arquivos no servidor de forma atômica e segura.
+
+### 6.3 Importar Arquivos e Apresentações Externas
+1. No Studio, acesse a aba **`📁 Importar Arquivo`**.
 2. Arraste e solte o arquivo desejado (**PowerPoint `.pptx`**, **Word `.docx`**, **Markdown `.md`**, **HTML `.html`** ou **PDF `.pdf`**).
-3. Revise e edite os slides lado a lado (Telão vs. Smartphone), converta tópicos em enquetes ao vivo com 1 clique e clique em **`🚀 Publicar Apresentação`**.
+3. O motor semântico extrai automaticamente títulos, tópicos, notas de orador e ilustrações.
+4. Revise no editor lado a lado e publique em 1 clique.
 
-### Opção B: Utilitário de Linha de Comando (CLI)
-Você pode importar apresentações e documentos diretamente pelo terminal:
+### 6.4 Utilitário de Linha de Comando (CLI)
+Você também pode importar apresentações e documentos diretamente pelo terminal:
 ```bash
 # Importar apresentação do PowerPoint (.pptx)
 python3 tools/import_presentation.py minhas_palestras/arquitetura.pptx --title "Arquitetura Cloud"

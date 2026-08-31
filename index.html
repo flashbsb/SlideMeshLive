@@ -103,8 +103,13 @@
     </div>
     
     <div style="display: flex; align-items: center; gap: 10px;">
+      <!-- Criar Nova Apresentação -->
+      <a href="import.html?mode=new" class="btn btn-sm btn-primary" style="padding: 4px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;" title="Criar Nova Apresentação do Zero no Studio">
+        <span data-i18n="portal.btn_create_new">✨ Criar Nova</span>
+      </a>
+
       <!-- Assistente de Importação -->
-      <a href="import.html" class="btn btn-sm btn-primary" style="padding: 4px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;" title="Assistente de Importação e Conversão de Apresentações">
+      <a href="import.html" class="btn btn-sm" style="padding: 4px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;" title="Assistente de Importação e Conversão de Apresentações">
         <span data-i18n="portal.btn_import">📤 Importar</span>
       </a>
 
@@ -128,8 +133,6 @@
       <button class="btn btn-sm" id="btn-portal-theme" style="padding: 4px 8px; font-size: 12px;" title="Alternar Tema Visual">
         🌙 Tema
       </button>
-
-      <span class="badge badge-accent" data-i18n="app.realtime_active">⚡ Sincronização em Tempo Real</span>
     </div>
   </header>
 
@@ -209,15 +212,20 @@
             </p>
           </div>
 
-          <div class="card-actions">
-            <a href="presenter/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn btn-primary" title="Abrir Telão Principal">
-              ${i18n.t('portal.btn_presenter')}
-            </a>
-            <a href="admin/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn" style="border-color: rgba(129, 140, 248, 0.4); color: #c7d2fe;" title="Abrir Mesa Técnica e Moderação">
-              ${i18n.t('portal.btn_admin')}
-            </a>
-            <a href="audience/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn" title="Abrir Visão do Smartphone">
-              ${i18n.t('portal.btn_audience')}
+          <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 8px;">
+            <div class="card-actions" style="margin-top: 0;">
+              <a href="presenter/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn btn-primary" title="Abrir Telão Principal">
+                ${i18n.t('portal.btn_presenter')}
+              </a>
+              <a href="admin/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn" style="border-color: rgba(129, 140, 248, 0.4); color: #c7d2fe;" title="Abrir Mesa Técnica e Moderação">
+                ${i18n.t('portal.btn_admin')}
+              </a>
+              <a href="audience/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn" title="Abrir Visão do Smartphone">
+                ${i18n.t('portal.btn_audience')}
+              </a>
+            </div>
+            <a href="import.html?edit=${encodeURIComponent(p.id)}" class="btn btn-sm" style="width: 100%; text-align: center; justify-content: center; background: rgba(56, 189, 248, 0.08); border-color: var(--border-medium); font-weight: 700; color: var(--accent-primary);" title="Editar Apresentação no Studio">
+              ${i18n.t('portal.btn_edit_card', 'Editar')}
             </a>
           </div>
         </article>
@@ -229,22 +237,25 @@
           <div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
               <span class="badge" style="background: rgba(16,185,129,0.15); color: #6ee7b7; border-color: rgba(16,185,129,0.3);">+ Modular</span>
-              <span class="badge">JSON</span>
+              <span class="badge">Studio</span>
             </div>
             <h2 style="font-size: 18.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; line-height: 1.3;">
-              ${i18n.t('portal.add_new_title')}
+              ${i18n.t('portal.add_new_title', 'Nova Apresentação')}
             </h2>
             <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.55;">
-              ${i18n.t('portal.add_new_desc')}
+              ${i18n.t('portal.add_new_desc', 'Crie um projeto do zero ou importe arquivos existentes.')}
             </p>
           </div>
 
           <div style="margin-top: 24px; display: flex; flex-direction: column; gap: 8px;">
-            <a href="import.html" class="btn btn-primary" style="width: 100%; text-align: center; justify-content: center; font-weight: 700;">
+            <a href="import.html?mode=new" class="btn btn-primary" style="width: 100%; text-align: center; justify-content: center; font-weight: 700;">
+              ✨ Criar Apresentação do Zero
+            </a>
+            <a href="import.html" class="btn" style="width: 100%; text-align: center; justify-content: center; font-weight: 700; border-color: var(--border-medium);">
               📤 Importar Arquivo (PPTX / Word / MD)
             </a>
             <a href="docs.html?file=README.md" class="btn btn-sm" style="width: 100%; text-align: center; justify-content: center;" target="_blank">
-              ${i18n.t('portal.view_guide')}
+              ${i18n.t('portal.view_guide', 'Ver Guia')}
             </a>
           </div>
         </article>
