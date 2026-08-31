@@ -492,3 +492,5 @@ export class PresentationEngine {
     }
   }
 }
+
+export const presentationEngine = new PresentationEngine();

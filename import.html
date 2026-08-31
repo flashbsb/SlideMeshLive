@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Assistente de Importação & Conversão | SlideMeshLive</title>
+  <title>Assistente de Importação &amp; Conversão | SlideMeshLive</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📤</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -76,6 +76,7 @@
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
       color: var(--text-muted);
+      transition: all var(--transition-fast);
     }
 
     .step-badge.active {
@@ -102,6 +103,7 @@
       transition: all var(--transition-normal);
       max-width: 820px;
       margin: 0 auto;
+      user-select: none;
     }
 
     .drop-zone:hover, .drop-zone.dragover {
@@ -263,13 +265,13 @@
         <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-primary); box-shadow: 0 0 8px var(--accent-primary);"></span>
         <span>SlideMeshLive</span>
       </a>
-      <span class="badge badge-accent" style="font-size: 11px;">📤 Assistente de Importação &amp; Conversão</span>
+      <span class="badge badge-accent" style="font-size: 11px;" data-i18n="import.header_badge">📤 Assistente de Importação &amp; Conversão</span>
     </div>
 
     <div style="display: flex; align-items: center; gap: 10px;">
       <button class="btn btn-sm" id="btn-import-lang" style="padding: 4px 8px; font-size: 12px;">🇧🇷 PT</button>
       <button class="btn btn-sm" id="btn-import-theme" style="padding: 4px 8px; font-size: 12px;">🌙 Tema</button>
-      <a href="./" class="btn btn-sm" style="padding: 4px 12px; font-size: 12px; text-decoration: none;">🏠 Portal</a>
+      <a href="./" class="btn btn-sm" style="padding: 4px 12px; font-size: 12px; text-decoration: none;" data-i18n="import.btn_back_portal">🏠 Portal</a>
     </div>
   </header>
 
@@ -278,15 +280,15 @@
     <div class="import-steps-bar">
       <div class="step-badge active" id="step-badge-1">
         <span>1</span>
-        <span>Selecionar Arquivo</span>
+        <span data-i18n="import.step_1">Selecionar Arquivo</span>
       </div>
       <div class="step-badge" id="step-badge-2">
         <span>2</span>
-        <span>Mapeamento &amp; Revisão</span>
+        <span data-i18n="import.step_2">Mapeamento &amp; Revisão</span>
       </div>
       <div class="step-badge" id="step-badge-3">
         <span>3</span>
-        <span>Publicação</span>
+        <span data-i18n="import.step_3">Publicação</span>
       </div>
     </div>
 
@@ -295,16 +297,21 @@
       <div class="drop-zone" id="drop-zone-box">
         <input type="file" id="file-input" style="display: none;" accept=".pptx,.docx,.md,.markdown,.html,.htm,.pdf">
         <span class="drop-icon">📂</span>
-        <h2 style="font-size: 24px; font-weight: 800; color: #ffffff; margin-bottom: 10px;">
+        <h2 style="font-size: 24px; font-weight: 800; color: #ffffff; margin-bottom: 10px;" data-i18n="import.drop_title">
           Arraste e Solte seu Arquivo Aqui
         </h2>
-        <p style="font-size: 14px; color: var(--text-secondary); max-width: 500px; margin: 0 auto 24px; line-height: 1.5;">
+        <p style="font-size: 14px; color: var(--text-secondary); max-width: 500px; margin: 0 auto 24px; line-height: 1.5;" data-i18n="import.drop_desc">
           Suporte completo a apresentações e documentos com extração inteligente de títulos, tópicos, notas do orador e imagens.
         </p>
 
-        <button class="btn btn-primary" id="btn-browse-file" style="padding: 12px 28px; font-size: 14px; margin-bottom: 24px;">
-          📁 Escolher Arquivo do Computador
-        </button>
+        <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary" id="btn-browse-file" style="padding: 12px 28px; font-size: 14px; font-weight: 700;">
+            <span data-i18n="import.btn_choose_file">📁 Escolher Arquivo do Computador</span>
+          </button>
+          <button type="button" class="btn btn-secondary" id="btn-demo-sample" style="padding: 12px 20px; font-size: 14px;">
+            <span>✨ Testar com Exemplo Demo</span>
+          </button>
+        </div>
 
         <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
           <span class="badge" style="background: rgba(239,68,68,0.15); color: #fca5a5; border-color: rgba(239,68,68,0.3);">📊 PowerPoint (.pptx)</span>
@@ -321,23 +328,23 @@
       <!-- Barra Superior de Configuração -->
       <div class="config-card">
         <div class="form-group">
-          <label class="form-label">Título da Apresentação</label>
+          <label class="form-label" data-i18n="import.cfg_title">Título da Apresentação</label>
           <input type="text" id="cfg-title" class="form-input" placeholder="Ex: Minha Nova Palestra">
         </div>
         <div class="form-group">
-          <label class="form-label">Código de Sessão</label>
+          <label class="form-label" data-i18n="import.cfg_session">Código de Sessão</label>
           <input type="text" id="cfg-session" class="form-input" placeholder="DEMO2026">
         </div>
         <div class="form-group">
-          <label class="form-label">Segurança</label>
+          <label class="form-label" data-i18n="import.cfg_security">Segurança</label>
           <select id="cfg-security" class="form-select">
-            <option value="public">Pública (Sem Senha)</option>
-            <option value="pin">Protegida por PIN</option>
+            <option value="public" data-i18n="import.sec_public">Pública (Sem Senha)</option>
+            <option value="pin" data-i18n="import.sec_pin">Protegida por PIN</option>
           </select>
         </div>
         <div class="form-group">
           <button class="btn btn-primary" id="btn-publish-all" style="padding: 10px 18px; font-weight: 800;">
-            🚀 Publicar Apresentação
+            <span data-i18n="import.btn_publish">🚀 Publicar Apresentação</span>
           </button>
         </div>
       </div>
@@ -347,7 +354,7 @@
         <!-- Coluna 1: Lista de Slides -->
         <aside class="slides-sidebar">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 11.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Slides Extraídos</span>
+            <span style="font-size: 11.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;" data-i18n="import.slides_extracted">Slides Extraídos</span>
             <span class="badge badge-accent" id="slide-count-badge">0</span>
           </div>
           <div id="slides-list-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
@@ -356,9 +363,9 @@
         <!-- Coluna 2: Telão do Apresentador (Preview) -->
         <section class="preview-stage-container">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
-            <span style="font-size: 12px; font-weight: 800; color: #38bdf8; letter-spacing: 1px;">🖥️ TELÃO DO APRESENTADOR (CLEAN STAGE)</span>
+            <span style="font-size: 12px; font-weight: 800; color: #38bdf8; letter-spacing: 1px;" data-i18n="import.stage_preview_title">🖥️ TELÃO DO APRESENTADOR (CLEAN STAGE)</span>
             <button class="btn btn-sm" id="btn-toggle-poll-action" style="font-size: 11.5px; padding: 4px 10px;">
-              ⚡ Converter em Enquete
+              <span data-i18n="import.btn_convert_poll">⚡ Converter em Enquete</span>
             </button>
           </div>
           <div id="stage-preview-target" style="flex: 1; display: flex; flex-direction: column; justify-content: center;"></div>
@@ -366,7 +373,7 @@
 
         <!-- Coluna 3: Smartphone do Participante (Preview) -->
         <aside class="preview-phone-container">
-          <div style="text-align: center; font-size: 11.5px; font-weight: 800; color: #a855f7; margin-bottom: 12px; letter-spacing: 1px;">
+          <div style="text-align: center; font-size: 11.5px; font-weight: 800; color: #a855f7; margin-bottom: 12px; letter-spacing: 1px;" data-i18n="import.phone_preview_title">
             📱 SMARTPHONE DA AUDIÊNCIA
           </div>
           <div id="phone-preview-target"></div>
@@ -378,20 +385,20 @@
     <section id="section-step-3" style="display: none;" class="animate-fade-in">
       <div class="card" style="max-width: 680px; margin: 40px auto; text-align: center; padding: 48px 32px;">
         <span style="font-size: 54px; margin-bottom: 16px; display: inline-block;">🎉</span>
-        <h2 style="font-size: 26px; font-weight: 900; color: #ffffff; margin-bottom: 12px;" id="success-title">
+        <h2 style="font-size: 26px; font-weight: 900; color: #ffffff; margin-bottom: 12px;" id="success-title" data-i18n="import.success_title">
           Apresentação Publicada com Sucesso!
         </h2>
-        <p style="font-size: 14.5px; color: var(--text-secondary); margin-bottom: 32px;" id="success-msg">
+        <p style="font-size: 14.5px; color: var(--text-secondary); margin-bottom: 32px;" id="success-msg" data-i18n="import.success_desc">
           Todos os slides, enquetes e notas foram processados e registrados no catálogo.
         </p>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 32px;">
-          <a href="#" id="btn-link-presenter" class="btn btn-primary" target="_blank">🖥️ Abrir Telão</a>
-          <a href="#" id="btn-link-admin" class="btn" target="_blank" style="border-color: #818cf8; color: #c7d2fe;">🛡️ Mesa Técnica</a>
-          <a href="#" id="btn-link-audience" class="btn" target="_blank">📱 Ver Celular</a>
+          <a href="#" id="btn-link-presenter" class="btn btn-primary" target="_blank" data-i18n="import.btn_open_presenter">🖥️ Abrir Telão</a>
+          <a href="#" id="btn-link-admin" class="btn" target="_blank" style="border-color: #818cf8; color: #c7d2fe;" data-i18n="import.btn_open_admin">🛡️ Mesa Técnica</a>
+          <a href="#" id="btn-link-audience" class="btn" target="_blank" data-i18n="import.btn_open_audience">📱 Ver Celular</a>
         </div>
 
-        <a href="./" class="btn" style="padding: 10px 24px;">🏠 Voltar ao Portal Inicial</a>
+        <a href="./" class="btn" style="padding: 10px 24px;" data-i18n="import.btn_back_portal">🏠 Voltar ao Portal Inicial</a>
       </div>
     </section>
   </main>
@@ -399,7 +406,6 @@
   <script type="module">
     import { conversionEngine } from './js/core/conversion-engine.js';
     import { presentationEngine } from './js/core/presentation-engine.js';
-    import { audienceApp } from './js/audience/audience-app.js';
     import { i18n } from './js/core/i18n-engine.js';
     import { theme, THEMES } from './js/core/theme-engine.js';
 
@@ -419,48 +425,119 @@
       }
     }
 
-    // Gerenciamento de Drag & Drop
+    function applyTranslations() {
+      i18n.applyTranslations();
+      updateLanguageButton();
+      updateThemeButton();
+    }
+
+    // Inicialização da página
+    applyTranslations();
+
+    // Gerenciamento de Drag & Drop e Seleção de Arquivo
     const dropZone = document.getElementById('drop-zone-box');
     const fileInput = document.getElementById('file-input');
+    const btnBrowse = document.getElementById('btn-browse-file');
+    const btnDemo = document.getElementById('btn-demo-sample');
 
-    document.getElementById('btn-browse-file')?.addEventListener('click', () => fileInput.click());
-    dropZone?.addEventListener('click', (e) => {
-      if (e.target !== fileInput) fileInput.click();
-    });
-
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropZone?.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropZone.classList.add('dragover');
+    if (btnBrowse && fileInput) {
+      btnBrowse.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.click();
       });
-    });
+    }
 
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropZone?.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
+    if (dropZone && fileInput) {
+      dropZone.addEventListener('click', (e) => {
+        if (e.target !== fileInput && e.target !== btnBrowse && e.target !== btnDemo && !btnBrowse.contains(e.target) && !btnDemo?.contains(e.target)) {
+          fileInput.click();
+        }
       });
-    });
 
-    dropZone?.addEventListener('drop', (e) => {
-      const files = e.dataTransfer.files;
-      if (files && files.length > 0) {
-        handleFileSelection(files[0]);
-      }
-    });
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.add('dragover');
+        });
+      });
 
-    fileInput?.addEventListener('change', (e) => {
-      if (e.target.files && e.target.files.length > 0) {
-        handleFileSelection(e.target.files[0]);
-      }
-    });
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.remove('dragover');
+        });
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const files = e.dataTransfer?.files;
+        if (files && files.length > 0) {
+          handleFileSelection(files[0]);
+        }
+      });
+    }
+
+    if (fileInput) {
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          handleFileSelection(e.target.files[0]);
+        }
+      });
+    }
+
+    // Carregamento de Exemplo Demonstrativo
+    if (btnDemo) {
+      btnDemo.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const demoMd = `
+# SlideMeshLive: A Revolução do Palco
+- Projeção de alta performance sem dependência de nuvem
+- Sincronização em tempo real com os smartphones do público
+- Enquetes instantâneas e moderação ao vivo de perguntas
+<!-- note: Lembrar de destacar a velocidade de sincronização de menos de 50ms na rede local. -->
+
+---
+
+# Arquitetura e Engenharia de Telecom
+- Hub central sequencial em Python
+- Fallback automático para BroadcastChannel no navegador
+- Persistência atômica de votos e proteção contra fraude
+<!-- note: Explicar o diagrama no celular dos participantes. -->
+
+---
+
+# Como Engajar a Plateia
+- Votações dinâmicas projetadas com gráficos animados
+- Resumos aprofundados e tabelas no smartphone
+- Zero atraso, zero complicação
+<!-- note: Abrir espaço para perguntas no final. -->
+`;
+        try {
+          dropZone.innerHTML = `
+            <div class="animate-pulse" style="padding: 40px 0;">
+              <span style="font-size: 40px;">⚡</span>
+              <h3 style="font-size: 18px; color: var(--accent-primary); margin-top: 12px;">Processando Exemplo Demo...</h3>
+            </div>
+          `;
+          currentConvertedData = await conversionEngine.convert(demoMd, 'palestra-demonstracao.md');
+          setupStep2Review();
+        } catch (err) {
+          alert('Erro ao carregar demonstração: ' + err.message);
+          location.reload();
+        }
+      });
+    }
 
     async function handleFileSelection(file) {
       try {
+        const procMsg = i18n.t('import.processing_file', { filename: file.name });
         dropZone.innerHTML = `
           <div class="animate-pulse" style="padding: 40px 0;">
             <span style="font-size: 40px;">⚡</span>
-            <h3 style="font-size: 18px; color: var(--accent-primary); margin-top: 12px;">Processando e Extraindo "${file.name}"...</h3>
+            <h3 style="font-size: 18px; color: var(--accent-primary); margin-top: 12px;">${procMsg}</h3>
           </div>
         `;
 
@@ -494,6 +571,7 @@
 
       renderSlidesSidebar();
       renderActiveSlidePreview();
+      applyTranslations();
     }
 
     function renderSlidesSidebar() {
@@ -562,10 +640,10 @@
       // Atualiza botão de alternância de enquete
       const btnPoll = document.getElementById('btn-toggle-poll-action');
       if (slide.interaction?.poll) {
-        btnPoll.textContent = '❌ Remover Enquete';
+        btnPoll.innerHTML = `<span data-i18n="import.btn_remove_poll">❌ Remover Enquete</span>`;
         btnPoll.className = 'btn btn-sm btn-danger';
       } else {
-        btnPoll.textContent = '⚡ Converter em Enquete';
+        btnPoll.innerHTML = `<span data-i18n="import.btn_convert_poll">⚡ Converter em Enquete</span>`;
         btnPoll.className = 'btn btn-sm btn-primary';
       }
     }
@@ -600,7 +678,7 @@
     document.getElementById('btn-publish-all')?.addEventListener('click', async () => {
       const btn = document.getElementById('btn-publish-all');
       btn.disabled = true;
-      btn.textContent = '⏳ Publicando...';
+      btn.textContent = i18n.t('import.btn_publishing');
 
       // Atualiza configurações com valores dos inputs
       currentConvertedData.manifest.title = document.getElementById('cfg-title').value || currentConvertedData.manifest.title;
@@ -631,27 +709,25 @@
         document.getElementById('btn-link-admin').href = data.adminUrl;
         document.getElementById('btn-link-audience').href = data.audienceUrl;
 
+        applyTranslations();
       } catch (err) {
         alert('Erro ao publicar: ' + err.message);
         btn.disabled = false;
-        btn.textContent = '🚀 Publicar Apresentação';
+        btn.innerHTML = `<span data-i18n="import.btn_publish">🚀 Publicar Apresentação</span>`;
       }
     });
 
-    // Idioma e Tema
+    // Alternar Idioma e Tema
     document.getElementById('btn-import-lang')?.addEventListener('click', () => {
       const nextLang = i18n.language === 'pt-BR' ? 'en-US' : 'pt-BR';
       i18n.setLanguage(nextLang);
-      updateLanguageButton();
+      applyTranslations();
     });
 
     document.getElementById('btn-import-theme')?.addEventListener('click', () => {
       theme.cycleTheme();
       updateThemeButton();
     });
-
-    updateLanguageButton();
-    updateThemeButton();
   </script>
 </body>
 </html>
