@@ -193,34 +193,53 @@ export class PresentationEngine {
     if (media) {
       if (media.type === 'image' || media.type === 'svg') {
         mediaHtml = `
-          <div class="slide-media-box animate-fade-in" style="margin-top: 18px; text-align: center;">
-            <img src="${media.src}" alt="${media.alt || ''}" style="max-height: ${media.maxHeight || '280px'}; max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-medium); box-shadow: var(--shadow-md);" />
-            ${media.caption ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">${media.caption}</div>` : ''}
+          <div class="slide-media-box animate-fade-in">
+            <img src="${media.src}" alt="${media.alt || ''}" />
+            ${media.caption ? `<div class="slide-media-caption">${media.caption}</div>` : ''}
           </div>
         `;
       } else if (media.type === 'video') {
         mediaHtml = `
-          <div class="slide-media-box animate-fade-in" style="margin-top: 18px; text-align: center;">
-            <video src="${media.src}" ${media.autoplay ? 'autoplay muted loop playsinline' : 'controls'} style="max-height: ${media.maxHeight || '280px'}; max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-medium); box-shadow: var(--shadow-md);"></video>
-            ${media.caption ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">${media.caption}</div>` : ''}
+          <div class="slide-media-box animate-fade-in">
+            <video src="${media.src}" ${media.autoplay ? 'autoplay muted loop playsinline' : 'controls'}></video>
+            ${media.caption ? `<div class="slide-media-caption">${media.caption}</div>` : ''}
           </div>
         `;
       } else if (media.type === 'html' || media.type === 'interactive' || media.type === 'media') {
-        mediaHtml = `<div class="slide-media-box animate-fade-in" style="margin-top: 18px;">${media.content || media.html || ''}</div>`;
+        mediaHtml = `<div class="slide-media-box animate-fade-in">${media.content || media.html || ''}</div>`;
       }
     }
 
-    containerElement.innerHTML = `
-      <div class="slide-content-wrapper animate-slide-next">
-        <div class="slide-tag">${slide.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
-        <h1 class="slide-headline">${slide.presenter.headline || slide.title}</h1>
-        <ul class="slide-bullets">
-          ${bulletsHtml}
-        </ul>
-        ${mediaHtml}
-        ${presenterPollHtml}
-      </div>
-    `;
+    if (media) {
+      containerElement.innerHTML = `
+        <div class="slide-content-wrapper slide-layout-split animate-slide-next">
+          <div class="slide-tag">${slide.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
+          <div class="slide-split-grid">
+            <div class="slide-text-col">
+              <h1 class="slide-headline">${slide.presenter.headline || slide.title}</h1>
+              <ul class="slide-bullets">
+                ${bulletsHtml}
+              </ul>
+              ${presenterPollHtml}
+            </div>
+            <div class="slide-media-col">
+              ${mediaHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      containerElement.innerHTML = `
+        <div class="slide-content-wrapper animate-slide-next">
+          <div class="slide-tag">${slide.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
+          <h1 class="slide-headline">${slide.presenter.headline || slide.title}</h1>
+          <ul class="slide-bullets">
+            ${bulletsHtml}
+          </ul>
+          ${presenterPollHtml}
+        </div>
+      `;
+    }
 
     if (notesElement) {
       notesElement.innerHTML = `
@@ -252,20 +271,20 @@ export class PresentationEngine {
     if (media) {
       if (media.type === 'image' || media.type === 'svg') {
         mediaHtml = `
-          <div class="slide-media-box animate-fade-in" style="margin-top: 18px; text-align: center;">
-            <img src="${media.src}" alt="${media.alt || ''}" style="max-height: ${media.maxHeight || '280px'}; max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-medium); box-shadow: var(--shadow-md);" />
-            ${media.caption ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">${media.caption}</div>` : ''}
+          <div class="slide-media-box animate-fade-in">
+            <img src="${media.src}" alt="${media.alt || ''}" />
+            ${media.caption ? `<div class="slide-media-caption">${media.caption}</div>` : ''}
           </div>
         `;
       } else if (media.type === 'video') {
         mediaHtml = `
-          <div class="slide-media-box animate-fade-in" style="margin-top: 18px; text-align: center;">
-            <video src="${media.src}" ${media.autoplay ? 'autoplay muted loop playsinline' : 'controls'} style="max-height: ${media.maxHeight || '280px'}; max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-medium); box-shadow: var(--shadow-md);"></video>
-            ${media.caption ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">${media.caption}</div>` : ''}
+          <div class="slide-media-box animate-fade-in">
+            <video src="${media.src}" ${media.autoplay ? 'autoplay muted loop playsinline' : 'controls'}></video>
+            ${media.caption ? `<div class="slide-media-caption">${media.caption}</div>` : ''}
           </div>
         `;
       } else if (media.type === 'html' || media.type === 'interactive' || media.type === 'media') {
-        mediaHtml = `<div class="slide-media-box animate-fade-in" style="margin-top: 18px;">${media.content || media.html || ''}</div>`;
+        mediaHtml = `<div class="slide-media-box animate-fade-in">${media.content || media.html || ''}</div>`;
       }
     }
 
@@ -293,17 +312,36 @@ export class PresentationEngine {
       `;
     }
 
-    return `
-      <div class="slide-content-wrapper animate-slide-next">
-        <div class="slide-tag">${s.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
-        <h1 class="slide-headline">${presenter.headline || s.headline || s.title}</h1>
-        <ul class="slide-bullets">
-          ${bulletsHtml}
-        </ul>
-        ${mediaHtml}
-        ${pollHtml}
-      </div>
-    `;
+    if (media) {
+      return `
+        <div class="slide-content-wrapper slide-layout-split animate-slide-next">
+          <div class="slide-tag">${s.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
+          <div class="slide-split-grid">
+            <div class="slide-text-col">
+              <h1 class="slide-headline">${presenter.headline || s.headline || s.title}</h1>
+              <ul class="slide-bullets">
+                ${bulletsHtml}
+              </ul>
+              ${pollHtml}
+            </div>
+            <div class="slide-media-col">
+              ${mediaHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      return `
+        <div class="slide-content-wrapper animate-slide-next">
+          <div class="slide-tag">${s.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
+          <h1 class="slide-headline">${presenter.headline || s.headline || s.title}</h1>
+          <ul class="slide-bullets">
+            ${bulletsHtml}
+          </ul>
+          ${pollHtml}
+        </div>
+      `;
+    }
   }
 
   /**

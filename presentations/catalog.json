@@ -14,18 +14,6 @@
       "badgeClass": "badge-live"
     },
     {
-      "id": "sdwan-cpe-unificado",
-      "code": "NTP-ENG-SDWAN-2026",
-      "title": "Adoção do SD-WAN Edge como CPE Único e Unificado",
-      "subtitle": "Engenharia de Telecomunicações & Redes Corporativas",
-      "description": "Apresentação técnica baseada no documento oficial NTP de convergência de borda WAN corporativa, comparativo Dual-CPE, matriz RACI e requisitos de telecom.",
-      "defaultSession": "SDWAN2026",
-      "totalSlides": 10,
-      "securityMode": "public",
-      "securityLabel": "Pública (Login p/ Interagir)",
-      "badgeClass": "badge-accent"
-    },
-    {
       "id": "treinamento-interno-pin",
       "code": "TREINAMENTO-PIN-7482",
       "title": "Treinamento Técnico Interno (Protegido por PIN)",

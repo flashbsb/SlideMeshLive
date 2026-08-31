@@ -94,8 +94,154 @@
 
 .slide-content-wrapper {
   width: 100%;
-  max-width: 1300px;
+  max-width: 1360px;
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: var(--radius-full);
+  margin-bottom: 16px;
+}
+
+.slide-headline {
+  font-size: clamp(28px, 3.2vw, 48px);
+  font-weight: 900;
+  line-height: 1.2;
+  color: #ffffff;
+  margin-bottom: 28px;
+  letter-spacing: -0.5px;
+}
+
+.slide-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.slide-bullet-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: clamp(16px, 1.5vw, 22px);
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.slide-bullet-item .bullet-icon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  margin-top: 10px;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* ==========================================================================
+   Split-Screen 2-Column Presentation Layout (Slides with Media)
+   ========================================================================== */
+
+.slide-layout-split .slide-split-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 48px;
+  align-items: center;
+  width: 100%;
+}
+
+.slide-layout-split .slide-headline {
+  font-size: clamp(24px, 2.2vw, 36px);
+  margin-bottom: 20px;
+  line-height: 1.25;
+}
+
+.slide-layout-split .slide-bullets {
+  gap: 14px;
+}
+
+.slide-layout-split .slide-bullet-item {
+  font-size: clamp(14px, 1.2vw, 17.5px);
+  line-height: 1.45;
+}
+
+.slide-layout-split .slide-media-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.slide-layout-split .slide-media-box {
+  width: 100%;
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.slide-layout-split .slide-media-box img,
+.slide-layout-split .slide-media-box svg,
+.slide-layout-split .slide-media-box video {
+  max-height: min(540px, calc(100vh - 170px));
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  border: 1.5px solid var(--border-medium);
+}
+
+.slide-media-caption {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* Modo Púlpito com Barra de Notas Ativada (Atalho: Tecla P) */
+.pulpit-mode .slide-layout-split .slide-split-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.pulpit-mode .slide-layout-split .slide-media-box img,
+.pulpit-mode .slide-layout-split .slide-media-box svg {
+  max-height: min(420px, calc(100vh - 200px));
+}
+
+/* Fallback para Projetores 4:3 ou Telas Estreitas */
+@media (max-aspect-ratio: 4/3), (max-width: 1100px) {
+  .slide-layout-split .slide-split-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .slide-layout-split .slide-headline {
+    font-size: 22px;
+  }
+  
+  .slide-layout-split .slide-bullet-item {
+    font-size: 13.5px;
+  }
+  
+  .slide-layout-split .slide-media-box img,
+  .slide-layout-split .slide-media-box svg {
+    max-height: 380px;
+  }
 }
 
 /* Modo Púlpito com Notas (Opcional / Toggle) */
