@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentação & Guia Oficial | SlideMeshLive</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    :root {
+      --docs-max-width: 960px;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header Fixo */
+    .docs-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 15, 25, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .docs-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .docs-brand:hover {
+      color: var(--accent-primary);
+    }
+
+    .docs-search-input {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 6px 14px;
+      color: var(--text-primary);
+      font-size: 13px;
+      width: 220px;
+      outline: none;
+      transition: border-color var(--transition-fast);
+    }
+
+    .docs-search-input:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    /* Layout de Documentação */
+    .docs-layout {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 40px;
+      padding: 36px 24px 80px;
+      flex: 1;
+    }
+
+    /* Sidebar com Sumário */
+    .docs-sidebar {
+      position: sticky;
+      top: 80px;
+      height: calc(100vh - 110px);
+      overflow-y: auto;
+      padding-right: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .docs-toc-title {
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .docs-toc-link {
+      display: block;
+      padding: 6px 10px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      border-left: 2px solid transparent;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .docs-toc-link:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.04);
+      border-left-color: var(--accent-primary);
+    }
+
+    .docs-toc-link.active {
+      color: var(--accent-primary);
+      background: rgba(56, 189, 248, 0.08);
+      border-left-color: var(--accent-primary);
+      font-weight: 600;
+    }
+
+    .docs-toc-link.level-3 {
+      padding-left: 22px;
+      font-size: 12px;
+    }
+
+    /* Área de Conteúdo Markdown */
+    .docs-article {
+      max-width: var(--docs-max-width);
+      min-width: 0;
+      line-height: 1.7;
+    }
+
+    .docs-article h1 {
+      font-size: clamp(26px, 2.5vw, 36px);
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      margin-top: 0;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-medium);
+      line-height: 1.25;
+    }
+
+    .docs-article h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent-primary);
+      margin-top: 42px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      scroll-margin-top: 80px;
+    }
+
+    .docs-article h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      scroll-margin-top: 80px;
+    }
+
+    .docs-article p {
+      font-size: 15px;
+      color: #cbd5e1;
+      margin-bottom: 16px;
+    }
+
+    .docs-article ul, .docs-article ol {
+      padding-left: 22px;
+      margin-bottom: 18px;
+      color: #cbd5e1;
+    }
+
+    .docs-article li {
+      margin-bottom: 8px;
+      font-size: 14.5px;
+    }
+
+    .docs-article a {
+      color: var(--accent-primary);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .docs-article a:hover {
+      filter: brightness(1.2);
+    }
+
+    .docs-article code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-subtle);
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      color: #38bdf8;
+    }
+
+    /* Blocos de Código Fenced com Barra Superior e Botão de Cópia */
+    .docs-code-container {
+      position: relative;
+      margin: 20px 0;
+      border-radius: var(--radius-md);
+      background: #090d16;
+      border: 1px solid var(--border-medium);
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .docs-code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .docs-copy-btn {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all var(--transition-fast);
+    }
+
+    .docs-copy-btn:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border-color: var(--accent-primary);
+    }
+
+    .docs-article pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+      background: transparent;
+    }
+
+    .docs-article pre code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: #f1f5f9;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* Tabelas Markdown */
+    .docs-table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      margin: 24px 0;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .docs-article table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+    }
+
+    .docs-article th {
+      background: #0f172a;
+      color: var(--accent-primary);
+      padding: 12px 16px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-medium);
+    }
+
+    .docs-article td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: #cbd5e1;
+    }
+
+    .docs-article tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .docs-article tr:hover td {
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    /* Callouts / Alerts */
+    .docs-alert {
+      margin: 20px 0;
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      border-left: 4px solid var(--accent-primary);
+      background: rgba(15, 23, 42, 0.7);
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .docs-alert.note {
+      border-left-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .docs-alert.tip {
+      border-left-color: #10b981;
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .docs-alert.warning {
+      border-left-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .docs-alert.important {
+      border-left-color: #a855f7;
+      background: rgba(168, 85, 247, 0.08);
+    }
+
+    .docs-alert-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .docs-alert-content {
+      font-size: 14px;
+      color: #e2e8f0;
+    }
+
+    .docs-alert-content p {
+      margin: 0;
+      color: inherit;
+    }
+
+    /* Rodapé do Artigo */
+    .docs-footer {
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .docs-layout {
+        grid-template-columns: 1fr;
+      }
+      .docs-sidebar {
+        display: none;
+      }
+      .docs-header {
+        padding: 10px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Superior -->
+  <header class="docs-header">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <a href="./" class="docs-brand" title="Voltar ao Portal Inicial">
+        <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-primary); box-shadow: 0 0 8px var(--accent-primary);"></span>
+        <span>SlideMeshLive</span>
+      </a>
+      <span class="badge badge-accent" style="font-size: 11px;">📖 Guia &amp; Documentação</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <input type="text" id="docs-filter-input" class="docs-search-input" placeholder="🔍 Filtrar no guia..." title="Filtrar seções do documento">
+      
+      <!-- Idioma -->
+      <button class="btn btn-sm" id="btn-docs-lang" style="padding: 4px 8px; font-size: 12px;" title="Alternar Idioma">
+        🇧🇷 PT
+      </button>
+
+      <!-- Tema -->
+      <button class="btn btn-sm" id="btn-docs-theme" style="padding: 4px 8px; font-size: 12px;" title="Alternar Tema">
+        🌙 Tema
+      </button>
+
+      <!-- Voltar -->
+      <a href="./" class="btn btn-sm btn-primary" style="padding: 4px 12px; font-size: 12px; text-decoration: none;">
+        🏠 Portal
+      </a>
+    </div>
+  </header>
+
+  <!-- Layout Central -->
+  <div class="docs-layout">
+    <!-- Sidebar de Navegação / Sumário -->
+    <aside class="docs-sidebar">
+      <div class="docs-toc-title">Sumário do Guia</div>
+      <nav id="docs-toc-container">
+        <!-- Links gerados automaticamente a partir dos H2/H3 do Markdown -->
+      </nav>
+    </aside>
+
+    <!-- Artigo Formatado -->
+    <main class="docs-article" id="docs-content-container">
+      <div style="padding: 60px 0; text-align: center; color: var(--text-muted);" class="animate-pulse">
+        Carregando e formatando documentação...
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { i18n } from './js/core/i18n-engine.js';
+    import { theme, THEMES } from './js/core/theme-engine.js';
+
+    // Obter arquivo especificado na URL ou usar README.md por padrão
+    const params = new URLSearchParams(window.location.search);
+    const docFile = params.get('file') || 'README.md';
+
+    function updateLanguageButton() {
+      const btn = document.getElementById('btn-docs-lang');
+      if (btn) btn.textContent = i18n.language === 'pt-BR' ? '🇧🇷 PT' : '🇺🇸 EN';
+    }
+
+    function updateThemeButton() {
+      const btn = document.getElementById('btn-docs-theme');
+      if (btn) {
+        const current = THEMES.find(t => t.id === theme.theme) || THEMES[0];
+        btn.textContent = `${current.icon} ${i18n.t(current.labelKey)}`;
+      }
+    }
+
+    // Parser Markdown embutido com suporte a GitHub Alerts, Tabelas e Fenced Code
+    function parseMarkdown(md) {
+      if (!md) return '';
+
+      // 1. Escapes de segurança básicos em blocos normais
+      let lines = md.split('\n');
+      let htmlLines = [];
+      let inCodeBlock = false;
+      let codeLang = '';
+      let codeBuffer = [];
+      let inTable = false;
+      let tableRows = [];
+
+      function flushTable() {
+        if (!inTable || tableRows.length === 0) return '';
+        inTable = false;
+        let tHtml = '<div class="docs-table-wrapper"><table>';
+        tableRows.forEach((row, idx) => {
+          let cols = row.split('|').map(c => c.trim()).filter((c, i, arr) => i > 0 && i < arr.length - 1);
+          if (idx === 0) {
+            tHtml += '<thead><tr>' + cols.map(c => `<th>${inlineFormat(c)}</th>`).join('') + '</tr></thead><tbody>';
+          } else if (idx === 1 && cols.some(c => c.includes('---'))) {
+            // linha separadora
+          } else {
+            tHtml += '<tr>' + cols.map(c => `<td>${inlineFormat(c)}</td>`).join('') + '</tr>';
+          }
+        });
+        tHtml += '</tbody></table></div>';
+        tableRows = [];
+        return tHtml;
+      }
+
+      function inlineFormat(text) {
+        return text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          // Imagens: ![alt](url)
+          .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width: 100%; border-radius: 8px; margin: 12px 0;" />')
+          // Links: [text](url)
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+          // Bold + Italic: ***text***
+          .replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>')
+          // Bold: **text**
+          .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+          // Italic: *text*
+          .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+          // Inline Code: `code`
+          .replace(/`([^`]+)`/g, '<code>$1</code>');
+      }
+
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+
+        // Fenced Code Block
+        if (line.trim().startsWith('```')) {
+          if (inCodeBlock) {
+            inCodeBlock = false;
+            let codeContent = codeBuffer.join('\n')
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;');
+            
+            let blockHtml = `
+              <div class="docs-code-container animate-fade-in">
+                <div class="docs-code-header">
+                  <span>${codeLang || 'TEXT'}</span>
+                  <button class="docs-copy-btn" onclick="navigator.clipboard.writeText(this.closest('.docs-code-container').querySelector('code').innerText).then(() => { this.innerText = '✓ Copiado!'; setTimeout(() => this.innerText = '📋 Copiar', 2000); })">
+                    📋 Copiar
+                  </button>
+                </div>
+                <pre><code>${codeContent}</code></pre>
+              </div>
+            `;
+            htmlLines.push(blockHtml);
+            codeBuffer = [];
+            codeLang = '';
+          } else {
+            if (inTable) htmlLines.push(flushTable());
+            inCodeBlock = true;
+            codeLang = line.trim().replace(/^```/, '').trim();
+          }
+          continue;
+        }
+
+        if (inCodeBlock) {
+          codeBuffer.push(line);
+          continue;
+        }
+
+        // Tabelas
+        if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
+          inTable = true;
+          tableRows.push(line.trim());
+          continue;
+        } else if (inTable) {
+          htmlLines.push(flushTable());
+        }
+
+        // GitHub Callouts (> [!NOTE], > [!TIP], > [!IMPORTANT], > [!WARNING])
+        const alertMatch = line.match(/^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](.*)$/i);
+        if (alertMatch) {
+          let alertType = alertMatch[1].toLowerCase();
+          let icon = alertType === 'tip' ? '💡' : alertType === 'warning' ? '⚠️' : alertType === 'important' ? '📌' : 'ℹ️';
+          let alertBody = alertMatch[2] ? inlineFormat(alertMatch[2].trim()) : '';
+          
+          // Coletar linhas adicionais do callout
+          let j = i + 1;
+          while (j < lines.length && lines[j].trim().startsWith('>')) {
+            alertBody += ' ' + inlineFormat(lines[j].replace(/^>\s*/, ''));
+            j++;
+          }
+          i = j - 1;
+
+          htmlLines.push(`
+            <div class="docs-alert ${alertType}">
+              <span class="docs-alert-icon">${icon}</span>
+              <div class="docs-alert-content"><strong>${alertType.toUpperCase()}:</strong> ${alertBody}</div>
+            </div>
+          `);
+          continue;
+        }
+
+        // Linhas em branco
+        if (!line.trim()) {
+          continue;
+        }
+
+        // Títulos H1, H2, H3, H4
+        if (line.startsWith('# ')) {
+          let title = line.replace('# ', '').trim();
+          htmlLines.push(`<h1>${inlineFormat(title)}</h1>`);
+        } else if (line.startsWith('## ')) {
+          let title = line.replace('## ', '').trim();
+          let slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          htmlLines.push(`<h2 id="${slug}">${inlineFormat(title)}</h2>`);
+        } else if (line.startsWith('### ')) {
+          let title = line.replace('### ', '').trim();
+          let slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          htmlLines.push(`<h3 id="${slug}">${inlineFormat(title)}</h3>`);
+        } else if (line.startsWith('#### ')) {
+          let title = line.replace('#### ', '').trim();
+          htmlLines.push(`<h4>${inlineFormat(title)}</h4>`);
+        } else if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
+          let itemText = line.trim().replace(/^[-*]\s+/, '');
+          htmlLines.push(`<li>${inlineFormat(itemText)}</li>`);
+        } else if (line.trim() === '---') {
+          htmlLines.push('<hr style="border: 0; height: 1px; background: var(--border-subtle); margin: 36px 0;" />');
+        } else {
+          htmlLines.push(`<p>${inlineFormat(line)}</p>`);
+        }
+      }
+
+      if (inTable) {
+        htmlLines.push(flushTable());
+      }
+
+      // Agrupa <li> soltos dentro de <ul>
+      let result = htmlLines.join('\n');
+      result = result.replace(/(<li>[\s\S]*?<\/li>(\n| )*)+/g, match => `<ul>${match}</ul>`);
+
+      return result;
+    }
+
+    async function loadMarkdownDoc() {
+      updateLanguageButton();
+      updateThemeButton();
+
+      const container = document.getElementById('docs-content-container');
+      const tocContainer = document.getElementById('docs-toc-container');
+
+      try {
+        const res = await fetch(docFile + '?t=' + Date.now());
+        if (!res.ok) throw new Error(`Não foi possível carregar o arquivo "${docFile}" (${res.status})`);
+        const mdText = await res.text();
+
+        // Renderizar conteúdo HTML
+        container.innerHTML = parseMarkdown(mdText);
+
+        // Gerar Sumário (TOC) a partir dos H2 e H3
+        const headings = container.querySelectorAll('h2, h3');
+        if (headings.length > 0) {
+          let tocHtml = '';
+          headings.forEach(h => {
+            const isH3 = h.tagName.toLowerCase() === 'h3';
+            tocHtml += `
+              <a href="#${h.id}" class="docs-toc-link ${isH3 ? 'level-3' : ''}" title="${h.innerText}">
+                ${h.innerText}
+              </a>
+            `;
+          });
+          tocContainer.innerHTML = tocHtml;
+        } else {
+          tocContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">Sem seções indexadas.</div>';
+        }
+
+        // Rodapé do artigo
+        container.innerHTML += `
+          <footer class="docs-footer">
+            <div>
+              <span>Arquivo: <code>${docFile}</code></span>
+            </div>
+            <div>
+              <a href="https://github.com/flashbsb/SlideMeshLive" target="_blank" rel="noopener" style="text-decoration: none; color: var(--accent-primary); font-weight: 600;">
+                ⭐ SlideMeshLive no GitHub
+              </a>
+            </div>
+          </footer>
+        `;
+
+        // Ativação de IntersectionObserver para destacar link do sumário ativo
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const id = entry.target.id;
+              document.querySelectorAll('.docs-toc-link').forEach(link => {
+                link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+              });
+            }
+          });
+        }, { rootMargin: '0px 0px -70% 0px' });
+
+        headings.forEach(h => observer.observe(h));
+
+      } catch (err) {
+        container.innerHTML = `
+          <div class="docs-alert warning">
+            <span class="docs-alert-icon">⚠️</span>
+            <div class="docs-alert-content">
+              <strong>Erro ao Carregar Documento:</strong> ${err.message}
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // Filtro rápido de busca na documentação
+    document.getElementById('docs-filter-input')?.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const sections = document.querySelectorAll('.docs-article h2, .docs-article h3, .docs-article p, .docs-article li, .docs-article .docs-code-container');
+      
+      if (!q) {
+        sections.forEach(el => el.style.display = '');
+        return;
+      }
+
+      sections.forEach(el => {
+        const text = el.innerText.toLowerCase();
+        if (text.includes(q)) {
+          el.style.display = '';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    });
+
+    // Alternadores de Idioma e Tema
+    document.getElementById('btn-docs-lang')?.addEventListener('click', () => {
+      const nextLang = i18n.language === 'pt-BR' ? 'en-US' : 'pt-BR';
+      i18n.setLanguage(nextLang);
+      updateLanguageButton();
+    });
+
+    document.getElementById('btn-docs-theme')?.addEventListener('click', () => {
+      theme.cycleTheme();
+      updateThemeButton();
+    });
+
+    // Inicialização
+    loadMarkdownDoc();
+  </script>
+</body>
+</html>
