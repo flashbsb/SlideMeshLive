@@ -1,76 +1,126 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320" width="100%" height="100%" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); border-radius: 12px; font-family: system-ui, -apple-system, sans-serif;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 480" width="100%" height="100%" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); border-radius: 14px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
   <defs>
-    <filter id="neonKey" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.3"/>
+    <filter id="neonDrop" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.35"/>
     </filter>
   </defs>
 
-  <text x="410" y="32" text-anchor="middle" fill="#94a3b8" font-size="13" font-weight="700" letter-spacing="2">CENTRAL DE ATALHOS MÁGICOS DO APRESENTADOR</text>
+  <style>
+    @keyframes keyGlowPulse {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-3px); }
+    }
+    .k-anim-1 { animation: keyGlowPulse 2.8s infinite ease-in-out 0.1s; }
+    .k-anim-2 { animation: keyGlowPulse 2.8s infinite ease-in-out 0.3s; }
+    .k-anim-3 { animation: keyGlowPulse 2.8s infinite ease-in-out 0.5s; }
+    .k-anim-4 { animation: keyGlowPulse 2.8s infinite ease-in-out 0.7s; }
+    .k-anim-5 { animation: keyGlowPulse 2.8s infinite ease-in-out 0.9s; }
+    .k-anim-6 { animation: keyGlowPulse 2.8s infinite ease-in-out 1.1s; }
+    .k-anim-7 { animation: keyGlowPulse 2.8s infinite ease-in-out 1.3s; }
+    .k-anim-8 { animation: keyGlowPulse 2.8s infinite ease-in-out 1.5s; }
+  </style>
 
-  <!-- Key Row 1 -->
+  <!-- Title Top -->
+  <text x="480" y="32" text-anchor="middle" fill="#94a3b8" font-size="12.5" font-weight="800" letter-spacing="2.5">CENTRAL DE ATALHOS MÁGICOS DO APRESENTADOR</text>
+
+  <!-- 8 Stage Keys in a Row -->
   <!-- [Q] -->
-  <g transform="translate(40, 60)">
-    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2" filter="url(#neonKey)"/>
-    <text x="40" y="38" text-anchor="middle" fill="#38bdf8" font-size="22" font-weight="900">Q</text>
-    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">QR Gigante</text>
+  <g transform="translate(44, 55)" class="k-anim-1">
+    <rect width="95" height="92" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="2" filter="url(#neonDrop)"/>
+    <text x="47" y="46" text-anchor="middle" fill="#38bdf8" font-size="26" font-weight="900">Q</text>
+    <text x="47" y="74" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">QR Gigante</text>
   </g>
 
   <!-- [W] -->
-  <g transform="translate(135, 60)">
-    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2" filter="url(#neonKey)"/>
-    <text x="40" y="38" text-anchor="middle" fill="#38bdf8" font-size="22" font-weight="900">W</text>
-    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Mini QR</text>
+  <g transform="translate(155, 55)" class="k-anim-2">
+    <rect width="95" height="92" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="2" filter="url(#neonDrop)"/>
+    <text x="47" y="46" text-anchor="middle" fill="#38bdf8" font-size="26" font-weight="900">W</text>
+    <text x="47" y="74" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">Mini QR</text>
   </g>
 
   <!-- [M] -->
-  <g transform="translate(230, 60)">
-    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#818cf8" stroke-width="2" filter="url(#neonKey)"/>
-    <text x="40" y="38" text-anchor="middle" fill="#818cf8" font-size="22" font-weight="900">M</text>
-    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Mural Dúvidas</text>
+  <g transform="translate(266, 55)" class="k-anim-3">
+    <rect width="95" height="92" rx="12" fill="#0f172a" stroke="#818cf8" stroke-width="2" filter="url(#neonDrop)"/>
+    <text x="47" y="46" text-anchor="middle" fill="#818cf8" font-size="26" font-weight="900">M</text>
+    <text x="47" y="74" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">Mural Dúvidas</text>
   </g>
 
   <!-- [P] -->
-  <g transform="translate(325, 60)">
-    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#818cf8" stroke-width="2" filter="url(#neonKey)"/>
-    <text x="40" y="38" text-anchor="middle" fill="#818cf8" font-size="22" font-weight="900">P</text>
-    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Púlpito/Notas</text>
+  <g transform="translate(377, 55)" class="k-anim-4">
+    <rect width="95" height="92" rx="12" fill="#0f172a" stroke="#818cf8" stroke-width="2" filter="url(#neonDrop)"/>
+    <text x="47" y="46" text-anchor="middle" fill="#818cf8" font-size="26" font-weight="900">P</text>
+    <text x="47" y="74" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">Púlpito/Notas</text>
   </g>
 
   <!-- [V] -->
-  <g transform="translate(420, 60)">
-    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="2" filter="url(#neonKey)"/>
-    <text x="40" y="38" text-anchor="middle" fill="#34d399" font-size="22" font-weight="900">V</text>
-    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Abrir Enquete</text>
+  <g transform="translate(488, 55)" class="k-anim-5">
+    <rect width="95" height="92" rx="12" fill="#0f172a" stroke="#34d399" stroke-width="2" filter="url(#neonDrop)"/>
+    <text x="47" y="46" text-anchor="middle" fill="#34d399" font-size="26" font-weight="900">V</text>
+    <text x="47" y="74" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">Abrir Voto</text>
   </g>
 
   <!-- [R] -->
-  <g transform="translate(515, 60)">
-    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="2" filter="url(#neonKey)"/>
-    <text x="40" y="38" text-anchor="middle" fill="#34d399" font-size="22" font-weight="900">R</text>
-    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Ver Gráficos</text>
+  <g transform="translate(599, 55)" class="k-anim-6">
+    <rect width="95" height="92" rx="12" fill="#0f172a" stroke="#34d399" stroke-width="2" filter="url(#neonDrop)"/>
+    <text x="47" y="46" text-anchor="middle" fill="#34d399" font-size="26" font-weight="900">R</text>
+    <text x="47" y="74" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">Ver Gráficos</text>
   </g>
 
   <!-- [B] -->
-  <g transform="translate(610, 60)">
-    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#f43f5e" stroke-width="2" filter="url(#neonKey)"/>
-    <text x="40" y="38" text-anchor="middle" fill="#f43f5e" font-size="22" font-weight="900">B</text>
-    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Blackout Tela</text>
+  <g transform="translate(710, 55)" class="k-anim-7">
+    <rect width="95" height="92" rx="12" fill="#0f172a" stroke="#f43f5e" stroke-width="2" filter="url(#neonDrop)"/>
+    <text x="47" y="46" text-anchor="middle" fill="#f43f5e" font-size="26" font-weight="900">B</text>
+    <text x="47" y="74" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">Blackout</text>
   </g>
 
   <!-- [F] -->
-  <g transform="translate(705, 60)">
-    <rect width="80" height="75" rx="8" fill="#0f172a" stroke="#fbbf24" stroke-width="2" filter="url(#neonKey)"/>
-    <text x="40" y="38" text-anchor="middle" fill="#fbbf24" font-size="22" font-weight="900">F</text>
-    <text x="40" y="60" text-anchor="middle" fill="#94a3b8" font-size="9.5" font-weight="700">Fullscreen</text>
+  <g transform="translate(821, 55)" class="k-anim-8">
+    <rect width="95" height="92" rx="12" fill="#0f172a" stroke="#fbbf24" stroke-width="2" filter="url(#neonDrop)"/>
+    <text x="47" y="46" text-anchor="middle" fill="#fbbf24" font-size="26" font-weight="900">F</text>
+    <text x="47" y="74" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">Fullscreen</text>
   </g>
 
-  <!-- Navigation Bar Info -->
-  <g transform="translate(40, 160)">
-    <rect width="745" height="130" rx="10" fill="#0f172a" stroke="#334155"/>
-    <text x="25" y="30" fill="#38bdf8" font-size="12" font-weight="800">🎮 NAVEGAÇÃO DE SLIDES:</text>
-    <text x="25" y="55" fill="#cbd5e1" font-size="11">• [ Seta Direita / Barra de Espaço / Page Down ] ➔ Avança para o próximo slide</text>
-    <text x="25" y="75" fill="#cbd5e1" font-size="11">• [ Seta Esquerda / Page Up ] ➔ Retorna ao slide anterior</text>
-    <text x="25" y="95" fill="#cbd5e1" font-size="11">• [ Esc ] ➔ Fecha instantaneamente modais, gavetas e painéis flutuantes</text>
-    <text x="25" y="115" fill="#34d399" font-size="11 font-weight=600">⚡ Resposta em menos de 10 milissegundos sem recarregar nenhuma página</text>
+  <!-- Bottom Detail Grid Card -->
+  <g transform="translate(44, 170)">
+    <rect width="872" height="280" rx="14" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <rect x="0" y="0" width="872" height="42" rx="14" fill="#1e293b" fill-opacity="0.6"/>
+    <text x="25" y="27" fill="#38bdf8" font-size="13" font-weight="800">🎮 GUIA DE NAVEGAÇÃO E CONTROLE DE PALCO</text>
+
+    <!-- 2 Column Layout inside Detail Card -->
+    <!-- Col 1 -->
+    <g transform="translate(25, 60)">
+      <circle cx="6" cy="14" r="3.5" fill="#38bdf8"/>
+      <text x="18" y="18" fill="#ffffff" font-size="12" font-weight="700">[ Seta Direita / Barra de Espaço / PgDn ]</text>
+      <text x="18" y="38" fill="#94a3b8" font-size="11.5">Avança para o próximo slide da apresentação</text>
+
+      <circle cx="6" cy="74" r="3.5" fill="#38bdf8"/>
+      <text x="18" y="78" fill="#ffffff" font-size="12" font-weight="700">[ Seta Esquerda / PgUp ]</text>
+      <text x="18" y="98" fill="#94a3b8" font-size="11.5">Retorna ao slide anterior</text>
+
+      <circle cx="6" cy="134" r="3.5" fill="#f43f5e"/>
+      <text x="18" y="138" fill="#ffffff" font-size="12" font-weight="700">[ B ] Modo Blackout Teatral</text>
+      <text x="18" y="158" fill="#94a3b8" font-size="11.5">Apaga o telão instantaneamente para focar todos os olhares em você</text>
+    </g>
+
+    <!-- Col 2 -->
+    <g transform="translate(450, 60)">
+      <circle cx="6" cy="14" r="3.5" fill="#34d399"/>
+      <text x="18" y="18" fill="#ffffff" font-size="12" font-weight="700">[ P ] Modo Púlpito Privativo</text>
+      <text x="18" y="38" fill="#94a3b8" font-size="11.5">Abre notas confidenciais do orador e seletor rápido de miniaturas</text>
+
+      <circle cx="6" cy="74" r="3.5" fill="#818cf8"/>
+      <text x="18" y="78" fill="#ffffff" font-size="12" font-weight="700">[ M ] Mural de Perguntas da Plateia</text>
+      <text x="18" y="98" fill="#94a3b8" font-size="11.5">Exibe perguntas moderadas e aprovadas pela mesa técnica</text>
+
+      <circle cx="6" cy="134" r="3.5" fill="#fbbf24"/>
+      <text x="18" y="138" fill="#ffffff" font-size="12" font-weight="700">[ Esc ] Fechar Tudo</text>
+      <text x="18" y="158" fill="#94a3b8" font-size="11.5">Fecha modais, gavetas e QR Code flutuante em 0ms</text>
+    </g>
+
+    <!-- Footer pill -->
+    <g transform="translate(25, 235)">
+      <rect width="822" height="32" rx="6" fill="#1e293b" stroke="#0284c7"/>
+      <text x="411" y="21" text-anchor="middle" fill="#38bdf8" font-size="11.5" font-weight="700">⚡ Todos os atalhos operam em tempo real com resposta imediata e sem engasgos</text>
+    </g>
   </g>
 </svg>

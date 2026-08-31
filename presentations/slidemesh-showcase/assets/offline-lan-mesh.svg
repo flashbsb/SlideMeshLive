@@ -1,45 +1,128 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 340" width="100%" height="100%" style="background: linear-gradient(135deg, #061e1b 0%, #0f172a 100%); border-radius: 12px; font-family: system-ui, -apple-system, sans-serif;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 480" width="100%" height="100%" style="background: linear-gradient(135deg, #041d1a 0%, #0f172a 100%); border-radius: 14px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
   <defs>
-    <radialGradient id="wifiPulse" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#10b981" stop-opacity="0.6"/>
+    <radialGradient id="wifiPulseGreen" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.8"/>
       <stop offset="100%" stop-color="#047857" stop-opacity="0.1"/>
     </radialGradient>
+    <filter id="softGlowGreen" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
   </defs>
 
-  <text x="410" y="32" text-anchor="middle" fill="#34d399" font-size="13" font-weight="700" letter-spacing="2">INFRAESTRUTURA AIR-GAPPED: 100% OPERACIONAL SEM INTERNET</text>
+  <style>
+    @keyframes radarWaveRingSafe {
+      0% { r: 35px; opacity: 0.85; stroke-width: 2.5px; }
+      100% { r: 75px; opacity: 0; stroke-width: 1px; }
+    }
+    @keyframes movePktLeftToCenter {
+      0% { transform: translateX(0px); opacity: 0; }
+      25% { opacity: 1; }
+      75% { opacity: 1; }
+      100% { transform: translateX(120px); opacity: 0; }
+    }
+    @keyframes movePktCenterToRight {
+      0% { transform: translateX(0px); opacity: 0; }
+      25% { opacity: 1; }
+      75% { opacity: 1; }
+      100% { transform: translateX(120px); opacity: 0; }
+    }
+    .anim-radar-wave1 { animation: radarWaveRingSafe 2.8s infinite linear; }
+    .anim-radar-wave2 { animation: radarWaveRingSafe 2.8s infinite linear 1.4s; }
+    .anim-stream-left { animation: movePktLeftToCenter 2s infinite ease-in-out; }
+    .anim-stream-right { animation: movePktCenterToRight 2s infinite ease-in-out 1s; }
+  </style>
 
-  <!-- Router in Center -->
-  <g transform="translate(360, 60)">
-    <circle cx="50" cy="50" r="48" fill="url(#wifiPulse)" stroke="#10b981" stroke-width="2"/>
-    <text x="50" y="58" text-anchor="middle" font-size="32">📡</text>
-    <text x="50" y="115" text-anchor="middle" fill="#6ee7b7" font-size="12" font-weight="800">ROTEADOR WI-FI LOCAL</text>
-    <text x="50" y="132" text-anchor="middle" fill="#94a3b8" font-size="10">Zero Saída para Internet</text>
+  <!-- Title Banner -->
+  <text x="480" y="32" text-anchor="middle" fill="#34d399" font-size="12.5" font-weight="800" letter-spacing="2.5">INFRAESTRUTURA AIR-GAPPED: 100% OPERACIONAL SEM INTERNET</text>
+
+  <!-- ================= LEFT: LAPTOP DO ORADOR ================= -->
+  <g transform="translate(30, 52)">
+    <rect width="270" height="245" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+    <rect x="0" y="0" width="270" height="42" rx="12" fill="#0284c7" fill-opacity="0.3"/>
+    <text x="135" y="27" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="800">💻 NOTEBOOK DO ORADOR</text>
+    
+    <g transform="translate(18, 65)">
+      <circle cx="6" cy="6" r="3" fill="#38bdf8"/>
+      <text x="16" y="10" fill="#e2e8f0" font-size="12" font-weight="700">Roda Servidor Python</text>
+      <text x="16" y="28" fill="#94a3b8" font-size="11">Executa `server.py` local</text>
+
+      <circle cx="6" cy="56" r="3" fill="#38bdf8"/>
+      <text x="16" y="60" fill="#e2e8f0" font-size="12" font-weight="700">Endereço IP da LAN</text>
+      <text x="16" y="78" fill="#94a3b8" font-size="11">Ex: `192.168.1.100:8000`</text>
+
+      <!-- Snapshot Pill -->
+      <g transform="translate(0, 100)">
+        <rect width="234" height="48" rx="8" fill="#1e293b" stroke="#0284c7" stroke-width="1"/>
+        <text x="12" y="20" fill="#34d399" font-size="11.5" font-weight="800">✓ Snapshot Atômico</text>
+        <text x="12" y="38" fill="#94a3b8" font-size="10.5">Tolerância a reinicialização (--persist)</text>
+      </g>
+    </g>
   </g>
 
-  <!-- Laptop Presenter (Left) -->
-  <g transform="translate(50, 80)">
-    <rect width="220" height="150" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
-    <text x="110" y="30" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="800">💻 NOTEBOOK DO ORADOR</text>
-    <text x="20" y="65" fill="#e2e8f0" font-size="11">Roda `python3 server.py`</text>
-    <text x="20" y="85" fill="#94a3b8" font-size="10.5">IP Local: `192.168.1.100`</text>
-    <text x="20" y="110" fill="#34d399" font-size="11 font-weight=700">✓ Snapshot atômico (--persist)</text>
-    <text x="20" y="130" fill="#94a3b8" font-size="10">Tolerância a reboot</text>
+  <!-- ================= CENTER: ROTEADOR WI-FI ================= -->
+  <g transform="translate(480, 175)">
+    <!-- Concentric Waves behind router -->
+    <circle cx="0" cy="-20" r="36" fill="none" stroke="#10b981" class="anim-radar-wave1"/>
+    <circle cx="0" cy="-20" r="36" fill="none" stroke="#34d399" class="anim-radar-wave2"/>
+
+    <!-- Central Router Icon -->
+    <circle cx="0" cy="-20" r="42" fill="url(#wifiPulseGreen)" stroke="#10b981" stroke-width="2.5" filter="url(#softGlowGreen)"/>
+    <text x="0" y="-11" text-anchor="middle" font-size="28">📡</text>
+    
+    <!-- Router Labels positioned safely below icon -->
+    <rect x="-105" y="36" width="210" height="42" rx="8" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+    <text x="0" y="54" text-anchor="middle" fill="#6ee7b7" font-size="12" font-weight="900">ROTEADOR WI-FI LOCAL</text>
+    <text x="0" y="70" text-anchor="middle" fill="#94a3b8" font-size="10.5">Zero Conexão com a Internet</text>
   </g>
 
-  <!-- Smartphones (Right) -->
-  <g transform="translate(550, 80)">
-    <rect width="220" height="150" rx="10" fill="#0f172a" stroke="#818cf8" stroke-width="2"/>
-    <text x="110" y="30" text-anchor="middle" fill="#a5b4fc" font-size="13" font-weight="800">📱 500+ SMARTPHONES</text>
-    <text x="20" y="65" fill="#e2e8f0" font-size="11">Conectam no IP do Wi-Fi</text>
-    <text x="20" y="85" fill="#94a3b8" font-size="10.5">Zero consumo de 4G/5G</text>
-    <text x="20" y="110" fill="#34d399" font-size="11 font-weight=700">✓ Votos e Perguntas em LAN</text>
-    <text x="20" y="130" fill="#94a3b8" font-size="10">Hub HTTP sequencial local</text>
+  <!-- Connection Line & Packet (Left -> Router) -->
+  <line x1="300" y1="155" x2="435" y2="155" stroke="#34d399" stroke-width="2.5" stroke-dasharray="6,4"/>
+  <g transform="translate(305, 155)">
+    <circle cx="0" cy="0" r="6" fill="#38bdf8" class="anim-stream-left"/>
   </g>
 
-  <!-- Badges Below -->
-  <g transform="translate(50, 255)">
-    <rect width="720" height="60" rx="8" fill="#064e3b" fill-opacity="0.4" stroke="#059669"/>
-    <text x="360" y="26" text-anchor="middle" fill="#6ee7b7" font-size="12" font-weight="800">🌲 AUDITÓRIOS SUBTERRÂNEOS • RETIROS NO MEIO DA FLORESTA • SALAS SEGURAS (SCIF)</text>
-    <text x="360" y="46" text-anchor="middle" fill="#cbd5e1" font-size="11">Se a nuvem cair ou o link internacional romper, o SlideMeshLive continua 100% no ar!</text>
+  <!-- Connection Line & Packet (Router -> Right) -->
+  <line x1="525" y1="155" x2="660" y2="155" stroke="#34d399" stroke-width="2.5" stroke-dasharray="6,4"/>
+  <g transform="translate(530, 155)">
+    <circle cx="0" cy="0" r="6" fill="#a855f7" class="anim-stream-right"/>
+  </g>
+
+  <!-- ================= RIGHT: SMARTPHONES AUDIENCE ================= -->
+  <g transform="translate(660, 52)">
+    <rect width="270" height="245" rx="12" fill="#0f172a" stroke="#818cf8" stroke-width="2"/>
+    <rect x="0" y="0" width="270" height="42" rx="12" fill="#4f46e5" fill-opacity="0.3"/>
+    <text x="135" y="27" text-anchor="middle" fill="#a5b4fc" font-size="13" font-weight="800">📱 500+ SMARTPHONES</text>
+
+    <g transform="translate(18, 65)">
+      <circle cx="6" cy="6" r="3" fill="#818cf8"/>
+      <text x="16" y="10" fill="#e2e8f0" font-size="12" font-weight="700">Acesso via Wi-Fi Local</text>
+      <text x="16" y="28" fill="#94a3b8" font-size="11">Zero consumo de dados móveis</text>
+
+      <circle cx="6" cy="56" r="3" fill="#818cf8"/>
+      <text x="16" y="60" fill="#e2e8f0" font-size="12" font-weight="700">Sincronia Ultrarrápida</text>
+      <text x="16" y="78" fill="#94a3b8" font-size="11">Tempo de resposta &lt;100ms</text>
+
+      <!-- Votes & Questions Pill -->
+      <g transform="translate(0, 100)">
+        <rect width="234" height="48" rx="8" fill="#1e293b" stroke="#6366f1" stroke-width="1"/>
+        <text x="12" y="20" fill="#34d399" font-size="11.5" font-weight="800">✓ Votos e Perguntas em LAN</text>
+        <text x="12" y="38" fill="#94a3b8" font-size="10.5">Segurança sem tráfego externo</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ================= BOTTOM BANNER ================= -->
+  <g transform="translate(30, 318)">
+    <rect width="900" height="138" rx="12" fill="#064e3b" fill-opacity="0.45" stroke="#059669" stroke-width="1.5"/>
+    
+    <!-- Header Tag inside banner -->
+    <rect x="250" y="12" width="400" height="26" rx="13" fill="#065f46" stroke="#10b981"/>
+    <text x="450" y="29" text-anchor="middle" fill="#6ee7b7" font-size="11.5" font-weight="800">🌲 AUDITÓRIOS • RETIROS DE CAMPO • SALAS SEGURAS</text>
+
+    <!-- Text explanations -->
+    <text x="450" y="64" text-anchor="middle" fill="#e2e8f0" font-size="12.5" font-weight="600">Mesmo que a internet caia ou o sinal 5G seja bloqueado,</text>
+    <text x="450" y="88" text-anchor="middle" fill="#34d399" font-size="13" font-weight="800">⚡ O SlideMeshLive continua 100% no ar com sincronização total na rede local!</text>
+    <text x="450" y="112" text-anchor="middle" fill="#94a3b8" font-size="11">Toda a comunicação ocorre diretamente entre o seu notebook e os celulares da plateia.</text>
   </g>
 </svg>

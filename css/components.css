@@ -108,6 +108,26 @@
   border-color: var(--border-medium);
 }
 
+/* Media Box for Presenter & Audience */
+.slide-media-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 18px;
+  overflow: hidden;
+}
+
+.slide-media-box img,
+.slide-media-box svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-md);
+  object-fit: contain;
+}
+
 /* Poll / Interaction Option Button */
 .poll-option-btn {
   width: 100%;
