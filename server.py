@@ -8,11 +8,15 @@ import os
 import sys
 import json
 import time
+import re
+import base64
 import socket
 import argparse
 import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Memória central de sincronização em tempo real do servidor local
 SERVER_STATE = {
@@ -98,7 +102,128 @@ def load_state_from_disk(filepath=None):
             return True
     except Exception as e:
         sys.stderr.write(f"[WARN] Falha ao restaurar snapshot em disco ({target_path}): {e}\n")
-    return False
+def import_presentation_files(data):
+    """
+    Processa a gravação atômica de uma nova apresentação importada:
+    - Validação de schema (manifest, slides)
+    - Prevenção de Path Traversal
+    - Gravação atômica de manifest.json e slides.json
+    - Decodificação e gravação de assets embutidos
+    - Atualização atômica de presentations/catalog.json
+    """
+    if not isinstance(data, dict):
+        raise ValueError("Payload de importação inválido: esperado objeto JSON.")
+
+    manifest = data.get("manifest")
+    slides = data.get("slides")
+    assets = data.get("assets", [])
+
+    if not isinstance(manifest, dict) or not isinstance(slides, list) or len(slides) == 0:
+        raise ValueError("Apresentação precisa conter manifest válido e ao menos 1 slide.")
+
+    raw_id = str(manifest.get("id", "")).strip().lower()
+    slug = re.sub(r'[^a-z0-9_-]', '', raw_id)
+    if not slug or len(slug) < 2:
+        slug = f"apresentacao-{int(time.time())}"
+
+    manifest["id"] = slug
+    manifest["totalSlides"] = len(slides)
+    manifest.setdefault("theme", {"accentColor": "#38bdf8", "background": "#0b0f19"})
+    manifest.setdefault("security", {"mode": "public"})
+    manifest.setdefault("defaultSession", "SES" + str(int(time.time()) % 9000 + 1000))
+    manifest.setdefault("securityLabel", "Pública")
+    manifest.setdefault("badgeClass", "badge-accent")
+
+    presentations_root = os.path.abspath(os.path.join(BASE_DIR, "presentations"))
+    target_dir = os.path.abspath(os.path.join(presentations_root, slug))
+
+    # Proteção de segurança contra Path Traversal
+    if not target_dir.startswith(presentations_root + os.sep) and target_dir != presentations_root:
+        raise PermissionError("Tentativa de gravação fora do diretório presentations/ bloqueada.")
+
+    assets_dir = os.path.join(target_dir, "assets")
+    os.makedirs(assets_dir, exist_ok=True)
+
+    # 1. Grava assets se houver
+    for asset in assets:
+        if isinstance(asset, dict) and "filename" in asset and "dataBase64" in asset:
+            fname = os.path.basename(asset["filename"])
+            if not fname:
+                continue
+            b64_str = str(asset["dataBase64"])
+            if "," in b64_str:
+                b64_str = b64_str.split(",", 1)[1]
+            try:
+                asset_bytes = base64.b64decode(b64_str)
+                asset_path = os.path.join(assets_dir, fname)
+                with open(asset_path, "wb") as af:
+                    af.write(asset_bytes)
+            except Exception as e:
+                sys.stderr.write(f"[WARN] Falha ao gravar asset {fname}: {e}\n")
+
+    # 2. Grava manifest.json atomicamente
+    manifest_path = os.path.join(target_dir, "manifest.json")
+    manifest_tmp = manifest_path + ".tmp"
+    with open(manifest_tmp, "w", encoding="utf-8") as mf:
+        json.dump(manifest, mf, ensure_ascii=False, indent=2)
+        mf.flush()
+        os.fsync(mf.fileno())
+    os.replace(manifest_tmp, manifest_path)
+
+    # 3. Grava slides.json atomicamente
+    slides_payload = {"slides": slides}
+    slides_path = os.path.join(target_dir, "slides.json")
+    slides_tmp = slides_path + ".tmp"
+    with open(slides_tmp, "w", encoding="utf-8") as sf:
+        json.dump(slides_payload, sf, ensure_ascii=False, indent=2)
+        sf.flush()
+        os.fsync(sf.fileno())
+    os.replace(slides_tmp, slides_path)
+
+    # 4. Atualiza presentations/catalog.json atomicamente
+    catalog_path = os.path.join(presentations_root, "catalog.json")
+    with _STATE_LOCK:
+        catalog_data = {"version": "1.0.0", "presentations": []}
+        if os.path.exists(catalog_path):
+            try:
+                with open(catalog_path, "r", encoding="utf-8") as cf:
+                    catalog_data = json.load(cf)
+            except Exception:
+                pass
+
+        catalog_presentations = catalog_data.setdefault("presentations", [])
+        catalog_entry = {
+            "id": slug,
+            "code": manifest.get("code", slug.upper()),
+            "title": manifest.get("title", slug),
+            "subtitle": manifest.get("subtitle", ""),
+            "description": manifest.get("description", ""),
+            "defaultSession": manifest.get("defaultSession", "SES2026"),
+            "totalSlides": len(slides),
+            "securityMode": manifest.get("security", {}).get("mode", "public"),
+            "securityLabel": manifest.get("securityLabel", "Pública"),
+            "badgeClass": manifest.get("badgeClass", "badge-accent")
+        }
+
+        # Se já existe no catálogo, atualiza; se não, insere no topo
+        existing_idx = next((i for i, p in enumerate(catalog_presentations) if p.get("id") == slug), None)
+        if existing_idx is not None:
+            catalog_presentations[existing_idx] = catalog_entry
+        else:
+            catalog_presentations.insert(0, catalog_entry)
+
+        catalog_tmp = catalog_path + ".tmp"
+        with open(catalog_tmp, "w", encoding="utf-8") as cf:
+            json.dump(catalog_data, cf, ensure_ascii=False, indent=2)
+            cf.flush()
+            os.fsync(cf.fileno())
+        os.replace(catalog_tmp, catalog_path)
+
+    return {
+        "slug": slug,
+        "totalSlides": len(slides),
+        "manifest": manifest
+    }
 
 class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
@@ -275,6 +400,38 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
                 self.end_headers()
                 self.wfile.write(json.dumps({"success": True, "eventId": event_id, "timestamp": now_ts}).encode('utf-8'))
+                return
+            except Exception as err:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": str(err)}).encode('utf-8'))
+                return
+
+        elif parsed.path == '/api/presentations/import':
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length).decode('utf-8')
+
+            try:
+                data = json.loads(body)
+                import_res = import_presentation_files(data)
+                slug = import_res["slug"]
+                manifest = import_res["manifest"]
+
+                response_data = {
+                    "success": True,
+                    "presentationId": slug,
+                    "totalSlides": import_res["totalSlides"],
+                    "presenterUrl": f"/presenter/?presentation={slug}&session={manifest.get('defaultSession', 'SES2026')}",
+                    "audienceUrl": f"/audience/?presentation={slug}&session={manifest.get('defaultSession', 'SES2026')}",
+                    "adminUrl": f"/admin/?presentation={slug}&session={manifest.get('defaultSession', 'SES2026')}",
+                    "message": "Apresentação importada e registrada com sucesso!"
+                }
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.end_headers()
+                self.wfile.write(json.dumps(response_data).encode('utf-8'))
                 return
             except Exception as err:
                 self.send_response(400)

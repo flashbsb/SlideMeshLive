@@ -97,6 +97,7 @@ def test_essential_files_presence():
         # HTML Core
         "index.html",
         "docs.html",
+        "import.html",
         "presenter/index.html",
         "admin/index.html",
         "audience/index.html",
@@ -119,16 +120,19 @@ def test_essential_files_presence():
         "js/core/theme-engine.js",
         "js/core/i18n-engine.js",
         "js/core/session-manager.js",
+        "js/core/conversion-engine.js",
         # JS Application Controllers
         "js/presenter/presenter-app.js",
         "js/audience/audience-app.js",
         "js/admin/admin-app.js",
         # Bibliotecas e Configurações
         "lib/qrcode.min.js",
+        "lib/jszip.min.js",
         "config/security.example.json",
         "firebase.json",
         "database.rules.json",
         "server.py",
+        "tools/import_presentation.py",
         "README.md",
         "plan/PLANO_MESTRE_ANALISE_E_IMPLANTACAO.md"
     ]
@@ -694,8 +698,132 @@ def test_readme_and_documentation_consistency():
     assert "apresentacaoonline" not in readme, "Encontrada referência legada 'apresentacaoonline' no README.md!"
     assert "SlideMeshLive" in readme, "Nome oficial 'SlideMeshLive' ausente no README.md"
     assert "cd /home/flashbsb/projetos/SlideMeshLive" in readme, "Caminho oficial de terminal ausente no README.md"
-    
     print("✓ README.md 100% padronizado com o branding e caminhos de diretório oficiais.")
+
+def test_presentation_import_endpoint():
+    print_section("10. Importação Dinâmica de Apresentações (POST /api/presentations/import)")
+    import shutil
+    
+    test_slug = "teste-import-auto"
+    test_target_dir = os.path.join(BASE_DIR, "presentations", test_slug)
+    catalog_path = os.path.join(BASE_DIR, "presentations", "catalog.json")
+
+    # Inicia servidor HTTP em porta aleatória
+    httpd = HTTPServer(("127.0.0.1", 0), server.LiveSyncHTTPRequestHandler)
+    port = httpd.server_port
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    base_url = f"http://127.0.0.1:{port}"
+
+    # Backup do catalog.json original
+    with open(catalog_path, "r", encoding="utf-8") as cf:
+        orig_catalog_content = cf.read()
+
+    try:
+        # 1. Teste de importação com sucesso
+        payload = {
+            "manifest": {
+                "id": test_slug,
+                "code": "AUTO-TEST-2026",
+                "title": "Apresentação de Teste Automático",
+                "subtitle": "Criada dinamicamente via POST /api/presentations/import",
+                "description": "Validação ponta a ponta do motor de importação e conversão.",
+                "defaultSession": "AUTOSES2026",
+                "totalSlides": 2,
+                "theme": {"accentColor": "#38bdf8", "background": "#0b0f19"},
+                "security": {"mode": "public"}
+            },
+            "slides": [
+                {
+                    "id": 1,
+                    "slug": "slide-1",
+                    "tag": "SLIDE 1",
+                    "title": "Primeiro Slide Importado",
+                    "presenter": {
+                        "headline": "Primeiro Slide Importado",
+                        "bullets": ["Tópico 1 extraído", "Tópico 2 extraído"],
+                        "notes": "Nota de teste do orador"
+                    },
+                    "audience": {
+                        "summary": "Resumo do slide 1",
+                        "sections": [{"title": "Detalhes", "type": "text", "content": "Texto integral"}]
+                    }
+                },
+                {
+                    "id": 2,
+                    "slug": "slide-2",
+                    "tag": "SLIDE 2",
+                    "title": "Segundo Slide com Imagem",
+                    "presenter": {
+                        "headline": "Segundo Slide",
+                        "bullets": ["Gráfico analisado"],
+                        "notes": "Sem notas"
+                    },
+                    "audience": {
+                        "summary": "Resumo do slide 2",
+                        "sections": []
+                    }
+                }
+            ],
+            "assets": [
+                {
+                    "filename": "test-sample.txt",
+                    "dataBase64": "data:text/plain;base64,U2xpZGVNZXNoTGl2ZSBBc3NldCBUZXN0"
+                }
+            ]
+        }
+
+        req = urllib.request.Request(
+            f"{base_url}/api/presentations/import",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"}
+        )
+
+        with urllib.request.urlopen(req, timeout=3) as res:
+            assert res.status == 200
+            resp_data = json.loads(res.read().decode("utf-8"))
+            assert resp_data.get("success") is True
+            assert resp_data.get("presentationId") == test_slug
+            assert resp_data.get("totalSlides") == 2
+            assert "/presenter/?presentation=" in resp_data.get("presenterUrl", "")
+
+        # Valida existência em disco
+        assert os.path.exists(os.path.join(test_target_dir, "manifest.json")), "manifest.json não foi gravado em disco!"
+        assert os.path.exists(os.path.join(test_target_dir, "slides.json")), "slides.json não foi gravado em disco!"
+        assert os.path.exists(os.path.join(test_target_dir, "assets", "test-sample.txt")), "Asset não foi gravado em disco!"
+
+        # Valida registro no catalog.json
+        with open(catalog_path, "r", encoding="utf-8") as cf:
+            updated_cat = json.load(cf)
+            assert any(p["id"] == test_slug for p in updated_cat.get("presentations", [])), "Apresentação não foi inserida no catalog.json!"
+
+        print("  ✓ POST /api/presentations/import: Gravação atômica de manifest, slides e assets validada.")
+        print("  ✓ POST /api/presentations/import: Atualização instantânea do catalog.json validada.")
+
+        # 2. Teste de rejeição de payload malformado (HTTP 400)
+        bad_req = urllib.request.Request(
+            f"{base_url}/api/presentations/import",
+            data=b"corrupted json payload",
+            headers={"Content-Type": "application/json"}
+        )
+        try:
+            with urllib.request.urlopen(bad_req, timeout=3) as res:
+                assert False, "Deveria ter retornado HTTP 400 para JSON corrompido"
+        except urllib.error.HTTPError as he:
+            assert he.code == 400
+        print("  ✓ POST /api/presentations/import: Tratamento de erros e payloads inválidos retorna HTTP 400.")
+
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+        # Limpeza e restauração do catálogo
+        if os.path.exists(test_target_dir):
+            shutil.rmtree(test_target_dir, ignore_errors=True)
+        with open(catalog_path, "w", encoding="utf-8") as cf:
+            cf.write(orig_catalog_content)
+
+    print("✓ Endpoint seguro de importação de apresentações (/api/presentations/import) aprovado com 100% de sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()
@@ -708,6 +836,7 @@ if __name__ == "__main__":
         test_realtime_and_auth_sync_optimization()
         test_server_persistence_and_snapshot_resilience()
         test_phase4_mobile_haptics_and_a11y_high_contrast()
+        test_presentation_import_endpoint()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

@@ -103,6 +103,11 @@
     </div>
     
     <div style="display: flex; align-items: center; gap: 10px;">
+      <!-- Assistente de Importação -->
+      <a href="import.html" class="btn btn-sm btn-primary" style="padding: 4px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;" title="Assistente de Importação e Conversão de Apresentações">
+        <span data-i18n="portal.btn_import">📤 Importar</span>
+      </a>
+
       <!-- Link Documentação -->
       <a href="docs.html" class="btn btn-sm" style="padding: 4px 10px; font-size: 12px; text-decoration: none;" title="Abrir Guia e Documentação Oficial">
         <span data-i18n="portal.btn_docs">📖 Guia &amp; Docs</span>
@@ -234,8 +239,11 @@
             </p>
           </div>
 
-          <div style="margin-top: 24px;">
-            <a href="docs.html?file=README.md" class="btn btn-primary" style="width: 100%; text-align: center; justify-content: center;" target="_blank">
+          <div style="margin-top: 24px; display: flex; flex-direction: column; gap: 8px;">
+            <a href="import.html" class="btn btn-primary" style="width: 100%; text-align: center; justify-content: center; font-weight: 700;">
+              📤 Importar Arquivo (PPTX / Word / MD)
+            </a>
+            <a href="docs.html?file=README.md" class="btn btn-sm" style="width: 100%; text-align: center; justify-content: center;" target="_blank">
               ${i18n.t('portal.view_guide')}
             </a>
           </div>

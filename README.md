@@ -176,10 +176,30 @@ firebase deploy
 
 ---
 
-## 6. Como Criar Novas Apresentações
+## 6. Como Criar e Importar Novas Apresentações
 
-A plataforma é **100% multi-apresentação**. Para cadastrar uma nova apresentação:
+O **SlideMeshLive** oferece três formas ágeis e intuitivas para adicionar ou migrar conteúdos existentes:
 
+### Opção A: Assistente Visual Web (Recomendado)
+1. Acesse o portal inicial e clique no botão **`📤 Importar`** ou abra [`import.html`](http://localhost:8000/import.html).
+2. Arraste e solte o arquivo desejado (**PowerPoint `.pptx`**, **Word `.docx`**, **Markdown `.md`**, **HTML `.html`** ou **PDF `.pdf`**).
+3. Revise e edite os slides lado a lado (Telão vs. Smartphone), converta tópicos em enquetes ao vivo com 1 clique e clique em **`🚀 Publicar Apresentação`**.
+
+### Opção B: Utilitário de Linha de Comando (CLI)
+Você pode importar apresentações e documentos diretamente pelo terminal:
+```bash
+# Importar apresentação do PowerPoint (.pptx)
+python3 tools/import_presentation.py minhas_palestras/arquitetura.pptx --title "Arquitetura Cloud"
+
+# Importar apostila ou documento do Word (.docx)
+python3 tools/import_presentation.py docs/apostila.docx --title "Apostila de Redes"
+
+# Importar notas em Markdown (.md) com código de sessão e proteção por PIN
+python3 tools/import_presentation.py notas.md --session LIVE2026 --security pin
+```
+
+### Opção C: Estrutura Manual JSON
+Para criar manualmente via arquivos de configuração:
 1. Crie uma nova pasta em `presentations/<id-da-apresentacao>/`.
 2. Adicione o arquivo `manifest.json`:
    ```json
@@ -187,8 +207,8 @@ A plataforma é **100% multi-apresentação**. Para cadastrar uma nova apresenta
      "id": "minha-apresentacao",
      "title": "Título da Apresentação",
      "subtitle": "Subtítulo Corporativo",
-     "version": "1.0.0",
-     "author": "Nome do Autor"
+     "defaultSession": "SES2026",
+     "version": "1.0.0"
    }
    ```
 3. Adicione o arquivo `slides.json`:
