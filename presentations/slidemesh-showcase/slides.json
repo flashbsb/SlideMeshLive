@@ -6,7 +6,7 @@
       "id": 1,
       "slug": "abertura-morte-ao-powerpoint",
       "tag": "BEM-VINDO AO SLIDEMESHLIVE",
-      "title": "A Morte pelo PowerPoint e o Renascimento da Atenção",
+      "title": "A Morte das Palestras Monótonas e o Renascimento da Atenção",
       "presenter": {
         "headline": "Cansado de ver 90% da sua plateia rolando o feed do celular?",
         "bullets": [
@@ -80,10 +80,22 @@
           "id": "poll-quebra-gelo",
           "question": "Qual é o seu comportamento padrão em apresentações e reuniões convencionais?",
           "options": [
-            { "id": "A", "text": "Lutando bravamente contra o sono pós-almoço 🥱" },
-            { "id": "B", "text": "Fingindo que estou anotando, mas olhando memes 📱" },
-            { "id": "C", "text": "Tentando decifrar blocos de texto minúsculo no telão 🔍" },
-            { "id": "D", "text": "Desejando que o palestrante usasse o SlideMeshLive! 🚀" }
+            {
+              "id": "A",
+              "text": "Lutando bravamente contra o sono pós-almoço 🥱"
+            },
+            {
+              "id": "B",
+              "text": "Fingindo que estou anotando, mas olhando memes 📱"
+            },
+            {
+              "id": "C",
+              "text": "Tentando decifrar blocos de texto minúsculo no telão 🔍"
+            },
+            {
+              "id": "D",
+              "text": "Desejando que o palestrante usasse o SlideMeshLive! 🚀"
+            }
           ]
         }
       }
@@ -115,13 +127,37 @@
           {
             "title": "Comparativo: Apresentação Tradicional vs SlideMeshLive",
             "type": "table",
-            "headers": ["Critério", "Apresentação Tradicional", "SlideMeshLive"],
+            "headers": [
+              "Critério",
+              "Apresentação Tradicional",
+              "SlideMeshLive"
+            ],
             "rows": [
-              ["Engajamento", "Passivo (apenas ouvinte)", "Ativo (votos, reações e perguntas)"],
-              ["Detalhamento", "Telão poluído com fonte minúscula", "Telão sintético + Smartphone aprofundado"],
-              ["Perguntas", "Microfone sem fio caótico no auditório", "Fila moderada com destaque flutuante no telão"],
-              ["Instalação", "Softwares pesados e problemas de pen-drive", "100% Web Nativo (HTML5 / ES Modules)"],
-              ["Custo & Licença", "Assinaturas caras por apresentador em dólar", "Open Source, Gratuito e Auto-Hospedável"]
+              [
+                "Engajamento",
+                "Passivo (apenas ouvinte)",
+                "Ativo (votos, reações e perguntas)"
+              ],
+              [
+                "Detalhamento",
+                "Telão poluído com fonte minúscula",
+                "Telão sintético + Smartphone aprofundado"
+              ],
+              [
+                "Perguntas",
+                "Microfone sem fio caótico no auditório",
+                "Fila moderada com destaque flutuante no telão"
+              ],
+              [
+                "Instalação",
+                "Softwares pesados e problemas de pen-drive",
+                "100% Web Nativo (HTML5 / ES Modules)"
+              ],
+              [
+                "Custo & Licença",
+                "Assinaturas caras por apresentador em dólar",
+                "Open Source, Gratuito e Auto-Hospedável"
+              ]
             ]
           },
           {
@@ -376,10 +412,22 @@
           "id": "poll-avaliacao-final",
           "question": "Qual é a sua impressão geral sobre a experiência com o SlideMeshLive?",
           "options": [
-            { "id": "A", "text": "Incrível! Quero usar na minha próxima palestra ou aula 🌟" },
-            { "id": "B", "text": "Excelente alternativa aos softwares proprietários caros 💡" },
-            { "id": "C", "text": "Muito prático para reuniões técnicas e alinhamentos de time 🎯" },
-            { "id": "D", "text": "Vou clonar o repositório e deixar uma estrela no GitHub agora! ⭐" }
+            {
+              "id": "A",
+              "text": "Incrível! Quero usar na minha próxima palestra ou aula 🌟"
+            },
+            {
+              "id": "B",
+              "text": "Excelente alternativa aos softwares proprietários caros 💡"
+            },
+            {
+              "id": "C",
+              "text": "Muito prático para reuniões técnicas e alinhamentos de time 🎯"
+            },
+            {
+              "id": "D",
+              "text": "Vou clonar o repositório e deixar uma estrela no GitHub agora! ⭐"
+            }
           ]
         }
       }
