@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assistente de Importação & Conversão | SlideMeshLive</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📤</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/presenter.css">
+  <link rel="stylesheet" href="css/audience.css">
+
+  <style>
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .import-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 15, 25, 0.9);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .import-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .import-container {
+      max-width: 1380px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+      flex: 1;
+    }
+
+    /* Etapas do Assistente */
+    .import-steps-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .step-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+
+    .step-badge.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .step-badge.done {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+
+    /* Zona de Drag & Drop */
+    .drop-zone {
+      border: 2px dashed var(--border-medium);
+      border-radius: var(--radius-lg);
+      padding: 60px 24px;
+      text-align: center;
+      background: rgba(15, 23, 42, 0.4);
+      cursor: pointer;
+      transition: all var(--transition-normal);
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--accent-primary);
+      background: rgba(56, 189, 248, 0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px -10px var(--accent-glow);
+    }
+
+    .drop-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      display: inline-block;
+      animation: floatLevitate 3s infinite ease-in-out;
+    }
+
+    /* Painel de Configuração e Metadados */
+    .config-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 16px;
+      align-items: flex-end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-input, .form-select {
+      background: #090d16;
+      border: 1.5px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      color: var(--text-primary);
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color var(--transition-fast);
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: var(--accent-primary);
+    }
+
+    /* Layout do Editor Lado a Lado */
+    .editor-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr 360px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* Lista Lateral de Slides */
+    .slides-sidebar {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      max-height: calc(100vh - 220px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .slide-item-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .slide-item-card:hover {
+      border-color: var(--accent-primary);
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    .slide-item-card.active {
+      border-color: var(--accent-primary);
+      background: rgba(56, 189, 248, 0.15);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .slide-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .slide-item-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Área Central de Pré-Visualização do Telão */
+    .preview-stage-container {
+      background: #0b0f19;
+      border: 1.5px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      min-height: 520px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-phone-container {
+      background: #0f172a;
+      border: 1.5px solid var(--border-medium);
+      border-radius: 36px;
+      padding: 20px 14px;
+      max-height: 600px;
+      overflow-y: auto;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+    }
+
+    @media (max-width: 1200px) {
+      .editor-layout {
+        grid-template-columns: 1fr;
+      }
+      .config-card {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Superior -->
+  <header class="import-header">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <a href="./" class="import-brand" title="Voltar ao Portal">
+        <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-primary); box-shadow: 0 0 8px var(--accent-primary);"></span>
+        <span>SlideMeshLive</span>
+      </a>
+      <span class="badge badge-accent" style="font-size: 11px;">📤 Assistente de Importação &amp; Conversão</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button class="btn btn-sm" id="btn-import-lang" style="padding: 4px 8px; font-size: 12px;">🇧🇷 PT</button>
+      <button class="btn btn-sm" id="btn-import-theme" style="padding: 4px 8px; font-size: 12px;">🌙 Tema</button>
+      <a href="./" class="btn btn-sm" style="padding: 4px 12px; font-size: 12px; text-decoration: none;">🏠 Portal</a>
+    </div>
+  </header>
+
+  <main class="import-container">
+    <!-- Barra de Etapas -->
+    <div class="import-steps-bar">
+      <div class="step-badge active" id="step-badge-1">
+        <span>1</span>
+        <span>Selecionar Arquivo</span>
+      </div>
+      <div class="step-badge" id="step-badge-2">
+        <span>2</span>
+        <span>Mapeamento &amp; Revisão</span>
+      </div>
+      <div class="step-badge" id="step-badge-3">
+        <span>3</span>
+        <span>Publicação</span>
+      </div>
+    </div>
+
+    <!-- ETAPA 1: Drag & Drop Zone -->
+    <section id="section-step-1" class="animate-fade-in">
+      <div class="drop-zone" id="drop-zone-box">
+        <input type="file" id="file-input" style="display: none;" accept=".pptx,.docx,.md,.markdown,.html,.htm,.pdf">
+        <span class="drop-icon">📂</span>
+        <h2 style="font-size: 24px; font-weight: 800; color: #ffffff; margin-bottom: 10px;">
+          Arraste e Solte seu Arquivo Aqui
+        </h2>
+        <p style="font-size: 14px; color: var(--text-secondary); max-width: 500px; margin: 0 auto 24px; line-height: 1.5;">
+          Suporte completo a apresentações e documentos com extração inteligente de títulos, tópicos, notas do orador e imagens.
+        </p>
+
+        <button class="btn btn-primary" id="btn-browse-file" style="padding: 12px 28px; font-size: 14px; margin-bottom: 24px;">
+          📁 Escolher Arquivo do Computador
+        </button>
+
+        <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
+          <span class="badge" style="background: rgba(239,68,68,0.15); color: #fca5a5; border-color: rgba(239,68,68,0.3);">📊 PowerPoint (.pptx)</span>
+          <span class="badge" style="background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.3);">📄 Word (.docx)</span>
+          <span class="badge" style="background: rgba(16,185,129,0.15); color: #6ee7b7; border-color: rgba(16,185,129,0.3);">📝 Markdown (.md)</span>
+          <span class="badge" style="background: rgba(245,158,11,0.15); color: #fcd34d; border-color: rgba(245,158,11,0.3);">🌐 HTML (.html)</span>
+          <span class="badge" style="background: rgba(168,85,247,0.15); color: #d8b4fe; border-color: rgba(168,85,247,0.3);">📕 Adobe PDF (.pdf)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETAPA 2: Mapeador e Pré-Visualizador Lado a Lado -->
+    <section id="section-step-2" style="display: none;" class="animate-fade-in">
+      <!-- Barra Superior de Configuração -->
+      <div class="config-card">
+        <div class="form-group">
+          <label class="form-label">Título da Apresentação</label>
+          <input type="text" id="cfg-title" class="form-input" placeholder="Ex: Minha Nova Palestra">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Código de Sessão</label>
+          <input type="text" id="cfg-session" class="form-input" placeholder="DEMO2026">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Segurança</label>
+          <select id="cfg-security" class="form-select">
+            <option value="public">Pública (Sem Senha)</option>
+            <option value="pin">Protegida por PIN</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <button class="btn btn-primary" id="btn-publish-all" style="padding: 10px 18px; font-weight: 800;">
+            🚀 Publicar Apresentação
+          </button>
+        </div>
+      </div>
+
+      <!-- Editor e Pré-visualizador Grid -->
+      <div class="editor-layout">
+        <!-- Coluna 1: Lista de Slides -->
+        <aside class="slides-sidebar">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 11.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Slides Extraídos</span>
+            <span class="badge badge-accent" id="slide-count-badge">0</span>
+          </div>
+          <div id="slides-list-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </aside>
+
+        <!-- Coluna 2: Telão do Apresentador (Preview) -->
+        <section class="preview-stage-container">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+            <span style="font-size: 12px; font-weight: 800; color: #38bdf8; letter-spacing: 1px;">🖥️ TELÃO DO APRESENTADOR (CLEAN STAGE)</span>
+            <button class="btn btn-sm" id="btn-toggle-poll-action" style="font-size: 11.5px; padding: 4px 10px;">
+              ⚡ Converter em Enquete
+            </button>
+          </div>
+          <div id="stage-preview-target" style="flex: 1; display: flex; flex-direction: column; justify-content: center;"></div>
+        </section>
+
+        <!-- Coluna 3: Smartphone do Participante (Preview) -->
+        <aside class="preview-phone-container">
+          <div style="text-align: center; font-size: 11.5px; font-weight: 800; color: #a855f7; margin-bottom: 12px; letter-spacing: 1px;">
+            📱 SMARTPHONE DA AUDIÊNCIA
+          </div>
+          <div id="phone-preview-target"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ETAPA 3: Modal / Sucesso de Publicação -->
+    <section id="section-step-3" style="display: none;" class="animate-fade-in">
+      <div class="card" style="max-width: 680px; margin: 40px auto; text-align: center; padding: 48px 32px;">
+        <span style="font-size: 54px; margin-bottom: 16px; display: inline-block;">🎉</span>
+        <h2 style="font-size: 26px; font-weight: 900; color: #ffffff; margin-bottom: 12px;" id="success-title">
+          Apresentação Publicada com Sucesso!
+        </h2>
+        <p style="font-size: 14.5px; color: var(--text-secondary); margin-bottom: 32px;" id="success-msg">
+          Todos os slides, enquetes e notas foram processados e registrados no catálogo.
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 32px;">
+          <a href="#" id="btn-link-presenter" class="btn btn-primary" target="_blank">🖥️ Abrir Telão</a>
+          <a href="#" id="btn-link-admin" class="btn" target="_blank" style="border-color: #818cf8; color: #c7d2fe;">🛡️ Mesa Técnica</a>
+          <a href="#" id="btn-link-audience" class="btn" target="_blank">📱 Ver Celular</a>
+        </div>
+
+        <a href="./" class="btn" style="padding: 10px 24px;">🏠 Voltar ao Portal Inicial</a>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { conversionEngine } from './js/core/conversion-engine.js';
+    import { presentationEngine } from './js/core/presentation-engine.js';
+    import { audienceApp } from './js/audience/audience-app.js';
+    import { i18n } from './js/core/i18n-engine.js';
+    import { theme, THEMES } from './js/core/theme-engine.js';
+
+    let currentConvertedData = null;
+    let selectedSlideIndex = 0;
+
+    function updateLanguageButton() {
+      const btn = document.getElementById('btn-import-lang');
+      if (btn) btn.textContent = i18n.language === 'pt-BR' ? '🇧🇷 PT' : '🇺🇸 EN';
+    }
+
+    function updateThemeButton() {
+      const btn = document.getElementById('btn-import-theme');
+      if (btn) {
+        const current = THEMES.find(t => t.id === theme.theme) || THEMES[0];
+        btn.textContent = `${current.icon} ${i18n.t(current.labelKey)}`;
+      }
+    }
+
+    // Gerenciamento de Drag & Drop
+    const dropZone = document.getElementById('drop-zone-box');
+    const fileInput = document.getElementById('file-input');
+
+    document.getElementById('btn-browse-file')?.addEventListener('click', () => fileInput.click());
+    dropZone?.addEventListener('click', (e) => {
+      if (e.target !== fileInput) fileInput.click();
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone?.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone?.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+      });
+    });
+
+    dropZone?.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        handleFileSelection(files[0]);
+      }
+    });
+
+    fileInput?.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+
+    async function handleFileSelection(file) {
+      try {
+        dropZone.innerHTML = `
+          <div class="animate-pulse" style="padding: 40px 0;">
+            <span style="font-size: 40px;">⚡</span>
+            <h3 style="font-size: 18px; color: var(--accent-primary); margin-top: 12px;">Processando e Extraindo "${file.name}"...</h3>
+          </div>
+        `;
+
+        let fileData;
+        const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+        if (ext === '.pptx' || ext === '.docx' || ext === '.pdf') {
+          fileData = await file.arrayBuffer();
+        } else {
+          fileData = await file.text();
+        }
+
+        currentConvertedData = await conversionEngine.convert(fileData, file.name);
+        setupStep2Review();
+      } catch (err) {
+        alert('Erro ao converter arquivo: ' + err.message);
+        location.reload();
+      }
+    }
+
+    function setupStep2Review() {
+      document.getElementById('section-step-1').style.display = 'none';
+      document.getElementById('section-step-2').style.display = 'block';
+
+      document.getElementById('step-badge-1').classList.remove('active');
+      document.getElementById('step-badge-1').classList.add('done');
+      document.getElementById('step-badge-2').classList.add('active');
+
+      document.getElementById('cfg-title').value = currentConvertedData.manifest.title;
+      document.getElementById('cfg-session').value = currentConvertedData.manifest.defaultSession;
+      document.getElementById('slide-count-badge').textContent = currentConvertedData.slides.length;
+
+      renderSlidesSidebar();
+      renderActiveSlidePreview();
+    }
+
+    function renderSlidesSidebar() {
+      const container = document.getElementById('slides-list-container');
+      if (!container) return;
+
+      container.innerHTML = currentConvertedData.slides.map((s, idx) => `
+        <div class="slide-item-card ${idx === selectedSlideIndex ? 'active' : ''}" data-index="${idx}">
+          <div class="slide-item-header">
+            <span>SLIDE ${idx + 1}</span>
+            ${s.interaction?.poll ? '<span class="badge badge-live" style="font-size: 9px;">📊 ENQUETE</span>' : ''}
+          </div>
+          <div class="slide-item-title">${s.title || 'Sem título'}</div>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.slide-item-card').forEach(card => {
+        card.addEventListener('click', () => {
+          selectedSlideIndex = parseInt(card.dataset.index, 10);
+          renderSlidesSidebar();
+          renderActiveSlidePreview();
+        });
+      });
+    }
+
+    function renderActiveSlidePreview() {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (!slide) return;
+
+      // 1. Telão Preview
+      const stageTarget = document.getElementById('stage-preview-target');
+      stageTarget.innerHTML = presentationEngine.renderSlideHtml(slide);
+
+      // 2. Celular Preview
+      const phoneTarget = document.getElementById('phone-preview-target');
+      let sectionsHtml = (slide.audience?.sections || []).map(sec => {
+        if (sec.type === 'text') {
+          return `<div class="card" style="margin-bottom: 12px; padding: 14px;"><h4 style="font-size: 13px; color: var(--accent-primary); margin-bottom: 6px;">${sec.title}</h4><p style="font-size: 12px; line-height: 1.5; color: var(--text-secondary);">${sec.content}</p></div>`;
+        } else if (sec.type === 'table') {
+          return `<div class="card" style="margin-bottom: 12px; padding: 12px;"><h4 style="font-size: 13px; color: var(--accent-primary); margin-bottom: 6px;">${sec.title}</h4><div style="font-size: 11px; overflow-x: auto;">Tabela (${sec.rows?.length || 0} linhas)</div></div>`;
+        }
+        return '';
+      }).join('');
+
+      let pollHtml = '';
+      if (slide.interaction?.poll) {
+        pollHtml = `
+          <div class="card" style="margin-bottom: 12px; padding: 14px; border-color: var(--accent-primary);">
+            <div class="badge badge-live" style="font-size: 10px; margin-bottom: 6px;">📊 Votação Aberta</div>
+            <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">${slide.interaction.poll.question}</div>
+            ${slide.interaction.poll.options.map(opt => `<button class="poll-option-btn" style="padding: 8px 12px; font-size: 12px; margin-bottom: 6px;"><span class="poll-letter-badge" style="width: 20px; height: 20px; font-size: 11px;">${opt.id}</span><span>${opt.text}</span></button>`).join('')}
+          </div>
+        `;
+      }
+
+      phoneTarget.innerHTML = `
+        <div style="padding: 4px;">
+          <div class="badge badge-accent" style="font-size: 10px; margin-bottom: 8px;">${slide.tag || 'SLIDE ' + (selectedSlideIndex + 1)}</div>
+          <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 8px; color: #ffffff;">${slide.title}</h3>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">${slide.audience?.summary || ''}</p>
+          ${pollHtml}
+          ${sectionsHtml}
+        </div>
+      `;
+
+      // Atualiza botão de alternância de enquete
+      const btnPoll = document.getElementById('btn-toggle-poll-action');
+      if (slide.interaction?.poll) {
+        btnPoll.textContent = '❌ Remover Enquete';
+        btnPoll.className = 'btn btn-sm btn-danger';
+      } else {
+        btnPoll.textContent = '⚡ Converter em Enquete';
+        btnPoll.className = 'btn btn-sm btn-primary';
+      }
+    }
+
+    // Alternar Enquete no Slide Ativo
+    document.getElementById('btn-toggle-poll-action')?.addEventListener('click', () => {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (!slide) return;
+
+      if (slide.interaction?.poll) {
+        delete slide.interaction;
+      } else {
+        slide.interaction = {
+          poll: {
+            id: `poll-${slide.slug || 'slide-' + (selectedSlideIndex + 1)}`,
+            question: slide.title.includes('?') ? slide.title : `Qual é a sua visão sobre "${slide.title}"?`,
+            options: [
+              { id: 'A', text: 'Concordo plenamente e quero aplicar' },
+              { id: 'B', text: 'Tenho algumas dúvidas práticas' },
+              { id: 'C', text: 'Quero ver um exemplo real em ação' },
+              { id: 'D', text: 'Outra opinião / sugerir abordagem' }
+            ]
+          }
+        };
+      }
+
+      renderSlidesSidebar();
+      renderActiveSlidePreview();
+    });
+
+    // Publicar no Servidor
+    document.getElementById('btn-publish-all')?.addEventListener('click', async () => {
+      const btn = document.getElementById('btn-publish-all');
+      btn.disabled = true;
+      btn.textContent = '⏳ Publicando...';
+
+      // Atualiza configurações com valores dos inputs
+      currentConvertedData.manifest.title = document.getElementById('cfg-title').value || currentConvertedData.manifest.title;
+      currentConvertedData.manifest.defaultSession = document.getElementById('cfg-session').value || currentConvertedData.manifest.defaultSession;
+      currentConvertedData.manifest.security.mode = document.getElementById('cfg-security').value;
+
+      try {
+        const res = await fetch('/api/presentations/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(currentConvertedData)
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Falha ao salvar apresentação no servidor.');
+        }
+
+        // Exibe Etapa 3 de Sucesso
+        document.getElementById('section-step-2').style.display = 'none';
+        document.getElementById('section-step-3').style.display = 'block';
+
+        document.getElementById('step-badge-2').classList.remove('active');
+        document.getElementById('step-badge-2').classList.add('done');
+        document.getElementById('step-badge-3').classList.add('done');
+
+        document.getElementById('btn-link-presenter').href = data.presenterUrl;
+        document.getElementById('btn-link-admin').href = data.adminUrl;
+        document.getElementById('btn-link-audience').href = data.audienceUrl;
+
+      } catch (err) {
+        alert('Erro ao publicar: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = '🚀 Publicar Apresentação';
+      }
+    });
+
+    // Idioma e Tema
+    document.getElementById('btn-import-lang')?.addEventListener('click', () => {
+      const nextLang = i18n.language === 'pt-BR' ? 'en-US' : 'pt-BR';
+      i18n.setLanguage(nextLang);
+      updateLanguageButton();
+    });
+
+    document.getElementById('btn-import-theme')?.addEventListener('click', () => {
+      theme.cycleTheme();
+      updateThemeButton();
+    });
+
+    updateLanguageButton();
+    updateThemeButton();
+  </script>
+</body>
+</html>
