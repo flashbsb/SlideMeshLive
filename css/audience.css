@@ -3,7 +3,7 @@
    ========================================================================== */
 
 body.audience-body {
-  background-color: #0b0f19;
+  background-color: var(--bg-primary);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -25,7 +25,7 @@ body.audience-body {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(11, 15, 25, 0.88);
+  background: var(--bg-glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   padding: 12px 16px;
@@ -58,7 +58,7 @@ body.audience-body {
 
 /* Live Synchronized Slide Hero */
 .audience-hero {
-  background: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+  background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 20px;
@@ -78,13 +78,13 @@ body.audience-body {
   font-size: 20px;
   font-weight: 800;
   line-height: 1.3;
-  color: #ffffff;
+  color: var(--text-primary);
   margin-bottom: 12px;
 }
 
 .audience-hero-summary {
   font-size: 14px;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -128,7 +128,7 @@ body.audience-body {
 }
 
 .audience-table th {
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--bg-tertiary);
   color: var(--text-primary);
   padding: 8px 12px;
   font-weight: 600;
@@ -137,12 +137,12 @@ body.audience-body {
 
 .audience-table td {
   padding: 8px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  color: #cbd5e1;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
 }
 
 .audience-table tr:nth-child(even) td {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(125, 125, 125, 0.04);
 }
 
 /* Bottom Floating Interaction Bar */
@@ -151,7 +151,7 @@ body.audience-body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(15, 23, 42, 0.92);
+  background: var(--bg-glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--border-subtle);

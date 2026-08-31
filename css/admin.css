@@ -3,7 +3,8 @@
    ========================================================================== */
 
 .admin-body {
-  background-color: #080d1a;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -11,7 +12,9 @@
 
 .admin-header {
   height: 60px;
-  background: var(--bg-secondary);
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
@@ -40,7 +43,7 @@
 }
 
 .admin-card {
-  background: var(--bg-secondary);
+  background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   display: flex;
@@ -51,7 +54,7 @@
 
 .admin-card-header {
   padding: 16px 20px;
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--bg-tertiary);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
@@ -61,7 +64,7 @@
 .admin-card-header h3 {
   font-size: 14px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -77,7 +80,7 @@
 }
 
 .stat-box {
-  background: rgba(15, 23, 42, 0.5);
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 14px;

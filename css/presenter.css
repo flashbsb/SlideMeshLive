@@ -30,7 +30,7 @@
 /* Header Minimalista do Telão */
 .presenter-header {
   height: 52px;
-  background: rgba(15, 23, 42, 0.85);
+  background: var(--bg-glass);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
@@ -53,7 +53,7 @@
 .presenter-title {
   font-size: 15px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
   letter-spacing: -0.2px;
 }
 
@@ -63,8 +63,8 @@
   gap: 6px;
   font-family: var(--font-mono);
   font-size: 13px;
-  color: #94a3b8;
-  background: rgba(15, 23, 42, 0.6);
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
   padding: 4px 10px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-subtle);
@@ -87,7 +87,7 @@
   justify-content: center;
   align-items: center;
   padding: 36px 64px;
-  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.4) 0%, rgba(10, 15, 29, 0.95) 100%);
+  background: var(--bg-stage-canvas);
   position: relative;
   overflow-y: auto;
 }
@@ -116,7 +116,7 @@
   font-size: clamp(28px, 3.2vw, 48px);
   font-weight: 900;
   line-height: 1.2;
-  color: #ffffff;
+  color: var(--text-primary);
   margin-bottom: 28px;
   letter-spacing: -0.5px;
 }
@@ -270,14 +270,14 @@
   bottom: 24px;
   right: 28px;
   z-index: 75;
-  background: rgba(15, 23, 42, 0.94);
+  background: var(--bg-card);
   border: 1px solid var(--accent-primary);
   border-radius: var(--radius-md);
   padding: 8px 14px;
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px var(--accent-glow);
+  box-shadow: var(--shadow-glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   animation: slideUp 0.3s ease-out;
@@ -290,10 +290,10 @@
   right: 16px;
   bottom: 16px;
   width: 420px;
-  background: rgba(15, 23, 42, 0.94);
-  border: 1px solid rgba(168, 85, 247, 0.4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
   border-radius: var(--radius-lg);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(168, 85, 247, 0.2);
+  box-shadow: var(--shadow-glass);
   z-index: 85;
   display: flex;
   flex-direction: column;
@@ -309,7 +309,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(30, 41, 59, 0.6);
+  background: var(--bg-tertiary);
 }
 
 .stage-drawer-body {
@@ -322,28 +322,29 @@
 }
 
 .stage-question-card {
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 12px 14px;
   transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
 }
 
 .stage-question-card:hover {
-  border-color: rgba(168, 85, 247, 0.5);
-  background: rgba(30, 41, 59, 0.7);
+  border-color: var(--accent-primary);
+  background: var(--bg-card-hover);
 }
 
 .stage-question-card.featured {
   border: 1.5px solid var(--accent-primary);
-  background: rgba(30, 41, 59, 0.9);
+  background: rgba(56, 189, 248, 0.12);
 }
 
 /* Modal Central Gigante de QR Code no Telão */
 .qr-center-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(8, 13, 26, 0.92);
+  background: rgba(8, 13, 26, 0.85);
   z-index: 120;
   display: flex;
   flex-direction: column;
@@ -358,7 +359,7 @@
   background: #ffffff;
   padding: 16px;
   border-radius: 16px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px var(--accent-glow);
+  box-shadow: var(--shadow-glass);
 }
 
 /* Widget Discreto de QR Code no Rodapé do Telão */
@@ -370,11 +371,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(15, 23, 42, 0.88);
+  background: var(--bg-glass);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 8px 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  box-shadow: var(--shadow-md);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: all var(--transition-normal);

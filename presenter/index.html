@@ -30,7 +30,7 @@
         <span id="timer-display">00:00:00</span>
       </div>
 
-      <div class="badge" style="background: rgba(15,23,42,0.6); font-family: var(--font-mono); font-size: 13px;" id="slide-counter">
+      <div class="badge" style="font-family: var(--font-mono); font-size: 13px;" id="slide-counter">
         1 / --
       </div>
     </div>
@@ -47,7 +47,7 @@
         🌙
       </button>
 
-      <button class="btn btn-sm" id="btn-toggle-large-qr" style="border-color: rgba(56,189,248,0.4); color: #7dd3fc;" title="Projetar QR Code Gigante no Centro da Tela (Atalho: Q)" data-i18n="presenter.btn_large_qr">
+      <button class="btn btn-sm" id="btn-toggle-large-qr" style="border-color: var(--border-medium); color: var(--accent-primary);" title="Projetar QR Code Gigante no Centro da Tela (Atalho: Q)" data-i18n="presenter.btn_large_qr">
         📱 QR Gigante (Q)
       </button>
 
@@ -55,7 +55,7 @@
         🔲 QR Rodapé (W)
       </button>
 
-      <button class="btn btn-sm" id="btn-toggle-questions" style="border-color: rgba(168,85,247,0.4); color: #c084fc;" title="Abrir Mural de Perguntas da Audiência (Atalho: M)" data-i18n="presenter.btn_questions">
+      <button class="btn btn-sm" id="btn-toggle-questions" style="border-color: var(--border-medium); color: var(--accent-primary);" title="Abrir Mural de Perguntas da Audiência (Atalho: M)" data-i18n="presenter.btn_questions">
         💬 Perguntas (M)
       </button>
 
@@ -83,10 +83,10 @@
     <!-- Barra Lateral do Púlpito (Ativada via Toggle ou Tecla P) -->
     <aside class="pulpit-sidebar" id="pulpit-sidebar">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
-        <h3 style="font-size: 14px; font-weight: 700; color: #ffffff;" data-i18n="presenter.speaker_notes">📝 Notas do Orador</h3>
+        <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary);" data-i18n="presenter.speaker_notes">📝 Notas do Orador</h3>
         <span class="badge badge-accent" data-i18n="presenter.private_badge">Privado</span>
       </div>
-      <div id="speaker-notes-content" style="color: #cbd5e1; font-size: 13.5px; line-height: 1.5; flex: 1; overflow-y: auto; padding-right: 4px;">
+      <div id="speaker-notes-content" style="color: var(--text-secondary); font-size: 13.5px; line-height: 1.5; flex: 1; overflow-y: auto; padding-right: 4px;">
         Nenhuma nota para este slide.
       </div>
 
@@ -95,7 +95,7 @@
         <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--accent-primary); margin-bottom: 6px;" data-i18n="presenter.slide_sorter_title">
           Visão Rápida dos Slides (Salto Direto):
         </div>
-        <div id="pulpit-slide-sorter" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 6px; max-height: 120px; overflow-y: auto; padding: 4px; background: rgba(10,15,29,0.5); border-radius: 6px; border: 1px solid var(--border-subtle);">
+        <div id="pulpit-slide-sorter" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 6px; max-height: 120px; overflow-y: auto; padding: 4px; background: var(--bg-tertiary); border-radius: 6px; border: 1px solid var(--border-subtle);">
           <!-- Miniaturas geradas dinamicamente -->
         </div>
       </div>
@@ -112,7 +112,7 @@
     <div class="stage-questions-drawer" id="stage-questions-drawer" style="display: none;">
       <div class="stage-drawer-header">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <h3 style="font-size: 14px; font-weight: 700; color: #ffffff;" data-i18n="admin.card_moderation_title">💬 Mural de Perguntas</h3>
+          <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary);" data-i18n="admin.card_moderation_title">💬 Mural de Perguntas</h3>
           <span class="badge badge-accent" id="stage-unanswered-badge" style="font-size: 10px;">0 pendentes</span>
         </div>
         <button class="btn btn-sm" id="btn-close-questions-drawer" style="padding: 2px 8px; font-size: 12px;">
@@ -159,7 +159,7 @@
       <div class="qr-box-inner" id="qr-code-box"></div>
       <div class="qr-info-text">
         <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--accent-primary);" data-i18n="presenter.mini_qr_title">Acompanhe pelo Celular</div>
-        <div style="font-size: 11px; font-weight: 600; color: #ffffff;" id="audience-direct-link">app.online</div>
+        <div style="font-size: 11px; font-weight: 600; color: var(--text-primary);" id="audience-direct-link">app.online</div>
         <div style="font-size: 9.5px; color: var(--text-muted); margin-top: 2px;" data-i18n="presenter.mini_qr_hint">Atalho [Q] amplia • [W] oculta</div>
       </div>
       <div style="display: flex; flex-direction: column; gap: 4px;">

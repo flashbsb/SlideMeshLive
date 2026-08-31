@@ -25,10 +25,7 @@
       letter-spacing: -0.5px;
       line-height: 1.2;
       margin-bottom: 16px;
-      background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--text-primary);
     }
     .portal-subtitle {
       font-size: 16px;
@@ -95,7 +92,7 @@
 </head>
 <body>
 
-  <header style="padding: 16px 36px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+  <header style="padding: 16px 36px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
     <div style="font-weight: 800; font-size: 16px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px;">
       <span style="width: 12px; height: 12px; border-radius: 50%; background: var(--accent-primary); display: inline-block; box-shadow: 0 0 10px var(--accent-primary);"></span>
       <span style="color: var(--text-primary);" data-i18n="app.title">SlideMeshLive</span>
@@ -217,7 +214,7 @@
               <a href="presenter/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn btn-primary" title="Abrir Telão Principal">
                 ${i18n.t('portal.btn_presenter')}
               </a>
-              <a href="admin/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn" style="border-color: rgba(129, 140, 248, 0.4); color: #c7d2fe;" title="Abrir Mesa Técnica e Moderação">
+              <a href="admin/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn" style="border-color: var(--border-medium); color: var(--text-primary);" title="Abrir Mesa Técnica e Moderação">
                 ${i18n.t('portal.btn_admin')}
               </a>
               <a href="audience/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn" title="Abrir Visão do Smartphone">
@@ -233,7 +230,7 @@
 
       // Card explicativo de como adicionar novas apresentações
       html += `
-        <article class="presentation-card animate-fade-in" style="border-style: dashed; background: rgba(15,23,42,0.4);">
+        <article class="presentation-card animate-fade-in" style="border-style: dashed; background: var(--bg-tertiary);">
           <div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
               <span class="badge" style="background: rgba(16,185,129,0.15); color: #6ee7b7; border-color: rgba(16,185,129,0.3);">+ Modular</span>
