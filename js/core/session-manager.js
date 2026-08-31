@@ -223,11 +223,14 @@ export class SessionManager {
     const report = this.compileSessionReport(sessionId, slidesData);
     let csv = '\uFEFF'; // BOM para compatibilidade com acentos no Excel
 
+    const sanitizeCell = (text) => (text !== null && text !== undefined ? String(text).replace(/\r?\n/g, ' ').replace(/"/g, '""') : '');
+
     // Seção 1: Presença / Participantes
     csv += '--- AUDIÊNCIA E PARTICIPANTES ---\n';
     csv += 'UID;Nome / Apelido;Autenticado;Tipo\n';
     report.presence.list.forEach(p => {
-      csv += `"${p.uid || '---'}";"${(p.alias || 'Participante').replace(/"/g, '""')}";"${p.isAuthenticated ? 'SIM' : 'NÃO'}";"${p.isAuthenticated ? 'Conta' : 'Anônimo'}"\n`;
+      const alias = sanitizeCell(p.alias || 'Participante');
+      csv += `"${sanitizeCell(p.uid || '---')}";"${alias}";"${p.isAuthenticated ? 'SIM' : 'NÃO'}";"${p.isAuthenticated ? 'Conta' : 'Anônimo'}"\n`;
     });
 
     // Seção 2: Enquetes
@@ -235,7 +238,7 @@ export class SessionManager {
     csv += 'Slide;Enquete;Opção ID;Opção Texto;Votos Computados;Percentual (%)\n';
     report.polls.forEach(p => {
       p.options.forEach(opt => {
-        csv += `"${p.slideId} - ${p.slideTitle.replace(/"/g, '""')}";"${p.question.replace(/"/g, '""')}";"${opt.id}";"${opt.text.replace(/"/g, '""')}";${opt.votes};${opt.percentage}%\n`;
+        csv += `"${p.slideId} - ${sanitizeCell(p.slideTitle)}";"${sanitizeCell(p.question)}";"${sanitizeCell(opt.id)}";"${sanitizeCell(opt.text)}";${opt.votes};${opt.percentage}%\n`;
       });
     });
 
@@ -244,7 +247,9 @@ export class SessionManager {
     csv += 'ID;Horário;Autor;Status;Respondida;Pergunta\n';
     report.questions.forEach(q => {
       const time = new Date(q.timestamp).toLocaleString();
-      csv += `"${q.id}";"${time}";"${q.authorAlias || 'Participante'}";"${q.status}";"${q.answered ? 'SIM' : 'NÃO'}";"${q.text.replace(/"/g, '""')}"\n`;
+      const author = sanitizeCell(q.authorAlias || q.authorName || q.displayName || 'Participante');
+      const text = sanitizeCell(q.text);
+      csv += `"${sanitizeCell(q.id)}";"${time}";"${author}";"${sanitizeCell(q.status)}";"${q.answered ? 'SIM' : 'NÃO'}";"${text}"\n`;
     });
 
     return csv;
@@ -284,7 +289,8 @@ export class SessionManager {
       report.questions.forEach(q => {
         const time = new Date(q.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const badge = q.answered ? '✅ Respondida' : (q.status === 'featured' ? '⭐ Destacada' : (q.status === 'approved' ? '💬 Aprovada' : '⏳ Pendente'));
-        md += `* **[${time}] ${q.authorAlias || 'Participante'}** (${badge}):\n  > "${q.text}"\n\n`;
+        const author = q.authorAlias || q.authorName || q.displayName || 'Participante';
+        md += `* **[${time}] ${author}** (${badge}):\n  > "${q.text}"\n\n`;
       });
     }
 

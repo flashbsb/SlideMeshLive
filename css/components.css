@@ -433,4 +433,58 @@
   justify-content: flex-end;
 }
 
+/* ==========================================================================
+   Acessibilidade e Alto Contraste Refinado (WCAG AAA)
+   ========================================================================== */
+html.theme-high-contrast .btn,
+body.theme-high-contrast .btn {
+  border: 2px solid #ffff00;
+  background: #000000;
+  color: #ffffff;
+}
+
+html.theme-high-contrast .btn-primary,
+body.theme-high-contrast .btn-primary {
+  background: #ffff00;
+  color: #000000;
+  border: 2px solid #ffffff;
+  font-weight: 800;
+}
+
+html.theme-high-contrast .poll-option-btn,
+body.theme-high-contrast .poll-option-btn {
+  border: 2px solid #ffffff;
+  background: #000000;
+  color: #ffffff;
+}
+
+html.theme-high-contrast .poll-option-btn.selected,
+body.theme-high-contrast .poll-option-btn.selected {
+  border: 2px solid #ffff00;
+  background: #1a1a00;
+  color: #ffff00;
+}
+
+html.theme-high-contrast .card,
+body.theme-high-contrast .card,
+html.theme-high-contrast .question-card,
+body.theme-high-contrast .question-card {
+  border: 2px solid #ffff00;
+  background: #000000;
+}
+
+html.theme-high-contrast .badge,
+body.theme-high-contrast .badge {
+  border: 1.5px solid #ffff00;
+  background: #000000;
+  color: #ffff00;
+}
+
+html.theme-high-contrast .glass-panel,
+body.theme-high-contrast .glass-panel {
+  background: #000000;
+  border: 2px solid #ffff00;
+}
+
+
 

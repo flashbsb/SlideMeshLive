@@ -494,6 +494,17 @@ class AudienceApp {
     `;
   }
 
+  /**
+   * Dispara feedback tátil sutil em dispositivos móveis compatíveis
+   */
+  _triggerHapticFeedback(pattern = [30]) {
+    try {
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator && typeof navigator.vibrate === 'function') {
+        navigator.vibrate(pattern);
+      }
+    } catch (e) {}
+  }
+
   bindPollOptionClicks(slide) {
     if (!slide.interaction || !slide.interaction.poll) return;
 
@@ -519,6 +530,7 @@ class AudienceApp {
 
         try {
           await this.interaction.castVote(this.sessionId, pollId, optId);
+          this._triggerHapticFeedback([35]);
           this.renderAudienceSlide();
         } catch (err) {
           alert(err.message);
@@ -589,6 +601,7 @@ class AudienceApp {
       this.dom.btnSubmitQuestion.textContent = 'Enviando...';
 
       await this.moderation.submitQuestion(this.sessionId, text);
+      this._triggerHapticFeedback([40]);
 
       this.dom.questionInput.value = '';
       this.dom.questionCharCount.textContent = '0 / 300';
@@ -877,6 +890,7 @@ class AudienceApp {
     if (action.type === 'vote' && action.pollId && action.optId) {
       try {
         await this.interaction.castVote(this.sessionId, action.pollId, action.optId);
+        this._triggerHapticFeedback([35]);
         this.renderAudienceSlide();
       } catch (err) {
         console.warn('[AudienceApp] Erro ao executar voto pendente:', err);

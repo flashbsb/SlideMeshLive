@@ -17,9 +17,10 @@ export class RealtimeEngine {
     this.isFirebaseReady = false;
     this.db = null;
     this.channel = null;
+    this.currentBroadcastSessionId = null;
     this.sessionListeners = new Map();
     this.eventListeners = [];
-    this.participantId = this._generateParticipantId();
+    this.participantId = this._getOrInitParticipantId();
     this.presenceTimer = null;
     this.lastProcessedEventId = 0;
     this._locallyDispatchedIds = new Set();
@@ -27,20 +28,54 @@ export class RealtimeEngine {
     this.init();
   }
 
-  _generateParticipantId() {
-    let pid = sessionStorage.getItem('apres_participant_id');
+  _getOrInitParticipantId() {
+    // 1. Tenta recuperar do usuário autenticado no localStorage (AuthEngine)
+    try {
+      const authRaw = localStorage.getItem('apres_auth_user');
+      if (authRaw) {
+        const authUser = JSON.parse(authRaw);
+        if (authUser && authUser.uid) {
+          localStorage.setItem('apres_participant_id', authUser.uid);
+          sessionStorage.setItem('apres_participant_id', authUser.uid);
+          return authUser.uid;
+        }
+      }
+    } catch (e) {}
+
+    // 2. Tenta recuperar o ID de participante unificado do localStorage
+    let pid = localStorage.getItem('apres_participant_id');
+    if (!pid) {
+      pid = sessionStorage.getItem('apres_participant_id');
+    }
     if (!pid) {
       pid = 'user_' + Math.random().toString(36).substring(2, 10);
-      sessionStorage.setItem('apres_participant_id', pid);
     }
+    try {
+      localStorage.setItem('apres_participant_id', pid);
+      sessionStorage.setItem('apres_participant_id', pid);
+    } catch (e) {}
     return pid;
   }
 
-  init() {
-    // 1. Inicializa BroadcastChannel
+  _generateParticipantId() {
+    return this._getOrInitParticipantId();
+  }
+
+  _initBroadcastChannel(sessionId) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    if (this.currentBroadcastSessionId === normSessionId && this.channel) {
+      return;
+    }
+    if (this.channel) {
+      try {
+        this.channel.close();
+      } catch (e) {}
+      this.channel = null;
+    }
+    this.currentBroadcastSessionId = normSessionId;
     if (typeof BroadcastChannel !== 'undefined') {
       try {
-        this.channel = new BroadcastChannel('apresentacao_realtime_sync');
+        this.channel = new BroadcastChannel(`apresentacao_sync_${normSessionId}`);
         this.channel.onmessage = (event) => {
           if (event && event.data) {
             this._handleIncomingRawMessage(event.data);
@@ -48,6 +83,13 @@ export class RealtimeEngine {
         };
       } catch (e) {}
     }
+  }
+
+  init() {
+    const initialSession = (sessionStorage.getItem('apres_active_session') || localStorage.getItem('active_presentation_session') || 'SDWAN2026').trim().toUpperCase();
+
+    // 1. Inicializa BroadcastChannel isolado por sessão (PB-05)
+    this._initBroadcastChannel(initialSession);
 
     // 2. Storage event nativo
     window.addEventListener('storage', (e) => {
@@ -127,15 +169,23 @@ export class RealtimeEngine {
         }
       }
 
-      // 2. Atualiza perguntas consolidadas
+      // 2. Atualiza perguntas consolidadas se houver alteração
       if (Array.isArray(data.questions)) {
-        localStorage.setItem(`session_questions_${sessionId}`, JSON.stringify(data.questions));
+        const newQuestionsStr = JSON.stringify(data.questions);
+        const currentQuestionsRaw = localStorage.getItem(`session_questions_${sessionId}`);
+        if (currentQuestionsRaw !== newQuestionsStr) {
+          localStorage.setItem(`session_questions_${sessionId}`, newQuestionsStr);
+        }
       }
 
-      // 3. Atualiza votos consolidados
+      // 3. Atualiza votos consolidados se houver alteração
       if (data.votes && typeof data.votes === 'object') {
         Object.keys(data.votes).forEach(pid => {
-          localStorage.setItem(`session_votes_${sessionId}_${pid}`, JSON.stringify(data.votes[pid]));
+          const newVotesStr = JSON.stringify(data.votes[pid]);
+          const currentVotesRaw = localStorage.getItem(`session_votes_${sessionId}_${pid}`);
+          if (currentVotesRaw !== newVotesStr) {
+            localStorage.setItem(`session_votes_${sessionId}_${pid}`, newVotesStr);
+          }
         });
       }
 
@@ -282,6 +332,7 @@ export class RealtimeEngine {
   subscribeToSession(sessionId, callback) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
     sessionStorage.setItem('apres_active_session', normSessionId);
+    this._initBroadcastChannel(normSessionId);
 
     if (!this.sessionListeners.has(normSessionId)) {
       this.sessionListeners.set(normSessionId, []);

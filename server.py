@@ -21,6 +21,84 @@ SERVER_STATE = {
 }
 _STATE_LOCK = threading.Lock()
 PRESENCE_TIMEOUT_MS = 30000  # Janela de timeout único para poda e contagem (30s)
+BACKUP_FILE = os.environ.get("SLIDEMESH_BACKUP_FILE", ".session_backup.json")
+PERSIST_ENABLED = False
+
+def save_state_to_disk(filepath=None):
+    """
+    Salva o snapshot das sessões em disco de forma atômica utilizando arquivo temporário e os.replace.
+    Possui fallback seguro para retenção apenas em memória caso o disco seja somente leitura.
+    """
+    target_path = filepath or BACKUP_FILE
+    tmp_path = f"{target_path}.tmp"
+    try:
+        with _STATE_LOCK:
+            clean_sessions = {}
+            for sid, sdata in SERVER_STATE["sessions"].items():
+                clean_sessions[sid] = {
+                    "state": sdata.get("state", {}),
+                    "events": sdata.get("events", []),
+                    "questions": sdata.get("questions", []),
+                    "votes": sdata.get("votes", {}),
+                    "presence": {},  # Presença é efêmera por design
+                    "last_event_id": sdata.get("last_event_id", 0)
+                }
+            data_to_save = {
+                "version": "1.0.0",
+                "timestamp": int(time.time() * 1000),
+                "sessions": clean_sessions,
+                "max_events": SERVER_STATE.get("max_events", 1000)
+            }
+            content = json.dumps(data_to_save, ensure_ascii=False, indent=2)
+
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            f.write(content)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, target_path)
+        return True
+    except Exception as e:
+        sys.stderr.write(f"[WARN] Falha na persistência atômica ({target_path}): {e}\n")
+        try:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+        except Exception:
+            pass
+        return False
+
+def load_state_from_disk(filepath=None):
+    """
+    Restaura o estado das sessões a partir do snapshot salvo em disco.
+    """
+    target_path = filepath or BACKUP_FILE
+    if not os.path.exists(target_path):
+        return False
+    try:
+        with open(target_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, dict) and "sessions" in data:
+            with _STATE_LOCK:
+                for sid, sdata in data["sessions"].items():
+                    session_entry = SERVER_STATE["sessions"].setdefault(sid, {
+                        "state": { "currentSlide": 0, "slideId": 1, "pollStatus": "open", "showResults": False },
+                        "events": [],
+                        "questions": [],
+                        "votes": {},
+                        "presence": {},
+                        "last_event_id": 0
+                    })
+                    session_entry["state"] = sdata.get("state", session_entry["state"])
+                    session_entry["events"] = sdata.get("events", [])
+                    session_entry["questions"] = sdata.get("questions", [])
+                    session_entry["votes"] = sdata.get("votes", {})
+                    session_entry["presence"] = {}
+                    session_entry["last_event_id"] = sdata.get("last_event_id", 0)
+                if "max_events" in data:
+                    SERVER_STATE["max_events"] = data["max_events"]
+            return True
+    except Exception as e:
+        sys.stderr.write(f"[WARN] Falha ao restaurar snapshot em disco ({target_path}): {e}\n")
+    return False
 
 class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
@@ -64,7 +142,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 for uid in stale_uids:
                     del session_data["presence"][uid]
 
-                active_presence = len([p for p in session_data["presence"].values() if (now_ms - p.get("lastPing", 0)) < PRESENCE_TIMEOUT_MS])
+                active_presence = len(session_data["presence"])
 
                 response_data = {
                     "sessionId": session_id,
@@ -189,6 +267,10 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                         if len(session_data["events"]) > SERVER_STATE["max_events"]:
                             session_data["events"] = session_data["events"][-SERVER_STATE["max_events"]:]
 
+                # Salva snapshot atômico em disco se persistência estiver ativa
+                if PERSIST_ENABLED and msg_type not in ('PRESENCE_PING', 'PRESENCE_LEAVE'):
+                    save_state_to_disk()
+
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
                 self.end_headers()
@@ -222,14 +304,23 @@ def get_local_ip():
     return ip
 
 def main():
+    global PERSIST_ENABLED, BACKUP_FILE
     parser = argparse.ArgumentParser(description='Servidor Local com Sincronização para Apresentação Online')
     parser.add_argument('--port', '-p', type=int, default=8000, help='Porta HTTP (padrão: 8000)')
     parser.add_argument('--dir', '-d', type=str, default='.', help='Diretório raiz (padrão: .)')
+    parser.add_argument('--persist', action='store_true', help='Habilita persistência e restauração de sessões em disco (.session_backup.json)')
+    parser.add_argument('--backup-file', type=str, default='.session_backup.json', help='Caminho do arquivo de snapshot (padrão: .session_backup.json)')
     args = parser.parse_args()
 
     os.chdir(args.dir)
     port = args.port
     local_ip = get_local_ip()
+
+    if args.persist:
+        PERSIST_ENABLED = True
+        BACKUP_FILE = args.backup_file
+        if load_state_from_disk(BACKUP_FILE):
+            print(f" 💾 Snapshot de sessões anteriores restaurado com sucesso ({BACKUP_FILE})")
 
     server_address = ('0.0.0.0', port)
     httpd = HTTPServer(server_address, LiveSyncHTTPRequestHandler)
@@ -246,6 +337,8 @@ def main():
     print(f"    http://{local_ip}:{port}/")
     print(f"    Link Direto Celular: http://{local_ip}:{port}/audience/?presentation=sdwan-cpe-unificado&session=SDWAN2026")
     print(f" 📦 Repositório GitHub:   https://github.com/flashbsb/SlideMeshLive")
+    if PERSIST_ENABLED:
+        print(f" 🛡️ Persistência em Disco: ATIVA ({BACKUP_FILE})")
     print("=" * 72)
     print(" ⚡ Hub Sequencial (/api/sync) ativo: Celulares e Telão sincronizados!")
     print(" Pressione Ctrl+C para encerrar o servidor.\n")
@@ -253,8 +346,12 @@ def main():
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\n[+] Servidor encerrado.")
+        print("\n[+] Encerrando servidor...")
+        if PERSIST_ENABLED:
+            save_state_to_disk(BACKUP_FILE)
+            print(" [✓] Estado das sessões salvo em disco.")
         httpd.server_close()
+        print("[+] Servidor encerrado.")
 
 if __name__ == '__main__':
     main()

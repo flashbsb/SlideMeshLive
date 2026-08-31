@@ -62,7 +62,7 @@ A plataforma segue uma arquitetura modular baseada em tecnologias web nativas (*
 ## 3. Estrutura do Projeto
 
 ```text
-apresentacaoonline/
+SlideMeshLive/
 ├── index.html                               # Portal / Catálogo de Apresentações
 ├── firebase.json                            # Configuração de Firebase Hosting e Database
 ├── database.rules.json                      # Regras de segurança do Realtime Database
@@ -116,7 +116,7 @@ Você pode rodar a plataforma imediatamente com qualquer servidor HTTP estático
 
 ```bash
 # Navegue até o diretório do projeto
-cd /home/flashbsb/projetos/apresentacaoonline
+cd /home/flashbsb/projetos/SlideMeshLive
 
 # Inicie o servidor local na porta 8000
 python3 -m http.server 8000
@@ -144,10 +144,10 @@ Para utilizar a sincronização global pela internet entre múltiplos dispositiv
    - Vá em *Realtime Database* ➔ *Criar Banco de Dados*.
    - Selecione a região mais próxima (ex: `us-central1`).
 4. Copie as regras de segurança:
-   - Cole o conteúdo do arquivo [database.rules.json](file:///home/flashbsb/projetos/apresentacaoonline/database.rules.json) na aba *Rules* do Realtime Database.
+   - Cole o conteúdo do arquivo [database.rules.json](file:///home/flashbsb/projetos/SlideMeshLive/database.rules.json) na aba *Rules* do Realtime Database.
 
 ### 5.2 Configurar as Credenciais no Projeto
-Edite o arquivo [js/config.js](file:///home/flashbsb/projetos/apresentacaoonline/js/config.js) e insira as chaves do seu projeto:
+Edite o arquivo [js/config.js](file:///home/flashbsb/projetos/SlideMeshLive/js/config.js) e insira as chaves do seu projeto:
 
 ```javascript
 export const APP_CONFIG = {

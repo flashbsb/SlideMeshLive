@@ -75,12 +75,19 @@ export class AuthEngine {
       const saved = localStorage.getItem('apres_auth_user');
       if (saved) {
         this.currentUser = JSON.parse(saved);
+        if (this.currentUser && this.currentUser.uid) {
+          localStorage.setItem('apres_participant_id', this.currentUser.uid);
+          sessionStorage.setItem('apres_participant_id', this.currentUser.uid);
+        }
         return;
       }
     } catch (e) {}
 
-    // Gera usuário anônimo padrão para permitir interação imediata
-    const anonUid = 'anon_' + Math.random().toString(36).substring(2, 10);
+    // Gera usuário anônimo padrão para permitir interação imediata, aproveitando ID prévio se houver
+    let anonUid = localStorage.getItem('apres_participant_id') || sessionStorage.getItem('apres_participant_id');
+    if (!anonUid) {
+      anonUid = 'anon_' + Math.random().toString(36).substring(2, 10);
+    }
     const alias = this._generateAnonymousAlias(anonUid);
     this.currentUser = {
       uid: anonUid,
@@ -95,6 +102,8 @@ export class AuthEngine {
     };
     try {
       localStorage.setItem('apres_auth_user', JSON.stringify(this.currentUser));
+      localStorage.setItem('apres_participant_id', anonUid);
+      sessionStorage.setItem('apres_participant_id', anonUid);
     } catch (e) {}
   }
 
@@ -123,6 +132,10 @@ export class AuthEngine {
     try {
       if (user) {
         localStorage.setItem('apres_auth_user', JSON.stringify(user));
+        if (user.uid) {
+          localStorage.setItem('apres_participant_id', user.uid);
+          sessionStorage.setItem('apres_participant_id', user.uid);
+        }
       } else {
         localStorage.removeItem('apres_auth_user');
         this._loadOrCreateUser();
