@@ -11,6 +11,7 @@ import { RealtimeEngine } from '../core/realtime-engine.js';
 import { AuthEngine } from '../core/auth-engine.js';
 import { InteractionEngine } from '../core/interaction-engine.js';
 import { ModerationEngine } from '../core/moderation-engine.js';
+import { SessionManager } from '../core/session-manager.js';
 import { i18n } from '../core/i18n-engine.js';
 import { theme, THEMES } from '../core/theme-engine.js';
 
@@ -21,6 +22,7 @@ class PresenterApp {
     this.auth = new AuthEngine();
     this.interaction = new InteractionEngine(this.realtime, this.auth);
     this.moderation = new ModerationEngine(this.realtime, this.auth);
+    this.sessionManager = new SessionManager();
     
     this.presentationId = PresentationEngine.getPresentationIdFromURL();
     this.sessionId = PresentationEngine.getSessionIdFromURL() || QREngine.generateSessionCode();
@@ -44,6 +46,7 @@ class PresenterApp {
       btnFullscreen: document.getElementById('btn-fullscreen'),
       btnTogglePulpit: document.getElementById('btn-toggle-pulpit'),
       pulpitSlideSorter: document.getElementById('pulpit-slide-sorter'),
+      btnExportDeck: document.getElementById('btn-presenter-export-deck'),
       btnToggleLang: document.getElementById('btn-toggle-lang'),
       btnToggleTheme: document.getElementById('btn-toggle-theme'),
       
@@ -623,6 +626,13 @@ class PresenterApp {
       this.dom.btnStageResultsToggle.addEventListener('click', async () => {
         this.pollState.showResults = !this.pollState.showResults;
         await this.interaction.toggleShowResults(this.sessionId, this.pollState.showResults);
+      });
+    }
+
+    // Exportação Deck Completo (HTML/PDF) - Fase 4
+    if (this.dom.btnExportDeck) {
+      this.dom.btnExportDeck.addEventListener('click', () => {
+        this.sessionManager.downloadFullDeckHTML(this.sessionId, this.engine.manifest, this.engine.slidesData);
       });
     }
   }

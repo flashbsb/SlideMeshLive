@@ -142,6 +142,7 @@ export const TRANSLATIONS = {
     'admin.export_session_json': '📥 Exportar Relatório (JSON)',
     'admin.export_session_csv': '📊 Exportar Votos (CSV)',
     'admin.export_session_md': '📝 Exportar Resumo (Markdown)',
+    'admin.export_deck_html': '📄 Baixar Deck Completo (HTML / PDF)',
     'admin.btn_feature': '⭐ Destacar no Telão',
     'admin.btn_unfeature': '⭐ No Telão',
     'admin.btn_approve': '✓ Aprovar',
@@ -187,6 +188,7 @@ export const TRANSLATIONS = {
     'presenter.featured_title': 'PERGUNTA EM DESTAQUE NO TELÃO',
     'presenter.dismiss_featured': '✕ Fechar Destaque',
     'presenter.slide_sorter_title': 'Visão Rápida dos Slides (Salto Direto):',
+    'presenter.btn_export_deck': '📄 Baixar Deck Completo (HTML/PDF)',
 
     // Smartphone do Público
     'audience.live_badge': 'AO VIVO',
@@ -360,6 +362,7 @@ export const TRANSLATIONS = {
     'admin.export_session_json': '📥 Export Report (JSON)',
     'admin.export_session_csv': '📊 Export Votes (CSV)',
     'admin.export_session_md': '📝 Export Summary (Markdown)',
+    'admin.export_deck_html': '📄 Download Full Deck (HTML / PDF)',
     'admin.btn_feature': '⭐ Feature on Stage',
     'admin.btn_unfeature': '⭐ On Stage',
     'admin.btn_approve': '✓ Approve',
@@ -405,6 +408,7 @@ export const TRANSLATIONS = {
     'presenter.featured_title': 'FEATURED AUDIENCE QUESTION',
     'presenter.dismiss_featured': '✕ Dismiss Feature',
     'presenter.slide_sorter_title': 'Quick Slide Sorter (Jump Directly):',
+    'presenter.btn_export_deck': '📄 Download Full Deck (HTML/PDF)',
 
     // Audience Mobile
     'audience.live_badge': 'LIVE',

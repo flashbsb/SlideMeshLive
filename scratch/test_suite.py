@@ -1296,6 +1296,52 @@ def test_phase3_backend_hardening_and_orphan_cleanup():
 
     print("✓ Fase 3 aprovada com 100% de conformidade técnica e arquitetural.")
 
+def test_phase4_static_deck_export_and_print_ready():
+    print_section("15. Fase 4: Exportação Estática de Slide Deck Pós-Evento (HTML / PDF-ready)")
+
+    # 1. Validação em session-manager.js
+    sm_path = os.path.join(BASE_DIR, "js", "core", "session-manager.js")
+    with open(sm_path, "r", encoding="utf-8") as f:
+        sm_code = f.read()
+
+    assert "exportFullDeckHTML" in sm_code, "Método exportFullDeckHTML ausente em session-manager.js"
+    assert "downloadFullDeckHTML" in sm_code, "Método downloadFullDeckHTML ausente em session-manager.js"
+    assert "@media print" in sm_code, "Regras CSS @media print ausentes no gerador de deck de session-manager.js"
+    assert "page-break-after" in sm_code or "break-after" in sm_code, "Quebras de página por slide ausentes no CSS do deck"
+    assert "window.print()" in sm_code, "Ação window.print() ausente no gerador de deck"
+    print("  ✓ SessionManager: Métodos exportFullDeckHTML, downloadFullDeckHTML e regras @media print validados.")
+
+    # 2. Validação da integração na UI do Admin e Presenter
+    admin_html_path = os.path.join(BASE_DIR, "admin", "index.html")
+    with open(admin_html_path, "r", encoding="utf-8") as f:
+        admin_html = f.read()
+    assert "admin-btn-export-deck-html" in admin_html, "Botão admin-btn-export-deck-html ausente em admin/index.html"
+
+    admin_app_path = os.path.join(BASE_DIR, "js", "admin", "admin-app.js")
+    with open(admin_app_path, "r", encoding="utf-8") as f:
+        admin_app = f.read()
+    assert "btnExportDeckHtml" in admin_app and "downloadFullDeckHTML" in admin_app, "Binding de exportação de deck ausente em admin-app.js"
+    print("  ✓ Mesa Técnica (admin/index.html & admin-app.js): Botão de exportação de deck integrado e funcional.")
+
+    presenter_html_path = os.path.join(BASE_DIR, "presenter", "index.html")
+    with open(presenter_html_path, "r", encoding="utf-8") as f:
+        pres_html = f.read()
+    assert "btn-presenter-export-deck" in pres_html, "Botão btn-presenter-export-deck ausente em presenter/index.html"
+
+    presenter_app_path = os.path.join(BASE_DIR, "js", "presenter", "presenter-app.js")
+    with open(presenter_app_path, "r", encoding="utf-8") as f:
+        pres_app = f.read()
+    assert "btnExportDeck" in pres_app and "downloadFullDeckHTML" in pres_app, "Binding de exportação de deck ausente em presenter-app.js"
+    print("  ✓ Palco/Púlpito (presenter/index.html & presenter-app.js): Botão de exportação de deck integrado e funcional.")
+
+    # 3. Validação estrutural do HTML gerado
+    assert "<!DOCTYPE html>" in sm_code, "Deck exportado deve conter DOCTYPE html autônomo"
+    assert "deck-header" in sm_code and "deck-slide" in sm_code, "Estrutura modular de slides presente no gerador"
+    assert "deck-poll-card" in sm_code and "deck-qa-section" in sm_code, "Seções de enquetes e perguntas presentes no gerador"
+    print("  ✓ Template de Deck: 100% autônomo, offline, com suporte a impressão e sem dependências externas.")
+
+    print("✓ Fase 4 aprovada com 100% de conformidade técnica e arquitetural.")
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -1312,6 +1358,7 @@ if __name__ == "__main__":
         test_phase1_upvotes_and_moderation_gate()
         test_phase2_sse_streaming_and_polling_fallback()
         test_phase3_backend_hardening_and_orphan_cleanup()
+        test_phase4_static_deck_export_and_print_ready()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

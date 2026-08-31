@@ -68,6 +68,7 @@ class AdminApp {
       btnExport: document.getElementById('admin-btn-export'),
       btnExportCsv: document.getElementById('admin-btn-export-csv'),
       btnExportMd: document.getElementById('admin-btn-export-md'),
+      btnExportDeckHtml: document.getElementById('admin-btn-export-deck-html'),
 
       // Host Config Modal
       hostModal: document.getElementById('host-config-modal'),
@@ -1020,6 +1021,13 @@ class AdminApp {
         const md = this.sessionManager.exportSessionMarkdown(this.sessionId, this.engine.slidesData);
         const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
         this._downloadFile(blob, `resumo_sessao_${this.sessionId}.md`);
+      });
+    }
+
+    // Exportação Deck Completo (HTML / PDF-ready) - Fase 4
+    if (this.dom.btnExportDeckHtml) {
+      this.dom.btnExportDeckHtml.addEventListener('click', () => {
+        this.sessionManager.downloadFullDeckHTML(this.sessionId, this.engine.manifest, this.engine.slidesData);
       });
     }
   }
