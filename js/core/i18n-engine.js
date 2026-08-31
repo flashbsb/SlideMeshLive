@@ -10,7 +10,7 @@
 export const TRANSLATIONS = {
   'pt-BR': {
     // Topo & Geral
-    'app.title': 'Apresentação Online',
+    'app.title': 'SlideMeshLive',
     'app.tagline': 'Multi-Apresentações',
     'app.realtime_active': '⚡ Sincronização em Tempo Real',
     'app.loading': 'Carregando...',
@@ -21,7 +21,7 @@ export const TRANSLATIONS = {
     'app.back': 'Voltar',
     'app.next': 'Próximo',
     'app.previous': 'Anterior',
-    'app.all_rights': 'Plataforma de Apresentação HTML Interativa',
+    'app.all_rights': 'SlideMeshLive — Plataforma Open Source de Apresentações Sincronizadas',
 
     // Portal Inicial
     'portal.hero_title': 'Plataforma de Apresentação HTML Sincronizada',
@@ -149,7 +149,7 @@ export const TRANSLATIONS = {
 
   'en-US': {
     // Top & General
-    'app.title': 'Online Presentation',
+    'app.title': 'SlideMeshLive',
     'app.tagline': 'Multi-Presentation',
     'app.realtime_active': '⚡ Real-time Sync Active',
     'app.loading': 'Loading...',
@@ -160,7 +160,7 @@ export const TRANSLATIONS = {
     'app.back': 'Back',
     'app.next': 'Next',
     'app.previous': 'Previous',
-    'app.all_rights': 'Interactive HTML Presentation Platform',
+    'app.all_rights': 'SlideMeshLive — Synchronized Real-time Presentation Platform',
 
     // Portal
     'portal.hero_title': 'Synchronized HTML Presentation Platform',

@@ -235,7 +235,7 @@ def main():
     httpd = HTTPServer(server_address, LiveSyncHTTPRequestHandler)
 
     print("=" * 72)
-    print(" 📡 PLATAFORMA DE APRESENTAÇÃO ONLINE - SERVIDOR REALTIME SEQUENCIAL")
+    print(" 📡 SlideMeshLive — Servidor de Sincronização em Tempo Real (LAN / Wi-Fi)")
     print("=" * 72)
     print(f" 💻 Acesso Local no Computador (Navegador):")
     print(f"    Portal Inicial:     http://localhost:{port}/")
@@ -245,6 +245,7 @@ def main():
     print(f" 📱 Acesso de Smartphones pelo Celular (Mesmo Wi-Fi / Rede Local):")
     print(f"    http://{local_ip}:{port}/")
     print(f"    Link Direto Celular: http://{local_ip}:{port}/audience/?presentation=sdwan-cpe-unificado&session=SDWAN2026")
+    print(f" 📦 Repositório GitHub:   https://github.com/flashbsb/SlideMeshLive")
     print("=" * 72)
     print(" ⚡ Hub Sequencial (/api/sync) ativo: Celulares e Telão sincronizados!")
     print(" Pressione Ctrl+C para encerrar o servidor.\n")

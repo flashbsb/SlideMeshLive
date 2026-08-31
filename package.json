@@ -1,7 +1,12 @@
 {
-  "name": "plataforma-apresentacao-online",
+  "name": "slidemesh-live",
   "version": "1.0.0",
-  "description": "Plataforma de Apresentação HTML Interativa e Sincronizada Multi-Apresentação",
+  "description": "SlideMeshLive — Plataforma de Apresentação HTML Interativa e Sincronizada em Tempo Real",
+  "homepage": "https://github.com/flashbsb/SlideMeshLive#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/flashbsb/SlideMeshLive.git"
+  },
   "type": "module",
   "main": "index.html",
   "scripts": {
