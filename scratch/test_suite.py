@@ -19,6 +19,7 @@ import socket
 import threading
 import urllib.request
 import urllib.error
+import base64
 from http.server import HTTPServer
 
 # Adiciona o diretório raiz ao path para importação do server.py
@@ -777,8 +778,8 @@ def test_presentation_import_endpoint():
             ],
             "assets": [
                 {
-                    "filename": "test-sample.txt",
-                    "dataBase64": "data:text/plain;base64,U2xpZGVNZXNoTGl2ZSBBc3NldCBUZXN0"
+                    "filename": "test-sample.png",
+                    "dataBase64": "data:image/png;base64,U2xpZGVNZXNoTGl2ZSBBc3NldCBUZXN0"
                 }
             ]
         }
@@ -800,7 +801,7 @@ def test_presentation_import_endpoint():
         # Valida existência em disco
         assert os.path.exists(os.path.join(test_target_dir, "manifest.json")), "manifest.json não foi gravado em disco!"
         assert os.path.exists(os.path.join(test_target_dir, "slides.json")), "slides.json não foi gravado em disco!"
-        assert os.path.exists(os.path.join(test_target_dir, "assets", "test-sample.txt")), "Asset não foi gravado em disco!"
+        assert os.path.exists(os.path.join(test_target_dir, "assets", "test-sample.png")), "Asset não foi gravado em disco!"
 
         # Valida registro no catalog.json
         with open(catalog_path, "r", encoding="utf-8") as cf:
@@ -1137,6 +1138,164 @@ def test_phase2_sse_streaming_and_polling_fallback():
 
     print("✓ Fase 2 aprovada com 100% de conformidade técnica e arquitetural.")
 
+def test_phase3_backend_hardening_and_orphan_cleanup():
+    print_section("14. Fase 3: Hardening de Backend (HTTP 413, Sanitização MIME e Limpeza de Assets Órfãos)")
+
+    # 1. Validação estática de constantes de segurança
+    server_path = os.path.join(BASE_DIR, "server.py")
+    with open(server_path, "r", encoding="utf-8") as f:
+        server_code = f.read()
+
+    assert "MAX_IMPORT_PAYLOAD_BYTES" in server_code, "Constante MAX_IMPORT_PAYLOAD_BYTES ausente em server.py"
+    assert "MAX_SYNC_PAYLOAD_BYTES" in server_code, "Constante MAX_SYNC_PAYLOAD_BYTES ausente em server.py"
+    assert "ALLOWED_ASSET_EXTENSIONS" in server_code, "Constante ALLOWED_ASSET_EXTENSIONS ausente em server.py"
+    print("  ✓ Backend (server.py): Constantes de proteção (50MB import, 5MB sync, whitelist de extensões) validadas.")
+
+    cli_path = os.path.join(BASE_DIR, "tools", "import_presentation.py")
+    with open(cli_path, "r", encoding="utf-8") as f:
+        cli_code = f.read()
+
+    assert "MAX_FILE_SIZE_BYTES" in cli_code, "Constante MAX_FILE_SIZE_BYTES ausente em tools/import_presentation.py"
+    print("  ✓ CLI (tools/import_presentation.py): Limite de 50MB no utilitário de importação validado.")
+
+    # 2. Validação dinâmica de HTTP 413 e Limpeza de Assets Órfãos
+    with server._STATE_LOCK:
+        server.SERVER_STATE["sessions"].clear()
+
+    httpd = server.ThreadingHTTPServer(("127.0.0.1", 0), server.LiveSyncHTTPRequestHandler)
+    httpd.daemon_threads = True
+    port = httpd.server_port
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    server_thread.start()
+
+    base_url = f"http://127.0.0.1:{port}"
+    test_pres_id = "phase3-hardening-test"
+    test_pres_dir = os.path.join(BASE_DIR, "presentations", test_pres_id)
+
+    try:
+        # A) Teste de HTTP 413 para pacote de importação > 50MB
+        import_req = urllib.request.Request(
+            f"{base_url}/api/presentations/import",
+            data=b"{}",
+            headers={"Content-Type": "application/json", "Content-Length": "55000000"}
+        )
+        try:
+            urllib.request.urlopen(import_req, timeout=3)
+            assert False, "Deveria ter rejeitado com HTTP 413"
+        except urllib.error.HTTPError as e:
+            assert e.code == 413, f"Esperado HTTP 413, recebido HTTP {e.code}"
+            err_data = json.loads(e.read().decode('utf-8'))
+            assert "50MB" in err_data.get("error", "")
+            print("  ✓ HTTP 413 (Import): Pacote > 50MB rejeitado imediatamente com status 413 Payload Too Large.")
+
+        # B) Teste de HTTP 413 para sync payload > 5MB
+        sync_req = urllib.request.Request(
+            f"{base_url}/api/sync",
+            data=b"{}",
+            headers={"Content-Type": "application/json", "Content-Length": "6000000"}
+        )
+        try:
+            urllib.request.urlopen(sync_req, timeout=3)
+            assert False, "Deveria ter rejeitado com HTTP 413"
+        except urllib.error.HTTPError as e:
+            assert e.code == 413, f"Esperado HTTP 413, recebido HTTP {e.code}"
+            print("  ✓ HTTP 413 (Sync): Payload > 5MB rejeitado com status 413 Payload Too Large.")
+
+        # C) Teste de Rejeição de Extensão Perigosa / Não Autorizada
+        b64_dummy = base64.b64encode(b"malicious code").decode('utf-8')
+        bad_payload = {
+            "manifest": { "id": test_pres_id, "title": "Test Bad Asset" },
+            "slides": [{ "id": 1, "title": "Slide 1", "presenter": {"headline": "S1"} }],
+            "assets": [{ "filename": "script.sh", "dataBase64": b64_dummy }]
+        }
+        bad_req = urllib.request.Request(
+            f"{base_url}/api/presentations/import",
+            data=json.dumps(bad_payload).encode('utf-8'),
+            headers={"Content-Type": "application/json"}
+        )
+        try:
+            urllib.request.urlopen(bad_req, timeout=3)
+            assert False, "Deveria ter bloqueado extensão .sh"
+        except urllib.error.HTTPError as e:
+            assert e.code == 400
+            err_data = json.loads(e.read().decode('utf-8'))
+            assert "não permitida por segurança" in err_data.get("error", "")
+            print("  ✓ Sanitização de Assets: Extensão perigosa (.sh) bloqueada com sucesso.")
+
+        # D) Teste de Criação com 2 Assets e Expurgo de Asset Órfão na Edição
+        img1_b64 = "data:image/png;base64," + base64.b64encode(b"PNG_DATA_1").decode('utf-8')
+        img2_b64 = "data:image/png;base64," + base64.b64encode(b"PNG_DATA_2").decode('utf-8')
+
+        init_payload = {
+            "manifest": { "id": test_pres_id, "title": "Orphan Test", "defaultSession": "SES3333" },
+            "slides": [
+                { "id": 1, "title": "Slide 1", "presenter": { "headline": "S1", "media": "assets/photo1.png" } },
+                { "id": 2, "title": "Slide 2", "presenter": { "headline": "S2", "media": "assets/photo2.png" } }
+            ],
+            "assets": [
+                { "filename": "photo1.png", "dataBase64": img1_b64 },
+                { "filename": "photo2.png", "dataBase64": img2_b64 }
+            ]
+        }
+
+        req1 = urllib.request.Request(
+            f"{base_url}/api/presentations/import",
+            data=json.dumps(init_payload).encode('utf-8'),
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req1, timeout=3) as res:
+            assert res.status == 200
+
+        asset1_file = os.path.join(test_pres_dir, "assets", "photo1.png")
+        asset2_file = os.path.join(test_pres_dir, "assets", "photo2.png")
+        assert os.path.isfile(asset1_file), "photo1.png deveria ter sido gravado"
+        assert os.path.isfile(asset2_file), "photo2.png deveria ter sido gravado"
+        print("  ✓ Gravação Inicial: Ambos os assets (photo1.png e photo2.png) gravados com sucesso.")
+
+        # Agora edita a apresentação: remove o Slide 2 e não envia photo2.png
+        edit_payload = {
+            "manifest": { "id": test_pres_id, "title": "Orphan Test Editado", "defaultSession": "SES3333" },
+            "slides": [
+                { "id": 1, "title": "Slide 1", "presenter": { "headline": "S1", "media": "assets/photo1.png" } }
+            ],
+            "assets": [
+                { "filename": "photo1.png", "dataBase64": img1_b64 }
+            ]
+        }
+
+        req2 = urllib.request.Request(
+            f"{base_url}/api/presentations/import",
+            data=json.dumps(edit_payload).encode('utf-8'),
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req2, timeout=3) as res:
+            assert res.status == 200
+
+        assert os.path.isfile(asset1_file), "photo1.png ativo DEVE ser mantido no disco"
+        assert not os.path.exists(asset2_file), "photo2.png órfão DEVE ser removido do disco"
+        print("  ✓ Expurgo de Assets Órfãos: photo1.png mantido intacto e photo2.png órfão deletado do disco.")
+
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+        # Limpeza do diretório de teste
+        if os.path.exists(test_pres_dir):
+            import shutil
+            shutil.rmtree(test_pres_dir, ignore_errors=True)
+        # Limpa do catalog.json
+        cat_path = os.path.join(BASE_DIR, "presentations", "catalog.json")
+        if os.path.exists(cat_path):
+            try:
+                with open(cat_path, "r", encoding="utf-8") as f:
+                    cdata = json.load(f)
+                cdata["presentations"] = [p for p in cdata.get("presentations", []) if p.get("id") != test_pres_id]
+                with open(cat_path, "w", encoding="utf-8") as f:
+                    json.dump(cdata, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+
+    print("✓ Fase 3 aprovada com 100% de conformidade técnica e arquitetural.")
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -1152,6 +1311,7 @@ if __name__ == "__main__":
         test_slidemesh_studio_web_components()
         test_phase1_upvotes_and_moderation_gate()
         test_phase2_sse_streaming_and_polling_fallback()
+        test_phase3_backend_hardening_and_orphan_cleanup()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

@@ -37,6 +37,11 @@ PRESENCE_TIMEOUT_MS = 30000  # Janela de timeout único para poda e contagem (30
 BACKUP_FILE = os.environ.get("SLIDEMESH_BACKUP_FILE", ".session_backup.json")
 PERSIST_ENABLED = False
 
+# Limites de Segurança de Payload e Extensões Permitidas (Fase 3)
+MAX_IMPORT_PAYLOAD_BYTES = 50 * 1024 * 1024  # 50 MB
+MAX_SYNC_PAYLOAD_BYTES = 5 * 1024 * 1024     # 5 MB
+ALLOWED_ASSET_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'}
+
 # Gerenciador de Subscrições SSE por Sessão
 SSE_SUBSCRIBERS = {}  # session_id -> Set[queue.Queue]
 _SSE_LOCK = threading.Lock()
@@ -178,22 +183,64 @@ def import_presentation_files(data):
     assets_dir = os.path.join(target_dir, "assets")
     os.makedirs(assets_dir, exist_ok=True)
 
-    # 1. Grava assets se houver
+    active_asset_filenames = set()
+
+    # 1. Valida e grava assets se houver
     for asset in assets:
         if isinstance(asset, dict) and "filename" in asset and "dataBase64" in asset:
-            fname = os.path.basename(asset["filename"])
+            raw_fname = str(asset.get("filename", "")).strip()
+            fname = os.path.basename(raw_fname)
             if not fname:
                 continue
+
+            # Sanitização e verificação de extensão permitida (Fase 3)
+            ext = os.path.splitext(fname)[1].lower()
+            if ext not in ALLOWED_ASSET_EXTENSIONS:
+                raise ValueError(f"Extensão de asset '{ext}' não permitida por segurança. Permitidas: {', '.join(sorted(ALLOWED_ASSET_EXTENSIONS))}")
+
             b64_str = str(asset["dataBase64"])
-            if "," in b64_str:
+            if b64_str.startswith("data:"):
+                # Validação de MIME type no data URI
+                mime_part = b64_str.split(";", 1)[0].lower()
+                if not (mime_part.startswith("data:image/") or mime_part == "data:image/svg+xml"):
+                    raise ValueError(f"Tipo MIME de asset '{mime_part}' inválido ou não seguro.")
+                if "," in b64_str:
+                    b64_str = b64_str.split(",", 1)[1]
+            elif "," in b64_str:
                 b64_str = b64_str.split(",", 1)[1]
+
             try:
                 asset_bytes = base64.b64decode(b64_str)
                 asset_path = os.path.join(assets_dir, fname)
                 with open(asset_path, "wb") as af:
                     af.write(asset_bytes)
+                active_asset_filenames.add(fname)
             except Exception as e:
                 sys.stderr.write(f"[WARN] Falha ao gravar asset {fname}: {e}\n")
+
+    # Mapeia assets referenciados nos slides para evitar expurgo de mídias ativas
+    def _extract_media_refs(obj):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if k == "media" and isinstance(v, str) and v:
+                    active_asset_filenames.add(os.path.basename(v))
+                elif isinstance(v, (dict, list)):
+                    _extract_media_refs(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                _extract_media_refs(item)
+
+    _extract_media_refs(slides)
+
+    # 2. Expurgo atômico de assets órfãos em presentations/<id>/assets/ (Fase 3)
+    if os.path.exists(assets_dir):
+        for existing_file in os.listdir(assets_dir):
+            file_path = os.path.join(assets_dir, existing_file)
+            if os.path.isfile(file_path) and existing_file not in active_asset_filenames:
+                try:
+                    os.remove(file_path)
+                except Exception as e:
+                    sys.stderr.write(f"[WARN] Falha ao remover asset órfão {existing_file}: {e}\n")
 
     # 2. Grava manifest.json atomicamente
     manifest_path = os.path.join(target_dir, "manifest.json")
@@ -395,9 +442,16 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
+        content_length = int(self.headers.get('Content-Length', 0))
         
         if parsed.path == '/api/sync':
-            content_length = int(self.headers.get('Content-Length', 0))
+            if content_length > MAX_SYNC_PAYLOAD_BYTES:
+                self.send_response(413)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": "Payload de sincronização excede o limite máximo permitido de 5MB."}).encode('utf-8'))
+                return
+
             body = self.rfile.read(content_length).decode('utf-8')
             
             try:
@@ -547,7 +601,13 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 return
 
         elif parsed.path == '/api/presentations/import':
-            content_length = int(self.headers.get('Content-Length', 0))
+            if content_length > MAX_IMPORT_PAYLOAD_BYTES:
+                self.send_response(413)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": "Tamanho do pacote excede o limite máximo permitido de 50MB."}).encode('utf-8'))
+                return
+
             body = self.rfile.read(content_length).decode('utf-8')
 
             try:

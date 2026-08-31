@@ -300,9 +300,15 @@ def parse_pdf(filepath):
 
     return slides, []
 
+MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024  # 50 MB
+
 def import_presentation(filepath, presentation_id=None, title=None, session=None, security="public"):
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"Arquivo não encontrado: {filepath}")
+
+    file_size = os.path.getsize(filepath)
+    if file_size > MAX_FILE_SIZE_BYTES:
+        raise ValueError(f"Arquivo excede o limite máximo de 50MB (tamanho atual: {file_size / (1024*1024):.2f}MB).")
 
     ext = os.path.splitext(filepath)[1].lower()
     filename = os.path.basename(filepath)
