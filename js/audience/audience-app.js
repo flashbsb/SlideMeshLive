@@ -359,6 +359,22 @@ class AudienceApp {
         let contentHtml = '';
         if (sec.type === 'text') {
           contentHtml = `<p style="font-size: 13.5px; color: var(--text-primary); line-height: 1.5;">${sec.content}</p>`;
+        } else if (sec.type === 'image' || sec.type === 'svg') {
+          contentHtml = `
+            <div style="text-align: center; margin: 8px 0;">
+              <img src="${sec.src}" alt="${sec.alt || ''}" style="max-width: 100%; max-height: ${sec.maxHeight || '260px'}; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);" />
+              ${sec.caption ? `<p style="font-size: 11px; color: var(--text-secondary); margin-top: 6px;">${sec.caption}</p>` : ''}
+            </div>
+          `;
+        } else if (sec.type === 'video') {
+          contentHtml = `
+            <div style="text-align: center; margin: 8px 0;">
+              <video src="${sec.src}" ${sec.autoplay ? 'autoplay muted loop playsinline' : 'controls'} style="max-width: 100%; max-height: ${sec.maxHeight || '260px'}; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);"></video>
+              ${sec.caption ? `<p style="font-size: 11px; color: var(--text-secondary); margin-top: 6px;">${sec.caption}</p>` : ''}
+            </div>
+          `;
+        } else if (sec.type === 'html' || sec.type === 'interactive' || sec.type === 'media') {
+          contentHtml = `<div style="margin: 8px 0;">${sec.content || sec.html || ''}</div>`;
         } else if (sec.type === 'list' && Array.isArray(sec.items)) {
           contentHtml = `
             <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-primary);">

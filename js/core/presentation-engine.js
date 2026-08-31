@@ -188,6 +188,28 @@ export class PresentationEngine {
       `;
     }
 
+    let mediaHtml = '';
+    const media = slide.presenter?.media || slide.media;
+    if (media) {
+      if (media.type === 'image' || media.type === 'svg') {
+        mediaHtml = `
+          <div class="slide-media-box animate-fade-in" style="margin-top: 18px; text-align: center;">
+            <img src="${media.src}" alt="${media.alt || ''}" style="max-height: ${media.maxHeight || '280px'}; max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-medium); box-shadow: var(--shadow-md);" />
+            ${media.caption ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">${media.caption}</div>` : ''}
+          </div>
+        `;
+      } else if (media.type === 'video') {
+        mediaHtml = `
+          <div class="slide-media-box animate-fade-in" style="margin-top: 18px; text-align: center;">
+            <video src="${media.src}" ${media.autoplay ? 'autoplay muted loop playsinline' : 'controls'} style="max-height: ${media.maxHeight || '280px'}; max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-medium); box-shadow: var(--shadow-md);"></video>
+            ${media.caption ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">${media.caption}</div>` : ''}
+          </div>
+        `;
+      } else if (media.type === 'html' || media.type === 'interactive' || media.type === 'media') {
+        mediaHtml = `<div class="slide-media-box animate-fade-in" style="margin-top: 18px;">${media.content || media.html || ''}</div>`;
+      }
+    }
+
     containerElement.innerHTML = `
       <div class="slide-content-wrapper animate-slide-next">
         <div class="slide-tag">${slide.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
@@ -195,6 +217,7 @@ export class PresentationEngine {
         <ul class="slide-bullets">
           ${bulletsHtml}
         </ul>
+        ${mediaHtml}
         ${presenterPollHtml}
       </div>
     `;
@@ -208,7 +231,7 @@ export class PresentationEngine {
   }
 
   /**
-   * Helper para retornar a string HTML do slide do apresentador (com suporte a enquetes)
+   * Helper para retornar a string HTML do slide do apresentador (com suporte a enquetes e mídia)
    */
   renderSlideHtml(slide = null) {
     const s = slide || this.currentSlide;
@@ -223,6 +246,28 @@ export class PresentationEngine {
           <span>${b}</span>
         </li>
       `).join('');
+
+    let mediaHtml = '';
+    const media = presenter.media || s.media;
+    if (media) {
+      if (media.type === 'image' || media.type === 'svg') {
+        mediaHtml = `
+          <div class="slide-media-box animate-fade-in" style="margin-top: 18px; text-align: center;">
+            <img src="${media.src}" alt="${media.alt || ''}" style="max-height: ${media.maxHeight || '280px'}; max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-medium); box-shadow: var(--shadow-md);" />
+            ${media.caption ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">${media.caption}</div>` : ''}
+          </div>
+        `;
+      } else if (media.type === 'video') {
+        mediaHtml = `
+          <div class="slide-media-box animate-fade-in" style="margin-top: 18px; text-align: center;">
+            <video src="${media.src}" ${media.autoplay ? 'autoplay muted loop playsinline' : 'controls'} style="max-height: ${media.maxHeight || '280px'}; max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-medium); box-shadow: var(--shadow-md);"></video>
+            ${media.caption ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">${media.caption}</div>` : ''}
+          </div>
+        `;
+      } else if (media.type === 'html' || media.type === 'interactive' || media.type === 'media') {
+        mediaHtml = `<div class="slide-media-box animate-fade-in" style="margin-top: 18px;">${media.content || media.html || ''}</div>`;
+      }
+    }
 
     let pollHtml = '';
     if (s.interaction && s.interaction.poll) {
@@ -255,6 +300,7 @@ export class PresentationEngine {
         <ul class="slide-bullets">
           ${bulletsHtml}
         </ul>
+        ${mediaHtml}
         ${pollHtml}
       </div>
     `;
@@ -267,13 +313,29 @@ export class PresentationEngine {
     const slide = this.currentSlide;
     if (!slide || !containerElement) return;
 
-    // Seções de aprofundamento (tabelas, textos, listas)
+    // Seções de aprofundamento (tabelas, textos, listas, imagens, vídeos)
     let sectionsHtml = '';
     if (slide.audience.sections && slide.audience.sections.length > 0) {
       sectionsHtml = slide.audience.sections.map(sec => {
         let contentHtml = '';
         if (sec.type === 'text') {
           contentHtml = `<p class="detail-card-content">${sec.content}</p>`;
+        } else if (sec.type === 'image' || sec.type === 'svg') {
+          contentHtml = `
+            <div style="text-align: center; margin: 10px 0;">
+              <img src="${sec.src}" alt="${sec.alt || ''}" style="max-width: 100%; max-height: ${sec.maxHeight || '260px'}; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);" />
+              ${sec.caption ? `<p style="font-size: 11px; color: var(--text-secondary); margin-top: 6px;">${sec.caption}</p>` : ''}
+            </div>
+          `;
+        } else if (sec.type === 'video') {
+          contentHtml = `
+            <div style="text-align: center; margin: 10px 0;">
+              <video src="${sec.src}" ${sec.autoplay ? 'autoplay muted loop playsinline' : 'controls'} style="max-width: 100%; max-height: ${sec.maxHeight || '260px'}; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);"></video>
+              ${sec.caption ? `<p style="font-size: 11px; color: var(--text-secondary); margin-top: 6px;">${sec.caption}</p>` : ''}
+            </div>
+          `;
+        } else if (sec.type === 'html' || sec.type === 'interactive' || sec.type === 'media') {
+          contentHtml = `<div style="margin: 8px 0;">${sec.content || sec.html || ''}</div>`;
         } else if (sec.type === 'list') {
           contentHtml = `
             <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; color: #cbd5e1;">

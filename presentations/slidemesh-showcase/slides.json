@@ -14,6 +14,13 @@
           "Se a plateia não larga o smartphone, coloque a apresentação dentro do smartphone dela",
           "Aponte a câmera para o QR Code agora mesmo e participe desta experiência ao vivo!"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/slidemesh-showcase/assets/powerpoint-vs-slidemesh.svg",
+          "alt": "Comparativo PowerPoint Tradicional vs SlideMeshLive",
+          "maxHeight": "240px",
+          "caption": "Morte pelo PowerPoint vs Engajamento em Tempo Real"
+        },
         "notes": "Dê as boas-vindas com energia! Brinque com a plateia sobre palestras monótonas e peça para todos apontarem a câmera para o QR Code no canto da tela ou aperte [Q] para abrir o QR gigante central."
       },
       "audience": {
@@ -23,6 +30,13 @@
             "title": "O Que é o SlideMeshLive?",
             "type": "text",
             "content": "O SlideMeshLive é uma plataforma web open source de apresentações em tempo real que transforma o público passivo em participante ativo através de enquetes ao vivo, perguntas moderadas e sincronização instantânea."
+          },
+          {
+            "title": "Comparativo Visual de Experiência",
+            "type": "image",
+            "src": "/presentations/slidemesh-showcase/assets/powerpoint-vs-slidemesh.svg",
+            "alt": "Infográfico Comparativo",
+            "caption": "Adeus palestras monótonas: interatividade na palma da mão."
           },
           {
             "title": "Como Funciona Sua Participação",
@@ -86,6 +100,13 @@
           "No Celular: Tabelas detalhadas, diagramas, referências e links complementares",
           "O participante estuda os detalhes técnicos sem perder o contato visual com o palestrante"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/slidemesh-showcase/assets/architecture-mesh.svg",
+          "alt": "Arquitetura de Sincronia Multi-Camada",
+          "maxHeight": "240px",
+          "caption": "Telão Sintético ⟷ Hub Local ⟷ Smartphone Detalhado"
+        },
         "notes": "Explique que nunca mais o palestrante precisa pedir desculpas dizendo 'sei que a fonte está pequena para quem está no fundo da sala'. A tabela completa está na palma da mão de cada um."
       },
       "audience": {
@@ -102,6 +123,13 @@
               ["Instalação", "Softwares pesados e problemas de pen-drive", "100% Web Nativo (HTML5 / ES Modules)"],
               ["Custo & Licença", "Assinaturas caras por apresentador em dólar", "Open Source, Gratuito e Auto-Hospedável"]
             ]
+          },
+          {
+            "title": "Diagrama da Arquitetura em Malha",
+            "type": "image",
+            "src": "/presentations/slidemesh-showcase/assets/architecture-mesh.svg",
+            "alt": "Malha de Sincronização",
+            "caption": "Comunicação simultânea por BroadcastChannel, Storage Events e HTTP LAN."
           }
         ]
       }
@@ -118,6 +146,13 @@
           "Proteção anti-abuso: Cooldown de 25s e limite de 3 perguntas pendentes acumuladas",
           "A Mesa Técnica aprova com 1 clique e projeta perguntas em destaque flutuante no telão!"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/slidemesh-showcase/assets/sync-demo-animation.svg",
+          "alt": "Fluxo de Perguntas e Respostas em Tempo Real",
+          "maxHeight": "220px",
+          "caption": "Envio no celular ➔ Moderação técnica ➔ Destaque flutuante no telão"
+        },
         "notes": "Convide a audiência a clicar no botão [Perguntar] no rodapé do celular e enviar uma dúvida ou elogio agora mesmo. Mostre o atalho [M] para abrir o mural de perguntas ou aprove uma pergunta pelo /admin/ para exibi-la no telão."
       },
       "audience": {
@@ -154,11 +189,25 @@
           "Tecla [M]: Abre o mural de perguntas aprovadas da plateia",
           "Tecla [B]: Modo Blackout (tela preta teatral para focar todos os olhares em você)"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/slidemesh-showcase/assets/shortcuts-keyboard.svg",
+          "alt": "Teclado de Atalhos do Apresentador",
+          "maxHeight": "240px",
+          "caption": "Teclas mágicas de palco: Q, W, M, P, V, R, B e F"
+        },
         "notes": "Demonstre ao vivo: aperte a tecla [B] para apagar o telão momentaneamente e depois aperte [B] de novo para voltar. Em seguida, mostre o painel de notas com [P] e o mural de perguntas com [M]."
       },
       "audience": {
         "summary": "Guia de referência rápida dos atalhos de teclado do SlideMeshLive.",
         "sections": [
+          {
+            "title": "Mapa de Teclas do Apresentador",
+            "type": "image",
+            "src": "/presentations/slidemesh-showcase/assets/shortcuts-keyboard.svg",
+            "alt": "Teclado de Atalhos",
+            "caption": "Controle intuitivo de palco com feedback visual instantâneo."
+          },
           {
             "title": "Atalhos de Teclado no Telão do Apresentador",
             "type": "list",
@@ -222,11 +271,25 @@
           "Funciona em rede Wi-Fi local sem nenhuma conexão externa à internet",
           "Se a energia oscilar, a flag --persist restaura todo o histórico de votos e perguntas intacto"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/slidemesh-showcase/assets/offline-lan-mesh.svg",
+          "alt": "Topologia Offline em Rede Local",
+          "maxHeight": "240px",
+          "caption": "Rede local sem dependência de internet ou serviços de terceiros"
+        },
         "notes": "Muitos eventos corporativos têm Wi-Fi instável ou redes fechadas sem saída para a internet. O SlideMeshLive foi projetado desde o dia 1 para operar com perfeição nesse cenário crítico."
       },
       "audience": {
         "summary": "Tecnologia de ponta em transporte quádruplo: BroadcastChannel nativo + LocalStorage events + Hub HTTP LAN sequencial + Nuvem Firebase opcional.",
         "sections": [
+          {
+            "title": "Topologia de Rede Local",
+            "type": "image",
+            "src": "/presentations/slidemesh-showcase/assets/offline-lan-mesh.svg",
+            "alt": "Topologia LAN",
+            "caption": "Apresentações seguras em ambientes air-gapped ou auditórios fechados."
+          },
           {
             "title": "Pilares da Arquitetura Zero-Fricção",
             "type": "list",
@@ -252,11 +315,25 @@
           "Internacionalização reativa com 1 toque: Português do Brasil (pt-BR) e Inglês (en-US)",
           "Feedback tátil háptico no smartphone para confirmação de votos e perguntas"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/slidemesh-showcase/assets/themes-showcase.svg",
+          "alt": "Comparativo dos 4 Temas Visuais",
+          "maxHeight": "240px",
+          "caption": "Dark, Light, Slate e High Contrast WCAG AAA"
+        },
         "notes": "Convide todos a tocarem no ícone de tema [🌙/☀️] no topo do celular para testar a mudança visual instantânea sem recarregar a página."
       },
       "audience": {
         "summary": "Toque nos botões de idioma e tema no topo da tela para experimentar a reatividade instantânea!",
         "sections": [
+          {
+            "title": "Paleta Visual dos 4 Temas",
+            "type": "image",
+            "src": "/presentations/slidemesh-showcase/assets/themes-showcase.svg",
+            "alt": "Temas HSL",
+            "caption": "Troca dinâmica instantânea mantendo contraste e legibilidade."
+          },
           {
             "title": "Temas Visuais Disponíveis",
             "type": "list",
@@ -324,6 +401,13 @@
       "audience": {
         "summary": "Obrigado por participar! Acesse os links abaixo para salvar o código e criar suas próprias apresentações.",
         "sections": [
+          {
+            "title": "Demonstração da Malha de Sincronia",
+            "type": "image",
+            "src": "/presentations/slidemesh-showcase/assets/sync-demo-animation.svg",
+            "alt": "Animação de Sincronia",
+            "caption": "Sincronização em menos de 50ms entre telão e dispositivos móveis."
+          },
           {
             "title": "Links e Recursos Oficiais",
             "type": "list",
