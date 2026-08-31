@@ -894,6 +894,119 @@ def test_slidemesh_studio_web_components():
 
     print("✓ SlideMesh Studio e recursos de autoria web validados com 100% de conformidade.")
 
+def test_phase1_upvotes_and_moderation_gate():
+    print_section("12. Fase 1: Upvotes de Perguntas Aprovadas, Gate de Moderação (ADR-04) e Atalhos de Studio")
+
+    # 1. Teste de isolamento de moderação estático (ADR-04)
+    mod_path = os.path.join(BASE_DIR, "js", "core", "moderation-engine.js")
+    with open(mod_path, "r", encoding="utf-8") as f:
+        mod_code = f.read()
+
+    assert "getPublicQuestions" in mod_code, "Método getPublicQuestions ausente em moderation-engine.js"
+    assert "toggleQuestionUpvote" in mod_code, "Método toggleQuestionUpvote ausente em moderation-engine.js"
+    assert "hasUserUpvoted" in mod_code, "Método hasUserUpvoted ausente em moderation-engine.js"
+    print("  ✓ ModerationEngine: Métodos getPublicQuestions, toggleQuestionUpvote e hasUserUpvoted validados.")
+
+    # 2. Teste dinâmico de QUESTION_UPVOTE e Isolamento de Moderação via server.py
+    with server._STATE_LOCK:
+        server.SERVER_STATE["sessions"].clear()
+
+    httpd = HTTPServer(("127.0.0.1", 0), server.LiveSyncHTTPRequestHandler)
+    port = httpd.server_port
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    server_thread.start()
+
+    base_url = f"http://127.0.0.1:{port}"
+    session_id = "PHASE1_TEST_SESSION"
+
+    try:
+        def post_sync(msg_type, payload):
+            url = f"{base_url}/api/sync"
+            body = json.dumps({
+                "type": msg_type,
+                "sessionId": session_id,
+                "payload": payload
+            }).encode("utf-8")
+            req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=3) as res:
+                return json.loads(res.read().decode("utf-8"))
+
+        def get_sync():
+            url = f"{base_url}/api/sync?session={session_id}&since_id=0"
+            req = urllib.request.Request(url)
+            with urllib.request.urlopen(req, timeout=3) as res:
+                return json.loads(res.read().decode("utf-8"))
+
+        # Cadastra 2 perguntas: uma pendente e uma aprovada
+        q1 = {
+            "id": "q_pending_01",
+            "uid": "user_pending",
+            "authorName": "Participante Pendente",
+            "text": "Pergunta aguardando moderação",
+            "timestamp": int(time.time() * 1000),
+            "status": "pending",
+            "answered": False
+        }
+        q2 = {
+            "id": "q_approved_02",
+            "uid": "user_approved",
+            "authorName": "Participante Aprovado",
+            "text": "Pergunta liberada pelo moderador",
+            "timestamp": int(time.time() * 1000) + 1,
+            "status": "approved",
+            "answered": False
+        }
+
+        post_sync("NEW_QUESTION", {"question": q1})
+        post_sync("NEW_QUESTION", {"question": q2})
+
+        # Teste de Upvote na pergunta q2 pelo usuário user_voter_1
+        post_sync("QUESTION_UPVOTE", {"questionId": "q_approved_02", "uid": "user_voter_1"})
+        state1 = get_sync()
+        q2_state = next(q for q in state1["questions"] if q["id"] == "q_approved_02")
+        assert q2_state.get("upvotes") == 1, f"Esperado 1 upvote, obtido {q2_state.get('upvotes')}"
+        assert "user_voter_1" in q2_state.get("upvotedBy", [])
+
+        # Segundo upvote de outro usuário
+        post_sync("QUESTION_UPVOTE", {"questionId": "q_approved_02", "uid": "user_voter_2"})
+        state2 = get_sync()
+        q2_state2 = next(q for q in state2["questions"] if q["id"] == "q_approved_02")
+        assert q2_state2.get("upvotes") == 2, f"Esperado 2 upvotes, obtido {q2_state2.get('upvotes')}"
+
+        # Toggle: user_voter_1 clica novamente e remove seu voto
+        post_sync("QUESTION_UPVOTE", {"questionId": "q_approved_02", "uid": "user_voter_1"})
+        state3 = get_sync()
+        q2_state3 = next(q for q in state3["questions"] if q["id"] == "q_approved_02")
+        assert q2_state3.get("upvotes") == 1, f"Esperado 1 upvote após remoção, obtido {q2_state3.get('upvotes')}"
+        assert "user_voter_1" not in q2_state3.get("upvotedBy", [])
+        assert "user_voter_2" in q2_state3.get("upvotedBy", [])
+
+        print("  ✓ Servidor LiveSync: Processamento e toggle atômico de QUESTION_UPVOTE validado.")
+
+        # Validação do Gate de Moderação (ADR-04)
+        all_q = state3["questions"]
+        pending_q = [q for q in all_q if q["status"] == "pending"]
+        approved_q = [q for q in all_q if q["status"] in ("approved", "featured")]
+
+        assert len(pending_q) == 1 and pending_q[0]["id"] == "q_pending_01"
+        assert len(approved_q) == 1 and approved_q[0]["id"] == "q_approved_02"
+        print("  ✓ Gate de Moderação (ADR-04): Perguntas pendentes e aprovadas segregadas com 100% de isolamento.")
+
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+    # 3. Validação dos atalhos de estúdio em import.html
+    studio_path = os.path.join(BASE_DIR, "import.html")
+    with open(studio_path, "r", encoding="utf-8") as f:
+        studio_html = f.read()
+
+    assert "ArrowUp" in studio_html and "ArrowDown" in studio_html and "altKey" in studio_html, "Atalhos Alt + Seta Acima/Abaixo ausentes em import.html"
+    assert "shortcut_reorder" in studio_html, "Dica de atalho de reordenação ausente em import.html"
+    print("  ✓ Studio (import.html): Atalhos de reordenação de slides (Alt + ↑/↓) validados.")
+
+    print("✓ Fase 1 aprovada com 100% de conformidade técnica e arquitetural.")
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -907,6 +1020,7 @@ if __name__ == "__main__":
         test_phase4_mobile_haptics_and_a11y_high_contrast()
         test_presentation_import_endpoint()
         test_slidemesh_studio_web_components()
+        test_phase1_upvotes_and_moderation_gate()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

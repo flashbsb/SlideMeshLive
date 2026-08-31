@@ -25,11 +25,10 @@ class AdminApp {
     this.sessionManager = new SessionManager();
 
     this.presentationId = PresentationEngine.getPresentationIdFromURL();
-    this.sessionId = PresentationEngine.getSessionIdFromURL();
+    this.sessionId = this.sessionManager.getSessionId();
     this.activeTab = 'pending';
-
-    // DOM Elements
-    this.dom = {
+    this.moderationSort = 'recent';
+    this.currentHostUrl = '';  this.dom = {
       presSelector: document.getElementById('admin-pres-selector'),
       btnSwitchProject: document.getElementById('admin-btn-switch-project'),
       btnConfigureHost: document.getElementById('admin-btn-configure-host'),
@@ -338,6 +337,12 @@ class AdminApp {
       return true;
     });
 
+    if (this.moderationSort === 'upvotes') {
+      filtered.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0) || (b.timestamp - a.timestamp));
+    } else {
+      filtered.sort((a, b) => b.timestamp - a.timestamp);
+    }
+
     if (!this.dom.moderationList) return;
 
     if (filtered.length === 0) {
@@ -353,6 +358,7 @@ class AdminApp {
       const isFeatured = (q.status === 'featured');
       const isBlocked = this.moderation.isUserBlocked(this.sessionId, q.uid);
       const isAnswered = !!q.answered;
+      const upvotesCount = q.upvotes || 0;
       let actionsHtml = '';
 
       if (q.status === 'pending') {
@@ -416,6 +422,7 @@ class AdminApp {
           <div class="question-author">
             <span style="display: flex; align-items: center; gap: 6px;">
               <span>${q.authorAlias || 'Participante'}</span>
+              <span class="badge" style="background: rgba(56,189,248,0.15); color: var(--accent-primary); font-size: 9.5px; padding: 1px 6px;">👍 ${upvotesCount}</span>
               ${isAnswered ? '<span class="badge" style="background: rgba(16,185,129,0.2); color: #6ee7b7; font-size: 9px; padding: 1px 5px;">Respondida</span>' : ''}
             </span>
             <span style="font-size: 10px; color: var(--text-muted); font-weight: normal;">
@@ -899,6 +906,28 @@ class AdminApp {
         this.renderModerationList();
       });
     });
+
+    // Ordenação de moderação (Recentes vs Upvotes)
+    const btnSortRecent = document.getElementById('admin-sort-recent');
+    const btnSortUpvotes = document.getElementById('admin-sort-upvotes');
+    if (btnSortRecent && btnSortUpvotes) {
+      btnSortRecent.addEventListener('click', () => {
+        this.moderationSort = 'recent';
+        btnSortRecent.style.fontWeight = '700';
+        btnSortRecent.style.background = 'var(--bg-card)';
+        btnSortUpvotes.style.fontWeight = 'normal';
+        btnSortUpvotes.style.background = 'transparent';
+        this.renderModerationList();
+      });
+      btnSortUpvotes.addEventListener('click', () => {
+        this.moderationSort = 'upvotes';
+        btnSortUpvotes.style.fontWeight = '700';
+        btnSortUpvotes.style.background = 'var(--bg-card)';
+        btnSortRecent.style.fontWeight = 'normal';
+        btnSortRecent.style.background = 'transparent';
+        this.renderModerationList();
+      });
+    }
 
     // Ações de moderação (com suporte a exclusão individual)
     if (this.dom.moderationList) {

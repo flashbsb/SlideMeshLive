@@ -195,13 +195,29 @@
         Enviar Pergunta
       </button>
 
-      <!-- Lista de Perguntas Enviadas pelo Participante -->
-      <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px;">
-        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;" data-i18n="audience.my_questions_title">
-          Suas Perguntas Enviadas
+      <!-- Abas de Navegação de Perguntas (Aprovadas vs Minhas Perguntas) -->
+      <div style="border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+        <div style="display: flex; gap: 8px; margin-bottom: 10px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px;">
+          <button class="btn btn-sm btn-primary" id="btn-tab-approved-q" style="font-size: 11px; padding: 4px 10px;" data-i18n="audience.tab_approved_questions">
+            💬 Perguntas Aprovadas
+          </button>
+          <button class="btn btn-sm" id="btn-tab-my-q" style="font-size: 11px; padding: 4px 10px;" data-i18n="audience.tab_my_questions">
+            Minhas Perguntas
+          </button>
         </div>
-        <div id="my-questions-list" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
-          <!-- Perguntas renderizadas dinamicamente -->
+
+        <!-- Painel 1: Perguntas Aprovadas pelo Moderador (com Upvote) -->
+        <div id="approved-questions-panel" style="max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+          <div id="approved-questions-list" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Perguntas aprovadas com upvotes renderizadas dinamicamente -->
+          </div>
+        </div>
+
+        <!-- Painel 2: Perguntas Enviadas pelo Próprio Participante -->
+        <div id="my-questions-panel" style="display: none; max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+          <div id="my-questions-list" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Perguntas do próprio autor renderizadas dinamicamente -->
+          </div>
         </div>
       </div>
     </div>

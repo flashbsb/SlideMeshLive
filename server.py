@@ -369,6 +369,19 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                                         break
                         elif msg_type == 'CLEAR_ALL_QUESTIONS':
                             session_data["questions"] = []
+                        elif msg_type == 'QUESTION_UPVOTE':
+                            qid = payload.get('questionId')
+                            uid = payload.get('uid')
+                            if qid and uid:
+                                for q in session_data["questions"]:
+                                    if q.get('id') == qid:
+                                        upvoted_by = q.setdefault('upvotedBy', [])
+                                        if uid in upvoted_by:
+                                            upvoted_by.remove(uid)
+                                        else:
+                                            upvoted_by.append(uid)
+                                        q['upvotes'] = len(upvoted_by)
+                                        break
                         elif msg_type == 'VOTE_CAST':
                             pid = payload.get('pollId')
                             if pid:

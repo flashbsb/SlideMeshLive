@@ -107,6 +107,7 @@ export const TRANSLATIONS = {
     'import.btn_add_option': '+ Adicionar Opção',
     'import.stats_slides_count': '{included} de {total} slide(s) incluídos',
     'import.alert_no_slides': 'Você precisa manter pelo menos 1 slide incluído para publicar!',
+    'import.shortcut_reorder': 'Atalhos: Alt + ↑/↓ move slides',
 
     // Mesa Técnica / Admin
     'admin.badge': '🛡️ MESA TÉCNICA',
@@ -154,6 +155,8 @@ export const TRANSLATIONS = {
     'admin.project_poll': '📊 Projetar',
     'admin.hide_poll': '🙈 Ocultar',
     'admin.reset_poll': '🔄 Zerar',
+    'admin.sort_recent': 'Mais Recentes',
+    'admin.sort_upvotes': 'Mais Votadas (Upvotes)',
 
     // Modal Host QR Code
     'host_modal.title': '🌐 Configurar Endereço do QR Code',
@@ -198,6 +201,9 @@ export const TRANSLATIONS = {
     'audience.ask_placeholder': 'Digite sua pergunta técnica...',
     'audience.btn_send_question': 'Enviar Pergunta',
     'audience.my_questions_title': 'Suas Perguntas Enviadas',
+    'audience.tab_approved_questions': '💬 Perguntas Aprovadas',
+    'audience.tab_my_questions': 'Minhas Perguntas',
+    'audience.no_approved_questions': 'Nenhuma pergunta aprovada ainda.',
     'audience.poll_open': '🟢 Votação Aberta',
     'audience.poll_closed': '🔴 Encerrada',
     'audience.poll_voted_feedback': '✓ Seu voto (Opção {opt}) está registrado!',
@@ -318,7 +324,8 @@ export const TRANSLATIONS = {
     'import.poll_options_label': 'Poll Options:',
     'import.btn_add_option': '+ Add Option',
     'import.stats_slides_count': '{included} of {total} slide(s) included',
-    'import.alert_no_slides': 'You need to keep at least 1 slide included to publish!',
+    'import.alert_no_slides': 'You must keep at least 1 included slide to publish!',
+    'import.shortcut_reorder': 'Shortcuts: Alt + ↑/↓ move slides',
 
     // Admin / Moderator
     'admin.badge': '🛡️ CONTROL ROOM',
@@ -366,6 +373,8 @@ export const TRANSLATIONS = {
     'admin.project_poll': '📊 Project',
     'admin.hide_poll': '🙈 Hide',
     'admin.reset_poll': '🔄 Reset',
+    'admin.sort_recent': 'Most Recent',
+    'admin.sort_upvotes': 'Most Upvoted',
 
     // QR Host Modal
     'host_modal.title': '🌐 Configure QR Code Host / IP',
@@ -410,6 +419,9 @@ export const TRANSLATIONS = {
     'audience.ask_placeholder': 'Type your question...',
     'audience.btn_send_question': 'Send Question',
     'audience.my_questions_title': 'Your Submitted Questions',
+    'audience.tab_approved_questions': '💬 Approved Questions',
+    'audience.tab_my_questions': 'My Questions',
+    'audience.no_approved_questions': 'No approved questions yet.',
     'audience.poll_open': '🟢 Voting Open',
     'audience.poll_closed': '🔴 Closed',
     'audience.poll_voted_feedback': '✓ Your vote (Option {opt}) is registered!',

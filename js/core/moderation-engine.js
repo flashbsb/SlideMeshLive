@@ -214,6 +214,13 @@ export class ModerationEngine {
   }
 
   /**
+   * Obtém perguntas públicas liberadas pelo moderador (Garantia de Moderação ADR-04)
+   */
+  getPublicQuestions(sessionId) {
+    return this.getApprovedQuestions(sessionId);
+  }
+
+  /**
    * Obtém perguntas enviadas pelo usuário logado
    */
   getMyQuestions(sessionId) {
@@ -221,6 +228,91 @@ export class ModerationEngine {
     if (!user) return [];
     const uid = user.uid;
     return this.getQuestions(sessionId).filter(q => q.uid === uid);
+  }
+
+  /**
+   * Verifica se o usuário atual curtiu/votou na pergunta
+   */
+  hasUserUpvoted(sessionId, questionId, uid = null) {
+    if (!uid) {
+      const user = this.auth ? this.auth.getCurrentUser() : null;
+      uid = user ? user.uid : null;
+    }
+    if (!uid) return false;
+    const questions = this.getQuestions(sessionId);
+    const q = questions.find(item => item.id === questionId);
+    if (!q || !Array.isArray(q.upvotedBy)) {
+      return localStorage.getItem(`upvote_${sessionId}_${questionId}_${uid}`) === 'true';
+    }
+    return q.upvotedBy.includes(uid);
+  }
+
+  /**
+   * Alterna upvote (curtida) do participante em uma pergunta aprovada
+   */
+  async toggleQuestionUpvote(sessionId, questionId, uid = null) {
+    if (!uid) {
+      const user = this.auth ? this.auth.getCurrentUser() : null;
+      uid = user ? user.uid : 'anon_' + Math.random().toString(36).substr(2, 6);
+    }
+
+    const storageKey = `session_questions_${sessionId}`;
+    let questions = this.getQuestions(sessionId);
+    let updatedQuestion = null;
+
+    questions = questions.map(q => {
+      if (q.id === questionId) {
+        const upvotedBy = Array.isArray(q.upvotedBy) ? [...q.upvotedBy] : [];
+        let upvotes = typeof q.upvotes === 'number' ? q.upvotes : upvotedBy.length;
+        const hasUpvoted = upvotedBy.includes(uid);
+
+        if (hasUpvoted) {
+          const nextUpvotedBy = upvotedBy.filter(u => u !== uid);
+          updatedQuestion = {
+            ...q,
+            upvotes: Math.max(0, upvotes - 1),
+            upvotedBy: nextUpvotedBy
+          };
+          return updatedQuestion;
+        } else {
+          const nextUpvotedBy = [...upvotedBy, uid];
+          updatedQuestion = {
+            ...q,
+            upvotes: upvotes + 1,
+            upvotedBy: nextUpvotedBy
+          };
+          return updatedQuestion;
+        }
+      }
+      return q;
+    });
+
+    localStorage.setItem(storageKey, JSON.stringify(questions));
+
+    const userVoteKey = `upvote_${sessionId}_${questionId}_${uid}`;
+    if (updatedQuestion && updatedQuestion.upvotedBy.includes(uid)) {
+      localStorage.setItem(userVoteKey, 'true');
+    } else {
+      localStorage.removeItem(userVoteKey);
+    }
+
+    if (this.realtime && this.realtime.channel) {
+      try {
+        this.realtime.channel.postMessage({
+          type: 'QUESTION_UPVOTE_CHANGE',
+          sessionId: sessionId,
+          questionId: questionId,
+          upvotes: updatedQuestion ? updatedQuestion.upvotes : 0,
+          upvotedBy: updatedQuestion ? updatedQuestion.upvotedBy : []
+        });
+      } catch (e) {}
+    }
+
+    if (this.realtime && typeof this.realtime.sendQuestionUpvote === 'function') {
+      await this.realtime.sendQuestionUpvote(sessionId, questionId, uid);
+    }
+
+    return updatedQuestion;
   }
 
 

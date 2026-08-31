@@ -386,6 +386,11 @@ export class RealtimeEngine {
     this.sendLocalServerEvent('QUESTION_STATUS_CHANGE', normSessionId, payload);
   }
 
+  sendQuestionUpvote(sessionId, questionId, uid) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    this.sendLocalServerEvent('QUESTION_UPVOTE', normSessionId, { questionId, uid, timestamp: Date.now() });
+  }
+
   sendClearQuestions(sessionId) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
     this.sendLocalServerEvent('CLEAR_ALL_QUESTIONS', normSessionId, {});

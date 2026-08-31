@@ -590,6 +590,7 @@ class AudienceApp {
       alert('Você está temporariamente bloqueado pela moderação.');
       return;
     }
+    this.renderApprovedQuestionsList();
     this.renderMyQuestionsList();
     this.dom.questionModal.classList.add('active');
     this.dom.questionInput.focus();
@@ -638,6 +639,57 @@ class AudienceApp {
     }
   }
 
+  renderApprovedQuestionsList() {
+    const list = document.getElementById('approved-questions-list');
+    if (!list) return;
+
+    const approvedQuestions = this.moderation.getPublicQuestions(this.sessionId);
+    if (approvedQuestions.length === 0) {
+      list.innerHTML = `<div style="color: var(--text-muted); font-size: 11px; text-align: center; padding: 16px;">${i18n.t('audience.no_approved_questions')}</div>`;
+      return;
+    }
+
+    const currentUser = this.auth.getCurrentUser();
+    const uid = currentUser ? currentUser.uid : null;
+
+    // Ordena por upvotes decrescente e timestamp
+    const sorted = [...approvedQuestions].sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0) || (b.timestamp - a.timestamp));
+
+    list.innerHTML = sorted.map(q => {
+      const isUpvoted = this.moderation.hasUserUpvoted(this.sessionId, q.id, uid);
+      const isFeatured = (q.status === 'featured');
+      const isAnswered = !!q.answered;
+
+      return `
+        <div style="background: var(--bg-card); padding: 8px 10px; border-radius: 6px; border: 1.5px solid ${isFeatured ? 'var(--accent-primary)' : 'var(--border-subtle)'}; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+          <div style="flex: 1; min-width: 0;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+              <span style="font-size: 10px; font-weight: 700; color: var(--accent-primary);">${q.authorAlias || 'Participante'}</span>
+              ${isFeatured ? '<span class="badge badge-accent" style="font-size: 8.5px; padding: 0 4px;">⭐ Telão</span>' : ''}
+              ${isAnswered ? '<span class="badge" style="background: rgba(16,185,129,0.2); color: #6ee7b7; font-size: 8.5px; padding: 0 4px;">✓ Respondida</span>' : ''}
+            </div>
+            <div style="font-size: 12px; color: var(--text-primary); line-height: 1.35; word-break: break-word;">${q.text}</div>
+          </div>
+          <button type="button" class="btn btn-sm btn-upvote-q ${isUpvoted ? 'btn-primary' : ''}" data-qid="${q.id}" style="padding: 4px 8px; font-size: 11px; flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;" title="Curtir pergunta">
+            <span>${isUpvoted ? '❤️' : '🤍'}</span>
+            <span style="font-family: var(--font-mono); font-weight: 700;">${q.upvotes || 0}</span>
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    // Bind cliques de upvote
+    list.querySelectorAll('.btn-upvote-q').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const qid = btn.dataset.qid;
+        this._triggerHapticFeedback([20]);
+        await this.moderation.toggleQuestionUpvote(this.sessionId, qid, uid);
+        this.renderApprovedQuestionsList();
+      });
+    });
+  }
+
   renderMyQuestionsList() {
     const list = document.getElementById('my-questions-list');
     if (!list) return;
@@ -661,18 +713,19 @@ class AudienceApp {
       }
 
       return `
-        <div style="background: rgba(15,23,42,0.6); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+        <div style="background: var(--bg-card); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-subtle);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
             ${badge}
             <span style="font-size: 9.5px; color: var(--text-muted);">${new Date(q.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>
           </div>
-          <div style="font-size: 12px; color: #ffffff; line-height: 1.3;">${q.text}</div>
+          <div style="font-size: 12px; color: var(--text-primary); line-height: 1.3;">${q.text}</div>
         </div>
       `;
     }).join('');
   }
 
   updateMyQuestionsStatus() {
+    this.renderApprovedQuestionsList();
     this.renderMyQuestionsList();
   }
 
@@ -764,6 +817,30 @@ class AudienceApp {
     }
     if (this.dom.btnSubmitQuestion) {
       this.dom.btnSubmitQuestion.addEventListener('click', () => this.submitQuestion());
+    }
+
+    // Abas do Modal de Perguntas
+    const btnTabApproved = document.getElementById('btn-tab-approved-q');
+    const btnTabMy = document.getElementById('btn-tab-my-q');
+    const panelApproved = document.getElementById('approved-questions-panel');
+    const panelMy = document.getElementById('my-questions-panel');
+
+    if (btnTabApproved && btnTabMy && panelApproved && panelMy) {
+      btnTabApproved.addEventListener('click', () => {
+        btnTabApproved.classList.add('btn-primary');
+        btnTabMy.classList.remove('btn-primary');
+        panelApproved.style.display = 'block';
+        panelMy.style.display = 'none';
+        this.renderApprovedQuestionsList();
+      });
+
+      btnTabMy.addEventListener('click', () => {
+        btnTabMy.classList.add('btn-primary');
+        btnTabApproved.classList.remove('btn-primary');
+        panelMy.style.display = 'block';
+        panelApproved.style.display = 'none';
+        this.renderMyQuestionsList();
+      });
     }
 
     // Auth & Profile Modals
