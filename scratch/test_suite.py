@@ -96,6 +96,7 @@ def test_essential_files_presence():
     files = [
         # HTML Core
         "index.html",
+        "docs.html",
         "presenter/index.html",
         "admin/index.html",
         "audience/index.html",
