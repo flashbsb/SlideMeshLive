@@ -124,24 +124,13 @@
     <div style="font-weight: 800; font-size: 16px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px;">
       <span style="width: 12px; height: 12px; border-radius: 50%; background: var(--accent-primary); display: inline-block; box-shadow: 0 0 10px var(--accent-primary);"></span>
       <span style="color: var(--text-primary);" data-i18n="app.title">SlideMeshLive</span>
-      <span class="badge" style="font-size: 10px; font-weight: 600; font-family: var(--font-mono);">v1.0.0</span>
     </div>
     
     <div style="display: flex; align-items: center; gap: 10px;">
-      <!-- Criar Nova Apresentação -->
-      <a href="import.html?mode=new" class="btn btn-sm btn-primary" style="padding: 4px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;" title="Criar Nova Apresentação do Zero no Studio">
-        <span data-i18n="portal.btn_create_new">✨ Criar Nova</span>
+      <!-- SlideMesh Studio (Criar, Editar & Importar) -->
+      <a href="import.html" class="btn btn-sm btn-primary" style="padding: 5px 14px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;" title="SlideMesh Studio: Criar, Editar ou Importar Apresentações (.zip, .pptx, .docx, .md, .html, .pdf)">
+        <span data-i18n="portal.btn_studio">✨ SlideMesh Studio</span>
       </a>
-
-      <!-- Assistente de Importação -->
-      <a href="import.html" class="btn btn-sm" style="padding: 4px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;" title="Assistente de Importação e Conversão de Apresentações">
-        <span data-i18n="portal.btn_import">📤 Importar</span>
-      </a>
-
-      <!-- Importar Pacote ZIP -->
-      <button id="btn-header-import-zip" class="btn btn-sm" style="padding: 4px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.08); color: var(--accent-primary); cursor: pointer;" title="Importar Pacote ZIP de Apresentação">
-        <span data-i18n="portal.btn_import_zip">📦 Importar ZIP</span>
-      </button>
 
       <!-- Link Documentação -->
       <a href="docs.html" class="btn btn-sm" style="padding: 4px 10px; font-size: 12px; text-decoration: none;" title="Abrir Guia e Documentação Oficial">
@@ -186,77 +175,6 @@
       </div>
     </section>
 
-    <!-- Modal de Importação de Pacote ZIP -->
-    <div id="modal-import-zip" class="modal-overlay" style="display: none;">
-      <div class="modal-card animate-fade-in">
-        <!-- Header -->
-        <div style="padding: 18px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;" data-i18n="portal.modal_import_zip_title">
-            📦 Importar Pacote de Apresentação (.zip)
-          </h3>
-          <button id="btn-close-modal-zip" class="btn btn-sm" style="border: none; background: transparent; color: var(--text-muted); font-size: 18px; cursor: pointer; padding: 2px 8px;" title="Fechar">✕</button>
-        </div>
-
-        <!-- Body -->
-        <div style="padding: 24px;">
-          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;" data-i18n="portal.modal_import_zip_desc">
-            Envie um pacote .zip ou .slidemesh gerado pelo SlideMeshLive para disponibilizar a apresentação neste servidor.
-          </p>
-
-          <!-- Dropzone -->
-          <div id="zip-dropzone" style="border: 2px dashed var(--border-medium); border-radius: 12px; padding: 32px 20px; text-align: center; background: var(--bg-tertiary); cursor: pointer; transition: all 0.2s ease;">
-            <input type="file" id="zip-file-input" accept=".zip,.slidemesh" style="display: none;">
-            <div style="font-size: 36px; margin-bottom: 8px;">📦</div>
-            <div style="font-weight: 700; color: var(--text-primary); font-size: 14px; margin-bottom: 4px;" data-i18n="portal.modal_drag_zip">
-              Arraste o arquivo .zip ou .slidemesh aqui
-            </div>
-            <div style="font-size: 12px; color: var(--text-muted);" data-i18n="portal.modal_drag_or_click">
-              ou clique para selecionar do computador
-            </div>
-          </div>
-
-          <!-- File Selected Info -->
-          <div id="zip-file-info" style="display: none; margin-top: 14px; padding: 12px 16px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-primary); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-              <span>📄</span>
-              <span id="zip-file-name">apresentacao.zip</span>
-              <span id="zip-file-size" style="font-size: 11px; color: var(--text-muted); font-weight: normal;">(1.2 MB)</span>
-            </div>
-            <button id="btn-remove-zip-file" class="btn btn-sm" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 2px 6px;">✕</button>
-          </div>
-
-          <!-- Conflict Box -->
-          <div id="zip-conflict-box" style="display: none; margin-top: 16px; padding: 14px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px;">
-            <div style="font-weight: 700; color: #f59e0b; font-size: 13px; margin-bottom: 4px;" data-i18n="portal.modal_conflict_title">
-              ⚠️ Apresentação Já Existe
-            </div>
-            <div id="zip-conflict-msg" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
-              Já existe uma apresentação cadastrada com este ID. Como deseja prosseguir?
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button id="btn-zip-mode-overwrite" class="btn btn-sm" style="flex: 1; border-color: rgba(245, 158, 11, 0.5); color: #f59e0b; cursor: pointer;" data-i18n="portal.btn_overwrite">
-                🔄 Sobrescrever
-              </button>
-              <button id="btn-zip-mode-rename" class="btn btn-sm btn-primary" style="flex: 1; cursor: pointer;" data-i18n="portal.btn_rename_copy">
-                ➕ Criar Nova Cópia
-              </button>
-            </div>
-          </div>
-
-          <!-- Status / Loading / Success / Error Message -->
-          <div id="zip-status-msg" style="display: none; margin-top: 16px; font-size: 13px; text-align: center; padding: 12px; border-radius: 8px; line-height: 1.4;"></div>
-        </div>
-
-        <!-- Footer Actions -->
-        <div id="zip-modal-actions" style="padding: 14px 24px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg-tertiary);">
-          <button id="btn-cancel-zip-modal" class="btn btn-sm" data-i18n="app.cancel">Cancelar</button>
-          <button id="btn-upload-zip-confirm" class="btn btn-sm btn-primary" disabled>
-            <span data-i18n="portal.btn_import">📤 Importar</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Rodapé Discreto com Link do Repositório -->
     <footer style="text-align: center; padding: 28px 20px 36px; color: var(--text-muted); font-size: 12.5px; border-top: 1px solid var(--border-subtle); margin-top: 30px;">
       <div style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -277,7 +195,6 @@
     import { theme, THEMES } from './js/core/theme-engine.js';
 
     let allPresentations = [];
-    let selectedZipFile = null;
 
     function updateLanguageButton() {
       const btn = document.getElementById('btn-portal-lang');
@@ -421,205 +338,6 @@
         ];
         renderCards(allPresentations);
       }
-    }
-
-    // Modal de Importação ZIP
-    const modalZip = document.getElementById('modal-import-zip');
-    const zipDropzone = document.getElementById('zip-dropzone');
-    const zipFileInput = document.getElementById('zip-file-input');
-    const zipFileInfo = document.getElementById('zip-file-info');
-    const zipFileName = document.getElementById('zip-file-name');
-    const zipFileSize = document.getElementById('zip-file-size');
-    const btnRemoveZipFile = document.getElementById('btn-remove-zip-file');
-    const btnUploadZipConfirm = document.getElementById('btn-upload-zip-confirm');
-    const zipConflictBox = document.getElementById('zip-conflict-box');
-    const zipConflictMsg = document.getElementById('zip-conflict-msg');
-    const btnZipModeOverwrite = document.getElementById('btn-zip-mode-overwrite');
-    const btnZipModeRename = document.getElementById('btn-zip-mode-rename');
-    const zipStatusMsg = document.getElementById('zip-status-msg');
-
-    function openZipModal() {
-      resetZipModal();
-      if (modalZip) modalZip.style.display = 'flex';
-    }
-
-    function closeZipModal() {
-      if (modalZip) modalZip.style.display = 'none';
-      resetZipModal();
-    }
-
-    function resetZipModal() {
-      selectedZipFile = null;
-      if (zipFileInput) zipFileInput.value = '';
-      if (zipFileInfo) zipFileInfo.style.display = 'none';
-      if (zipDropzone) zipDropzone.style.display = 'block';
-      if (zipConflictBox) zipConflictBox.style.display = 'none';
-      if (zipStatusMsg) {
-        zipStatusMsg.style.display = 'none';
-        zipStatusMsg.innerHTML = '';
-      }
-      if (btnUploadZipConfirm) btnUploadZipConfirm.disabled = true;
-    }
-
-    function setZipFile(file) {
-      if (!file) return;
-      const name = file.name.toLowerCase();
-      if (!name.endsWith('.zip') && !name.endsWith('.slidemesh')) {
-        alert(i18n.t('portal.import_error') + ': Selecione um arquivo com extensão .zip ou .slidemesh');
-        return;
-      }
-      selectedZipFile = file;
-      if (zipFileName) zipFileName.textContent = file.name;
-      if (zipFileSize) {
-        const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
-        zipFileSize.textContent = `(${sizeMb} MB)`;
-      }
-      if (zipDropzone) zipDropzone.style.display = 'none';
-      if (zipFileInfo) zipFileInfo.style.display = 'flex';
-      if (zipConflictBox) zipConflictBox.style.display = 'none';
-      if (zipStatusMsg) zipStatusMsg.style.display = 'none';
-      if (btnUploadZipConfirm) btnUploadZipConfirm.disabled = false;
-    }
-
-    async function doUploadZip(mode = 'overwrite') {
-      if (!selectedZipFile) return;
-
-      if (btnUploadZipConfirm) btnUploadZipConfirm.disabled = true;
-      if (zipConflictBox) zipConflictBox.style.display = 'none';
-
-      if (zipStatusMsg) {
-        zipStatusMsg.style.display = 'block';
-        zipStatusMsg.style.background = 'rgba(56, 189, 248, 0.1)';
-        zipStatusMsg.style.color = 'var(--accent-primary)';
-        zipStatusMsg.style.border = '1px solid rgba(56, 189, 248, 0.3)';
-        zipStatusMsg.innerHTML = i18n.t('portal.import_uploading', '⏳ Enviando e descompactando pacote...');
-      }
-
-      try {
-        const url = `/api/presentations/import-zip?mode=${encodeURIComponent(mode)}`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/zip'
-          },
-          body: selectedZipFile
-        });
-
-        const data = await res.json();
-
-        if (!res.ok || !data.success) {
-          const errText = data.error || 'Erro desconhecido ao importar pacote.';
-          
-          // Se for conflito de duplicidade não forçado
-          if (errText.includes('já existe') || errText.includes('already exists')) {
-            if (zipConflictBox) {
-              zipConflictBox.style.display = 'block';
-              if (zipConflictMsg) {
-                zipConflictMsg.textContent = i18n.t('portal.modal_conflict_desc', { id: selectedZipFile.name });
-              }
-            }
-            if (zipStatusMsg) zipStatusMsg.style.display = 'none';
-            return;
-          }
-
-          throw new Error(errText);
-        }
-
-        // Sucesso na importação
-        if (zipStatusMsg) {
-          zipStatusMsg.style.background = 'rgba(16, 185, 129, 0.12)';
-          zipStatusMsg.style.color = '#10b981';
-          zipStatusMsg.style.border = '1px solid rgba(16, 185, 129, 0.3)';
-          zipStatusMsg.innerHTML = `
-            <div style="font-weight: 700; margin-bottom: 6px;">🎉 ${i18n.t('portal.import_success', 'Apresentação importada com sucesso!')}</div>
-            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px;">ID: <strong>${data.presentationId}</strong> (${data.totalSlides} slides)</div>
-            <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
-              <a href="${data.presenterUrl}" class="btn btn-sm btn-primary" style="text-decoration: none;">🖥️ Telão</a>
-              <a href="${data.adminUrl}" class="btn btn-sm" style="text-decoration: none; border-color: var(--border-medium);">🛡️ Painel</a>
-              <a href="${data.audienceUrl}" class="btn btn-sm" style="text-decoration: none; border-color: var(--border-medium);">📱 Celular</a>
-            </div>
-          `;
-        }
-
-        // Recarrega catálogo na grade
-        await loadCatalog();
-
-      } catch (err) {
-        if (zipStatusMsg) {
-          zipStatusMsg.style.background = 'rgba(239, 68, 68, 0.12)';
-          zipStatusMsg.style.color = '#ef4444';
-          zipStatusMsg.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-          zipStatusMsg.textContent = `${i18n.t('portal.import_error')}: ${err.message}`;
-        }
-        if (btnUploadZipConfirm) btnUploadZipConfirm.disabled = false;
-      }
-    }
-
-    // Listeners do Modal ZIP
-    const headerImportZipBtn = document.getElementById('btn-header-import-zip');
-    if (headerImportZipBtn) {
-      headerImportZipBtn.addEventListener('click', openZipModal);
-    }
-
-    const btnCloseModalZip = document.getElementById('btn-close-modal-zip');
-    if (btnCloseModalZip) btnCloseModalZip.addEventListener('click', closeZipModal);
-
-    const btnCancelZipModal = document.getElementById('btn-cancel-zip-modal');
-    if (btnCancelZipModal) btnCancelZipModal.addEventListener('click', closeZipModal);
-
-    if (zipDropzone) {
-      zipDropzone.addEventListener('click', () => {
-        if (zipFileInput) zipFileInput.click();
-      });
-
-      zipDropzone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        zipDropzone.classList.add('dragover');
-      });
-
-      zipDropzone.addEventListener('dragleave', () => {
-        zipDropzone.classList.remove('dragover');
-      });
-
-      zipDropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        zipDropzone.classList.remove('dragover');
-        if (e.dataTransfer && e.dataTransfer.files.length > 0) {
-          setZipFile(e.dataTransfer.files[0]);
-        }
-      });
-    }
-
-    if (zipFileInput) {
-      zipFileInput.addEventListener('change', (e) => {
-        if (e.target.files && e.target.files.length > 0) {
-          setZipFile(e.target.files[0]);
-        }
-      });
-    }
-
-    if (btnRemoveZipFile) {
-      btnRemoveZipFile.addEventListener('click', () => {
-        resetZipModal();
-      });
-    }
-
-    if (btnUploadZipConfirm) {
-      btnUploadZipConfirm.addEventListener('click', () => {
-        doUploadZip('overwrite');
-      });
-    }
-
-    if (btnZipModeOverwrite) {
-      btnZipModeOverwrite.addEventListener('click', () => {
-        doUploadZip('overwrite');
-      });
-    }
-
-    if (btnZipModeRename) {
-      btnZipModeRename.addEventListener('click', () => {
-        doUploadZip('rename');
-      });
     }
 
     // Busca e filtro

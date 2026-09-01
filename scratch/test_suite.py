@@ -2485,28 +2485,22 @@ def test_demanda12_zip_export_import_portability():
     assert import_proc.returncode == 0, f"tools/import_presentation.py falhou com ZIP: {import_proc.stderr}"
     print("  ✓ Utilitários CLI: tools/export_presentation.py e tools/import_presentation.py validados via subprocess.")
 
-    # 6. Teste de Frontend do Portal (index.html) e Internacionalização (i18n) - Fase 2
+    # 6. Teste de Frontend do Portal (index.html) e Internacionalização (i18n) - Plano 13 (Fase 1)
     index_path = os.path.join(BASE_DIR, "index.html")
     with open(index_path, "r", encoding="utf-8") as f:
         idx_content = f.read()
 
-    assert "btn-header-import-zip" in idx_content, "Botão btn-header-import-zip ausente no cabeçalho do index.html"
-    assert "modal-import-zip" in idx_content, "Modal modal-import-zip ausente no index.html"
-    assert "zip-dropzone" in idx_content, "Dropzone zip-dropzone ausente no index.html"
-    assert "btn-upload-zip-confirm" in idx_content, "Botão de confirmação de upload ausente"
-    assert "btn-zip-mode-overwrite" in idx_content, "Botão de sobrescrita de conflito ausente"
-    assert "btn-zip-mode-rename" in idx_content, "Botão de cópia de conflito ausente"
+    assert "import.html" in idx_content, "Link para SlideMesh Studio ausente no index.html"
     assert "/api/presentations/export?id=" in idx_content, "Link de exportação ZIP ausente nos cards de apresentação"
-    assert "btn-card-import-zip" in idx_content, "Botão de importação ZIP ausente no card de nova apresentação"
-    print("  ✓ Portal (index.html): Botões de exportação nos cards, botão no topo e modal Drag & Drop com resolução de conflitos validados.")
+    print("  ✓ Portal (index.html): Link consolidado para SlideMesh Studio e botões de exportação ZIP validados.")
 
     i18n_path = os.path.join(BASE_DIR, "js", "core", "i18n-engine.js")
     with open(i18n_path, "r", encoding="utf-8") as f:
         i18n_content = f.read()
 
-    for k in ["portal.btn_import_zip", "portal.btn_export_zip", "portal.modal_import_zip_title", "portal.modal_drag_zip", "portal.modal_conflict_title", "portal.btn_overwrite", "portal.btn_rename_copy", "portal.btn_import_zip_card"]:
+    for k in ["portal.btn_studio", "portal.btn_export_zip"]:
         assert k in i18n_content, f"Chave de tradução {k} ausente em i18n-engine.js"
-    print("  ✓ Internacionalização (i18n): Chaves simétricas de importação/exportação ZIP validadas em pt-BR e en-US.")
+    print("  ✓ Internacionalização (i18n): Chaves simétricas consolidadas de Studio e Exportação ZIP validadas em pt-BR e en-US.")
 
     # 7. Teste de Studio (import.html) e Mesa Técnica (admin/index.html & admin-app.js) - Fase 3
     studio_path = os.path.join(BASE_DIR, "import.html")
