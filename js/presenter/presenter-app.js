@@ -28,6 +28,7 @@ class PresenterApp {
     
     this.presentationId = PresentationEngine.getPresentationIdFromURL();
     this.sessionId = PresentationEngine.getSessionIdFromURL() || QREngine.generateSessionCode();
+    this.viewMode = new URLSearchParams(window.location.search).get('view') || 'stage';
 
     this.pollState = {
       activePollId: null,
@@ -110,6 +111,7 @@ class PresenterApp {
     this.updateThemeButton();
     i18n.applyTranslations();
     this.startPresentationTimer();
+    this.applyViewModeLayout();
 
     if (this.dom.sessionCodeDisplay) {
       this.dom.sessionCodeDisplay.textContent = `#${this.sessionId}`;
@@ -761,6 +763,42 @@ class PresenterApp {
         }
       }
     }, 1000);
+  }
+
+  // ==========================================
+  // Multi-Screen Presenter Hub (Plano 10 - Fase 1)
+  // ==========================================
+  getViewMode() {
+    return this.viewMode || 'stage';
+  }
+
+  setViewMode(mode) {
+    this.viewMode = mode;
+    this.applyViewModeLayout();
+  }
+
+  applyViewModeLayout() {
+    const body = document.body;
+    if (!body) return;
+
+    body.classList.remove('view-stage-mode', 'view-questions-mode', 'view-polls-mode');
+
+    if (this.viewMode === 'questions_wall') {
+      body.classList.add('view-questions-mode');
+      if (this.dom.questionsDrawer) {
+        this.dom.questionsDrawer.style.display = 'flex';
+      }
+      this.updateQuestionsDrawer();
+    } else if (this.viewMode === 'polls_live') {
+      body.classList.add('view-polls-mode');
+      this.pollState.showResults = true;
+      if (this.dom.stagePollDock) {
+        this.dom.stagePollDock.style.display = 'flex';
+      }
+      this.updatePollResultsInStage();
+    } else {
+      body.classList.add('view-stage-mode');
+    }
   }
 }
 

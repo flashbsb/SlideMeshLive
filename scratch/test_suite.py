@@ -2076,6 +2076,42 @@ def test_demanda09_analytics_and_session_archive():
 
     print("✓ Demanda 09 (Fases 1, 2, 3 e 4: Analytics Avançado, Persistência, Gráficos Canvas 2D, Relatório Executivo e Resiliência Concorrente) 100% HOMOLOGADA com sucesso.")
 
+def test_demanda10_multi_screen_presenter_hub():
+    """
+    Suíte 21: Validação do Multi-Screen Presenter Hub (Plano 10 - Fase 1)
+    - Roteamento dinâmico de view via URL (?view=stage, questions_wall, polls_live).
+    - Presença e injeção de classes CSS no body (.view-stage-mode, .view-questions-mode, .view-polls-mode).
+    - Métodos getViewMode, setViewMode e applyViewModeLayout em PresenterApp.
+    - Estrutura de containers de palco em presenter/index.html.
+    """
+    print(f"\n{'='*70}")
+    print(f" 🧪 21. Demanda 10: Multi-Screen Presenter Hub (Fase 1)")
+    print(f"{'='*70}")
+
+    presenter_app_path = os.path.join(BASE_DIR, "js", "presenter", "presenter-app.js")
+    with open(presenter_app_path, "r", encoding="utf-8") as f:
+        code = f.read()
+
+    assert "this.viewMode" in code, "Propriedade this.viewMode ausente em PresenterApp"
+    assert "getViewMode" in code, "Método getViewMode ausente em PresenterApp"
+    assert "setViewMode" in code, "Método setViewMode ausente em PresenterApp"
+    assert "applyViewModeLayout" in code, "Método applyViewModeLayout ausente em PresenterApp"
+    assert "view-questions-mode" in code, "Classe view-questions-mode ausente em applyViewModeLayout"
+    assert "view-polls-mode" in code, "Classe view-polls-mode ausente em applyViewModeLayout"
+    assert "view-stage-mode" in code, "Classe view-stage-mode ausente em applyViewModeLayout"
+    print("  ✓ PresenterApp (presenter-app.js): Motor de roteamento de visualização multi-telão validado.")
+
+    presenter_html_path = os.path.join(BASE_DIR, "presenter", "index.html")
+    with open(presenter_html_path, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    assert 'id="stage-questions-drawer"' in html or "id='stage-questions-drawer'" in html, "Container stage-questions-drawer ausente em presenter/index.html"
+    assert 'id="stage-questions-list"' in html or "id='stage-questions-list'" in html, "Lista stage-questions-list ausente em presenter/index.html"
+    assert 'id="stage-poll-dock"' in html or "id='stage-poll-dock'" in html, "Dock stage-poll-dock ausente em presenter/index.html"
+    print("  ✓ Telão HTML (presenter/index.html): Estrutura de containers para mural e enquetes validada.")
+
+    print("✓ Demanda 10 (Fase 1: Motor de Roteamento de Layout no PresenterApp) 100% HOMOLOGADA com sucesso.")
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -2098,6 +2134,7 @@ if __name__ == "__main__":
         test_demanda01_stage_transitions_engine()
         test_demanda02_stage_fx_overlay()
         test_demanda09_analytics_and_session_archive()
+        test_demanda10_multi_screen_presenter_hub()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time
