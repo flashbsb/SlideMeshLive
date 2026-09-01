@@ -80,6 +80,10 @@
     - The server statically audits deck assets (`GET /api/diagnostics`), identifying heavy slides (>500KB) and calculating instant burst throughput in MB across 30+ connected smartphones.
     - The Control Room displays a live Health HUD with health score badges, recommended local Wi-Fi attendee capacity, real-time latency monitoring, and resident memory/uptime telemetry.
     - SlideMesh Studio includes a built-in 1-click HTML5 Canvas compressor for Full HD WebP optimization (<300KB).
+11. **Cinematic Stage Transitions & GPU-Accelerated Animations**:
+    - The clean stage screen supports 5 high-fidelity transition presets accelerated strictly via GPU hardware (`transform` and `opacity` with zero layout reflows): `fade`, `slide` (3D navigation-direction-aware), `zoom`, `dissolve`, and `stagger` (cascading bullet reveals).
+    - Fully configurable globally in `manifest.json` (`theme.transition`) and per-slide in `slides.json` (`presenter.transition`) via SlideMesh Studio.
+    - Strict WCAG accessibility compliance with instant, graceful motion suppression under `@media (prefers-reduced-motion: reduce)`.
 
 ---
 

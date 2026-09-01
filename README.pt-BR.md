@@ -79,6 +79,10 @@ O **SlideMeshLive** foi concebido com uma arquitetura modular baseada em tecnolo
     - O servidor audita os arquivos e mídias da apresentação em disco (`GET /api/diagnostics`), identificando slides pesados (>500KB) e calculando o pico de rajada de banda em MB para 30+ celulares simultâneos.
     - A mesa técnica exibe um painel HUD com semáforo de saúde, capacidade estimada de participantes no Wi-Fi local, medidor de latência em tempo real e telemetria de memória/uptime.
     - O SlideMesh Studio inclui compressor inteligente 1-clique via HTML5 Canvas para redimensionamento e conversão WebP Full HD (<300KB).
+11. **Transições Cinematográficas e Animações no Telão (Stage Transitions)**:
+    - O telão do apresentador suporta 5 presets de transição de alta fidelidade acelerados por GPU (`transform` e `opacity` sem reflows): `fade`, `slide` (3D consciente da direção de navegação), `zoom`, `dissolve` e `stagger` (cascata sequencial de marcadores).
+    - Configuração global no `manifest.json` (`theme.transition`) e sobreposição individual por slide no `slides.json` (`presenter.transition`), integradas no SlideMesh Studio.
+    - Suporte nativo a acessibilidade WCAG com desativação instantânea e graciosa sob `@media (prefers-reduced-motion: reduce)`.
 
 ---
 

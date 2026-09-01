@@ -1713,7 +1713,19 @@ def test_demanda01_stage_transitions_engine():
         assert key in i18n_code, f"Chave de tradução '{key}' ausente em i18n-engine.js"
     print("  ✓ Internacionalização (i18n): Chaves simétricas de transição validadas em pt-BR e en-US.")
 
-    print("✓ Demanda 01 (Fases 1 e 2: Motor de Transições e Seletores de Studio) 100% HOMOLOGADAS.")
+    # 7. Validação da Fase 3: Documentação Oficial e Homologação Final
+    readme_pt_path = os.path.join(BASE_DIR, "README.pt-BR.md")
+    with open(readme_pt_path, "r", encoding="utf-8") as f:
+        readme_pt = f.read()
+    assert "Transições Cinematográficas e Animações no Telão" in readme_pt, "Princípio 11 ausente em README.pt-BR.md"
+
+    readme_en_path = os.path.join(BASE_DIR, "README.md")
+    with open(readme_en_path, "r", encoding="utf-8") as f:
+        readme_en = f.read()
+    assert "Cinematic Stage Transitions & GPU-Accelerated Animations" in readme_en, "Princípio 11 ausente em README.md"
+    print("  ✓ Documentação Oficial: Princípio 11 documentado com paridade em README.pt-BR.md e README.md.")
+
+    print("✓ Demanda 01 (Fases 1, 2 e 3: Transições Cinematográficas no Telão) 100% HOMOLOGADAS com sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()
