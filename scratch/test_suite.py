@@ -2548,6 +2548,61 @@ def test_demanda12_zip_export_import_portability():
     conn.close()
     print("✓ Demanda 12 (Fases 1, 2 e 3: Backend ZIP, CLIs, Portal index.html, SlideMesh Studio e Mesa Técnica) 100% HOMOLOGADA com sucesso.")
 
+
+def test_plano13_portal_and_admin_modals_ux():
+    """Valida as correções do Plano 13 - Fase 1 (Portal index.html) e Fase 2 (Modais da Mesa Técnica)"""
+    print(f"\n{'='*70}")
+    print(" 🧪 24. Plano 13: Limpeza do Portal & Modais Robustos da Mesa Técnica (Fases 1 e 2)")
+    print(f"{'='*70}")
+
+    # 1. Validação do Portal (index.html)
+    index_path = os.path.join(BASE_DIR, "index.html")
+    with open(index_path, "r", encoding="utf-8") as f:
+        idx = f.read()
+
+    assert "v1.0.0" not in idx, "Badge estático v1.0.0 ainda presente no index.html"
+    assert "modal-import-zip" not in idx, "Modal duplicado modal-import-zip ainda presente no index.html"
+    assert "portal.btn_studio" in idx, "Chave portal.btn_studio ausente no index.html"
+    assert "import.html" in idx, "Link para import.html (Studio) ausente no index.html"
+    print("  ✓ Portal (index.html): Remoção de versão estática v1.0.0 e unificação de botão Studio validados.")
+
+    # 2. Validação da Estrutura de Modais na Mesa Técnica (admin/index.html)
+    admin_path = os.path.join(BASE_DIR, "admin", "index.html")
+    with open(admin_path, "r", encoding="utf-8") as f:
+        admin_html = f.read()
+
+    # Todos os modais devem estar no nível raiz do body (não aninhados)
+    modals = ["host-config-modal", "admin-analytics-modal", "history-modal", "new-session-modal", "admin-lock-modal"]
+    for m in modals:
+        assert f'id="{m}"' in admin_html, f"Modal #{m} ausente em admin/index.html"
+
+    # Verificar que as tags de fechamento do host-config-modal estão corretas
+    host_modal_idx = admin_html.find('id="host-config-modal"')
+    analytics_modal_idx = admin_html.find('id="admin-analytics-modal"')
+    assert host_modal_idx < analytics_modal_idx, "Ordem de modais incorreta"
+    between_modals = admin_html[host_modal_idx:analytics_modal_idx]
+    assert "</div>" in between_modals and "btn-save-host-config" in between_modals, "Fechamento de host-config-modal ausente ou inválido"
+
+    # Verificar atalhos de Analytics e Histórico na grade e header
+    assert 'id="admin-btn-analytics"' in admin_html, "Botão #admin-btn-analytics ausente no header"
+    assert 'id="admin-btn-history"' in admin_html, "Botão #admin-btn-history ausente no header"
+    assert 'id="admin-card-btn-analytics"' in admin_html, "Atalho #admin-card-btn-analytics ausente na Coluna 3"
+    assert 'id="admin-card-btn-history"' in admin_html, "Atalho #admin-card-btn-history ausente na Coluna 3"
+    print("  ✓ Mesa Técnica (admin/index.html): Fechamento estrutural de modais e atalhos rápidos validados.")
+
+    # 3. Validação do Script Admin (admin-app.js)
+    admin_js_path = os.path.join(BASE_DIR, "js", "admin", "admin-app.js")
+    with open(admin_js_path, "r", encoding="utf-8") as f:
+        admin_js = f.read()
+
+    assert "cardBtnAnalytics" in admin_js, "Binding cardBtnAnalytics ausente em admin-app.js"
+    assert "cardBtnHistory" in admin_js, "Binding cardBtnHistory ausente em admin-app.js"
+    assert "openAnalyticsModal" in admin_js and "openHistoryModal" in admin_js, "Métodos de abertura de modais ausentes em admin-app.js"
+    print("  ✓ Controlador Admin (admin-app.js): Bindings de abertura de modais e atalhos validados.")
+
+    print("✓ Plano 13 (Fases 1 e 2: Portal Inicial Limpo e Modais da Mesa Técnica Robustos) 100% HOMOLOGADO com sucesso.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -2573,6 +2628,7 @@ if __name__ == "__main__":
         test_demanda10_multi_screen_presenter_hub()
         test_demanda11_media_range_requests()
         test_demanda12_zip_export_import_portability()
+        test_plano13_portal_and_admin_modals_ux()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

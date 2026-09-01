@@ -108,6 +108,7 @@ class AdminApp {
 
       // Session History & New Session Modals
       btnHistory: document.getElementById('admin-btn-history'),
+      cardBtnHistory: document.getElementById('admin-card-btn-history'),
       btnNewSession: document.getElementById('admin-btn-new-session'),
       historyModal: document.getElementById('history-modal'),
       btnCloseHistoryModal: document.getElementById('btn-close-history-modal'),
@@ -128,6 +129,7 @@ class AdminApp {
 
       // Analytics Dashboard (Plano 09 - Fase 2)
       btnAnalytics: document.getElementById('admin-btn-analytics'),
+      cardBtnAnalytics: document.getElementById('admin-card-btn-analytics'),
       analyticsModal: document.getElementById('admin-analytics-modal'),
       btnCloseAnalyticsModal: document.getElementById('btn-close-analytics-modal'),
       btnDoneAnalytics: document.getElementById('btn-done-analytics'),
@@ -930,6 +932,9 @@ class AdminApp {
     if (this.dom.btnHistory) {
       this.dom.btnHistory.addEventListener('click', () => this.openHistoryModal());
     }
+    if (this.dom.cardBtnHistory) {
+      this.dom.cardBtnHistory.addEventListener('click', () => this.openHistoryModal());
+    }
     if (this.dom.btnCloseHistoryModal) {
       this.dom.btnCloseHistoryModal.addEventListener('click', () => this.closeHistoryModal());
     }
@@ -958,6 +963,9 @@ class AdminApp {
     // Modal de Analytics (Plano 09 - Fase 2)
     if (this.dom.btnAnalytics) {
       this.dom.btnAnalytics.addEventListener('click', () => this.openAnalyticsModal());
+    }
+    if (this.dom.cardBtnAnalytics) {
+      this.dom.cardBtnAnalytics.addEventListener('click', () => this.openAnalyticsModal());
     }
     if (this.dom.btnCloseAnalyticsModal) {
       this.dom.btnCloseAnalyticsModal.addEventListener('click', () => this.closeAnalyticsModal());
