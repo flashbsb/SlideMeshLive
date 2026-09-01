@@ -2020,18 +2020,61 @@ def test_demanda09_analytics_and_session_archive():
         assert "admin.analytics_export_html" in i18n_code, "Chave admin.analytics_export_html ausente em i18n-engine.js"
         print("  ✓ Relatório Executivo & CSV (session-manager.js & i18n-engine.js): Geradores de relatório autônomo e internacionalização validados.")
 
+        # 9. Teste de Resiliência a Arquivos Corrompidos em sessions_archive/ (Plano 09 - Fase 4)
+        corrupt_file = os.path.join(archive_dir, "TEST_CORRUPTED_analytics.json")
+        with open(corrupt_file, "w", encoding="utf-8") as f:
+            f.write("{ invalid json byte garbage ...")
+
+        with urllib.request.urlopen(f"{base_url}/api/analytics/history", timeout=5) as resp:
+            assert resp.status == 200
+            history_data = json.loads(resp.read().decode("utf-8"))
+            assert history_data.get("success") is True
+        print("  ✓ Resiliência a Falhas: Listagem de histórico ignora arquivos corrompidos sem falhar.")
+
+        # 10. Teste de Sanitização de Session ID e Proteção Path Traversal
+        traversal_req = urllib.request.Request(
+            f"{base_url}/api/analytics/archive",
+            data=json.dumps({"sessionId": "../../../etc/test_malicious", "payload": {"test": 1}}).encode("utf-8"),
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(traversal_req, timeout=5) as resp:
+            assert resp.status == 200
+            res_data = json.loads(resp.read().decode("utf-8"))
+            saved_sid = res_data.get("sessionId")
+            assert "/" not in saved_sid and ".." not in saved_sid, f"Falha de sanitização de Session ID: {saved_sid}"
+        print("  ✓ Segurança Declarativa: Higienização estrita de session_id contra Path Traversal validada.")
+
+        # 11. Teste de Concorrência e Estresse Multithread (20 gravações e leituras paralelas)
+        def concurrent_task(task_id):
+            sid = f"CONCURRENT_TEST_{task_id}"
+            p = {"summary": {"totalParticipants": task_id, "totalVotesCast": task_id * 2}}
+            req = urllib.request.Request(
+                f"{base_url}/api/analytics/archive",
+                data=json.dumps({"sessionId": sid, "payload": p}).encode("utf-8"),
+                headers={"Content-Type": "application/json"}
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                assert resp.status == 200
+            with urllib.request.urlopen(f"{base_url}/api/analytics/session?id={sid}", timeout=5) as resp:
+                assert resp.status == 200
+
+        threads = [threading.Thread(target=concurrent_task, args=(i,)) for i in range(20)]
+        for t in threads: t.start()
+        for t in threads: t.join()
+        print("  ✓ Estresse & Concorrência: 20 gravações e leituras atômicas paralelas executadas sem colisões.")
+
     finally:
         # Limpeza de arquivos de teste
         if os.path.exists(archive_dir):
             for fn in os.listdir(archive_dir):
-                if fn.startswith("TEST_ANALYTICS_") or fn.startswith("ROTATION_TEST_"):
+                if fn.startswith("TEST_") or fn.startswith("ROTATION_TEST_") or fn.startswith("CONCURRENT_TEST_") or "malicious" in fn:
                     try:
                         os.remove(os.path.join(archive_dir, fn))
                     except Exception:
                         pass
         httpd.shutdown()
 
-    print("✓ Demanda 09 (Fases 1, 2 e 3: Analytics Avançado, Persistência, Gráficos Canvas 2D e Relatório Executivo) 100% HOMOLOGADA com sucesso.")
+    print("✓ Demanda 09 (Fases 1, 2, 3 e 4: Analytics Avançado, Persistência, Gráficos Canvas 2D, Relatório Executivo e Resiliência Concorrente) 100% HOMOLOGADA com sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()

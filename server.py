@@ -992,11 +992,12 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                     sid = "SESSION_" + str(int(time.time()))
                 payload = data.get('payload', data)
                 saved_record = save_session_analytics_archive(sid, payload)
+                clean_sid = saved_record.get("sessionId", sid)
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
-                self.wfile.write(json.dumps({"success": True, "sessionId": sid, "savedAt": saved_record.get("savedAt")}).encode('utf-8'))
+                self.wfile.write(json.dumps({"success": True, "sessionId": clean_sid, "savedAt": saved_record.get("savedAt")}).encode('utf-8'))
                 return
             except Exception as err:
                 self.send_response(400)
