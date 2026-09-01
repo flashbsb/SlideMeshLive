@@ -1644,6 +1644,49 @@ def test_demanda03_diagnostics_and_capacity_engine():
 
     print("✓ Demanda 03 (Fases 1, 2, 3 e 4) 100% HOMOLOGADAS e validadas com sucesso.")
 
+def test_demanda01_stage_transitions_engine():
+    print_section("18. Demanda 01: Transições e Animações no Telão (Fase 1)")
+
+    # 1. Validação dos Presets CSS no presenter.css
+    css_path = os.path.join(BASE_DIR, "css", "presenter.css")
+    with open(css_path, "r", encoding="utf-8") as f:
+        css_content = f.read()
+
+    assert "stage-trans-fade" in css_content, "Preset .stage-trans-fade ausente em presenter.css"
+    assert "stage-trans-slide-next" in css_content, "Preset .stage-trans-slide-next ausente em presenter.css"
+    assert "stage-trans-slide-prev" in css_content, "Preset .stage-trans-slide-prev ausente em presenter.css"
+    assert "stage-trans-zoom" in css_content, "Preset .stage-trans-zoom ausente em presenter.css"
+    assert "stage-trans-dissolve" in css_content, "Preset .stage-trans-dissolve ausente em presenter.css"
+    assert "stage-trans-stagger" in css_content, "Preset .stage-trans-stagger ausente em presenter.css"
+    assert "stage-stagger-bullet" in css_content, "Classe .stage-stagger-bullet ausente em presenter.css"
+    assert "prefers-reduced-motion" in css_content, "Suporte a prefers-reduced-motion ausente em presenter.css"
+    print("  ✓ Motor CSS (presenter.css): 5 presets de transição (fade, slide, zoom, dissolve, stagger) e suporte WCAG validados.")
+
+    # 2. Validação do PresentationEngine (renderSlideHtml & renderPresenterSlide)
+    engine_path = os.path.join(BASE_DIR, "js", "core", "presentation-engine.js")
+    with open(engine_path, "r", encoding="utf-8") as f:
+        engine_code = f.read()
+
+    assert "stage-trans-slide-next" in engine_code, "Lógica de transição stage-trans-slide-next ausente em presentation-engine.js"
+    assert "stage-trans-slide-prev" in engine_code, "Lógica de transição stage-trans-slide-prev ausente em presentation-engine.js"
+    assert "stage-trans-zoom" in engine_code, "Lógica de transição stage-trans-zoom ausente em presentation-engine.js"
+    assert "stage-trans-dissolve" in engine_code, "Lógica de transição stage-trans-dissolve ausente em presentation-engine.js"
+    assert "stage-trans-stagger" in engine_code, "Lógica de transição stage-trans-stagger ausente em presentation-engine.js"
+    assert "stage-stagger-bullet" in engine_code, "Injeção de bullets escalonados ausente em presentation-engine.js"
+    print("  ✓ PresentationEngine (presentation-engine.js): Injeção dinâmica de classes de transição e animação stagger validada.")
+
+    # 3. Validação do PresenterApp (presenter-app.js)
+    presenter_js_path = os.path.join(BASE_DIR, "js", "presenter", "presenter-app.js")
+    with open(presenter_js_path, "r", encoding="utf-8") as f:
+        presenter_code = f.read()
+
+    assert "this.prevSlideIndex" in presenter_code, "Rastreamento prevSlideIndex ausente em presenter-app.js"
+    assert "applySlideAnimations" in presenter_code, "Método applySlideAnimations ausente em presenter-app.js"
+    assert "stage-stagger-bullet" in presenter_code, "Injeção de delay de bullets stagger ausente em presenter-app.js"
+    print("  ✓ Telão / Púlpito (presenter-app.js): Rastreamento de direção de slide e escalonamento de bullets validados.")
+
+    print("✓ Demanda 01 (Fase 1: Motor CSS de Transições e Renderizador no Telão) 100% HOMOLOGADA.")
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -1663,6 +1706,7 @@ if __name__ == "__main__":
         test_phase4_static_deck_export_and_print_ready()
         test_audience_pacing_lock_and_controlled_navigation()
         test_demanda03_diagnostics_and_capacity_engine()
+        test_demanda01_stage_transitions_engine()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

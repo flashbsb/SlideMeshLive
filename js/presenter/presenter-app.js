@@ -35,6 +35,7 @@ class PresenterApp {
 
     this.timerSeconds = 0;
     this.timerInterval = null;
+    this.prevSlideIndex = 0;
 
     // DOM Elements
     this.dom = {
@@ -226,10 +227,13 @@ class PresenterApp {
       this.dom.slideCounter.textContent = `${current} / ${total}`;
     }
 
-    // Renderiza o Slide HTML com animações
+    const direction = (this.engine.currentSlideIndex < this.prevSlideIndex) ? 'prev' : 'next';
+    this.prevSlideIndex = this.engine.currentSlideIndex;
+
+    // Renderiza o Slide HTML com animações e direção de transição
     if (this.dom.canvas && slide) {
-      this.dom.canvas.innerHTML = this.engine.renderSlideHtml(slide);
-      this.applySlideAnimations();
+      this.dom.canvas.innerHTML = this.engine.renderSlideHtml(slide, { direction });
+      this.applySlideAnimations(slide);
     }
 
     // Notas do Orador no Púlpito
@@ -517,7 +521,19 @@ class PresenterApp {
     setTimeout(() => el.remove(), 2500);
   }
 
-  applySlideAnimations() {
+  applySlideAnimations(slide = null) {
+    const s = slide || this.engine.currentSlide;
+    const transition = (s && s.presenter && s.presenter.transition) || (s && s.transition) || (this.engine.manifest?.theme?.transition) || 'fade';
+    
+    // Injeção de delay escalonado para bullets no modo stagger
+    if (transition === 'stagger') {
+      const bullets = this.dom.canvas.querySelectorAll('.slide-bullet-item');
+      bullets.forEach((b, i) => {
+        b.classList.add('stage-stagger-bullet');
+        b.style.animationDelay = `${(i + 1) * 80 + 40}ms`;
+      });
+    }
+
     const cards = this.dom.canvas.querySelectorAll('.card, .stat-box, .comparison-col');
     cards.forEach((c, i) => {
       c.style.animationDelay = `${(i + 1) * 0.08}s`;

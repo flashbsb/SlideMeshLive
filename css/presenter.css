@@ -92,10 +92,132 @@
   overflow-y: auto;
 }
 
+/* ==========================================================================
+   Transições e Animações Cinematográficas de Slides (Demanda 01 - Fase 1)
+   Aceleradas por GPU (transform e opacity) sem layout reflows
+   ========================================================================== */
+
 .slide-content-wrapper {
   width: 100%;
   max-width: 1360px;
-  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+  animation-duration: var(--stage-trans-duration, 380ms);
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: both;
+}
+
+/* 1. Presets Fade (Padrão) */
+.stage-trans-fade {
+  animation-name: stageFadeIn;
+}
+
+@keyframes stageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 2. Presets Slide (Horizontal 3D dependente da direção) */
+.stage-trans-slide-next {
+  animation-name: stageSlideNext;
+}
+.stage-trans-slide-prev {
+  animation-name: stageSlidePrev;
+}
+
+@keyframes stageSlideNext {
+  from {
+    opacity: 0;
+    transform: translate3d(60px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes stageSlidePrev {
+  from {
+    opacity: 0;
+    transform: translate3d(-60px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* 3. Presets Zoom */
+.stage-trans-zoom {
+  animation-name: stageZoomIn;
+}
+
+@keyframes stageZoomIn {
+  from {
+    opacity: 0;
+    transform: scale3d(0.94, 0.94, 1);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+/* 4. Presets Dissolve (Cross-fade com desfoque de alta fidelidade) */
+.stage-trans-dissolve {
+  animation-name: stageDissolve;
+}
+
+@keyframes stageDissolve {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* 5. Presets Stagger (Entrada em cascata de bullets) */
+.stage-trans-stagger {
+  animation-name: stageFadeIn;
+}
+
+.stage-stagger-bullet {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: stageBulletEnter 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes stageBulletEnter {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Suporte a Acessibilidade WCAG e Redução de Movimento */
+@media (prefers-reduced-motion: reduce) {
+  .slide-content-wrapper,
+  .stage-trans-fade,
+  .stage-trans-slide-next,
+  .stage-trans-slide-prev,
+  .stage-trans-zoom,
+  .stage-trans-dissolve,
+  .stage-trans-stagger,
+  .stage-stagger-bullet {
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+    transition: none !important;
+  }
 }
 
 .slide-tag {

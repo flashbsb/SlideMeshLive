@@ -119,13 +119,29 @@ export class PresentationEngine {
   /**
    * Renderiza o slide atual para a visão do Apresentador
    */
-  renderPresenterSlide(containerElement, notesElement = null, pollRenderData = null) {
+  renderPresenterSlide(containerElement, notesElement = null, pollRenderData = null, options = {}) {
     const slide = this.currentSlide;
     if (!slide || !containerElement) return;
 
+    const transition = (options && options.transition) || (slide.presenter && slide.presenter.transition) || slide.transition || (this.manifest?.theme?.transition) || 'fade';
+    const direction = (options && options.direction) || 'next';
+
+    let transClass = 'stage-trans-fade';
+    if (transition === 'slide') {
+      transClass = (direction === 'prev') ? 'stage-trans-slide-prev' : 'stage-trans-slide-next';
+    } else if (transition === 'zoom') {
+      transClass = 'stage-trans-zoom';
+    } else if (transition === 'dissolve') {
+      transClass = 'stage-trans-dissolve';
+    } else if (transition === 'stagger') {
+      transClass = 'stage-trans-stagger';
+    }
+
+    const isStagger = (transition === 'stagger');
+
     const bulletsHtml = (slide.presenter.bullets || [])
-      .map(b => `
-        <li class="slide-bullet-item animate-fade-in">
+      .map((b, idx) => `
+        <li class="slide-bullet-item ${isStagger ? 'stage-stagger-bullet' : 'animate-fade-in'}" ${isStagger ? `style="animation-delay: ${(idx + 1) * 80 + 40}ms;"` : ''}>
           <span class="bullet-icon"></span>
           <span>${b}</span>
         </li>
@@ -148,40 +164,33 @@ export class PresentationEngine {
               <span style="color: #ffffff; font-weight: 600;">${opt.id}. ${opt.text}</span>
               <strong style="color: var(--accent-primary); font-family: var(--font-mono); font-size: 15px;">${opt.percentage}% (${opt.votes})</strong>
             </div>
-            <div class="poll-progress-track" style="height: 10px; background: rgba(255,255,255,0.08); border-radius: 5px;">
-              <div class="poll-progress-fill" style="width: ${opt.percentage}%; background: linear-gradient(90deg, var(--accent-primary) 0%, #38bdf8 100%); border-radius: 5px;"></div>
+            <div class="progress-bar-bg" style="height: 12px;">
+              <div class="progress-bar-fill" style="width: ${opt.percentage}%;"></div>
             </div>
           </div>
         `).join('');
       } else {
-        // Exibe lista de opções legíveis no telão
-        pollBodyHtml = `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
-            ${poll.options.map(opt => `
-              <div style="background: rgba(15,23,42,0.7); border: 1px solid var(--border-subtle); padding: 12px 16px; border-radius: var(--radius-md); display: flex; align-items: center; gap: 10px;">
-                <span class="badge badge-accent" style="font-size: 12px; font-weight: 700; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; padding: 0;">${opt.id}</span>
-                <span style="font-size: 14px; font-weight: 600; color: #e2e8f0;">${opt.text}</span>
-              </div>
-            `).join('')}
+        // Exibe opções normais com status de votação aberta
+        pollBodyHtml = (poll.options || []).map(opt => `
+          <div style="background: rgba(15,23,42,0.7); border: 1.5px solid var(--border-medium); padding: 12px 18px; border-radius: var(--radius-md); display: flex; align-items: center; gap: 12px;">
+            <span class="badge badge-accent" style="font-size: 13px; font-weight: 800; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; padding: 0;">${opt.id}</span>
+            <span style="font-size: 15px; font-weight: 600; color: #ffffff;">${opt.text}</span>
           </div>
-        `;
+        `).join('');
       }
 
       presenterPollHtml = `
-        <div class="presenter-poll-box animate-fade-in" id="presenter-poll-box-${poll.id}" style="margin-top: 24px; background: rgba(15,23,42,0.85); border: 1.5px solid ${showResults ? 'var(--accent-primary)' : 'var(--border-subtle)'}; border-radius: var(--radius-lg); padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <span class="badge ${pollStatus === 'open' ? 'badge-accent' : ''}">
-                ${pollStatus === 'open' ? '🟢 VOTAÇÃO ABERTA' : '🔴 VOTAÇÃO ENCERRADA'}
-              </span>
-              ${showResults ? '<span class="badge badge-live">📊 RESULTADOS REVELADOS</span>' : '<span style="font-size: 11.5px; color: var(--text-muted);">Votação em andamento pelo celular</span>'}
-            </div>
-            <div style="font-size: 13.5px; color: var(--accent-primary); font-weight: 700; font-family: var(--font-mono);">
-              ${totalVotes} voto(s) computados
-            </div>
+        <div class="presenter-poll-box animate-fade-in" style="margin-top: 24px; background: rgba(15,23,42,0.85); border: 2px solid var(--accent-primary); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span class="badge ${pollStatus === 'open' ? 'badge-live' : 'badge-accent'}" style="font-size: 11px;">
+              ${pollStatus === 'open' ? '📊 VOTAÇÃO AO VIVO NO CELULAR' : '🔒 VOTAÇÃO ENCERRADA'}
+            </span>
+            <span style="font-size: 12px; color: var(--accent-primary); font-family: var(--font-mono);">
+              ${showResults ? `Total: ${totalVotes} votos` : 'Aponte a câmera para votar'}
+            </span>
           </div>
-          <h3 style="font-size: 19px; font-weight: 700; color: #ffffff; margin-bottom: 16px;">${poll.question}</h3>
-          <div>
+          <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 16px;">${poll.question}</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
             ${pollBodyHtml}
           </div>
         </div>
@@ -189,7 +198,7 @@ export class PresentationEngine {
     }
 
     let mediaHtml = '';
-    const media = slide.presenter?.media || slide.media;
+    const media = slide.presenter && slide.presenter.media;
     if (media) {
       if (media.type === 'image' || media.type === 'svg') {
         mediaHtml = `
@@ -212,7 +221,7 @@ export class PresentationEngine {
 
     if (media) {
       containerElement.innerHTML = `
-        <div class="slide-content-wrapper slide-layout-split animate-slide-next">
+        <div class="slide-content-wrapper slide-layout-split ${transClass}">
           <div class="slide-tag">${slide.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
           <div class="slide-split-grid">
             <div class="slide-text-col">
@@ -230,7 +239,7 @@ export class PresentationEngine {
       `;
     } else {
       containerElement.innerHTML = `
-        <div class="slide-content-wrapper animate-slide-next">
+        <div class="slide-content-wrapper ${transClass}">
           <div class="slide-tag">${slide.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
           <h1 class="slide-headline">${slide.presenter.headline || slide.title}</h1>
           <ul class="slide-bullets">
@@ -252,15 +261,31 @@ export class PresentationEngine {
   /**
    * Helper para retornar a string HTML do slide do apresentador (com suporte a enquetes e mídia)
    */
-  renderSlideHtml(slide = null) {
+  renderSlideHtml(slide = null, options = {}) {
     const s = slide || this.currentSlide;
     if (!s) return '';
     const presenter = s.presenter || {};
     const bullets = presenter.bullets || s.bullets || [];
 
+    const transition = (options && options.transition) || presenter.transition || s.transition || (this.manifest?.theme?.transition) || 'fade';
+    const direction = (options && options.direction) || 'next';
+
+    let transClass = 'stage-trans-fade';
+    if (transition === 'slide') {
+      transClass = (direction === 'prev') ? 'stage-trans-slide-prev' : 'stage-trans-slide-next';
+    } else if (transition === 'zoom') {
+      transClass = 'stage-trans-zoom';
+    } else if (transition === 'dissolve') {
+      transClass = 'stage-trans-dissolve';
+    } else if (transition === 'stagger') {
+      transClass = 'stage-trans-stagger';
+    }
+
+    const isStagger = (transition === 'stagger');
+
     const bulletsHtml = bullets
-      .map(b => `
-        <li class="slide-bullet-item animate-fade-in">
+      .map((b, idx) => `
+        <li class="slide-bullet-item ${isStagger ? 'stage-stagger-bullet' : 'animate-fade-in'}" ${isStagger ? `style="animation-delay: ${(idx + 1) * 80 + 40}ms;"` : ''}>
           <span class="bullet-icon"></span>
           <span>${b}</span>
         </li>
@@ -314,7 +339,7 @@ export class PresentationEngine {
 
     if (media) {
       return `
-        <div class="slide-content-wrapper slide-layout-split animate-slide-next">
+        <div class="slide-content-wrapper slide-layout-split ${transClass}">
           <div class="slide-tag">${s.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
           <div class="slide-split-grid">
             <div class="slide-text-col">
@@ -332,7 +357,7 @@ export class PresentationEngine {
       `;
     } else {
       return `
-        <div class="slide-content-wrapper animate-slide-next">
+        <div class="slide-content-wrapper ${transClass}">
           <div class="slide-tag">${s.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
           <h1 class="slide-headline">${presenter.headline || s.headline || s.title}</h1>
           <ul class="slide-bullets">
