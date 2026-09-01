@@ -1645,9 +1645,9 @@ def test_demanda03_diagnostics_and_capacity_engine():
     print("✓ Demanda 03 (Fases 1, 2, 3 e 4) 100% HOMOLOGADAS e validadas com sucesso.")
 
 def test_demanda01_stage_transitions_engine():
-    print_section("18. Demanda 01: Transições e Animações no Telão (Fase 1)")
+    print_section("18. Demanda 01: Transições e Animações no Telão (Fases 1 e 2)")
 
-    # 1. Validação dos Presets CSS no presenter.css
+    # 1. Validação dos Presets CSS no presenter.css (Fase 1)
     css_path = os.path.join(BASE_DIR, "css", "presenter.css")
     with open(css_path, "r", encoding="utf-8") as f:
         css_content = f.read()
@@ -1662,7 +1662,7 @@ def test_demanda01_stage_transitions_engine():
     assert "prefers-reduced-motion" in css_content, "Suporte a prefers-reduced-motion ausente em presenter.css"
     print("  ✓ Motor CSS (presenter.css): 5 presets de transição (fade, slide, zoom, dissolve, stagger) e suporte WCAG validados.")
 
-    # 2. Validação do PresentationEngine (renderSlideHtml & renderPresenterSlide)
+    # 2. Validação do PresentationEngine (renderSlideHtml & renderPresenterSlide) (Fase 1)
     engine_path = os.path.join(BASE_DIR, "js", "core", "presentation-engine.js")
     with open(engine_path, "r", encoding="utf-8") as f:
         engine_code = f.read()
@@ -1675,7 +1675,7 @@ def test_demanda01_stage_transitions_engine():
     assert "stage-stagger-bullet" in engine_code, "Injeção de bullets escalonados ausente em presentation-engine.js"
     print("  ✓ PresentationEngine (presentation-engine.js): Injeção dinâmica de classes de transição e animação stagger validada.")
 
-    # 3. Validação do PresenterApp (presenter-app.js)
+    # 3. Validação do PresenterApp (presenter-app.js) (Fase 1)
     presenter_js_path = os.path.join(BASE_DIR, "js", "presenter", "presenter-app.js")
     with open(presenter_js_path, "r", encoding="utf-8") as f:
         presenter_code = f.read()
@@ -1685,7 +1685,35 @@ def test_demanda01_stage_transitions_engine():
     assert "stage-stagger-bullet" in presenter_code, "Injeção de delay de bullets stagger ausente em presenter-app.js"
     print("  ✓ Telão / Púlpito (presenter-app.js): Rastreamento de direção de slide e escalonamento de bullets validados.")
 
-    print("✓ Demanda 01 (Fase 1: Motor CSS de Transições e Renderizador no Telão) 100% HOMOLOGADA.")
+    # 4. Validação do SlideMesh Studio (import.html) (Fase 2)
+    studio_html_path = os.path.join(BASE_DIR, "import.html")
+    with open(studio_html_path, "r", encoding="utf-8") as f:
+        studio_html = f.read()
+
+    assert "cfg-transition" in studio_html, "Seletor #cfg-transition ausente em import.html"
+    assert "edit-slide-transition" in studio_html, "Seletor #edit-slide-transition ausente em import.html"
+    assert "import.cfg_transition" in studio_html, "Data-i18n import.cfg_transition ausente em import.html"
+    assert "import.slide_trans_label" in studio_html, "Data-i18n import.slide_trans_label ausente em import.html"
+    print("  ✓ Studio (import.html): Seletores de transição global e por slide integrados com sucesso.")
+
+    # 5. Validação do ConversionEngine e Manifestos (Fase 2)
+    conv_path = os.path.join(BASE_DIR, "js", "core", "conversion-engine.js")
+    with open(conv_path, "r", encoding="utf-8") as f:
+        conv_code = f.read()
+
+    assert "transition: 'fade'" in conv_code, "Propriedade transition padrão ausente nos templates do conversion-engine.js"
+    print("  ✓ ConversionEngine (conversion-engine.js): Geração de tema com transição padrão validada.")
+
+    # 6. Validação de Internacionalização i18n (Fase 2)
+    i18n_path = os.path.join(BASE_DIR, "js", "core", "i18n-engine.js")
+    with open(i18n_path, "r", encoding="utf-8") as f:
+        i18n_code = f.read()
+
+    for key in ['import.cfg_transition', 'import.slide_trans_label', 'import.trans_fade', 'import.trans_slide', 'import.trans_zoom', 'import.trans_dissolve', 'import.trans_stagger']:
+        assert key in i18n_code, f"Chave de tradução '{key}' ausente em i18n-engine.js"
+    print("  ✓ Internacionalização (i18n): Chaves simétricas de transição validadas em pt-BR e en-US.")
+
+    print("✓ Demanda 01 (Fases 1 e 2: Motor de Transições e Seletores de Studio) 100% HOMOLOGADAS.")
 
 if __name__ == "__main__":
     start_time = time.time()

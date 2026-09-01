@@ -110,6 +110,14 @@ export const TRANSLATIONS = {
     'import.alert_no_slides': 'Você precisa manter pelo menos 1 slide incluído para publicar!',
     'import.shortcut_reorder': 'Atalhos: Alt + ↑/↓ move slides',
     'import.btn_optimize_image': '⚡ Otimizar Imagem (<300KB)',
+    'import.cfg_transition': 'Transição Global do Telão',
+    'import.slide_trans_label': 'Transição do Slide:',
+    'import.trans_inherit': '🌐 Herdar Global',
+    'import.trans_fade': '✨ Fade Suave (Padrão)',
+    'import.trans_slide': '↔️ Slide Horizontal',
+    'import.trans_zoom': '🔍 Zoom In',
+    'import.trans_dissolve': '🌫️ Dissolver',
+    'import.trans_stagger': '📶 Cascata (Stagger)',
 
     // Mesa Técnica / Admin
     'admin.badge': '🛡️ MESA TÉCNICA',
@@ -342,8 +350,16 @@ export const TRANSLATIONS = {
     'import.btn_add_option': '+ Add Option',
     'import.stats_slides_count': '{included} of {total} slide(s) included',
     'import.alert_no_slides': 'You must keep at least 1 included slide to publish!',
-    'import.shortcut_reorder': 'Shortcuts: Alt + ↑/↓ move slides',
+    'import.shortcut_reorder': 'Shortcuts: Alt + ↑/↓ moves slides',
     'import.btn_optimize_image': '⚡ Optimize Image (<300KB)',
+    'import.cfg_transition': 'Global Stage Transition',
+    'import.slide_trans_label': 'Slide Transition:',
+    'import.trans_inherit': '🌐 Inherit Global',
+    'import.trans_fade': '✨ Smooth Fade (Default)',
+    'import.trans_slide': '↔️ Horizontal Slide',
+    'import.trans_zoom': '🔍 Zoom In',
+    'import.trans_dissolve': '🌫️ Dissolve',
+    'import.trans_stagger': '📶 Cascade (Stagger)',
 
     // Admin / Moderator
     'admin.badge': '🛡️ CONTROL ROOM',

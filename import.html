@@ -592,6 +592,16 @@
             <option value="strict_sync" data-i18n="admin.pacing_strict">🎯 Espelho Estrito</option>
           </select>
         </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="import.cfg_transition">Transição do Telão</label>
+          <select id="cfg-transition" class="form-select">
+            <option value="fade" data-i18n="import.trans_fade">✨ Fade Suave (Padrão)</option>
+            <option value="slide" data-i18n="import.trans_slide">↔️ Slide Horizontal</option>
+            <option value="zoom" data-i18n="import.trans_zoom">🔍 Zoom In</option>
+            <option value="dissolve" data-i18n="import.trans_dissolve">🌫️ Dissolver</option>
+            <option value="stagger" data-i18n="import.trans_stagger">📶 Cascata (Stagger)</option>
+          </select>
+        </div>
         <div class="form-group" style="text-align: center;">
           <span class="badge badge-accent" id="slide-stats-badge" style="padding: 6px 12px; font-size: 11.5px;">0 incluídos</span>
         </div>
@@ -637,7 +647,7 @@
               ✏️ Editar Conteúdo do Telão
             </div>
 
-            <div style="display: grid; grid-template-columns: 140px 1fr; gap: 10px;">
+            <div style="display: grid; grid-template-columns: 130px 1fr 160px; gap: 10px;">
               <div class="form-group">
                 <label class="form-label" data-i18n="import.slide_tag_label">Tag / Seção:</label>
                 <input type="text" id="edit-slide-tag" class="form-input" placeholder="Ex: SEÇÃO 1">
@@ -645,6 +655,17 @@
               <div class="form-group">
                 <label class="form-label" data-i18n="import.slide_title_label">Título do Slide:</label>
                 <input type="text" id="edit-slide-title" class="form-input" placeholder="Título projetado no telão">
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="import.slide_trans_label">Transição:</label>
+                <select id="edit-slide-transition" class="form-select">
+                  <option value="" data-i18n="import.trans_inherit">🌐 Herdar Global</option>
+                  <option value="fade" data-i18n="import.trans_fade">✨ Fade</option>
+                  <option value="slide" data-i18n="import.trans_slide">↔️ Slide</option>
+                  <option value="zoom" data-i18n="import.trans_zoom">🔍 Zoom</option>
+                  <option value="dissolve" data-i18n="import.trans_dissolve">🌫️ Dissolver</option>
+                  <option value="stagger" data-i18n="import.trans_stagger">📶 Cascata</option>
+                </select>
               </div>
             </div>
 
@@ -1078,6 +1099,9 @@
       const pacingMode = currentConvertedData.manifest.pacing?.mode || 'lock_future';
       const selectPacing = document.getElementById('cfg-pacing');
       if (selectPacing) selectPacing.value = pacingMode;
+      const globalTrans = currentConvertedData.manifest.theme?.transition || 'fade';
+      const selectTrans = document.getElementById('cfg-transition');
+      if (selectTrans) selectTrans.value = globalTrans;
 
       selectedSlideIndex = 0;
       renderSlidesSidebar();
@@ -1268,6 +1292,7 @@
       document.getElementById('edit-slide-tag').value = slide.tag || `SEÇÃO ${selectedSlideIndex + 1}`;
       document.getElementById('edit-slide-title').value = slide.presenter?.headline || slide.title || '';
       document.getElementById('edit-slide-notes').value = slide.presenter?.notes || '';
+      document.getElementById('edit-slide-transition').value = slide.presenter?.transition || '';
 
       // Bullets
       renderBulletsEditor(slide);
@@ -1653,6 +1678,27 @@
       }
     });
 
+    document.getElementById('cfg-transition')?.addEventListener('change', (e) => {
+      currentConvertedData.manifest.theme = currentConvertedData.manifest.theme || {};
+      currentConvertedData.manifest.theme.transition = e.target.value;
+      renderActiveSlidePreview();
+      saveDraftToStorage();
+    });
+
+    document.getElementById('edit-slide-transition')?.addEventListener('change', (e) => {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (slide) {
+        if (!slide.presenter) slide.presenter = {};
+        if (e.target.value) {
+          slide.presenter.transition = e.target.value;
+        } else {
+          delete slide.presenter.transition;
+        }
+        renderActiveSlidePreview();
+        saveDraftToStorage();
+      }
+    });
+
     document.getElementById('edit-slide-notes')?.addEventListener('input', (e) => {
       const slide = currentConvertedData.slides[selectedSlideIndex];
       if (slide && slide.presenter) {
@@ -1782,6 +1828,10 @@
         mode: pacingVal,
         allowReviewPast: (pacingVal !== 'strict_sync')
       };
+      const globalTrans = document.getElementById('cfg-transition')?.value || 'fade';
+      currentConvertedData.manifest.theme = currentConvertedData.manifest.theme || {};
+      currentConvertedData.manifest.theme.transition = globalTrans;
+      currentConvertedData.manifest.theme.transitionDuration = 380;
       currentConvertedData.manifest.totalSlides = activeSlides.length;
 
       const payload = {

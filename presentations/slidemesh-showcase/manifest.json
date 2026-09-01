@@ -8,7 +8,9 @@
   "description": "Apresentação oficial demonstrativa da plataforma SlideMeshLive com enquetes ao vivo, moderação de perguntas, atalhos de púlpito e sincronização instantânea.",
   "theme": {
     "primaryColor": "#38bdf8",
-    "accentColor": "#818cf8"
+    "accentColor": "#818cf8",
+    "transition": "fade",
+    "transitionDuration": 380
   },
   "security": {
     "mode": "public",

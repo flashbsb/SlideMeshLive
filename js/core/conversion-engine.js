@@ -128,7 +128,9 @@ export class ConversionEngine {
         badgeClass: 'badge-accent',
         theme: {
           accentColor: '#38bdf8',
-          background: '#0b0f19'
+          background: '#0b0f19',
+          transition: 'fade',
+          transitionDuration: 380
         },
         security: {
           mode: 'public'
@@ -782,7 +784,7 @@ export class ConversionEngine {
       securityMode: 'public',
       securityLabel: 'Pública',
       badgeClass: 'badge-accent',
-      theme: { accentColor: '#38bdf8', background: '#0b0f19' },
+      theme: { accentColor: '#38bdf8', background: '#0b0f19', transition: 'fade', transitionDuration: 380 },
       security: { mode: 'public' },
       pacing: { mode: 'lock_future', allowReviewPast: true }
     };
