@@ -38,6 +38,8 @@ class PresenterApp {
     this.timerSeconds = 0;
     this.timerInterval = null;
     this.prevSlideIndex = 0;
+    this.fxCooldownActive = false;
+    this.fxCooldownTimer = null;
 
     // DOM Elements
     this.dom = {
@@ -49,6 +51,7 @@ class PresenterApp {
       btnFullscreen: document.getElementById('btn-fullscreen'),
       btnTogglePulpit: document.getElementById('btn-toggle-pulpit'),
       pulpitSlideSorter: document.getElementById('pulpit-slide-sorter'),
+      pulpitFxCooldownBadge: document.getElementById('pulpit-fx-cooldown-badge'),
       btnTogglePacing: document.getElementById('btn-presenter-toggle-pacing'),
       btnExportDeck: document.getElementById('btn-presenter-export-deck'),
       btnToggleLang: document.getElementById('btn-toggle-lang'),
@@ -610,6 +613,10 @@ class PresenterApp {
         this.toggleFullscreen();
       } else if (e.key.toLowerCase() === 'p') {
         this.togglePulpitMode();
+      } else if (e.key.toLowerCase() === 'c') {
+        this.triggerStageFX('confetti');
+      } else if (e.key.toLowerCase() === 'x') {
+        this.triggerStageFX('impact_shake');
       } else if (e.key.toLowerCase() === 'q') {
         this.toggleLargeQR();
       } else if (e.key.toLowerCase() === 'w') {
@@ -694,6 +701,66 @@ class PresenterApp {
         this.updatePacingButtonUI();
       });
     }
+
+    // Efeitos de Palco no Púlpito (Demanda 02 - Fase 3)
+    const pulpitFxBtns = document.querySelectorAll('.btn-pulpit-fx');
+    pulpitFxBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const fxType = btn.dataset.fx || 'confetti';
+        this.triggerStageFX(fxType);
+      });
+    });
+  }
+
+  triggerStageFX(fxType) {
+    if (this.fxCooldownActive) return;
+    this.fxCooldownActive = true;
+
+    // Dispara visualmente no telão e sincroniza via RealtimeEngine
+    this.stageFX.play(fxType);
+    this.realtime.triggerStageFX(this.sessionId, fxType);
+
+    // Cooldown de 3 segundos no Púlpito
+    let remaining = 3;
+    const buttons = document.querySelectorAll('.btn-pulpit-fx');
+    buttons.forEach(b => {
+      b.disabled = true;
+      b.style.opacity = '0.4';
+      b.style.cursor = 'not-allowed';
+    });
+
+    const updateBadge = () => {
+      if (this.dom.pulpitFxCooldownBadge) {
+        this.dom.pulpitFxCooldownBadge.textContent = `⏳ ${remaining}s`;
+        this.dom.pulpitFxCooldownBadge.style.color = '#fbbf24';
+        this.dom.pulpitFxCooldownBadge.style.background = 'rgba(245, 158, 11, 0.15)';
+      }
+    };
+
+    updateBadge();
+
+    this.fxCooldownTimer = setInterval(() => {
+      remaining--;
+      if (remaining > 0) {
+        updateBadge();
+      } else {
+        clearInterval(this.fxCooldownTimer);
+        this.fxCooldownTimer = null;
+        this.fxCooldownActive = false;
+
+        buttons.forEach(b => {
+          b.disabled = false;
+          b.style.opacity = '1';
+          b.style.cursor = 'pointer';
+        });
+
+        if (this.dom.pulpitFxCooldownBadge) {
+          this.dom.pulpitFxCooldownBadge.textContent = 'Pronto (C)';
+          this.dom.pulpitFxCooldownBadge.style.color = '#f472b6';
+          this.dom.pulpitFxCooldownBadge.style.background = 'rgba(236, 72, 153, 0.15)';
+        }
+      }
+    }, 1000);
   }
 }
 

@@ -203,7 +203,7 @@ export const TRANSLATIONS = {
     'presenter.speaker_notes': '📝 Notas do Orador',
     'presenter.private_badge': 'Privado',
     'presenter.no_notes': 'Nenhuma nota para este slide.',
-    'presenter.shortcuts_hint': '💡 Atalhos: ← / → (Navegar), Q (QR Gigante), W (QR Rodapé), M (Mural Perguntas), P (Púlpito), V (Votação), R (Resultados), B (Blackout), F (Tela Cheia).',
+    'presenter.shortcuts_hint': '💡 Atalhos: ← / → (Navegar), C (Confetes), X (Impacto), Q (QR Gigante), W (QR Rodapé), M (Mural Perguntas), P (Púlpito), V (Votação), R (Resultados), B (Blackout), F (Tela Cheia).',
     'presenter.mini_qr_title': 'Acompanhe pelo Celular',
     'presenter.mini_qr_hint': 'Atalho [Q] amplia • [W] oculta',
     'presenter.large_qr_title': '📲 PARTICIPE DA APRESENTAÇÃO AO VIVO',
@@ -212,6 +212,9 @@ export const TRANSLATIONS = {
     'presenter.dismiss_featured': '✕ Fechar Destaque',
     'presenter.slide_sorter_title': 'Visão Rápida dos Slides (Salto Direto):',
     'presenter.btn_export_deck': '📄 Baixar Deck Completo (HTML/PDF)',
+    'presenter.stage_fx_pulpit_title': '✨ Efeitos Rápidos:',
+    'presenter.fx_confetti_btn': '🎉 Confetes (C)',
+    'presenter.fx_shake_btn': '💥 Impacto (X)',
 
     // Smartphone do Público
     'audience.live_badge': 'AO VIVO',
@@ -453,7 +456,7 @@ export const TRANSLATIONS = {
     'presenter.speaker_notes': '📝 Speaker Notes',
     'presenter.private_badge': 'Private',
     'presenter.no_notes': 'No speaker notes for this slide.',
-    'presenter.shortcuts_hint': '💡 Shortcuts: ← / → (Navigate), Q (Giant QR), W (Footer QR), M (Questions Wall), P (Pulpit), V (Poll), R (Results), B (Blackout), F (Fullscreen).',
+    'presenter.shortcuts_hint': '💡 Shortcuts: ← / → (Navigate), C (Confetti), X (Impact), Q (Giant QR), W (Footer QR), M (Questions Wall), P (Pulpit), V (Poll), R (Results), B (Blackout), F (Fullscreen).',
     'presenter.mini_qr_title': 'Join on Smartphone',
     'presenter.mini_qr_hint': 'Shortcut [Q] enlarge • [W] hide',
     'presenter.large_qr_title': '📲 JOIN THE LIVE PRESENTATION',
@@ -462,6 +465,9 @@ export const TRANSLATIONS = {
     'presenter.dismiss_featured': '✕ Dismiss Feature',
     'presenter.slide_sorter_title': 'Quick Slide Sorter (Jump Directly):',
     'presenter.btn_export_deck': '📄 Download Full Deck (HTML/PDF)',
+    'presenter.stage_fx_pulpit_title': '✨ Quick Stage FX:',
+    'presenter.fx_confetti_btn': '🎉 Confetti (C)',
+    'presenter.fx_shake_btn': '💥 Impact (X)',
 
     // Audience Mobile
     'audience.live_badge': 'LIVE',

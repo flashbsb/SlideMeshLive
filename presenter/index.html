@@ -108,6 +108,28 @@
         </button>
       </div>
 
+      <!-- Efeitos de Palco Rápidos no Púlpito (Demanda 02 - Fase 3) -->
+      <div style="border-top: 1px solid var(--border-subtle); padding-top: 10px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 11px; font-weight: 700; color: #ec4899;" data-i18n="presenter.stage_fx_pulpit_title">✨ Efeitos Rápidos:</span>
+          <span class="badge" id="pulpit-fx-cooldown-badge" style="font-size: 9px; background: rgba(236,72,153,0.15); color: #f472b6;">Pronto (C)</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+          <button class="btn btn-sm btn-pulpit-fx" data-fx="confetti" style="font-size: 10px; padding: 4px; border-color: rgba(56,189,248,0.3); color: #38bdf8; background: rgba(56,189,248,0.06);" title="Soltar Confetes (Atalho: C)" data-i18n="presenter.fx_confetti_btn">
+            🎉 Confetes (C)
+          </button>
+          <button class="btn btn-sm btn-pulpit-fx" data-fx="impact_shake" style="font-size: 10px; padding: 4px; border-color: rgba(239,68,68,0.3); color: #f87171; background: rgba(239,68,68,0.06);" title="Tremor de Impacto (Atalho: X)" data-i18n="presenter.fx_shake_btn">
+            💥 Impacto (X)
+          </button>
+          <button class="btn btn-sm btn-pulpit-fx" data-fx="spotlight" style="font-size: 10px; padding: 4px; border-color: rgba(245,158,11,0.3); color: #fbbf24; background: rgba(245,158,11,0.06);" title="Holofote de Foco" data-i18n="admin.fx_spotlight">
+            🔦 Holofote
+          </button>
+          <button class="btn btn-sm btn-pulpit-fx" data-fx="countdown_burst" style="font-size: 10px; padding: 4px; border-color: rgba(168,85,247,0.3); color: #c084fc; background: rgba(168,85,247,0.06);" title="Contagem Regressiva" data-i18n="admin.fx_countdown">
+            ⏱️ Contagem
+          </button>
+        </div>
+      </div>
+
       <!-- Exportação do Slide Deck Pós-Evento (Fase 4) -->
       <div style="padding-top: 10px; border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 6px;">
         <button class="btn btn-sm" id="btn-presenter-export-deck" style="width: 100%; font-size: 11px; border-color: rgba(56,189,248,0.4); color: #38bdf8; background: rgba(56,189,248,0.08);" data-i18n="presenter.btn_export_deck">
@@ -116,7 +138,7 @@
       </div>
 
       <div style="padding-top: 10px; border-top: 1px solid var(--border-subtle); font-size: 10.5px; color: var(--text-muted);" data-i18n="presenter.shortcuts_hint">
-        💡 Atalhos: ← / → (Navegar), Q (QR Gigante), W (QR Rodapé), M (Mural Perguntas), P (Púlpito), V (Votação), R (Resultados), B (Blackout), F (Tela Cheia).
+        💡 Atalhos: ← / → (Navegar), C (Confetes), X (Impacto), Q (QR Gigante), W (QR Rodapé), M (Mural Perguntas), P (Púlpito), V (Votação), R (Resultados), B (Blackout), F (Tela Cheia).
       </div>
       <div style="margin-top: 8px; font-size: 10px; color: var(--text-muted); text-align: center;">
         SlideMeshLive v1.0.0 • <a href="https://github.com/flashbsb/SlideMeshLive" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: none;">GitHub</a>

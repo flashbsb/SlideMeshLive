@@ -1837,11 +1837,21 @@ def test_demanda02_stage_fx_overlay():
     with open(i18n_path, "r", encoding="utf-8") as f:
         i18n_code = f.read()
 
-    for key in ['admin.stage_fx_title', 'admin.fx_confetti', 'admin.fx_shake', 'admin.fx_spotlight', 'admin.fx_countdown', 'admin.fx_glitch', 'admin.fx_ready', 'admin.fx_cooldown']:
+    for key in ['admin.stage_fx_title', 'admin.fx_confetti', 'admin.fx_shake', 'admin.fx_spotlight', 'admin.fx_countdown', 'admin.fx_glitch', 'admin.fx_ready', 'admin.fx_cooldown', 'presenter.stage_fx_pulpit_title', 'presenter.fx_confetti_btn', 'presenter.fx_shake_btn']:
         assert key in i18n_code, f"Chave de tradução '{key}' ausente em i18n-engine.js"
-    print("  ✓ Internacionalização (i18n): Chaves simétricas de Stage FX validadas em pt-BR e en-US.")
+    print("  ✓ Internacionalização (i18n): Chaves simétricas de Stage FX e Púlpito validadas em pt-BR e en-US.")
 
-    print("✓ Demanda 02 (Fases 1 e 2: Motor Canvas e Painel da Mesa Técnica com Cooldown) 100% HOMOLOGADAS com sucesso.")
+    # 8. Validação da Fase 3: Púlpito do Apresentador e Atalhos de Teclado (presenter/index.html & presenter-app.js)
+    assert "pulpit-fx-cooldown-badge" in presenter_html, "Badge #pulpit-fx-cooldown-badge ausente em presenter/index.html"
+    assert "btn-pulpit-fx" in presenter_html, "Botões .btn-pulpit-fx ausentes no Púlpito em presenter/index.html"
+
+    assert "pulpit-fx-cooldown-badge" in presenter_code, "Mapeamento de pulpitFxCooldownBadge ausente em presenter-app.js"
+    assert "e.key.toLowerCase() === 'c'" in presenter_code, "Atalho de teclado 'C' para confetes ausente em presenter-app.js"
+    assert "e.key.toLowerCase() === 'x'" in presenter_code, "Atalho de teclado 'X' para tremor de impacto ausente em presenter-app.js"
+    assert "btn-pulpit-fx" in presenter_code, "Listeners de .btn-pulpit-fx ausentes em presenter-app.js"
+    print("  ✓ Púlpito do Apresentador: Atalhos rápidos de teclado (C, X), dock de botões e cooldown local de 3s validados.")
+
+    print("✓ Demanda 02 (Fases 1, 2 e 3: Motor Canvas, Painel da Mesa Técnica e Atalhos do Púlpito) 100% HOMOLOGADAS com sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()
