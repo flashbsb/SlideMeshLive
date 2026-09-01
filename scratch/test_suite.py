@@ -2485,7 +2485,30 @@ def test_demanda12_zip_export_import_portability():
     assert import_proc.returncode == 0, f"tools/import_presentation.py falhou com ZIP: {import_proc.stderr}"
     print("  ✓ Utilitários CLI: tools/export_presentation.py e tools/import_presentation.py validados via subprocess.")
 
-    # 6. Limpeza e Teardown
+    # 6. Teste de Frontend do Portal (index.html) e Internacionalização (i18n) - Fase 2
+    index_path = os.path.join(BASE_DIR, "index.html")
+    with open(index_path, "r", encoding="utf-8") as f:
+        idx_content = f.read()
+
+    assert "btn-header-import-zip" in idx_content, "Botão btn-header-import-zip ausente no cabeçalho do index.html"
+    assert "modal-import-zip" in idx_content, "Modal modal-import-zip ausente no index.html"
+    assert "zip-dropzone" in idx_content, "Dropzone zip-dropzone ausente no index.html"
+    assert "btn-upload-zip-confirm" in idx_content, "Botão de confirmação de upload ausente"
+    assert "btn-zip-mode-overwrite" in idx_content, "Botão de sobrescrita de conflito ausente"
+    assert "btn-zip-mode-rename" in idx_content, "Botão de cópia de conflito ausente"
+    assert "/api/presentations/export?id=" in idx_content, "Link de exportação ZIP ausente nos cards de apresentação"
+    assert "btn-card-import-zip" in idx_content, "Botão de importação ZIP ausente no card de nova apresentação"
+    print("  ✓ Portal (index.html): Botões de exportação nos cards, botão no topo e modal Drag & Drop com resolução de conflitos validados.")
+
+    i18n_path = os.path.join(BASE_DIR, "js", "core", "i18n-engine.js")
+    with open(i18n_path, "r", encoding="utf-8") as f:
+        i18n_content = f.read()
+
+    for k in ["portal.btn_import_zip", "portal.btn_export_zip", "portal.modal_import_zip_title", "portal.modal_drag_zip", "portal.modal_conflict_title", "portal.btn_overwrite", "portal.btn_rename_copy", "portal.btn_import_zip_card"]:
+        assert k in i18n_content, f"Chave de tradução {k} ausente em i18n-engine.js"
+    print("  ✓ Internacionalização (i18n): Chaves simétricas de importação/exportação ZIP validadas em pt-BR e en-US.")
+
+    # 7. Limpeza e Teardown
     for cleanup_slug in [imported_slug, "teste-override-zip", "teste-cli-import-zip"]:
         c_dir = os.path.join(BASE_DIR, "presentations", cleanup_slug)
         if os.path.exists(c_dir):
@@ -2502,7 +2525,7 @@ def test_demanda12_zip_export_import_portability():
 
     httpd.shutdown()
     conn.close()
-    print("✓ Demanda 12 (Fase 1: Backend de Exportação, Importação ZIP, Proteções Zip Slip/Bomb e CLIs) 100% HOMOLOGADA com sucesso.")
+    print("✓ Demanda 12 (Fases 1 e 2: Backend de Exportação/Importação ZIP, CLIs, Portal index.html e Modais) 100% HOMOLOGADA com sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()
