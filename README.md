@@ -89,6 +89,10 @@
     - A transparent, non-destructive 2D Canvas overlay (`#stage-fx-canvas`, `pointer-events: none`, `z-index: 9999`) rendering 5 high-fidelity 60fps visual presets without mutating or destroying the slide DOM: `confetti` (physics-simulated colorful confetti shower), `impact_shake` (haptic screen shake + radial shockwave rings), `spotlight` (soft circular spotlight vignette for attention focalization), `countdown_burst` (giant 3-2-1 countdown burst with radiant sparks), and `glitch_flash` (high-velocity energetic rays).
     - Instant real-time triggering via the Control Room (`admin/index.html`) or Presenter Pulpit (`presenter/index.html` plus hotkeys `C` for confetti and `X` for impact shake).
     - Built-in anti-spam protection with mandatory 3-second visual cooldown and deterministic memory auto-cleanup within 1.5 to 2.6 seconds.
+13. **Multi-Screen Presenter Hub & Stage Display Matrix (Dual Display)**:
+    - Native support for multiple physical stage screens powered by the same local hub (`server.py`) using routing query parameters: `/presenter/?view=stage` (Main Slide Stage), `/presenter/?view=questions_wall` (Monumental Questions Wall with upvote ranking and responsive clamp typography), and `/presenter/?view=polls_live` (Monumental Live Poll Display with vibrant glowing progress bars).
+    - Dedicated 1-click shortcuts in the Control Room (`admin/index.html`) to launch and project secondary screens independently.
+    - Full real-time SSE event synchronization and synchronized visual effects (`StageFX`) broadcast across all active screens with <10ms local latency.
 
 ---
 

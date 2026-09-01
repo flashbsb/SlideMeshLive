@@ -193,6 +193,9 @@ export const TRANSLATIONS = {
     'admin.analytics_export_html': '📄 Relatório Executivo (HTML)',
     'admin.analytics_export_csv': '📊 Baixar CSV',
     'admin.analytics_export_json': '📥 Baixar JSON',
+    'admin.btn_telao_questions': '💬 Telão Mural',
+    'admin.btn_telao_polls': '📊 Telão Enquetes',
+    'admin.multiscreen_title': '🖥️ Telões Secundários de Palco (Dual Display)',
 
     // Modal Host QR Code
     'host_modal.title': '🌐 Configurar Endereço do QR Code',
@@ -458,6 +461,9 @@ export const TRANSLATIONS = {
     'admin.analytics_export_html': '📄 Executive Report (HTML)',
     'admin.analytics_export_csv': '📊 Export CSV',
     'admin.analytics_export_json': '📥 Export JSON',
+    'admin.btn_telao_questions': '💬 Questions Wall Screen',
+    'admin.btn_telao_polls': '📊 Polls Screen',
+    'admin.multiscreen_title': '🖥️ Multi-Screen Stage Hub (Dual Display)',
 
     // QR Host Modal
     'host_modal.title': '🌐 Configure QR Code Host / IP',

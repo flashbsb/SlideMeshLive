@@ -88,6 +88,10 @@ O **SlideMeshLive** foi concebido com uma arquitetura modular baseada em tecnolo
     - Camada translúcida e não-destrutiva em Canvas 2D (`#stage-fx-canvas`, `pointer-events: none`, `z-index: 9999`) que renderiza 5 presets de efeitos de alta fidelidade a 60fps sem alterar ou corromper o DOM dos slides: `confetti` (chuva de confetes com gravidade e arrasto), `impact_shake` (tremor e onda de choque concêntrica), `spotlight` (holofote com vinheta suave para direcionamento de foco), `countdown_burst` (contagem 3-2-1 gigante com partículas) e `glitch_flash` (faíscas de energia).
     - Disparo instantâneo em tempo real via Mesa Técnica (`admin/index.html`) ou Púlpito do Apresentador (`presenter/index.html` com atalhos de teclado `C` para confetes e `X` para impacto).
     - Mecanismo anti-spam com cooldown obrigatório de 3 segundos e auto-limpeza (auto-cleanup) determinística de memória em 1.5 a 2.6 segundos.
+13. **Multi-Screen Presenter Hub & Sincronização Matricial de Telões (Dual Display)**:
+    - Suporte nativo a múltiplos telões físicos no mesmo auditório alimentados pelo mesmo hub local (`server.py`) através de parâmetros de rota: `/presenter/?view=stage` (Telão Principal de slides), `/presenter/?view=questions_wall` (Mural Monumental de Perguntas Aprovadas com ranking de upvotes e tipografia auto-escalável) e `/presenter/?view=polls_live` (Painel Monumental de Enquetes em Tempo Real com barras gradientes luminosas).
+    - Atalhos diretos de 1-clique na Mesa Técnica (`admin/index.html`) para abrir e projetar cada telão lateral secundário de forma desacoplada e independente.
+    - Sincronização em tempo real de eventos SSE e disparo simultâneo de efeitos visuais (`StageFX`) em todas as telas conectadas com latência inferior a 10ms na rede local.
 
 ---
 

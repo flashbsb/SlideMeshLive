@@ -67,6 +67,8 @@ class AdminApp {
       audienceLink: document.getElementById('admin-audience-link'),
       qrHostIndicator: document.getElementById('admin-qr-host-indicator'),
       linkPresenter: document.getElementById('admin-link-presenter'),
+      linkPresenterQuestions: document.getElementById('admin-link-presenter-questions'),
+      linkPresenterPolls: document.getElementById('admin-link-presenter-polls'),
       linkAudienceHeader: document.getElementById('admin-link-audience'),
       connectionStatus: document.getElementById('admin-connection-status'),
       statusDot: document.getElementById('admin-status-dot'),
@@ -255,6 +257,12 @@ class AdminApp {
     }
     if (this.dom.linkPresenter) {
       this.dom.linkPresenter.href = `../presenter/?presentation=${encodeURIComponent(this.presentationId)}&session=${encodeURIComponent(this.sessionId)}`;
+    }
+    if (this.dom.linkPresenterQuestions) {
+      this.dom.linkPresenterQuestions.href = `../presenter/?presentation=${encodeURIComponent(this.presentationId)}&session=${encodeURIComponent(this.sessionId)}&view=questions_wall`;
+    }
+    if (this.dom.linkPresenterPolls) {
+      this.dom.linkPresenterPolls.href = `../presenter/?presentation=${encodeURIComponent(this.presentationId)}&session=${encodeURIComponent(this.sessionId)}&view=polls_live`;
     }
     if (this.dom.qrHostIndicator) {
       this.dom.qrHostIndicator.textContent = customHost ? `Host: ${customHost}` : 'Host: Padrão (Local)';
