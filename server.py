@@ -1567,6 +1567,7 @@ def main():
             print(f" 💾 Snapshot de sessões anteriores restaurado com sucesso ({BACKUP_FILE})")
 
     server_address = ('0.0.0.0', port)
+    ThreadingHTTPServer.allow_reuse_address = True
     httpd = ThreadingHTTPServer(server_address, LiveSyncHTTPRequestHandler)
     httpd.daemon_threads = True
 
