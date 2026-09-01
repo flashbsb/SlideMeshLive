@@ -68,7 +68,7 @@ export class RealtimeEngine {
   }
 
   _initBroadcastChannel(sessionId) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     if (this.currentBroadcastSessionId === normSessionId && this.channel) {
       return;
     }
@@ -92,7 +92,7 @@ export class RealtimeEngine {
   }
 
   init() {
-    const initialSession = (sessionStorage.getItem('apres_active_session') || localStorage.getItem('active_presentation_session') || 'SDWAN2026').trim().toUpperCase();
+    const initialSession = (sessionStorage.getItem('apres_active_session') || localStorage.getItem('active_presentation_session') || 'SHOWCASE2026').trim().toUpperCase();
 
     // 1. Inicializa BroadcastChannel isolado por sessão (PB-05)
     this._initBroadcastChannel(initialSession);
@@ -140,7 +140,7 @@ export class RealtimeEngine {
   }
 
   _initSSE(sessionId) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     if (!this.isSSESupported) return;
     if (this.currentSSESessionId === normSessionId && this.eventSource && this.eventSource.readyState !== 2) {
       return;
@@ -239,7 +239,7 @@ export class RealtimeEngine {
 
   _processSyncPayload(data, sessionId) {
     if (!data || typeof data !== 'object') return;
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
 
     if (data.lastEventId) {
       this.lastProcessedEventId = Math.max(this.lastProcessedEventId, data.lastEventId);
@@ -298,7 +298,7 @@ export class RealtimeEngine {
   }
 
   async syncWithLocalServer() {
-    const sessionId = (sessionStorage.getItem('apres_active_session') || localStorage.getItem('active_presentation_session') || 'SDWAN2026').trim().toUpperCase();
+    const sessionId = (sessionStorage.getItem('apres_active_session') || localStorage.getItem('active_presentation_session') || 'SHOWCASE2026').trim().toUpperCase();
     const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : 'http://127.0.0.1:8000';
     const baseUrl = origin.startsWith('http') ? origin : 'http://127.0.0.1:8000';
 
@@ -313,7 +313,7 @@ export class RealtimeEngine {
   }
 
   async sendLocalServerEvent(type, sessionId, payload = {}) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     const eventObj = {
       type: type,
       sessionId: normSessionId,
@@ -386,7 +386,7 @@ export class RealtimeEngine {
   }
 
   async setSlide(sessionId, slideIndex, slideData = null) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     const payload = {
       currentSlide: slideIndex,
       slideId: (slideData && slideData.id) || (slideIndex + 1),
@@ -411,7 +411,7 @@ export class RealtimeEngine {
   }
 
   async updateSessionState(sessionId, stateUpdates = {}) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     const currentLocal = this._loadSessionStateLocally(normSessionId) || {};
     const merged = {
       ...currentLocal,
@@ -435,7 +435,7 @@ export class RealtimeEngine {
   }
 
   subscribeToSession(sessionId, callback) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     sessionStorage.setItem('apres_active_session', normSessionId);
     this._initBroadcastChannel(normSessionId);
     this._initSSE(normSessionId);
@@ -470,12 +470,12 @@ export class RealtimeEngine {
   }
 
   sendReaction(sessionId, emoji) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     this.sendLocalServerEvent('REACTION_SENT', normSessionId, { emoji: emoji });
   }
 
   async triggerStageFX(sessionId, fxType, options = {}) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     const payload = {
       fx: fxType,
       options: options,
@@ -503,7 +503,7 @@ export class RealtimeEngine {
    * Dispara ações de mídia em tempo real (play, pause, restart, toggle_mute, seek, set_volume)
    */
   async triggerMediaAction(sessionId, action, options = {}) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     const payload = {
       action: action,
       options: options,
@@ -527,35 +527,35 @@ export class RealtimeEngine {
   }
 
   sendVote(sessionId, pollId, optionId, uid) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     const payload = { pollId, optionId, uid, timestamp: Date.now() };
     this.sendLocalServerEvent('VOTE_CAST', normSessionId, payload);
   }
 
   sendQuestion(sessionId, question) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     this.sendLocalServerEvent('NEW_QUESTION', normSessionId, { question: question });
   }
 
   sendQuestionStatus(sessionId, questionId, status, answered = null) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     const payload = { questionId, status };
     if (answered !== null) payload.answered = answered;
     this.sendLocalServerEvent('QUESTION_STATUS_CHANGE', normSessionId, payload);
   }
 
   sendQuestionUpvote(sessionId, questionId, uid) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     this.sendLocalServerEvent('QUESTION_UPVOTE', normSessionId, { questionId, uid, timestamp: Date.now() });
   }
 
   sendClearQuestions(sessionId) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     this.sendLocalServerEvent('CLEAR_ALL_QUESTIONS', normSessionId, {});
   }
 
   sendPollReset(sessionId, pollId) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     this.sendLocalServerEvent('RESET_POLL', normSessionId, { pollId: pollId });
   }
 
@@ -578,22 +578,22 @@ export class RealtimeEngine {
   }
 
   sendUserBlocked(sessionId, uid, isBlocked) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     this.sendLocalServerEvent('USER_BLOCKED_STATUS', normSessionId, { uid, isBlocked });
   }
 
   sendAllPollsReset(sessionId) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     this.sendLocalServerEvent('RESET_ALL_POLLS', normSessionId, {});
   }
 
   sendQRHostChange(sessionId, customHost) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     this.sendLocalServerEvent('QR_HOST_CONFIG_CHANGED', normSessionId, { customHost: customHost });
   }
 
   sendPresentationSwitch(sessionId, newPresentationId) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     this.sendLocalServerEvent('SWITCH_ACTIVE_PRESENTATION', normSessionId, { presentationId: newPresentationId });
 
     this.updateSessionState(sessionId, {
@@ -608,7 +608,7 @@ export class RealtimeEngine {
   }
 
   startPresence(sessionId, isPresenter = false, uid = null, alias = null, isAuthenticated = false) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     const pid = uid || this.participantId;
     const userAlias = alias || `Participante #${pid.substring(pid.length - 4)}`;
 
@@ -656,7 +656,7 @@ export class RealtimeEngine {
   }
 
   getOnlineStats(sessionId) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     const key = `session_presence_${normSessionId}`;
     let map = {};
     try {

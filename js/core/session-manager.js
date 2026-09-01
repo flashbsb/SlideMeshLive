@@ -85,7 +85,7 @@ export class SessionManager {
       
       const payload = {
         sessionId: sessionData.sessionId,
-        presentationId: sessionData.presentationId || 'sdwan-cpe-unificado',
+        presentationId: sessionData.presentationId || 'slidemesh-showcase',
         presentationTitle: sessionData.presentationTitle || 'Apresentação',
         status: sessionData.status || 'active',
         createdAt: sessionData.createdAt || Date.now(),
@@ -118,7 +118,7 @@ export class SessionManager {
 
     const initialSessionState = {
       sessionId: newSessionId,
-      presentationId: presentationId || 'sdwan-cpe-unificado',
+      presentationId: presentationId || 'slidemesh-showcase',
       currentSlide: 0,
       slideId: 1,
       status: 'running',
@@ -353,7 +353,7 @@ export class SessionManager {
     const report = this.compileSessionReport(sessionId, slidesData);
     const presTitle = (manifest && manifest.title) || (slidesData && slidesData.manifest && slidesData.manifest.title) || 'Apresentação SlideMeshLive';
     const presSubtitle = (manifest && manifest.subtitle) || 'Deck Consolidado Pós-Evento';
-    const sessionCode = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const sessionCode = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     const exportDate = new Date().toLocaleString();
     const slides = (slidesData && slidesData.slides) || [];
 
@@ -795,7 +795,7 @@ export class SessionManager {
 
   downloadFullDeckHTML(sessionId, manifest = null, slidesData = null) {
     const html = this.exportFullDeckHTML(sessionId, manifest, slidesData);
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -811,7 +811,7 @@ export class SessionManager {
    * Constrói o payload analítico consolidado da sessão
    */
   buildSessionAnalyticsPayload(sessionId, sessionData = {}, manifest = null, slidesData = null) {
-    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     const state = sessionData.state || {};
     const questions = sessionData.questions || [];
     const votes = sessionData.votes || {};

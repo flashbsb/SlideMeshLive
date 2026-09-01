@@ -7,7 +7,7 @@ Uso:
 
 Exemplos:
   python3 tools/export_presentation.py slidemesh-showcase
-  python3 tools/export_presentation.py sdwan-cpe-unificado /tmp/meu-backup.zip
+  python3 tools/export_presentation.py slidemesh-showcase /tmp/meu-backup.zip
 """
 
 import os

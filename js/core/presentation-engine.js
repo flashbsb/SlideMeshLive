@@ -7,7 +7,7 @@
 export class PresentationEngine {
   constructor(options = {}) {
     this.basePath = options.basePath || '../presentations';
-    this.presentationId = options.presentationId || 'sdwan-cpe-unificado';
+    this.presentationId = options.presentationId || 'slidemesh-showcase';
     this.manifest = null;
     this.slidesData = null;
     this.currentSlideIndex = 0;
@@ -22,7 +22,7 @@ export class PresentationEngine {
    */
   static getPresentationIdFromURL() {
     const params = new URLSearchParams(window.location.search);
-    return params.get('presentation') || params.get('pres') || 'sdwan-cpe-unificado';
+    return params.get('presentation') || params.get('pres') || 'slidemesh-showcase';
   }
 
   /**
@@ -37,7 +37,7 @@ export class PresentationEngine {
       return clean;
     }
     const stored = localStorage.getItem('active_presentation_session');
-    return (stored || 'SDWAN2026').trim().toUpperCase();
+    return (stored || 'SHOWCASE2026').trim().toUpperCase();
   }
 
   /**
@@ -50,12 +50,24 @@ export class PresentationEngine {
     try {
       // Carrega manifesto
       const manifestRes = await fetch(`${presentationUrl}/manifest.json`);
-      if (!manifestRes.ok) throw new Error(`Não foi possível carregar o manifesto: ${manifestRes.statusText}`);
+      if (!manifestRes.ok) {
+        if (this.presentationId !== 'slidemesh-showcase') {
+          console.warn(`[PresentationEngine] Apresentação '${this.presentationId}' não encontrada (${manifestRes.status}). Recorrendo ao fallback 'slidemesh-showcase'...`);
+          return this.loadPresentation('slidemesh-showcase');
+        }
+        throw new Error(`Não foi possível carregar o manifesto: ${manifestRes.statusText}`);
+      }
       this.manifest = await manifestRes.json();
 
       // Carrega slides
       const slidesRes = await fetch(`${presentationUrl}/slides.json`);
-      if (!slidesRes.ok) throw new Error(`Não foi possível carregar os slides: ${slidesRes.statusText}`);
+      if (!slidesRes.ok) {
+        if (this.presentationId !== 'slidemesh-showcase') {
+          console.warn(`[PresentationEngine] Slides de '${this.presentationId}' não encontrados (${slidesRes.status}). Recorrendo ao fallback 'slidemesh-showcase'...`);
+          return this.loadPresentation('slidemesh-showcase');
+        }
+        throw new Error(`Não foi possível carregar os slides: ${slidesRes.statusText}`);
+      }
       this.slidesData = await slidesRes.json();
 
       this.currentSlideIndex = 0;

@@ -71,8 +71,8 @@ export class QREngine {
    */
   static getAudienceUrl(presentationId, sessionId) {
     const baseHost = this.getBaseHost(sessionId);
-    const pid = encodeURIComponent(presentationId || 'sdwan-cpe-unificado');
-    const sid = encodeURIComponent(sessionId || 'SDWAN2026');
+    const pid = encodeURIComponent(presentationId || 'slidemesh-showcase');
+    const sid = encodeURIComponent(sessionId || 'SHOWCASE2026');
     return `${baseHost}/audience/?presentation=${pid}&session=${sid}`;
   }
 

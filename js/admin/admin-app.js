@@ -157,11 +157,16 @@ class AdminApp {
         const data = await res.json();
         const list = data.presentations || [];
         if (list.length > 0) {
+          const exists = list.some(p => p.id === this.presentationId);
+          if (!exists) {
+            this.presentationId = list[0].id;
+          }
           this.dom.presSelector.innerHTML = list.map(p => `
             <option value="${p.id}" ${p.id === this.presentationId ? 'selected' : ''}>
               ${p.title}
             </option>
           `).join('');
+          this.dom.presSelector.value = this.presentationId;
         }
       }
     } catch (e) {

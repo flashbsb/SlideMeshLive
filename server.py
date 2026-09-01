@@ -727,18 +727,32 @@ def import_presentation_zip(zip_bytes, mode='overwrite', custom_slug=None, base_
         manifest.setdefault("securityLabel", "Pública" if manifest.get("security", {}).get("mode") == "public" else "🔒 Protegida por PIN")
         manifest.setdefault("badgeClass", "badge-accent")
 
-        assets_dir = os.path.join(target_dir, "assets")
-        os.makedirs(assets_dir, exist_ok=True)
-
-        # 4. Extração segura de assets/
+        # 4. Pré-validação e extração segura de assets/
         assets_prefix = root_prefix + "assets/"
         allowed_all_exts = ALLOWED_ASSET_EXTENSIONS | MEDIA_EXTENSIONS
+
+        # Pré-validação estrita antes de criar pastas no disco
+        for info in infolist:
+            fname = info.filename
+            if fname.startswith(assets_prefix) and not info.is_dir():
+                rel_asset = fname[len(assets_prefix):]
+                rel_norm = os.path.normpath(rel_asset)
+                if rel_norm.startswith("..") or os.path.isabs(rel_norm):
+                    continue
+                asset_fname = os.path.basename(rel_norm)
+                if not asset_fname or asset_fname.startswith("."):
+                    continue
+                ext = os.path.splitext(asset_fname)[1].lower()
+                if ext not in allowed_all_exts:
+                    raise ValueError(f"Extensão de asset '{ext}' no pacote ZIP não permitida por segurança.")
+
+        assets_dir = os.path.join(target_dir, "assets")
+        os.makedirs(assets_dir, exist_ok=True)
 
         for info in infolist:
             fname = info.filename
             if fname.startswith(assets_prefix) and not info.is_dir():
                 rel_asset = fname[len(assets_prefix):]
-                # Prevenção de travessia e caracteres inválidos no nome do asset
                 rel_norm = os.path.normpath(rel_asset)
                 if rel_norm.startswith("..") or os.path.isabs(rel_norm):
                     continue
@@ -746,10 +760,6 @@ def import_presentation_zip(zip_bytes, mode='overwrite', custom_slug=None, base_
                 asset_fname = os.path.basename(rel_norm)
                 if not asset_fname or asset_fname.startswith("."):
                     continue
-
-                ext = os.path.splitext(asset_fname)[1].lower()
-                if ext not in allowed_all_exts:
-                    raise ValueError(f"Extensão de asset '{ext}' no pacote ZIP não permitida por segurança.")
 
                 asset_dest_path = os.path.join(assets_dir, rel_norm)
                 os.makedirs(os.path.dirname(asset_dest_path), exist_ok=True)
@@ -963,7 +973,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
         # Endpoint de Streaming SSE em Tempo Real (Server-Sent Events)
         if parsed.path == '/api/events':
             qs = parse_qs(parsed.query)
-            session_id = qs.get('session', ['SDWAN2026'])[0].strip().upper()
+            session_id = qs.get('session', ['SHOWCASE2026'])[0].strip().upper()
             since_id = int(qs.get('since_id', [0])[0])
 
             self.send_response(200)
@@ -1033,7 +1043,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
         # Endpoint de Sincronização em Tempo Real Sequencial (Polling Delta Fallback)
         if parsed.path == '/api/sync':
             qs = parse_qs(parsed.query)
-            session_id = qs.get('session', ['SDWAN2026'])[0].strip().upper()
+            session_id = qs.get('session', ['SHOWCASE2026'])[0].strip().upper()
             since_id = int(qs.get('since_id', [0])[0])
 
             with _STATE_LOCK:
@@ -1076,7 +1086,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
         # Endpoint de Diagnóstico de Performance, Recursos e Banda (Demanda 03 - Fase 1)
         if parsed.path == '/api/diagnostics':
             qs = parse_qs(parsed.query)
-            session_id = qs.get('session', ['SDWAN2026'])[0].strip().upper()
+            session_id = qs.get('session', ['SHOWCASE2026'])[0].strip().upper()
             pres_id = qs.get('presentation', ['slidemesh-showcase'])[0].strip()
 
             with _STATE_LOCK:
@@ -1208,7 +1218,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
             
             try:
                 data = json.loads(body)
-                raw_sid = data.get('sessionId', 'SDWAN2026')
+                raw_sid = data.get('sessionId', 'SHOWCASE2026')
                 session_id = raw_sid.strip().upper()
                 msg_type = data.get('type')
                 payload = data.get('payload', {})
@@ -1565,12 +1575,12 @@ def main():
     print("=" * 72)
     print(f" 💻 Acesso Local no Computador (Navegador):")
     print(f"    Portal Inicial:     http://localhost:{port}/")
-    print(f"    Telão Apresentador: http://localhost:{port}/presenter/?presentation=sdwan-cpe-unificado")
-    print(f"    Mesa Técnica/Admin: http://localhost:{port}/admin/?presentation=sdwan-cpe-unificado")
+    print(f"    Telão Apresentador: http://localhost:{port}/presenter/?presentation=slidemesh-showcase")
+    print(f"    Mesa Técnica/Admin: http://localhost:{port}/admin/?presentation=slidemesh-showcase")
     print("")
     print(f" 📱 Acesso de Smartphones pelo Celular (Mesmo Wi-Fi / Rede Local):")
     print(f"    http://{local_ip}:{port}/")
-    print(f"    Link Direto Celular: http://{local_ip}:{port}/audience/?presentation=sdwan-cpe-unificado&session=SDWAN2026")
+    print(f"    Link Direto Celular: http://{local_ip}:{port}/audience/?presentation=slidemesh-showcase&session=SHOWCASE2026")
     print(f" 📦 Repositório GitHub:   https://github.com/flashbsb/SlideMeshLive")
     if PERSIST_ENABLED:
         print(f" 🛡️ Persistência em Disco: ATIVA ({BACKUP_FILE})")
