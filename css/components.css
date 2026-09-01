@@ -180,18 +180,20 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(8px);
-  display: flex;
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--transition-normal);
 }
 
 .modal-overlay.active {
-  opacity: 1;
-  pointer-events: auto;
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .modal-container {
@@ -205,6 +207,7 @@
   transform: translateY(20px);
   transition: transform var(--transition-normal);
   position: relative;
+  pointer-events: auto;
 }
 
 .modal-overlay.active .modal-container {

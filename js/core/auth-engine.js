@@ -190,6 +190,9 @@ export class AuthEngine {
   }
 
   isAdminAuthenticated() {
+    if (this.securityConfig && this.securityConfig.admin && this.securityConfig.admin.requirePinForAdmin === false) {
+      return true;
+    }
     const isPinAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true';
     const isRoleAdmin = this.currentUser && (this.currentUser.role === 'admin' || this.isEmailAdmin(this.currentUser.email));
     return isPinAuth || isRoleAdmin;

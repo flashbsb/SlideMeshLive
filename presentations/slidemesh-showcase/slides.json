@@ -4,7 +4,7 @@
   "slides": [
     {
       "id": 1,
-      "slug": "abertura-morte-ao-powerpoint",
+      "slug": "abertura-morte-ao-apresentacao",
       "tag": "BEM-VINDO AO SLIDEMESHLIVE",
       "title": "A Morte das Palestras Monótonas e o Renascimento da Atenção",
       "presenter": {
@@ -16,10 +16,10 @@
         ],
         "media": {
           "type": "svg",
-          "src": "/presentations/slidemesh-showcase/assets/powerpoint-vs-slidemesh.svg",
-          "alt": "Comparativo PowerPoint Tradicional vs SlideMeshLive",
+          "src": "/presentations/slidemesh-showcase/assets/apresentacao-vs-slidemesh.svg",
+          "alt": "Comparativo apresentacao Tradicional vs SlideMeshLive",
           "maxHeight": "240px",
-          "caption": "Morte pelo PowerPoint vs Engajamento em Tempo Real"
+          "caption": "Morte pelo apresentacao vs Engajamento em Tempo Real"
         },
         "notes": "Dê as boas-vindas com energia! Brinque com a plateia sobre palestras monótonas e peça para todos apontarem a câmera para o QR Code no canto da tela ou aperte [Q] para abrir o QR gigante central."
       },
@@ -34,7 +34,7 @@
           {
             "title": "Comparativo Visual de Experiência",
             "type": "image",
-            "src": "/presentations/slidemesh-showcase/assets/powerpoint-vs-slidemesh.svg",
+            "src": "/presentations/slidemesh-showcase/assets/apresentacao-vs-slidemesh.svg",
             "alt": "Infográfico Comparativo",
             "caption": "Adeus palestras monótonas: interatividade na palma da mão."
           },

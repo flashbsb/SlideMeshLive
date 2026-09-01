@@ -178,8 +178,7 @@ class AdminApp {
     this.bindEvents();
     this.updateLanguageButton();
     this.updateThemeButton();
-    i18n.applyTranslations();
-
+    await this.auth.loadSecurityConfig();
     await this.loadCatalogOptions();
     this.setupQRCode();
     this.checkAdminProtection();
@@ -298,12 +297,19 @@ class AdminApp {
     if (!this.auth.isAdminAuthenticated()) {
       if (this.dom.adminLockModal) {
         this.dom.adminLockModal.classList.add('active');
+        if (this.dom.inputAdminPin) {
+          setTimeout(() => this.dom.inputAdminPin.focus(), 150);
+        }
+      }
+    } else {
+      if (this.dom.adminLockModal) {
+        this.dom.adminLockModal.classList.remove('active');
       }
     }
   }
 
   unlockAdminWithPin() {
-    const entered = this.dom.inputAdminPin.value;
+    const entered = (this.dom.inputAdminPin && this.dom.inputAdminPin.value) ? this.dom.inputAdminPin.value.trim() : '';
     if (this.auth.verifyAdminPIN(entered)) {
       if (this.dom.adminLockModal) {
         this.dom.adminLockModal.classList.remove('active');
@@ -311,9 +317,16 @@ class AdminApp {
       if (this.dom.adminPinError) {
         this.dom.adminPinError.style.display = 'none';
       }
+      if (this.dom.inputAdminPin) {
+        this.dom.inputAdminPin.value = '';
+      }
     } else {
       if (this.dom.adminPinError) {
         this.dom.adminPinError.style.display = 'block';
+      }
+      if (this.dom.inputAdminPin) {
+        this.dom.inputAdminPin.focus();
+        this.dom.inputAdminPin.select();
       }
     }
   }
