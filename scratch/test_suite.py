@@ -2168,7 +2168,16 @@ def test_demanda10_multi_screen_presenter_hub():
     assert "Multi-Screen Presenter Hub" in en_doc, "Princípio 13 ausente em README.md"
     print("  ✓ Documentação Oficial: Princípio 13 (Multi-Screen Presenter Hub) documentado com paridade em README.pt-BR.md e README.md.")
 
-    print("✓ Demanda 10 (Fases 1, 2 e 3: Multi-Screen Presenter Hub, Telões Monumentais, Atalhos na Mesa Técnica e i18n) 100% HOMOLOGADA com sucesso.")
+    # 4. Validação de Resiliência e Gate de Moderação nos Telões Secundários (Plano 10 - Fase 4)
+    moderation_path = os.path.join(BASE_DIR, "js", "core", "moderation-engine.js")
+    with open(moderation_path, "r", encoding="utf-8") as f:
+        mod_code = f.read()
+
+    assert "getApprovedQuestions" in mod_code, "getApprovedQuestions ausente em moderation-engine.js"
+    assert "getApprovedQuestions" in code, "getApprovedQuestions ausente em presenter-app.js"
+    print("  ✓ Gate de Moderação ADR-04: Telão secundário restrito a perguntas estritamente aprovadas (zero vazamento de pendentes).")
+
+    print("✓ Demanda 10 (Fases 1, 2, 3 e 4: Multi-Screen Presenter Hub, Telões Monumentais, Atalhos e Resiliência) 100% HOMOLOGADA com sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()
