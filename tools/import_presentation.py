@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 SlideMeshLive — Utilitário CLI de Importação e Conversão de Apresentações
-Suporta PowerPoint (.pptx), Word (.docx), Markdown (.md), HTML (.html) e Adobe PDF (.pdf).
+Suporta Apresentações (.pptx), Documentos (.docx), Markdown (.md), HTML (.html) e PDF (.pdf).
 
 Uso:
   python3 tools/import_presentation.py caminho/do/arquivo.pptx

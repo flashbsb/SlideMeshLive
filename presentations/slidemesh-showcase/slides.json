@@ -17,9 +17,9 @@
         "media": {
           "type": "svg",
           "src": "/presentations/slidemesh-showcase/assets/apresentacao-vs-slidemesh.svg",
-          "alt": "Comparativo apresentacao Tradicional vs SlideMeshLive",
+          "alt": "Comparativo apresentação Tradicional vs SlideMeshLive",
           "maxHeight": "240px",
-          "caption": "Morte pelo apresentacao vs Engajamento em Tempo Real"
+          "caption": "Morte pela apresentação vs Engajamento em Tempo Real"
         },
         "notes": "Dê as boas-vindas com energia! Brinque com a plateia sobre palestras monótonas e peça para todos apontarem a câmera para o QR Code no canto da tela ou aperte [Q] para abrir o QR gigante central."
       },

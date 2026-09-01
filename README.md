@@ -213,7 +213,7 @@ The **SlideMesh Studio** (`import.html`) is a visual authoring suite accessible 
 
 ### 5.3 Import External Documents & Packages
 1. In the Studio, switch to the **`📁 Import File`** tab.
-2. Drag and drop any **SlideMesh Package (`.zip`/`.slidemesh`)**, **PowerPoint (`.pptx`)**, **Word (`.docx`)**, **Markdown (`.md`)**, **HTML (`.html`)**, or **PDF (`.pdf`)** file.
+2. Drag and drop any **SlideMesh Package (`.zip`/`.slidemesh`)**, **Presentation (`.pptx`)**, **Word (`.docx`)**, **Markdown (`.md`)**, **HTML (`.html`)**, or **PDF (`.pdf`)** file.
 3. The semantic engine extracts headlines, bullets, speaker notes, and embedded media.
 4. Review side-by-side and publish or export with 1 click.
 
@@ -231,7 +231,7 @@ python3 tools/export_presentation.py slidemesh-showcase backup_showcase.zip
 # Import a ZIP package with custom slug override
 python3 tools/import_presentation.py backup_showcase.zip --id imported-keynote
 
-# Import a PowerPoint deck (.pptx)
+# Import a presentation (.pptx)
 python3 tools/import_presentation.py my_decks/architecture.pptx --title "Cloud Architecture"
 
 # Import a Word document (.docx)

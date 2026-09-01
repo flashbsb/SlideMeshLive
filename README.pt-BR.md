@@ -212,7 +212,7 @@ O **SlideMesh Studio** (`import.html`) é uma suíte integrada de autoria visual
 
 ### 5.3 Importar Arquivos e Apresentações Externas
 1. No Studio, acesse a aba **`📁 Importar Arquivo`**.
-2. Arraste e solte o arquivo desejado (**Pacotes SlideMesh `.zip`/`.slidemesh`**, **PowerPoint `.pptx`**, **Word `.docx`**, **Markdown `.md`**, **HTML `.html`** ou **PDF `.pdf`**).
+2. Arraste e solte o arquivo desejado (**Pacotes SlideMesh `.zip`/`.slidemesh`**, **Apresentação `.pptx`**, **Word `.docx`**, **Markdown `.md`**, **HTML `.html`** ou **PDF `.pdf`**).
 3. O motor semântico extrai automaticamente títulos, tópicos, notas de orador e ilustrações.
 4. Revise no editor lado a lado e publique ou exporte o pacote ZIP em 1 clique.
 
@@ -230,7 +230,7 @@ python3 tools/export_presentation.py slidemesh-showcase backup_showcase.zip
 # Importar um pacote ZIP com resolução de slug personalizada
 python3 tools/import_presentation.py backup_showcase.zip --id palestra-importada
 
-# Importar apresentação do PowerPoint (.pptx)
+# Importar apresentação (.pptx)
 python3 tools/import_presentation.py minhas_palestras/arquitetura.pptx --title "Arquitetura Cloud"
 
 # Importar apostila ou documento do Word (.docx)

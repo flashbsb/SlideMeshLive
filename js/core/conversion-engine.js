@@ -1,6 +1,6 @@
 /**
  * SlideMeshLive — Motor de Extração e Conversão Semântica
- * Suporta PowerPoint (.pptx), Microsoft Word (.docx), Markdown (.md) e HTML (.html).
+ * Suporta Apresentações (.pptx), Documentos (.docx), Markdown (.md) e HTML (.html).
  * 
  * Extrai semanticamente:
  * - Títulos e Bullets para o Telão (com modo Split-Screen)
@@ -197,7 +197,7 @@ export class ConversionEngine {
   }
 
   /* ==========================================================================
-     PARSER POWERPOINT (.PPTX)
+     PARSER APRESENTAÇÃO (.PPTX)
      ========================================================================== */
   async parsePptx(fileData, baseResult) {
     const JSZip = await this.getZipInstance();
@@ -339,7 +339,7 @@ export class ConversionEngine {
         title: slideTitle,
         presenter: {
           headline: slideTitle,
-          bullets: bullets.length > 0 ? bullets : ['Visualização de conteúdo extraído do PowerPoint'],
+          bullets: bullets.length > 0 ? bullets : ['Visualização de conteúdo extraído da apresentação'],
           notes: notes || 'Sem notas adicionais para este slide.'
         },
         audience: {
@@ -379,7 +379,7 @@ export class ConversionEngine {
   }
 
   /* ==========================================================================
-     PARSER MICROSOFT WORD (.DOCX)
+     PARSER DOCUMENTO (.DOCX)
      ========================================================================== */
   async parseDocx(fileData, baseResult) {
     const JSZip = await this.getZipInstance();
