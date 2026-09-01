@@ -70,8 +70,9 @@ O **SlideMeshLive** foi concebido com uma arquitetura modular baseada em tecnolo
    - A mesa técnica pode suspender participantes abusivos em 1 clique.
 7. **Resiliência e Snapshot de Estado em Disco**:
    - O servidor Python grava snapshots atômicos (`snapshot_state.json`), preservando votos e perguntas em caso de reinicialização.
-8. **Exportação de Dados e Relatório Executivo**:
-   - A mesa técnica exporta relatórios completos de participação em formatos **CSV estruturado**, **Markdown executivo** e **Deck completo HTML autônomo offline / PDF**.
+8. **Exportação de Dados, Analytics Avançado e Relatórios Executivos Pós-Evento**:
+   - A mesa técnica exporta relatórios completos de engajamento em **CSV estruturado**, **Markdown executivo**, **JSON consolidado**, **Deck completo HTML autônomo** e **Relatório Executivo HTML com gráficos inline SVG e suporte a PDF (@media print)**.
+   - Histórico multissessão persistido em disco (`sessions_archive/`) com rotação automática das 50 sessões mais recentes e telemetria completa de tempo de permanência (*dwell time*) por slide, engajamento e ranking de votos/perguntas.
 9. **Controle Dinâmico de Ritmo da Plateia (Audience Pacing Lock)**:
    - Trava inteligente de avanço que impede os participantes de adiantarem os slides no celular além daquele que está no palco (`lock_future`), preservando o suspense narrativo e o foco da apresentação.
    - Permite leitura livre do histórico anterior e oferece alternância dinâmica em tempo real (Navegação Livre, Trava de Futuro ou Espelhamento Estrito) pela Mesa Técnica ou Púlpito.

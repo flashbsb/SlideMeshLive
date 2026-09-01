@@ -190,6 +190,7 @@ export const TRANSLATIONS = {
     'admin.analytics_dwell_title': '⏱️ Tempo de Permanência por Slide (Dwell Time em Segundos)',
     'admin.analytics_polls_title': '📊 Distribuição de Votos por Enquete',
     'admin.analytics_questions_title': '👍 Ranking de Dúvidas Mais Votadas (Upvotes)',
+    'admin.analytics_export_html': '📄 Relatório Executivo (HTML)',
     'admin.analytics_export_csv': '📊 Baixar CSV',
     'admin.analytics_export_json': '📥 Baixar JSON',
 
@@ -454,6 +455,7 @@ export const TRANSLATIONS = {
     'admin.analytics_dwell_title': '⏱️ Dwell Time per Slide (Seconds Spent)',
     'admin.analytics_polls_title': '📊 Polls Vote Distribution',
     'admin.analytics_questions_title': '👍 Top Voted Questions (Upvotes Ranking)',
+    'admin.analytics_export_html': '📄 Executive Report (HTML)',
     'admin.analytics_export_csv': '📊 Export CSV',
     'admin.analytics_export_json': '📥 Export JSON',
 

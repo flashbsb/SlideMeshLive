@@ -417,8 +417,11 @@
       </div>
 
       <!-- Footer de Exportação e Fechar -->
-      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: 12px;">
-        <div style="display: flex; gap: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: 12px; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn btn-sm" id="analytics-btn-export-html" style="font-size: 12px; border-color: rgba(129, 140, 248, 0.4); color: #c7d2fe;" data-i18n="admin.analytics_export_html">
+            📄 Relatório Executivo (HTML)
+          </button>
           <button class="btn btn-sm" id="analytics-btn-export-csv" style="font-size: 12px;" data-i18n="admin.analytics_export_csv">
             📊 Baixar CSV
           </button>

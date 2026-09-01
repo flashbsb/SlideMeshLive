@@ -933,4 +933,357 @@ export class SessionManager {
       return null;
     }
   }
+
+  /**
+   * Exporta Relatório Executivo Autônomo em HTML com Gráficos Inline (SVG) e Print-Ready
+   */
+  exportExecutiveHTMLReport(analyticsData = {}) {
+    const sid = analyticsData.sessionId || 'SESSION';
+    const presTitle = analyticsData.presentationTitle || 'Apresentação SlideMeshLive';
+    const summary = analyticsData.summary || {};
+    const slideMetrics = analyticsData.slideMetrics || [];
+    const pollBreakdown = analyticsData.pollBreakdown || [];
+    const topQuestions = analyticsData.topQuestions || [];
+
+    const durationSec = analyticsData.durationSeconds || 0;
+    const durationFormatted = `${Math.floor(durationSec / 60)}m ${durationSec % 60}s`;
+    const dateFormatted = analyticsData.startTime ? new Date(analyticsData.startTime).toLocaleString() : new Date().toLocaleString();
+
+    // Gera SVG do gráfico de Dwell Time
+    const maxSec = Math.max(10, ...slideMetrics.map(s => s.dwellTimeSeconds || 0));
+    const svgWidth = 760;
+    const svgHeight = 220;
+    const padding = { top: 25, right: 20, bottom: 40, left: 50 };
+    const chartW = svgWidth - padding.left - padding.right;
+    const chartH = svgHeight - padding.top - padding.bottom;
+    const barCount = slideMetrics.length || 1;
+    const barW = Math.max(12, Math.min(48, (chartW / barCount) - 12));
+    const step = chartW / barCount;
+
+    let svgGrid = '';
+    for (let i = 0; i <= 4; i++) {
+      const y = padding.top + (chartH * i / 4);
+      const val = Math.round(maxSec * (4 - i) / 4);
+      svgGrid += `
+        <line x1="${padding.left}" y1="${y}" x2="${svgWidth - padding.right}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+        <text x="${padding.left - 8}" y="${y + 4}" fill="#94a3b8" font-size="10" font-family="monospace" text-anchor="end">${val}s</text>
+      `;
+    }
+
+    let svgBars = '';
+    slideMetrics.forEach((m, idx) => {
+      const x = padding.left + (idx * step) + (step - barW) / 2;
+      const barH = (m.dwellTimeSeconds / maxSec) * chartH;
+      const y = padding.top + chartH - barH;
+      svgBars += `
+        <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="4" fill="url(#barGradient)" />
+        ${barH > 14 ? `<text x="${x + barW / 2}" y="${y - 5}" fill="#ffffff" font-size="10" font-family="monospace" text-anchor="middle">${m.dwellTimeSeconds}s</text>` : ''}
+        <text x="${x + barW / 2}" y="${svgHeight - 12}" fill="#94a3b8" font-size="10" font-family="sans-serif" text-anchor="middle">S${idx + 1}</text>
+      `;
+    });
+
+    const svgChartHTML = `
+      <svg viewBox="0 0 ${svgWidth} ${svgHeight}" style="width: 100%; height: auto; display: block;">
+        <defs>
+          <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#38bdf8" />
+            <stop offset="100%" stop-color="#818cf8" />
+          </linearGradient>
+        </defs>
+        ${svgGrid}
+        ${svgBars}
+      </svg>
+    `;
+
+    // Tabela de Slides
+    const slidesTableRows = slideMetrics.map((s, idx) => `
+      <tr>
+        <td style="font-weight: 700; font-family: monospace;">#${idx + 1}</td>
+        <td>${s.title || `Slide ${idx + 1}`}</td>
+        <td style="font-family: monospace; text-align: right; font-weight: 700; color: #38bdf8;">${s.dwellTimeSeconds || 0}s</td>
+      </tr>
+    `).join('');
+
+    // Tabela de Enquetes
+    let pollsHTML = '';
+    if (pollBreakdown.length > 0) {
+      pollsHTML = pollBreakdown.map(p => {
+        const totalV = p.totalVotes || 0;
+        const optionsHTML = Array.isArray(p.options) ? p.options.map(o => `
+          <div style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px;">
+              <span>${o.id}. ${o.text || ''}</span>
+              <strong style="color: #38bdf8;">${o.percentage || 0}% (${o.votes || 0})</strong>
+            </div>
+            <div style="background: rgba(255,255,255,0.08); height: 8px; border-radius: 4px; overflow: hidden;">
+              <div style="background: #38bdf8; height: 100%; width: ${o.percentage || 0}%;"></div>
+            </div>
+          </div>
+        `).join('') : `<div>Total de votos: ${totalV}</div>`;
+
+        return `
+          <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px; margin-bottom: 12px;">
+            <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">
+              📊 Enquete: #${p.pollId} (${totalV} votos computados)
+            </div>
+            ${optionsHTML}
+          </div>
+        `;
+      }).join('');
+    } else {
+      pollsHTML = `<p style="color: #94a3b8; font-size: 12px;">Nenhuma enquete registrada nesta sessão.</p>`;
+    }
+
+    // Tabela de Perguntas
+    let questionsHTML = '';
+    if (topQuestions.length > 0) {
+      questionsHTML = topQuestions.map((q, idx) => `
+        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+          <div style="flex: 1;">
+            <span style="font-weight: 700; color: #f472b6; margin-right: 6px;">#${idx + 1}</span>
+            <span style="font-size: 13px; color: #ffffff;">${q.text}</span>
+            ${q.authorAlias ? `<span style="font-size: 11px; color: #94a3b8; margin-left: 8px;">(${q.authorAlias})</span>` : ''}
+          </div>
+          <span style="background: rgba(56,189,248,0.15); color: #38bdf8; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">
+            👍 ${q.upvotes || 0}
+          </span>
+        </div>
+      `).join('');
+    } else {
+      questionsHTML = `<p style="color: #94a3b8; font-size: 12px;">Nenhuma pergunta aprovada nesta sessão.</p>`;
+    }
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório Executivo de Analytics | ${presTitle} (#${sid})</title>
+  <style>
+    :root {
+      --bg-main: #0b0f19;
+      --bg-card: rgba(15, 23, 42, 0.85);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 32px 20px;
+      line-height: 1.5;
+    }
+    .report-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .header-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .kpi-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .kpi-label { font-size: 11.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+    .kpi-value { font-size: 24px; font-weight: 800; font-family: monospace; color: var(--accent); }
+    .section-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .section-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; color: #ffffff; display: flex; align-items: center; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+    .btn-print {
+      background: #38bdf8;
+      color: #0b0f19;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    @media print {
+      body { background: #ffffff !important; color: #0f172a !important; padding: 0 !important; }
+      .btn-print { display: none !important; }
+      .header-card, .kpi-box, .section-card { background: #ffffff !important; border: 1px solid #e2e8f0 !important; color: #0f172a !important; box-shadow: none !important; }
+      .section-title, h1, h2, h3, .kpi-value { color: #0f172a !important; }
+      text { fill: #0f172a !important; }
+      line { stroke: #e2e8f0 !important; }
+      th, td { border-bottom: 1px solid #e2e8f0 !important; color: #0f172a !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="report-container">
+    <div class="header-card">
+      <div>
+        <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">
+          📊 Relatório Executivo de Sessão
+        </div>
+        <h1 style="font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">${presTitle}</h1>
+        <div style="font-size: 12px; color: var(--text-muted);">
+          Sessão: <strong style="color: #ffffff;">#${sid}</strong> • Data: ${dateFormatted}
+        </div>
+      </div>
+      <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-box">
+        <div class="kpi-label">👥 Participantes Únicos</div>
+        <div class="kpi-value">${summary.totalParticipants || 0}</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">⏱️ Duração da Apresentação</div>
+        <div class="kpi-value" style="color: #a78bfa;">${durationFormatted}</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">🗳️ Total de Votos</div>
+        <div class="kpi-value" style="color: #34d399;">${summary.totalVotesCast || 0}</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">💬 Dúvidas Aprovadas</div>
+        <div class="kpi-value" style="color: #f472b6;">${summary.totalQuestionsApproved || 0}</div>
+      </div>
+    </div>
+
+    <!-- Tempo por Slide (Gráfico SVG) -->
+    <div class="section-card">
+      <div class="section-title">⏱️ Retenção e Tempo de Permanência por Slide (Dwell Time)</div>
+      <div style="background: rgba(10, 15, 29, 0.9); border-radius: 8px; padding: 12px; margin-bottom: 16px; border: 1px solid var(--border);">
+        ${svgChartHTML}
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 70px;">Slide</th>
+            <th>Título do Slide</th>
+            <th style="text-align: right; width: 120px;">Tempo Gasto</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${slidesTableRows}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Votações & Enquetes -->
+    <div class="section-card">
+      <div class="section-title">📊 Resultados Consolidados de Enquetes</div>
+      ${pollsHTML}
+    </div>
+
+    <!-- Top Perguntas da Plateia -->
+    <div class="section-card">
+      <div class="section-title">👍 Top Dúvidas da Audiência (Ranking por Upvotes)</div>
+      ${questionsHTML}
+    </div>
+
+    <!-- Rodapé -->
+    <div style="text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 30px; border-top: 1px solid var(--border); padding-top: 16px;">
+      Gerado automaticamente pelo <strong>SlideMeshLive v1.3.0</strong> • Autônomo, Offline-First e Zero-PII.
+    </div>
+  </div>
+</body>
+</html>`;
+  }
+
+  downloadExecutiveHTMLReport(analyticsData = {}) {
+    const html = this.exportExecutiveHTMLReport(analyticsData);
+    const sid = (analyticsData.sessionId || 'SESSION').trim().toUpperCase();
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `relatorio_executivo_${sid}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  exportAnalyticsCSV(analyticsData = {}) {
+    const sid = analyticsData.sessionId || 'SESSION';
+    const summary = analyticsData.summary || {};
+    const slideMetrics = analyticsData.slideMetrics || [];
+    const pollBreakdown = analyticsData.pollBreakdown || [];
+    const topQuestions = analyticsData.topQuestions || [];
+
+    let csv = `RELATORIO ANALITICO - SLIDEMESHLIVE\n`;
+    csv += `Sessao,${sid}\n`;
+    csv += `Apresentacao,"${(analyticsData.presentationTitle || '').replace(/"/g, '""')}"\n`;
+    csv += `Duracao (segundos),${analyticsData.durationSeconds || 0}\n`;
+    csv += `Total Participantes,${summary.totalParticipants || 0}\n`;
+    csv += `Total Votos,${summary.totalVotesCast || 0}\n`;
+    csv += `Duvidas Aprovadas,${summary.totalQuestionsApproved || 0}\n`;
+    csv += `Total Upvotes,${summary.totalUpvotes || 0}\n\n`;
+
+    csv += `SLIDES - TEMPO DE PERMANENCIA (DWELL TIME)\n`;
+    csv += `Indice,Slide ID,Titulo,Tempo (segundos)\n`;
+    slideMetrics.forEach((s, idx) => {
+      csv += `${idx + 1},"${s.slideId || ''}","${(s.title || '').replace(/"/g, '""')}",${s.dwellTimeSeconds || 0}\n`;
+    });
+    csv += `\n`;
+
+    csv += `ENQUETES - CONSOLIDADO DE VOTOS\n`;
+    csv += `Enquete ID,Total Votos,Opcao ID,Opcao Texto,Votos Opcao,Percentual\n`;
+    pollBreakdown.forEach(p => {
+      if (Array.isArray(p.options) && p.options.length > 0) {
+        p.options.forEach(o => {
+          csv += `"${p.pollId}",${p.totalVotes || 0},"${o.id}","${(o.text || '').replace(/"/g, '""')}",${o.votes || 0},${o.percentage || 0}%\n`;
+        });
+      } else {
+        csv += `"${p.pollId}",${p.totalVotes || 0},"","","",""\n`;
+      }
+    });
+    csv += `\n`;
+
+    csv += `PERGUNTAS DA AUDIENCIA (RANKING UPVOTES)\n`;
+    csv += `Posicao,Autor,Pergunta,Upvotes\n`;
+    topQuestions.forEach((q, idx) => {
+      csv += `${idx + 1},"${(q.authorAlias || 'Participante').replace(/"/g, '""')}","${(q.text || '').replace(/"/g, '""')}",${q.upvotes || 0}\n`;
+    });
+
+    return csv;
+  }
+
+  downloadAnalyticsCSV(analyticsData = {}) {
+    const csv = this.exportAnalyticsCSV(analyticsData);
+    const sid = (analyticsData.sessionId || 'SESSION').trim().toUpperCase();
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `analytics_${sid}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 }

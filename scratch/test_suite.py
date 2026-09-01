@@ -1992,6 +1992,7 @@ def test_demanda09_analytics_and_session_archive():
         assert 'id="analytics-select-session"' in admin_html, "Select #analytics-select-session ausente em admin/index.html"
         assert 'id="analytics-kpi-participants"' in admin_html, "KPI #analytics-kpi-participants ausente em admin/index.html"
         assert 'id="analytics-btn-archive-now"' in admin_html, "Botão #analytics-btn-archive-now ausente em admin/index.html"
+        assert 'id="analytics-btn-export-html"' in admin_html, "Botão #analytics-btn-export-html ausente em admin/index.html"
         assert 'id="analytics-btn-export-csv"' in admin_html, "Botão #analytics-btn-export-csv ausente em admin/index.html"
         print("  ✓ Mesa Técnica (admin/index.html): Modal de Analytics, botões de exportação e Canvas 2D validados.")
 
@@ -2003,8 +2004,21 @@ def test_demanda09_analytics_and_session_archive():
         assert "renderAnalyticsDashboard" in admin_app_code, "renderAnalyticsDashboard ausente em admin-app.js"
         assert "renderDwellTimeChart" in admin_app_code, "renderDwellTimeChart ausente em admin-app.js"
         assert "archiveCurrentSessionNow" in admin_app_code, "archiveCurrentSessionNow ausente em admin-app.js"
+        assert "exportCurrentAnalyticsHTML" in admin_app_code, "exportCurrentAnalyticsHTML ausente em admin-app.js"
         assert "exportCurrentAnalyticsCSV" in admin_app_code, "exportCurrentAnalyticsCSV ausente em admin-app.js"
         print("  ✓ Lógica Admin (admin-app.js): Métodos de renderização de gráficos em Canvas 2D e exportação validados.")
+
+        # 8. Validação da Exportação de Relatório Executivo HTML & CSV (Plano 09 - Fase 3)
+        assert "exportExecutiveHTMLReport" in session_mgr_code, "exportExecutiveHTMLReport ausente em session-manager.js"
+        assert "downloadExecutiveHTMLReport" in session_mgr_code, "downloadExecutiveHTMLReport ausente em session-manager.js"
+        assert "exportAnalyticsCSV" in session_mgr_code, "exportAnalyticsCSV ausente em session-manager.js"
+        assert "downloadAnalyticsCSV" in session_mgr_code, "downloadAnalyticsCSV ausente em session-manager.js"
+
+        i18n_path = os.path.join(BASE_DIR, "js", "core", "i18n-engine.js")
+        with open(i18n_path, "r", encoding="utf-8") as f:
+            i18n_code = f.read()
+        assert "admin.analytics_export_html" in i18n_code, "Chave admin.analytics_export_html ausente em i18n-engine.js"
+        print("  ✓ Relatório Executivo & CSV (session-manager.js & i18n-engine.js): Geradores de relatório autônomo e internacionalização validados.")
 
     finally:
         # Limpeza de arquivos de teste
@@ -2017,7 +2031,7 @@ def test_demanda09_analytics_and_session_archive():
                         pass
         httpd.shutdown()
 
-    print("✓ Demanda 09 (Fases 1 e 2: Analytics Avançado, Persistência e Painel com Gráficos Canvas 2D) 100% HOMOLOGADA com sucesso.")
+    print("✓ Demanda 09 (Fases 1, 2 e 3: Analytics Avançado, Persistência, Gráficos Canvas 2D e Relatório Executivo) 100% HOMOLOGADA com sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()

@@ -127,6 +127,7 @@ class AdminApp {
       analyticsSelectSession: document.getElementById('analytics-select-session'),
       analyticsBtnArchiveNow: document.getElementById('analytics-btn-archive-now'),
       analyticsBtnRefresh: document.getElementById('analytics-btn-refresh'),
+      analyticsBtnExportHTML: document.getElementById('analytics-btn-export-html'),
       analyticsBtnExportCSV: document.getElementById('analytics-btn-export-csv'),
       analyticsBtnExportJSON: document.getElementById('analytics-btn-export-json'),
       canvasDwellTime: document.getElementById('canvas-dwell-time'),
@@ -954,6 +955,11 @@ class AdminApp {
         this.archiveCurrentSessionNow();
       });
     }
+    if (this.dom.analyticsBtnExportHTML) {
+      this.dom.analyticsBtnExportHTML.addEventListener('click', () => {
+        this.exportCurrentAnalyticsHTML();
+      });
+    }
     if (this.dom.analyticsBtnExportCSV) {
       this.dom.analyticsBtnExportCSV.addEventListener('click', () => {
         this.exportCurrentAnalyticsCSV();
@@ -1551,27 +1557,16 @@ class AdminApp {
     this.dom.analyticsBtnArchiveNow.textContent = i18n.t('admin.analytics_archive_btn') || '💾 Arquivar Agora';
   }
 
+  exportCurrentAnalyticsHTML() {
+    const data = this.currentViewedAnalytics;
+    if (!data) return;
+    this.sessionManager.downloadExecutiveHTMLReport(data);
+  }
+
   exportCurrentAnalyticsCSV() {
     const data = this.currentViewedAnalytics;
     if (!data) return;
-
-    let csv = `Slide Index,Slide Title,Dwell Time (Seconds)\n`;
-    (data.slideMetrics || []).forEach(m => {
-      csv += `${m.slideIndex + 1},"${(m.title || '').replace(/"/g, '""')}",${m.dwellTimeSeconds || 0}\n`;
-    });
-
-    csv += `\nPoll ID,Total Votes\n`;
-    (data.pollBreakdown || []).forEach(p => {
-      csv += `"${p.pollId}",${p.totalVotes || 0}\n`;
-    });
-
-    csv += `\nQuestion,Upvotes\n`;
-    (data.topQuestions || []).forEach(q => {
-      csv += `"${(q.text || '').replace(/"/g, '""')}",${q.upvotes || 0}\n`;
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    this._downloadFile(blob, `analytics_${data.sessionId || 'session'}.csv`);
+    this.sessionManager.downloadAnalyticsCSV(data);
   }
 
   exportCurrentAnalyticsJSON() {
