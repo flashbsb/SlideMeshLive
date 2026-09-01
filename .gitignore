@@ -50,7 +50,6 @@ scratch/
 __pycache__/
 *.pyc
 *.pyo
-plan/
 logs/
 *.log
 npm-debug.log*
