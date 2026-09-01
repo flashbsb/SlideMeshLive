@@ -1494,6 +1494,101 @@ def test_audience_pacing_lock_and_controlled_navigation():
 
     print("✓ Fases 1, 2, 3 e 4 de Audience Pacing Lock 100% HOMOLOGADAS e validadas com sucesso.")
 
+def test_demanda03_diagnostics_and_capacity_engine():
+    print_section("17. Demanda 03: Diagnóstico de Performance, Recursos e Banda (Fase 1)")
+
+    # Limpa estado anterior em memória do servidor
+    with server._STATE_LOCK:
+        server.SERVER_STATE["sessions"].clear()
+
+    httpd = HTTPServer(("127.0.0.1", 0), server.LiveSyncHTTPRequestHandler)
+    test_port = httpd.server_port
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    server_thread.start()
+
+    try:
+        session_id = "DIAG_SUITE_TEST"
+        pres_id = "slidemesh-showcase"
+
+        def get_diag(params=""):
+            req = urllib.request.Request(f"http://127.0.0.1:{test_port}/api/diagnostics?{params}")
+            with urllib.request.urlopen(req) as resp:
+                assert resp.status == 200
+                assert "application/json" in resp.headers.get("Content-Type", "")
+                return json.loads(resp.read().decode('utf-8'))
+
+        # 1. Teste básico do endpoint /api/diagnostics com apresentação oficial
+        diag_res = get_diag(f"session={session_id}&presentation={pres_id}")
+        assert diag_res["status"] in ["healthy", "degraded"], "Status inválido na resposta de diagnóstico"
+        assert "serverTime" in diag_res, "Timestamp ausente no diagnóstico"
+        assert "system" in diag_res and "deck" in diag_res, "Estrutura do diagnóstico incompleta"
+
+        # Validação das métricas de sistema
+        sys_info = diag_res["system"]
+        assert "uptimeSec" in sys_info and sys_info["uptimeSec"] >= 0, "uptimeSec inválido"
+        assert "residentMemoryMB" in sys_info and sys_info["residentMemoryMB"] > 0, "residentMemoryMB inválido"
+        assert "activeSessionsCount" in sys_info, "activeSessionsCount ausente"
+        print("  ✓ Endpoint GET /api/diagnostics: Métricas do sistema (Uptime, Memória, Conexões) validadas.")
+
+        # Validação da auditoria estática do deck
+        deck_info = diag_res["deck"]
+        assert deck_info["presentationId"] == pres_id, "presentationId divergente"
+        assert deck_info["totalSlides"] > 0, "totalSlides deve ser maior que 0"
+        assert deck_info["totalDeckWeightKB"] > 0, "totalDeckWeightKB deve ser maior que 0"
+        assert "healthScore" in deck_info and 0 <= deck_info["healthScore"] <= 100, "healthScore fora do intervalo 0-100"
+        assert "recommendedMaxAudienceLocalWifi" in deck_info, "Capacidade recomendada de audiência ausente"
+        print("  ✓ Auditoria de Deck: Cálculo de peso total, slides e score de saúde validados.")
+
+        # 2. Teste com apresentação não encontrada (Graceful Fallback)
+        diag_404 = get_diag("presentation=inexistente-1234")
+        assert diag_404["deck"]["statusLevel"] == "not_found", "Fallback para apresentação inexistente não tratado"
+        print("  ✓ Fallback de Erro: Apresentação inexistente tratada com status gracioso.")
+
+        # 3. Teste de detecção de Slide Pesado (>500KB) e cálculo de rajada (burst)
+        temp_pres_slug = "diag-heavy-test"
+        temp_pres_dir = os.path.join(BASE_DIR, "presentations", temp_pres_slug)
+        temp_assets_dir = os.path.join(temp_pres_dir, "assets")
+        os.makedirs(temp_assets_dir, exist_ok=True)
+
+        try:
+            # Cria imagem de 1.8 MB (pesada)
+            heavy_asset_name = "huge_photo.jpg"
+            heavy_asset_path = os.path.join(temp_assets_dir, heavy_asset_name)
+            with open(heavy_asset_path, "wb") as hf:
+                hf.write(b"0" * (1800 * 1024))  # 1.8 MB
+
+            # Cria manifest e slides referenciando o asset pesado
+            with open(os.path.join(temp_pres_dir, "manifest.json"), "w", encoding="utf-8") as mf:
+                json.dump({"id": temp_pres_slug, "title": "Heavy Deck"}, mf)
+
+            with open(os.path.join(temp_pres_dir, "slides.json"), "w", encoding="utf-8") as sf:
+                json.dump({"slides": [
+                    {"id": 1, "title": "Slide Leve", "presenter": {"headline": "Leve"}},
+                    {"id": 2, "title": "Slide Pesado", "presenter": {"headline": "Pesado", "media": f"assets/{heavy_asset_name}"}}
+                ]}, sf)
+
+            diag_heavy = get_diag(f"presentation={temp_pres_slug}")
+            heavy_deck = diag_heavy["deck"]
+            assert heavy_deck["hasHeavySlides"] is True, "Slide pesado não foi identificado"
+            assert len(heavy_deck["heavySlides"]) == 1, "Quantidade incorreta de slides pesados identificados"
+            flagged = heavy_deck["heavySlides"][0]
+            assert flagged["slideIndex"] == 2, f"Slide index incorreto: {flagged['slideIndex']}"
+            assert flagged["sizeKB"] >= 1800, f"Tamanho KB incorreto: {flagged['sizeKB']}"
+            assert flagged["burst30AttendeesMB"] >= 50, f"Rajada calculada incorreta: {flagged['burst30AttendeesMB']}"
+            assert heavy_deck["healthScore"] < 80, "Health score deveria ser penalizado por imagem pesada"
+            print("  ✓ Detecção de Rajada de Banda: Slide de 1.8MB identificado com alerta de pico para 30 celulares.")
+
+        finally:
+            import shutil
+            if os.path.exists(temp_pres_dir):
+                shutil.rmtree(temp_pres_dir)
+
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+    print("✓ Demanda 03 (Fase 1) aprovada com 100% de conformidade técnica e precisão métrica.")
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -1512,6 +1607,7 @@ if __name__ == "__main__":
         test_phase3_backend_hardening_and_orphan_cleanup()
         test_phase4_static_deck_export_and_print_ready()
         test_audience_pacing_lock_and_controlled_navigation()
+        test_demanda03_diagnostics_and_capacity_engine()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

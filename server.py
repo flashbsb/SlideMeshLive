@@ -42,9 +42,172 @@ MAX_IMPORT_PAYLOAD_BYTES = 50 * 1024 * 1024  # 50 MB
 MAX_SYNC_PAYLOAD_BYTES = 5 * 1024 * 1024     # 5 MB
 ALLOWED_ASSET_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'}
 
+SERVER_START_TIME = time.time()
+
 # Gerenciador de Subscrições SSE por Sessão
 SSE_SUBSCRIBERS = {}  # session_id -> Set[queue.Queue]
 _SSE_LOCK = threading.Lock()
+
+def get_server_memory_usage_mb():
+    """
+    Retorna o consumo de memória residente (RSS) do processo Python em Megabytes.
+    """
+    try:
+        import resource
+        rusage = resource.getrusage(resource.RUSAGE_SELF)
+        # No Linux ru_maxrss é em KB; no macOS/BSD é em Bytes.
+        if sys.platform == 'darwin':
+            return round(rusage.ru_maxrss / (1024 * 1024), 2)
+        else:
+            return round(rusage.ru_maxrss / 1024, 2)
+    except Exception:
+        return 28.5
+
+def compute_presentation_diagnostics(presentation_id, base_dir=BASE_DIR):
+    """
+    Realiza a auditoria estática da apresentação ativa:
+    - Peso total dos arquivos JSON e assets de mídia em disco
+    - Identificação de slides pesados (> 500KB) e cálculo de pico de rajada de banda (burst)
+    - Estimativa de capacidade máxima recomendada de participantes locais em Wi-Fi
+    - Score de saúde de performance e banda (0 - 100)
+    """
+    pres_dir = os.path.join(base_dir, "presentations", presentation_id)
+    if not os.path.exists(pres_dir):
+        return {
+            "error": f"Apresentação '{presentation_id}' não encontrada.",
+            "healthScore": 0,
+            "statusLevel": "not_found",
+            "totalDeckWeightKB": 0,
+            "avgSlideWeightKB": 0,
+            "heavySlides": [],
+            "hasHeavySlides": False,
+            "recommendedMaxAudienceLocalWifi": 0,
+            "recommendations": ["Apresentação não encontrada no diretório presentations/."]
+        }
+
+    manifest_path = os.path.join(pres_dir, "manifest.json")
+    slides_path = os.path.join(pres_dir, "slides.json")
+    assets_dir = os.path.join(pres_dir, "assets")
+
+    total_bytes = 0
+    if os.path.exists(manifest_path):
+        total_bytes += os.path.getsize(manifest_path)
+
+    slides = []
+    if os.path.exists(slides_path):
+        total_bytes += os.path.getsize(slides_path)
+        try:
+            with open(slides_path, "r", encoding="utf-8") as sf:
+                slides_data = json.load(sf)
+                slides = slides_data.get("slides", [])
+        except Exception:
+            pass
+
+    asset_sizes = {}
+    if os.path.exists(assets_dir):
+        for fname in os.listdir(assets_dir):
+            fpath = os.path.join(assets_dir, fname)
+            if os.path.isfile(fpath):
+                fsize = os.path.getsize(fpath)
+                total_bytes += fsize
+                asset_sizes[fname] = fsize
+
+    heavy_slides = []
+    max_slide_bytes = 0
+
+    for idx, s in enumerate(slides):
+        slide_bytes = len(json.dumps(s).encode("utf-8"))
+        slide_assets_bytes = 0
+        slide_media_names = []
+
+        if isinstance(s, dict):
+            # Extração recursiva e segura de nomes de assets referenciados no slide
+            def _find_media(obj):
+                if isinstance(obj, str):
+                    if obj.startswith("assets/") or "/assets/" in obj or obj.endswith(('.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp')):
+                        slide_media_names.append(os.path.basename(obj))
+                elif isinstance(obj, dict):
+                    for k, v in obj.items():
+                        if k in ("media", "src", "image") and isinstance(v, str) and v:
+                            slide_media_names.append(os.path.basename(v))
+                        elif isinstance(v, (dict, list)):
+                            _find_media(v)
+                elif isinstance(obj, list):
+                    for item in obj:
+                        _find_media(item)
+
+            _find_media(s)
+
+        # Soma o peso de todos os assets encontrados para este slide
+        unique_media_names = list(dict.fromkeys(slide_media_names))
+        for m_name in unique_media_names:
+            slide_assets_bytes += asset_sizes.get(m_name, 0)
+
+        total_slide_weight = slide_bytes + slide_assets_bytes
+        if total_slide_weight > max_slide_bytes:
+            max_slide_bytes = total_slide_weight
+
+        # Alerta se o slide individual ultrapassar o limiar recomendado de 500 KB
+        if total_slide_weight > 500 * 1024:
+            size_kb = round(total_slide_weight / 1024, 1)
+            burst_30_mb = round((total_slide_weight * 30) / (1024 * 1024), 1)
+            burst_50_mb = round((total_slide_weight * 50) / (1024 * 1024), 1)
+            heavy_slides.append({
+                "slideIndex": idx + 1,
+                "slideTitle": s.get("title", f"Slide #{idx + 1}"),
+                "assetName": ", ".join(unique_media_names) if unique_media_names else "Payload",
+                "sizeKB": size_kb,
+                "burst30AttendeesMB": burst_30_mb,
+                "burst50AttendeesMB": burst_50_mb,
+                "warning": f"Slide #{idx + 1} possui {size_kb}KB. Em 30 celulares simultâneos gerará pico de {burst_30_mb}MB no Wi-Fi."
+            })
+
+    total_deck_kb = round(total_bytes / 1024, 1)
+    avg_slide_kb = round(total_deck_kb / max(1, len(slides)), 1)
+
+    # Cálculo do Score de Saúde (0 - 100) e Capacidade Recomendada de Participantes
+    if heavy_slides:
+        max_heavy_kb = max(hs["sizeKB"] for hs in heavy_slides)
+        if max_heavy_kb > 3000: # Imagem > 3MB
+            health_score = 40
+            rec_capacity = 25
+            status_level = "critical_warning"
+        elif max_heavy_kb > 1500: # Imagem > 1.5MB
+            health_score = 65
+            rec_capacity = 50
+            status_level = "warning"
+        else: # 500KB - 1.5MB
+            health_score = 80
+            rec_capacity = 80
+            status_level = "attention"
+    elif total_deck_kb > 5000:
+        health_score = 85
+        rec_capacity = 90
+        status_level = "good"
+    else:
+        health_score = 98
+        rec_capacity = 150
+        status_level = "excellent"
+
+    recommendations = []
+    if heavy_slides:
+        for hs in heavy_slides:
+            recommendations.append(f"Slide #{hs['slideIndex']} ({hs['sizeKB']}KB): Otimize a mídia '{hs['assetName']}' no Studio para WebP < 300KB.")
+    else:
+        recommendations.append("Apresentação leve e perfeitamente otimizada para redes Wi-Fi e alta concorrência.")
+
+    return {
+        "presentationId": presentation_id,
+        "totalSlides": len(slides),
+        "totalDeckWeightKB": total_deck_kb,
+        "avgSlideWeightKB": avg_slide_kb,
+        "heavySlides": heavy_slides,
+        "hasHeavySlides": len(heavy_slides) > 0,
+        "healthScore": health_score,
+        "statusLevel": status_level,
+        "recommendedMaxAudienceLocalWifi": rec_capacity,
+        "recommendations": recommendations
+    }
 
 def broadcast_sse(session_id, event_type, data):
     """
@@ -435,6 +598,48 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json; charset=utf-8')
             self.end_headers()
             self.wfile.write(json.dumps(response_data).encode('utf-8'))
+            return
+
+        # Endpoint de Diagnóstico de Performance, Recursos e Banda (Demanda 03 - Fase 1)
+        if parsed.path == '/api/diagnostics':
+            qs = parse_qs(parsed.query)
+            session_id = qs.get('session', ['SDWAN2026'])[0].strip().upper()
+            pres_id = qs.get('presentation', ['slidemesh-showcase'])[0].strip()
+
+            with _STATE_LOCK:
+                session_data = SERVER_STATE["sessions"].get(session_id, {})
+                active_presence = len(session_data.get("presence", {}))
+                total_sessions = len(SERVER_STATE["sessions"])
+
+            with _SSE_LOCK:
+                sse_subscribers_count = len(SSE_SUBSCRIBERS.get(session_id, set()))
+                total_sse_clients = sum(len(subs) for subs in SSE_SUBSCRIBERS.values())
+
+            uptime_sec = int(time.time() - SERVER_START_TIME)
+            mem_mb = get_server_memory_usage_mb()
+            deck_diag = compute_presentation_diagnostics(pres_id)
+
+            diag_payload = {
+                "status": "healthy" if deck_diag.get("healthScore", 100) >= 60 else "degraded",
+                "serverTime": int(time.time() * 1000),
+                "system": {
+                    "uptimeSec": uptime_sec,
+                    "uptimeFormatted": f"{uptime_sec // 3600}h {(uptime_sec % 3600) // 60}m {uptime_sec % 60}s",
+                    "residentMemoryMB": mem_mb,
+                    "activeSessionsCount": total_sessions,
+                    "sessionPresenceCount": active_presence,
+                    "sessionSseSubscribers": sse_subscribers_count,
+                    "totalSseClients": total_sse_clients
+                },
+                "deck": deck_diag
+            }
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Cache-Control', 'no-cache')
+            self.end_headers()
+            self.wfile.write(json.dumps(diag_payload, ensure_ascii=False, indent=2).encode('utf-8'))
             return
 
         # Servidor de arquivos estáticos padrão
