@@ -1812,7 +1812,36 @@ def test_demanda02_stage_fx_overlay():
         httpd.shutdown()
         httpd.server_close()
 
-    print("✓ Demanda 02 (Fase 1: Módulo de Efeitos Canvas no Palco) 100% HOMOLOGADA com sucesso.")
+    # 6. Validação da Fase 2: Mesa Técnica (admin/index.html e admin-app.js)
+    admin_html_path = os.path.join(BASE_DIR, "admin", "index.html")
+    with open(admin_html_path, "r", encoding="utf-8") as f:
+        admin_html = f.read()
+
+    assert "admin-stage-fx-card" in admin_html, "Elemento #admin-stage-fx-card ausente em admin/index.html"
+    assert "admin-fx-cooldown-badge" in admin_html, "Badge #admin-fx-cooldown-badge ausente em admin/index.html"
+    for fx in ['confetti', 'impact_shake', 'spotlight', 'countdown_burst', 'glitch_flash']:
+        assert f'data-fx="{fx}"' in admin_html, f"Botão para efeito '{fx}' ausente em admin/index.html"
+    print("  ✓ Mesa Técnica (admin/index.html): Card #admin-stage-fx-card e 5 botões de disparo rápido integrados.")
+
+    admin_js_path = os.path.join(BASE_DIR, "js", "admin", "admin-app.js")
+    with open(admin_js_path, "r", encoding="utf-8") as f:
+        admin_js = f.read()
+
+    assert "triggerStageFX" in admin_js, "Método triggerStageFX ausente em admin-app.js"
+    assert "fxCooldownActive" in admin_js, "Gerenciador de cooldown ausente em admin-app.js"
+    assert "btn-stage-fx" in admin_js, "Listeners de botões .btn-stage-fx ausentes em admin-app.js"
+    print("  ✓ Mesa Técnica (admin-app.js): Gerenciamento de cooldown anti-spam de 3s e disparo de FX validados.")
+
+    # 7. Validação de i18n
+    i18n_path = os.path.join(BASE_DIR, "js", "core", "i18n-engine.js")
+    with open(i18n_path, "r", encoding="utf-8") as f:
+        i18n_code = f.read()
+
+    for key in ['admin.stage_fx_title', 'admin.fx_confetti', 'admin.fx_shake', 'admin.fx_spotlight', 'admin.fx_countdown', 'admin.fx_glitch', 'admin.fx_ready', 'admin.fx_cooldown']:
+        assert key in i18n_code, f"Chave de tradução '{key}' ausente em i18n-engine.js"
+    print("  ✓ Internacionalização (i18n): Chaves simétricas de Stage FX validadas em pt-BR e en-US.")
+
+    print("✓ Demanda 02 (Fases 1 e 2: Motor Canvas e Painel da Mesa Técnica com Cooldown) 100% HOMOLOGADAS com sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()

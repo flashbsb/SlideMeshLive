@@ -28,7 +28,11 @@ class AdminApp {
     this.sessionId = this.sessionManager.getSessionId();
     this.activeTab = 'pending';
     this.moderationSort = 'recent';
-    this.currentHostUrl = '';  this.dom = {
+    this.currentHostUrl = '';
+    this.fxCooldownActive = false;
+    this.fxCooldownTimer = null;
+
+    this.dom = {
       presSelector: document.getElementById('admin-pres-selector'),
       btnSwitchProject: document.getElementById('admin-btn-switch-project'),
       btnConfigureHost: document.getElementById('admin-btn-configure-host'),
@@ -52,6 +56,10 @@ class AdminApp {
       diagDeckWeight: document.getElementById('admin-diag-deck-weight'),
       diagServerStats: document.getElementById('admin-diag-server-stats'),
       diagHeavyAlerts: document.getElementById('admin-diag-heavy-alerts'),
+
+      // Stage FX Deck (Demanda 02 - Fase 2)
+      stageFxCard: document.getElementById('admin-stage-fx-card'),
+      fxCooldownBadge: document.getElementById('admin-fx-cooldown-badge'),
 
       btnEndSession: document.getElementById('admin-btn-end-session'),
       btnPublishAnalytics: document.getElementById('admin-btn-publish-analytics'),
@@ -1161,6 +1169,65 @@ class AdminApp {
         this.updatePacingUI(mode);
       });
     }
+
+    // Painel de Efeitos Visuais no Telão (Demanda 02 - Fase 2)
+    const fxButtons = document.querySelectorAll('.btn-stage-fx');
+    fxButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const fxType = btn.dataset.fx || 'confetti';
+        this.triggerStageFX(fxType);
+      });
+    });
+  }
+
+  triggerStageFX(fxType) {
+    if (this.fxCooldownActive) return;
+    this.fxCooldownActive = true;
+
+    // Dispara via RealtimeEngine para todos os nós conectados
+    this.realtime.triggerStageFX(this.sessionId, fxType);
+
+    // Cooldown de 3 segundos com feedback visual anti-spam
+    let remaining = 3;
+    const buttons = document.querySelectorAll('.btn-stage-fx');
+    buttons.forEach(b => {
+      b.disabled = true;
+      b.style.opacity = '0.4';
+      b.style.cursor = 'not-allowed';
+    });
+
+    const updateBadge = () => {
+      if (this.dom.fxCooldownBadge) {
+        this.dom.fxCooldownBadge.textContent = i18n.t('admin.fx_cooldown', { seconds: remaining });
+        this.dom.fxCooldownBadge.style.color = '#fbbf24';
+        this.dom.fxCooldownBadge.style.background = 'rgba(245, 158, 11, 0.15)';
+      }
+    };
+
+    updateBadge();
+
+    this.fxCooldownTimer = setInterval(() => {
+      remaining--;
+      if (remaining > 0) {
+        updateBadge();
+      } else {
+        clearInterval(this.fxCooldownTimer);
+        this.fxCooldownTimer = null;
+        this.fxCooldownActive = false;
+
+        buttons.forEach(b => {
+          b.disabled = false;
+          b.style.opacity = '1';
+          b.style.cursor = 'pointer';
+        });
+
+        if (this.dom.fxCooldownBadge) {
+          this.dom.fxCooldownBadge.textContent = i18n.t('admin.fx_ready');
+          this.dom.fxCooldownBadge.style.color = '#f472b6';
+          this.dom.fxCooldownBadge.style.background = 'rgba(236, 72, 153, 0.15)';
+        }
+      }
+    }, 1000);
   }
 
   _downloadFile(blob, filename) {
