@@ -109,6 +109,7 @@ export const TRANSLATIONS = {
     'import.stats_slides_count': '{included} de {total} slide(s) incluídos',
     'import.alert_no_slides': 'Você precisa manter pelo menos 1 slide incluído para publicar!',
     'import.shortcut_reorder': 'Atalhos: Alt + ↑/↓ move slides',
+    'import.btn_optimize_image': '⚡ Otimizar Imagem (<300KB)',
 
     // Mesa Técnica / Admin
     'admin.badge': '🛡️ MESA TÉCNICA',
@@ -342,6 +343,7 @@ export const TRANSLATIONS = {
     'import.stats_slides_count': '{included} of {total} slide(s) included',
     'import.alert_no_slides': 'You must keep at least 1 included slide to publish!',
     'import.shortcut_reorder': 'Shortcuts: Alt + ↑/↓ move slides',
+    'import.btn_optimize_image': '⚡ Optimize Image (<300KB)',
 
     // Admin / Moderator
     'admin.badge': '🛡️ CONTROL ROOM',

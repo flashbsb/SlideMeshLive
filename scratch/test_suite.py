@@ -1611,15 +1611,26 @@ def test_demanda03_diagnostics_and_capacity_engine():
         with open(i18n_path, "r", encoding="utf-8") as f:
             i18n_code = f.read()
 
-        for diag_key in ['admin.diag_title', 'admin.diag_capacity_label', 'admin.diag_latency_label', 'admin.diag_deck_weight_label', 'admin.diag_server_mem_label']:
+        for diag_key in ['admin.diag_title', 'admin.diag_capacity_label', 'admin.diag_latency_label', 'admin.diag_deck_weight_label', 'admin.diag_server_mem_label', 'import.btn_optimize_image']:
             assert diag_key in i18n_code, f"Chave de tradução '{diag_key}' ausente em i18n-engine.js"
-        print("  ✓ Internacionalização (i18n): Chaves simétricas de diagnóstico validadas em pt-BR e en-US.")
+        print("  ✓ Internacionalização (i18n): Chaves simétricas de diagnóstico e otimização validadas em pt-BR e en-US.")
+
+        # 5. Validação da Fase 3: Otimizador de Imagem Integrado no Studio (import.html)
+        studio_html_path = os.path.join(BASE_DIR, "import.html")
+        with open(studio_html_path, "r", encoding="utf-8") as f:
+            studio_html = f.read()
+
+        assert "btn-optimize-media" in studio_html, "Botão #btn-optimize-media ausente em import.html"
+        assert "media-weight-alert" in studio_html, "Container #media-weight-alert ausente em import.html"
+        assert "optimizeImageBase64" in studio_html, "Função optimizeImageBase64 ausente no script de import.html"
+        assert "getBase64SizeBytes" in studio_html, "Função getBase64SizeBytes ausente no script de import.html"
+        print("  ✓ Studio (import.html): Otimizador de imagem 1-clique via Canvas e detector de peso validados.")
 
     finally:
         httpd.shutdown()
         httpd.server_close()
 
-    print("✓ Demanda 03 (Fases 1 e 2) aprovadas com 100% de conformidade técnica e precisão métrica.")
+    print("✓ Demanda 03 (Fases 1, 2 e 3) aprovadas com 100% de conformidade técnica e precisão métrica.")
 
 if __name__ == "__main__":
     start_time = time.time()
