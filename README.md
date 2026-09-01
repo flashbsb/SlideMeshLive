@@ -76,6 +76,10 @@
 9. **Dynamic Audience Pacing Lock**:
    - Intelligent forward navigation lock preventing attendees from peeking ahead of the presenter's stage slide (`lock_future`), preserving narrative surprise and engagement.
    - Allows attendees to freely review past slides while providing real-time dynamic switching (`Free Navigation`, `Future Lock`, `Strict Sync`) from the Control Room or Pulpit.
+10. **Pre-Flight Diagnostics, Media Audit & Local Wi-Fi Capacity**:
+    - The server statically audits deck assets (`GET /api/diagnostics`), identifying heavy slides (>500KB) and calculating instant burst throughput in MB across 30+ connected smartphones.
+    - The Control Room displays a live Health HUD with health score badges, recommended local Wi-Fi attendee capacity, real-time latency monitoring, and resident memory/uptime telemetry.
+    - SlideMesh Studio includes a built-in 1-click HTML5 Canvas compressor for Full HD WebP optimization (<300KB).
 
 ---
 

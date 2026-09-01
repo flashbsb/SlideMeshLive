@@ -1626,11 +1626,23 @@ def test_demanda03_diagnostics_and_capacity_engine():
         assert "getBase64SizeBytes" in studio_html, "Função getBase64SizeBytes ausente no script de import.html"
         print("  ✓ Studio (import.html): Otimizador de imagem 1-clique via Canvas e detector de peso validados.")
 
+        # 6. Validação da Fase 4: Documentação Oficial e Homologação
+        readme_pt_path = os.path.join(BASE_DIR, "README.pt-BR.md")
+        with open(readme_pt_path, "r", encoding="utf-8") as f:
+            readme_pt = f.read()
+        assert "Diagnóstico Pré-Voo, Auditoria de Mídia e Capacidade de Rede" in readme_pt, "Princípio 10 ausente em README.pt-BR.md"
+
+        readme_en_path = os.path.join(BASE_DIR, "README.md")
+        with open(readme_en_path, "r", encoding="utf-8") as f:
+            readme_en = f.read()
+        assert "Pre-Flight Diagnostics, Media Audit & Local Wi-Fi Capacity" in readme_en, "Princípio 10 ausente em README.md"
+        print("  ✓ Documentação Oficial: Princípio 10 documentado com paridade em README.pt-BR.md e README.md.")
+
     finally:
         httpd.shutdown()
         httpd.server_close()
 
-    print("✓ Demanda 03 (Fases 1, 2 e 3) aprovadas com 100% de conformidade técnica e precisão métrica.")
+    print("✓ Demanda 03 (Fases 1, 2, 3 e 4) 100% HOMOLOGADAS e validadas com sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()

@@ -75,6 +75,10 @@ O **SlideMeshLive** foi concebido com uma arquitetura modular baseada em tecnolo
 9. **Controle Dinâmico de Ritmo da Plateia (Audience Pacing Lock)**:
    - Trava inteligente de avanço que impede os participantes de adiantarem os slides no celular além daquele que está no palco (`lock_future`), preservando o suspense narrativo e o foco da apresentação.
    - Permite leitura livre do histórico anterior e oferece alternância dinâmica em tempo real (Navegação Livre, Trava de Futuro ou Espelhamento Estrito) pela Mesa Técnica ou Púlpito.
+10. **Diagnóstico Pré-Voo, Auditoria de Mídia e Capacidade de Rede (Pre-Flight Health)**:
+    - O servidor audita os arquivos e mídias da apresentação em disco (`GET /api/diagnostics`), identificando slides pesados (>500KB) e calculando o pico de rajada de banda em MB para 30+ celulares simultâneos.
+    - A mesa técnica exibe um painel HUD com semáforo de saúde, capacidade estimada de participantes no Wi-Fi local, medidor de latência em tempo real e telemetria de memória/uptime.
+    - O SlideMesh Studio inclui compressor inteligente 1-clique via HTML5 Canvas para redimensionamento e conversão WebP Full HD (<300KB).
 
 ---
 
