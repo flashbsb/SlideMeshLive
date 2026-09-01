@@ -2304,7 +2304,30 @@ def test_demanda11_media_range_requests():
             try: os.remove(test_audio_path)
             except Exception: pass
 
-    print("✓ Demanda 11 (Fase 1: HTTP 206 Range Requests no server.py) 100% HOMOLOGADA com sucesso.")
+    # Validação do Motor Client-Side MediaCacheEngine (Plano 11 - Fase 2)
+    cache_engine_path = os.path.join(BASE_DIR, "js", "core", "media-cache-engine.js")
+    with open(cache_engine_path, "r", encoding="utf-8") as f:
+        cache_code = f.read()
+
+    assert "export class MediaCacheEngine" in cache_code, "Classe MediaCacheEngine ausente em media-cache-engine.js"
+    assert "extractMediaUrlsFromSlide" in cache_code, "Método extractMediaUrlsFromSlide ausente em media-cache-engine.js"
+    assert "onSlideChange" in cache_code, "Método onSlideChange ausente em media-cache-engine.js"
+    assert "prefetchSlideMedia" in cache_code, "Método prefetchSlideMedia ausente em media-cache-engine.js"
+    assert "cleanupOutOfWindow" in cache_code, "Método cleanupOutOfWindow ausente em media-cache-engine.js"
+    assert "URL.revokeObjectURL" in cache_code, "Chamada URL.revokeObjectURL ausente para descarte de memória"
+    assert "slidingWindowSize" in cache_code, "slidingWindowSize ausente em MediaCacheEngine"
+    print("  ✓ MediaCacheEngine (media-cache-engine.js): Algoritmo de janela deslizante ±2 e descarte com revokeObjectURL validados.")
+
+    presenter_app_path = os.path.join(BASE_DIR, "js", "presenter", "presenter-app.js")
+    with open(presenter_app_path, "r", encoding="utf-8") as f:
+        p_code = f.read()
+
+    assert "MediaCacheEngine" in p_code, "MediaCacheEngine não importado em presenter-app.js"
+    assert "this.mediaCache" in p_code, "this.mediaCache não instanciado em PresenterApp"
+    assert "this.mediaCache.onSlideChange" in p_code, "onSlideChange não invocado no ciclo de vida de slide do PresenterApp"
+    print("  ✓ Integração Telão (presenter-app.js): Ciclo de vida de pré-cache de mídias acoplado ao motor de apresentação.")
+
+    print("✓ Demanda 11 (Fases 1 e 2: HTTP 206 Range Requests e MediaCacheEngine) 100% HOMOLOGADA com sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()

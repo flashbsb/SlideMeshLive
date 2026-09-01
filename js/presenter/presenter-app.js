@@ -15,6 +15,7 @@ import { SessionManager } from '../core/session-manager.js';
 import { i18n } from '../core/i18n-engine.js';
 import { theme, THEMES } from '../core/theme-engine.js';
 import { StageFX } from './stage-fx.js';
+import { MediaCacheEngine } from '../core/media-cache-engine.js';
 
 class PresenterApp {
   constructor() {
@@ -25,6 +26,7 @@ class PresenterApp {
     this.moderation = new ModerationEngine(this.realtime, this.auth);
     this.sessionManager = new SessionManager();
     this.stageFX = new StageFX();
+    this.mediaCache = new MediaCacheEngine({ slidingWindowSize: 2 });
     
     this.presentationId = PresentationEngine.getPresentationIdFromURL();
     this.sessionId = PresentationEngine.getSessionIdFromURL() || QREngine.generateSessionCode();
@@ -126,6 +128,12 @@ class PresenterApp {
         this.updatePacingButtonUI();
       }
 
+      // Inicializa pré-cache inteligente de mídias pesadas (Plano 11 - Fase 2)
+      if (this.engine.slidesData && this.engine.slidesData.slides) {
+        const presentationBasePath = `${this.engine.basePath}/${this.presentationId}`;
+        this.mediaCache.init(this.engine.slidesData.slides, presentationBasePath);
+      }
+
       this.setupQRCodes();
       this.updateSlideView();
       this.renderPulpitSlideSorter();
@@ -187,8 +195,13 @@ class PresenterApp {
 
   updateThemeButton() {
     if (this.dom.btnToggleTheme) {
-      const current = THEMES.find(t => t.id === theme.theme) || THEMES[0];
-      this.dom.btnToggleTheme.textContent = current.icon;
+      const icons = {
+        [THEMES.DARK]: '🌙',
+        [THEMES.LIGHT]: '☀️',
+        [THEMES.SLATE]: '🌊',
+        [THEMES.HIGH_CONTRAST]: '👁️'
+      };
+      this.dom.btnToggleTheme.textContent = icons[theme.currentTheme] || '🌙';
     }
   }
 
@@ -239,6 +252,11 @@ class PresenterApp {
 
     const direction = (this.engine.currentSlideIndex < this.prevSlideIndex) ? 'prev' : 'next';
     this.prevSlideIndex = this.engine.currentSlideIndex;
+
+    // Atualiza janela deslizante e pré-cache de mídias (Plano 11 - Fase 2)
+    if (this.mediaCache) {
+      this.mediaCache.onSlideChange(this.engine.currentSlideIndex, this.engine.totalSlides);
+    }
 
     // Renderiza o Slide HTML com animações e direção de transição
     if (this.dom.canvas && slide) {
