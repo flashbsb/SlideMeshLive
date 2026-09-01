@@ -117,7 +117,25 @@ class AdminApp {
       adminLockModal: document.getElementById('admin-lock-modal'),
       inputAdminPin: document.getElementById('input-admin-pin'),
       adminPinError: document.getElementById('admin-pin-error'),
-      btnUnlockAdmin: document.getElementById('btn-unlock-admin')
+      btnUnlockAdmin: document.getElementById('btn-unlock-admin'),
+
+      // Analytics Dashboard (Plano 09 - Fase 2)
+      btnAnalytics: document.getElementById('admin-btn-analytics'),
+      analyticsModal: document.getElementById('admin-analytics-modal'),
+      btnCloseAnalyticsModal: document.getElementById('btn-close-analytics-modal'),
+      btnDoneAnalytics: document.getElementById('btn-done-analytics'),
+      analyticsSelectSession: document.getElementById('analytics-select-session'),
+      analyticsBtnArchiveNow: document.getElementById('analytics-btn-archive-now'),
+      analyticsBtnRefresh: document.getElementById('analytics-btn-refresh'),
+      analyticsBtnExportCSV: document.getElementById('analytics-btn-export-csv'),
+      analyticsBtnExportJSON: document.getElementById('analytics-btn-export-json'),
+      canvasDwellTime: document.getElementById('canvas-dwell-time'),
+      analyticsKpiParticipants: document.getElementById('analytics-kpi-participants'),
+      analyticsKpiDuration: document.getElementById('analytics-kpi-duration'),
+      analyticsKpiVotes: document.getElementById('analytics-kpi-votes'),
+      analyticsKpiQuestions: document.getElementById('analytics-kpi-questions'),
+      analyticsPollsContainer: document.getElementById('analytics-polls-container'),
+      analyticsQuestionsContainer: document.getElementById('analytics-questions-container')
     };
 
     this.init();
@@ -174,6 +192,9 @@ class AdminApp {
         presentationTitle: this.engine.manifest.title,
         status: 'active'
       });
+
+      // Inicializa temporizador de tempo de permanência de slide
+      this.sessionManager.startSlideTimer(this.engine.currentSlideIndex);
 
       // Inscreve-se nas atualizações da sessão
       this.realtime.subscribeToSession(this.sessionId, (state) => {
@@ -848,6 +869,7 @@ class AdminApp {
     if (this.dom.btnPrev) {
       this.dom.btnPrev.addEventListener('click', async () => {
         this.engine.prevSlide();
+        this.sessionManager.trackSlideDwellTime(this.engine.currentSlideIndex);
         await this.realtime.setSlide(this.sessionId, this.engine.currentSlideIndex, this.engine.currentSlide);
         this.updateView();
       });
@@ -856,6 +878,7 @@ class AdminApp {
     if (this.dom.btnNext) {
       this.dom.btnNext.addEventListener('click', async () => {
         this.engine.nextSlide();
+        this.sessionManager.trackSlideDwellTime(this.engine.currentSlideIndex);
         await this.realtime.setSlide(this.sessionId, this.engine.currentSlideIndex, this.engine.currentSlide);
         this.updateView();
       });
@@ -897,6 +920,48 @@ class AdminApp {
     if (this.dom.newSessionModal) {
       this.dom.newSessionModal.addEventListener('click', (e) => {
         if (e.target === this.dom.newSessionModal) this.closeNewSessionModal();
+      });
+    }
+
+    // Modal de Analytics (Plano 09 - Fase 2)
+    if (this.dom.btnAnalytics) {
+      this.dom.btnAnalytics.addEventListener('click', () => this.openAnalyticsModal());
+    }
+    if (this.dom.btnCloseAnalyticsModal) {
+      this.dom.btnCloseAnalyticsModal.addEventListener('click', () => this.closeAnalyticsModal());
+    }
+    if (this.dom.btnDoneAnalytics) {
+      this.dom.btnDoneAnalytics.addEventListener('click', () => this.closeAnalyticsModal());
+    }
+    if (this.dom.analyticsModal) {
+      this.dom.analyticsModal.addEventListener('click', (e) => {
+        if (e.target === this.dom.analyticsModal) this.closeAnalyticsModal();
+      });
+    }
+    if (this.dom.analyticsSelectSession) {
+      this.dom.analyticsSelectSession.addEventListener('change', (e) => {
+        this.renderAnalyticsDashboard(e.target.value);
+      });
+    }
+    if (this.dom.analyticsBtnRefresh) {
+      this.dom.analyticsBtnRefresh.addEventListener('click', () => {
+        const val = this.dom.analyticsSelectSession ? this.dom.analyticsSelectSession.value : 'LIVE';
+        this.renderAnalyticsDashboard(val);
+      });
+    }
+    if (this.dom.analyticsBtnArchiveNow) {
+      this.dom.analyticsBtnArchiveNow.addEventListener('click', () => {
+        this.archiveCurrentSessionNow();
+      });
+    }
+    if (this.dom.analyticsBtnExportCSV) {
+      this.dom.analyticsBtnExportCSV.addEventListener('click', () => {
+        this.exportCurrentAnalyticsCSV();
+      });
+    }
+    if (this.dom.analyticsBtnExportJSON) {
+      this.dom.analyticsBtnExportJSON.addEventListener('click', () => {
+        this.exportCurrentAnalyticsJSON();
       });
     }
 
@@ -1239,6 +1304,281 @@ class AdminApp {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+
+  // ==========================================
+  // Métodos de Analytics Avançado (Plano 09)
+  // ==========================================
+  async openAnalyticsModal() {
+    if (!this.dom.analyticsModal) return;
+    this.dom.analyticsModal.classList.add('active');
+    await this.loadAnalyticsSessionOptions();
+    await this.renderAnalyticsDashboard('LIVE');
+  }
+
+  closeAnalyticsModal() {
+    if (this.dom.analyticsModal) {
+      this.dom.analyticsModal.classList.remove('active');
+    }
+  }
+
+  async loadAnalyticsSessionOptions() {
+    if (!this.dom.analyticsSelectSession) return;
+    const history = await this.sessionManager.fetchRemoteAnalyticsHistory();
+    let html = `<option value="LIVE">⚡ ${i18n.t('admin.analytics_live_option') || 'Sessão Ao Vivo Atual'}</option>`;
+
+    history.forEach(s => {
+      const dt = new Date(s.savedAt).toLocaleDateString() + ' ' + new Date(s.savedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      html += `<option value="${s.sessionId}">📁 #${s.sessionId} (${s.presentationSlug} • ${dt})</option>`;
+    });
+
+    this.dom.analyticsSelectSession.innerHTML = html;
+  }
+
+  async renderAnalyticsDashboard(selectedSessionId = 'LIVE') {
+    let analyticsData = null;
+
+    if (selectedSessionId === 'LIVE' || !selectedSessionId) {
+      const liveSessionData = {
+        state: { currentSlide: this.engine.currentSlideIndex, presentationId: this.presentationId },
+        questions: this.moderation.getQuestions(this.sessionId),
+        votes: this.interaction.getAllVotes(this.sessionId) || {},
+        presence: this.presenceState || {},
+        presenceCount: Object.keys(this.presenceState || {}).length
+      };
+      analyticsData = this.sessionManager.buildSessionAnalyticsPayload(
+        this.sessionId,
+        liveSessionData,
+        this.engine.manifest,
+        this.engine.slidesData ? this.engine.slidesData.slides : []
+      );
+    } else {
+      const record = await this.sessionManager.fetchRemoteSessionAnalytics(selectedSessionId);
+      if (record && record.data) {
+        analyticsData = record.data;
+      }
+    }
+
+    if (!analyticsData) return;
+    this.currentViewedAnalytics = analyticsData;
+
+    // Atualiza KPIs
+    const summary = analyticsData.summary || {};
+    if (this.dom.analyticsKpiParticipants) {
+      this.dom.analyticsKpiParticipants.textContent = summary.totalParticipants || 0;
+    }
+    if (this.dom.analyticsKpiDuration) {
+      const sec = analyticsData.durationSeconds || 0;
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      this.dom.analyticsKpiDuration.textContent = `${m}m ${s}s`;
+    }
+    if (this.dom.analyticsKpiVotes) {
+      this.dom.analyticsKpiVotes.textContent = summary.totalVotesCast || 0;
+    }
+    if (this.dom.analyticsKpiQuestions) {
+      this.dom.analyticsKpiQuestions.textContent = `${summary.totalQuestionsApproved || 0} (${summary.totalUpvotes || 0} 👍)`;
+    }
+
+    // Renderiza gráfico de barras Dwell Time no Canvas
+    this.renderDwellTimeChart(this.dom.canvasDwellTime, analyticsData.slideMetrics || []);
+
+    // Renderiza Enquetes
+    this.renderAnalyticsPolls(this.dom.analyticsPollsContainer, analyticsData.pollBreakdown || []);
+
+    // Renderiza Top Perguntas
+    this.renderAnalyticsTopQuestions(this.dom.analyticsQuestionsContainer, analyticsData.topQuestions || []);
+  }
+
+  renderDwellTimeChart(canvas, slideMetrics) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    ctx.clearRect(0, 0, width, height);
+
+    if (!slideMetrics || slideMetrics.length === 0) {
+      ctx.fillStyle = '#64748b';
+      ctx.font = '12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Nenhum dado de permanência coletado ainda.', width / 2, height / 2);
+      return;
+    }
+
+    const maxSeconds = Math.max(10, ...slideMetrics.map(s => s.dwellTimeSeconds || 0));
+    const padding = { top: 20, right: 20, bottom: 35, left: 40 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+
+    // Linhas de grade horizontais
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = padding.top + (chartHeight * i / 4);
+      const val = Math.round(maxSeconds * (4 - i) / 4);
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(width - padding.right, y);
+      ctx.stroke();
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(`${val}s`, padding.left - 6, y + 3);
+    }
+
+    // Barras
+    const barCount = slideMetrics.length;
+    const barWidth = Math.max(12, Math.min(48, (chartWidth / barCount) - 10));
+    const step = chartWidth / barCount;
+
+    slideMetrics.forEach((m, idx) => {
+      const x = padding.left + (idx * step) + (step - barWidth) / 2;
+      const barH = (m.dwellTimeSeconds / maxSeconds) * chartHeight;
+      const y = padding.top + chartHeight - barH;
+
+      // Gradiente da barra
+      const grad = ctx.createLinearGradient(0, y, 0, y + barH);
+      grad.addColorStop(0, '#38bdf8');
+      grad.addColorStop(1, '#818cf8');
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      const r = Math.min(4, barWidth / 2);
+      ctx.moveTo(x, y + barH);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.lineTo(x + barWidth - r, y);
+      ctx.quadraticCurveTo(x + barWidth, y, x + barWidth, y + r);
+      ctx.lineTo(x + barWidth, y + barH);
+      ctx.closePath();
+      ctx.fill();
+
+      // Valor no topo da barra
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      if (barH > 14) {
+        ctx.fillText(`${m.dwellTimeSeconds}s`, x + barWidth / 2, y - 4);
+      }
+
+      // Rótulo no eixo X
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`S${idx + 1}`, x + barWidth / 2, height - 12);
+    });
+  }
+
+  renderAnalyticsPolls(container, pollBreakdown) {
+    if (!container) return;
+    if (!pollBreakdown || pollBreakdown.length === 0) {
+      container.innerHTML = `<div style="font-size: 11.5px; color: var(--text-muted); padding: 8px;">Nenhuma enquete registrada nesta sessão.</div>`;
+      return;
+    }
+
+    container.innerHTML = pollBreakdown.map(p => {
+      return `
+        <div style="background: rgba(15,23,42,0.8); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 10px;">
+          <div style="font-size: 11.5px; font-weight: 700; color: var(--accent-primary); margin-bottom: 4px;">
+            📊 Enquete: #${p.pollId} (${p.totalVotes || 0} votos)
+          </div>
+          <div style="font-size: 11px; color: #cbd5e1;">
+            ${Array.isArray(p.options) ? p.options.map(o => `<div>• ${o.id}: <strong>${o.percentage || 0}%</strong> (${o.votes || 0})</div>`).join('') : `Total de Votos: ${p.totalVotes}`}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  renderAnalyticsTopQuestions(container, topQuestions) {
+    if (!container) return;
+    if (!topQuestions || topQuestions.length === 0) {
+      container.innerHTML = `<div style="font-size: 11.5px; color: var(--text-muted); padding: 8px;">Nenhuma pergunta aprovada nesta sessão.</div>`;
+      return;
+    }
+
+    container.innerHTML = topQuestions.slice(0, 5).map((q, idx) => `
+      <div style="background: rgba(15,23,42,0.8); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+        <div style="font-size: 12px; color: #ffffff; flex: 1;">
+          <span style="font-weight: 700; color: #f472b6;">#${idx + 1}</span> ${q.text}
+        </div>
+        <span class="badge" style="background: rgba(56,189,248,0.15); color: #38bdf8; font-size: 10px; padding: 2px 6px;">
+          👍 ${q.upvotes || 0}
+        </span>
+      </div>
+    `).join('');
+  }
+
+  async archiveCurrentSessionNow() {
+    if (!this.dom.analyticsBtnArchiveNow) return;
+    this.dom.analyticsBtnArchiveNow.disabled = true;
+    this.dom.analyticsBtnArchiveNow.textContent = '⏳ Salvando...';
+
+    const liveSessionData = {
+      state: { currentSlide: this.engine.currentSlideIndex, presentationId: this.presentationId },
+      questions: this.moderation.getQuestions(this.sessionId),
+      votes: this.interaction.getAllVotes(this.sessionId) || {},
+      presence: this.presenceState || {},
+      presenceCount: Object.keys(this.presenceState || {}).length
+    };
+
+    const payload = this.sessionManager.buildSessionAnalyticsPayload(
+      this.sessionId,
+      liveSessionData,
+      this.engine.manifest,
+      this.engine.slidesData ? this.engine.slidesData.slides : []
+    );
+
+    const res = await this.sessionManager.archiveSessionRemotely({
+      sessionId: this.sessionId,
+      payload
+    });
+
+    if (res && res.success) {
+      alert(`Sessão #${this.sessionId} arquivada com sucesso no servidor!`);
+      await this.loadAnalyticsSessionOptions();
+      if (this.dom.analyticsSelectSession) {
+        this.dom.analyticsSelectSession.value = this.sessionId;
+      }
+      await this.renderAnalyticsDashboard(this.sessionId);
+    } else {
+      alert('Erro ao arquivar sessão: ' + (res.error || 'Falha de comunicação'));
+    }
+
+    this.dom.analyticsBtnArchiveNow.disabled = false;
+    this.dom.analyticsBtnArchiveNow.textContent = i18n.t('admin.analytics_archive_btn') || '💾 Arquivar Agora';
+  }
+
+  exportCurrentAnalyticsCSV() {
+    const data = this.currentViewedAnalytics;
+    if (!data) return;
+
+    let csv = `Slide Index,Slide Title,Dwell Time (Seconds)\n`;
+    (data.slideMetrics || []).forEach(m => {
+      csv += `${m.slideIndex + 1},"${(m.title || '').replace(/"/g, '""')}",${m.dwellTimeSeconds || 0}\n`;
+    });
+
+    csv += `\nPoll ID,Total Votes\n`;
+    (data.pollBreakdown || []).forEach(p => {
+      csv += `"${p.pollId}",${p.totalVotes || 0}\n`;
+    });
+
+    csv += `\nQuestion,Upvotes\n`;
+    (data.topQuestions || []).forEach(q => {
+      csv += `"${(q.text || '').replace(/"/g, '""')}",${q.upvotes || 0}\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    this._downloadFile(blob, `analytics_${data.sessionId || 'session'}.csv`);
+  }
+
+  exportCurrentAnalyticsJSON() {
+    const data = this.currentViewedAnalytics;
+    if (!data) return;
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8;' });
+    this._downloadFile(blob, `analytics_${data.sessionId || 'session'}.json`);
   }
 }
 

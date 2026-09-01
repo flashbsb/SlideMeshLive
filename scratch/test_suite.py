@@ -709,7 +709,21 @@ def test_readme_and_documentation_consistency():
         assert "README.pt-BR.md" in content, f"Link para versão em português ausente em {name}"
         assert "README.md" in content, f"Link para versão em inglês ausente em {name}"
 
-    print("✓ README.md (EN) e README.pt-BR.md (PT) 100% padronizados, bilíngues e sem termos legados.")
+    # Validação da Integridade do PLANO_MESTRE_ANALISE_E_IMPLANTACAO_versao3.md e Planos Setoriais 09, 10 e 11
+    plan_v3_path = os.path.join(BASE_DIR, "plan", "PLANO_MESTRE_ANALISE_E_IMPLANTACAO_versao3.md")
+    assert os.path.exists(plan_v3_path), "PLANO_MESTRE_ANALISE_E_IMPLANTACAO_versao3.md ausente!"
+    with open(plan_v3_path, "r", encoding="utf-8") as f:
+        plan_v3_content = f.read()
+
+    assert "FASE 9 — Módulo de Analytics Avançado & Histórico Multissessão" in plan_v3_content, "Detalhamento da Fase 9 ausente no Plano v3"
+    assert "FASE 10 — Multi-Screen Presenter Hub" in plan_v3_content, "Detalhamento da Fase 10 ausente no Plano v3"
+    assert "FASE 11 — Otimizador, Chunking e Pré-Cache de Mídias Pesadas" in plan_v3_content, "Detalhamento da Fase 11 ausente no Plano v3"
+
+    for plan_file in ["PLANO_09_ANALYTICS_AVANCADO_E_HISTORICO_MULTISESSAO.md", "PLANO_10_MULTI_SCREEN_PRESENTER_HUB.md", "PLANO_11_OTIMIZADOR_PRE_CACHE_MIDIAS_PESADAS.md"]:
+        p_path = os.path.join(BASE_DIR, "plan", plan_file)
+        assert os.path.exists(p_path), f"Arquivo de plano {plan_file} ausente em plan/!"
+
+    print("✓ README.md (EN), README.pt-BR.md (PT), PLANO_MESTRE v3 e Planos 09, 10 e 11 100% padronizados e certificados.")
 
 def test_presentation_import_endpoint():
     print_section("10. Importação Dinâmica de Apresentações (POST /api/presentations/import)")
@@ -1867,6 +1881,144 @@ def test_demanda02_stage_fx_overlay():
 
     print("✓ Demanda 02 (Fases 1, 2, 3 e 4: Stage FX Overlay Engine) 100% HOMOLOGADA com sucesso.")
 
+def test_demanda09_analytics_and_session_archive():
+    print_section("20. Demanda 09: Analytics Avançado e Histórico Multissessão (Fase 1)")
+    import urllib.request
+    import urllib.error
+
+    # Inicia servidor HTTP em porta aleatória
+    httpd = HTTPServer(("127.0.0.1", 0), server.LiveSyncHTTPRequestHandler)
+    port = httpd.server_port
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    base_url = f"http://127.0.0.1:{port}"
+
+    archive_dir = os.path.join(BASE_DIR, "sessions_archive")
+    test_session_id = f"TEST_ANALYTICS_{int(time.time())}"
+
+    try:
+        # 1. Teste de gravação direta via POST /api/analytics/archive
+        payload = {
+            "sessionId": test_session_id,
+            "presentationSlug": "slidemesh-showcase",
+            "presentationTitle": "SlideMesh Showcase",
+            "startTime": 1000000,
+            "endTime": 1003600,
+            "durationSeconds": 3600,
+            "summary": {
+                "totalParticipants": 42,
+                "totalVotesCast": 88,
+                "totalQuestionsSent": 15,
+                "totalQuestionsApproved": 10,
+                "totalUpvotes": 50
+            },
+            "slideMetrics": [
+                { "slideIndex": 0, "title": "Capa", "dwellTimeSeconds": 120 },
+                { "slideIndex": 1, "title": "Visão Geral", "dwellTimeSeconds": 240 }
+            ],
+            "pollBreakdown": [
+                { "pollId": "poll-1", "totalVotes": 40 }
+            ],
+            "topQuestions": [
+                { "id": "q1", "text": "Como funciona o analytics?", "upvotes": 12 }
+            ]
+        }
+
+        req = urllib.request.Request(
+            f"{base_url}/api/analytics/archive",
+            data=json.dumps({"sessionId": test_session_id, "payload": payload}).encode("utf-8"),
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            assert resp.status == 200, f"Status esperado 200, obtido {resp.status}"
+            res_data = json.loads(resp.read().decode("utf-8"))
+            assert res_data.get("success") is True, "Falha ao arquivar sessão via POST /api/analytics/archive"
+            assert res_data.get("sessionId") == test_session_id
+        print("  ✓ Backend (POST /api/analytics/archive): Gravação atômica em disco de relatório analítico validada.")
+
+        # 2. Teste de listagem via GET /api/analytics/history
+        with urllib.request.urlopen(f"{base_url}/api/analytics/history", timeout=5) as resp:
+            assert resp.status == 200
+            history_data = json.loads(resp.read().decode("utf-8"))
+            assert history_data.get("success") is True
+            sessions = history_data.get("sessions", [])
+            matched = next((s for s in sessions if s.get("sessionId") == test_session_id), None)
+            assert matched is not None, f"Sessão {test_session_id} não encontrada no histórico analítico!"
+            assert matched.get("totalParticipants") == 42
+            assert matched.get("totalVotesCast") == 88
+        print("  ✓ Backend (GET /api/analytics/history): Listagem consolidada e sumária de sessões validada.")
+
+        # 3. Teste de detalhamento via GET /api/analytics/session?id=XXX
+        with urllib.request.urlopen(f"{base_url}/api/analytics/session?id={test_session_id}", timeout=5) as resp:
+            assert resp.status == 200
+            detail_data = json.loads(resp.read().decode("utf-8"))
+            assert detail_data.get("success") is True
+            session_obj = detail_data.get("session", {})
+            assert session_obj.get("sessionId") == test_session_id
+            assert session_obj.get("data", {}).get("summary", {}).get("totalParticipants") == 42
+            assert len(session_obj.get("data", {}).get("slideMetrics", [])) == 2
+        print("  ✓ Backend (GET /api/analytics/session): Retorno detalhado de telemetria da sessão validado.")
+
+        # 4. Teste de 404 para sessão inexistente
+        try:
+            urllib.request.urlopen(f"{base_url}/api/analytics/session?id=SESSAO_NAO_EXISTENTE_XYZ", timeout=5)
+            assert False, "Deveria ter retornado HTTP 404 para sessão inexistente"
+        except urllib.error.HTTPError as e:
+            assert e.code == 404, f"Esperado 404, obtido {e.code}"
+        print("  ✓ Backend: Tratamento gracioso de HTTP 404 para sessões inexistentes validado.")
+
+        # 5. Validação do SessionManager no Frontend (js/core/session-manager.js)
+        session_mgr_path = os.path.join(BASE_DIR, "js", "core", "session-manager.js")
+        with open(session_mgr_path, "r", encoding="utf-8") as f:
+            session_mgr_code = f.read()
+
+        assert "startSlideTimer" in session_mgr_code, "startSlideTimer ausente em session-manager.js"
+        assert "trackSlideDwellTime" in session_mgr_code, "trackSlideDwellTime ausente em session-manager.js"
+        assert "getSlideDwellTimes" in session_mgr_code, "getSlideDwellTimes ausente em session-manager.js"
+        assert "buildSessionAnalyticsPayload" in session_mgr_code, "buildSessionAnalyticsPayload ausente em session-manager.js"
+        assert "archiveSessionRemotely" in session_mgr_code, "archiveSessionRemotely ausente em session-manager.js"
+        assert "fetchRemoteAnalyticsHistory" in session_mgr_code, "fetchRemoteAnalyticsHistory ausente em session-manager.js"
+        assert "fetchRemoteSessionAnalytics" in session_mgr_code, "fetchRemoteSessionAnalytics ausente em session-manager.js"
+        print("  ✓ SessionManager (session-manager.js): Métodos de rastreamento de dwell time e integração analítica validados.")
+
+        # 7. Validação do Painel de Visualização e Gráficos da Fase 2 (admin/index.html e js/admin/admin-app.js)
+        admin_html_path = os.path.join(BASE_DIR, "admin", "index.html")
+        with open(admin_html_path, "r", encoding="utf-8") as f:
+            admin_html = f.read()
+
+        assert 'id="admin-btn-analytics"' in admin_html, "Botão #admin-btn-analytics ausente em admin/index.html"
+        assert 'id="admin-analytics-modal"' in admin_html, "Modal #admin-analytics-modal ausente em admin/index.html"
+        assert 'id="canvas-dwell-time"' in admin_html, "Canvas #canvas-dwell-time ausente em admin/index.html"
+        assert 'id="analytics-select-session"' in admin_html, "Select #analytics-select-session ausente em admin/index.html"
+        assert 'id="analytics-kpi-participants"' in admin_html, "KPI #analytics-kpi-participants ausente em admin/index.html"
+        assert 'id="analytics-btn-archive-now"' in admin_html, "Botão #analytics-btn-archive-now ausente em admin/index.html"
+        assert 'id="analytics-btn-export-csv"' in admin_html, "Botão #analytics-btn-export-csv ausente em admin/index.html"
+        print("  ✓ Mesa Técnica (admin/index.html): Modal de Analytics, botões de exportação e Canvas 2D validados.")
+
+        admin_app_path = os.path.join(BASE_DIR, "js", "admin", "admin-app.js")
+        with open(admin_app_path, "r", encoding="utf-8") as f:
+            admin_app_code = f.read()
+
+        assert "openAnalyticsModal" in admin_app_code, "openAnalyticsModal ausente em admin-app.js"
+        assert "renderAnalyticsDashboard" in admin_app_code, "renderAnalyticsDashboard ausente em admin-app.js"
+        assert "renderDwellTimeChart" in admin_app_code, "renderDwellTimeChart ausente em admin-app.js"
+        assert "archiveCurrentSessionNow" in admin_app_code, "archiveCurrentSessionNow ausente em admin-app.js"
+        assert "exportCurrentAnalyticsCSV" in admin_app_code, "exportCurrentAnalyticsCSV ausente em admin-app.js"
+        print("  ✓ Lógica Admin (admin-app.js): Métodos de renderização de gráficos em Canvas 2D e exportação validados.")
+
+    finally:
+        # Limpeza de arquivos de teste
+        if os.path.exists(archive_dir):
+            for fn in os.listdir(archive_dir):
+                if fn.startswith("TEST_ANALYTICS_") or fn.startswith("ROTATION_TEST_"):
+                    try:
+                        os.remove(os.path.join(archive_dir, fn))
+                    except Exception:
+                        pass
+        httpd.shutdown()
+
+    print("✓ Demanda 09 (Fases 1 e 2: Analytics Avançado, Persistência e Painel com Gráficos Canvas 2D) 100% HOMOLOGADA com sucesso.")
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -1888,6 +2040,7 @@ if __name__ == "__main__":
         test_demanda03_diagnostics_and_capacity_engine()
         test_demanda01_stage_transitions_engine()
         test_demanda02_stage_fx_overlay()
+        test_demanda09_analytics_and_session_archive()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

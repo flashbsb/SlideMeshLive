@@ -58,6 +58,10 @@
         🌙 Tema
       </button>
 
+      <button class="btn btn-sm" id="admin-btn-analytics" style="border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;" title="Ver Dashboard de Analytics e Gráficos de Sessões" data-i18n="admin.btn_analytics">
+        📊 Analytics
+      </button>
+
       <button class="btn btn-sm" id="admin-btn-history" style="border-color: rgba(129, 140, 248, 0.4); color: #c7d2fe;" title="Ver histórico de apresentações anteriores" data-i18n="admin.btn_history">
         📚 Histórico
       </button>
@@ -323,6 +327,107 @@
         </button>
         <button class="btn btn-sm btn-primary" id="btn-save-host-config" style="font-size: 12px; padding: 8px 16px;" data-i18n="host_modal.btn_save">
           💾 Aplicar Novo Endereço
+  <!-- Modal de Analytics Avançado & Histórico (Plano 09 - Fase 2) -->
+  <div class="modal-overlay" id="admin-analytics-modal" style="backdrop-filter: blur(16px);">
+    <div class="modal-container" style="max-width: 920px; width: 95vw; max-height: 90vh; display: flex; flex-direction: column;">
+      <button class="modal-close-btn" id="btn-close-analytics-modal">&times;</button>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+        <div>
+          <h3 style="font-size: 18px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+            <span>📊</span> <span data-i18n="admin.analytics_title">Analytics Avançado & Histórico de Sessões</span>
+          </h3>
+          <p style="font-size: 12px; color: #94a3b8; margin: 0;" data-i18n="admin.analytics_desc">
+            Auditoria completa de retenção, tempo por slide, votos de enquetes e perguntas.
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <select id="analytics-select-session" style="background: rgba(15,23,42,0.9); border: 1px solid var(--border-medium); color: #ffffff; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
+            <option value="LIVE" data-i18n="admin.analytics_live_option">⚡ Sessão Ao Vivo Atual</option>
+            <!-- Preenchido dinamicamente via /api/analytics/history -->
+          </select>
+
+          <button class="btn btn-sm" id="analytics-btn-archive-now" style="border-color: rgba(56,189,248,0.4); color: #38bdf8; font-size: 11.5px;" title="Arquivar dados da sessão ativa no servidor" data-i18n="admin.analytics_archive_btn">
+            💾 Arquivar Agora
+          </button>
+
+          <button class="btn btn-sm" id="analytics-btn-refresh" style="font-size: 11.5px;" title="Atualizar dados analíticos" data-i18n="admin.analytics_refresh_btn">
+            🔄 Atualizar
+          </button>
+        </div>
+      </div>
+
+      <div style="overflow-y: auto; flex: 1; padding-right: 4px; display: flex; flex-direction: column; gap: 16px;">
+        <!-- KPI Cards Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+          <div class="stat-box" style="padding: 12px; flex-direction: column; align-items: flex-start; gap: 4px;">
+            <span class="stat-label" style="font-size: 11px;">👥 Participantes Únicos</span>
+            <span class="stat-value" id="analytics-kpi-participants" style="font-size: 22px;">0</span>
+          </div>
+          <div class="stat-box" style="padding: 12px; flex-direction: column; align-items: flex-start; gap: 4px;">
+            <span class="stat-label" style="font-size: 11px;">⏱️ Duração da Sessão</span>
+            <span class="stat-value" id="analytics-kpi-duration" style="font-size: 18px; color: #a78bfa;">0m 0s</span>
+          </div>
+          <div class="stat-box" style="padding: 12px; flex-direction: column; align-items: flex-start; gap: 4px;">
+            <span class="stat-label" style="font-size: 11px;">🗳️ Total de Votos</span>
+            <span class="stat-value" id="analytics-kpi-votes" style="font-size: 22px; color: #34d399;">0</span>
+          </div>
+          <div class="stat-box" style="padding: 12px; flex-direction: column; align-items: flex-start; gap: 4px;">
+            <span class="stat-label" style="font-size: 11px;">💬 Dúvidas Aprovadas</span>
+            <span class="stat-value" id="analytics-kpi-questions" style="font-size: 22px; color: #f472b6;">0</span>
+          </div>
+        </div>
+
+        <!-- Seção 1: Tempo por Slide (Canvas 2D Bar Chart) -->
+        <div style="background: rgba(15,23,42,0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 12px; font-weight: 700; color: #ffffff;" data-i18n="admin.analytics_dwell_title">
+              ⏱️ Tempo de Permanência por Slide (Dwell Time em Segundos)
+            </span>
+            <span style="font-size: 10.5px; color: var(--text-muted);" id="analytics-dwell-hint">
+              Identifica onde o público passou mais tempo
+            </span>
+          </div>
+          <canvas id="canvas-dwell-time" width="800" height="180" style="width: 100%; height: 180px; background: rgba(10,15,29,0.9); border-radius: 6px; border: 1px solid var(--border-subtle);"></canvas>
+        </div>
+
+        <!-- Seção 2: Grid 2 Colunas (Enquetes & Top Perguntas) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <!-- Enquetes -->
+          <div style="background: rgba(15,23,42,0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 14px; display: flex; flex-direction: column;">
+            <div style="font-size: 12px; font-weight: 700; color: #ffffff; margin-bottom: 10px;" data-i18n="admin.analytics_polls_title">
+              📊 Distribuição de Votos por Enquete
+            </div>
+            <div id="analytics-polls-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto;">
+              <!-- Preenchido dinamicamente -->
+            </div>
+          </div>
+
+          <!-- Top Perguntas -->
+          <div style="background: rgba(15,23,42,0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 14px; display: flex; flex-direction: column;">
+            <div style="font-size: 12px; font-weight: 700; color: #ffffff; margin-bottom: 10px;" data-i18n="admin.analytics_questions_title">
+              👍 Ranking de Dúvidas Mais Votadas (Upvotes)
+            </div>
+            <div id="analytics-questions-container" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+              <!-- Preenchido dinamicamente -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer de Exportação e Fechar -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: 12px;">
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-sm" id="analytics-btn-export-csv" style="font-size: 12px;" data-i18n="admin.analytics_export_csv">
+            📊 Baixar CSV
+          </button>
+          <button class="btn btn-sm" id="analytics-btn-export-json" style="font-size: 12px;" data-i18n="admin.analytics_export_json">
+            📥 Baixar JSON
+          </button>
+        </div>
+        <button class="btn btn-sm btn-primary" id="btn-done-analytics" style="font-size: 12px;" data-i18n="app.close">
+          Fechar
         </button>
       </div>
     </div>

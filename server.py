@@ -42,11 +42,108 @@ MAX_IMPORT_PAYLOAD_BYTES = 50 * 1024 * 1024  # 50 MB
 MAX_SYNC_PAYLOAD_BYTES = 5 * 1024 * 1024     # 5 MB
 ALLOWED_ASSET_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'}
 
+# Diretório e Limites de Histórico Analítico (Plano 09 - Fase 1)
+SESSIONS_ARCHIVE_DIR = os.path.join(BASE_DIR, "sessions_archive")
+MAX_ARCHIVED_SESSIONS = 50
+
 SERVER_START_TIME = time.time()
 
 # Gerenciador de Subscrições SSE por Sessão
 SSE_SUBSCRIBERS = {}  # session_id -> Set[queue.Queue]
 _SSE_LOCK = threading.Lock()
+
+def save_session_analytics_archive(session_id, payload, base_dir=BASE_DIR):
+    """
+    Grava de forma atômica o relatório analítico da sessão em sessions_archive/{sessionId}_analytics.json
+    e executa rotação automática para manter as MAX_ARCHIVED_SESSIONS mais recentes.
+    """
+    archive_dir = os.path.join(base_dir, "sessions_archive")
+    os.makedirs(archive_dir, exist_ok=True)
+
+    clean_id = re.sub(r'[^A-Za-z0-9_-]', '_', str(session_id).strip().upper())
+    if not clean_id:
+        clean_id = "SESSION_" + str(int(time.time()))
+
+    filename = f"{clean_id}_analytics.json"
+    filepath = os.path.join(archive_dir, filename)
+    tmp_path = filepath + ".tmp"
+
+    record = {
+        "sessionId": clean_id,
+        "savedAt": int(time.time() * 1000),
+        "data": payload
+    }
+
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(record, f, ensure_ascii=False, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp_path, filepath)
+
+    # Rotação automática (manter até MAX_ARCHIVED_SESSIONS mais recentes)
+    try:
+        files = [os.path.join(archive_dir, fn) for fn in os.listdir(archive_dir) if fn.endswith("_analytics.json")]
+        if len(files) > MAX_ARCHIVED_SESSIONS:
+            files.sort(key=lambda x: os.path.getmtime(x))
+            for old_f in files[:-MAX_ARCHIVED_SESSIONS]:
+                try:
+                    os.remove(old_f)
+                except OSError:
+                    pass
+    except Exception:
+        pass
+
+    return record
+
+def list_sessions_analytics_archive(base_dir=BASE_DIR):
+    """
+    Lista sumária das sessões arquivadas ordenadas da mais recente para a mais antiga.
+    """
+    archive_dir = os.path.join(base_dir, "sessions_archive")
+    if not os.path.exists(archive_dir):
+        return []
+
+    results = []
+    for fn in os.listdir(archive_dir):
+        if fn.endswith("_analytics.json"):
+            fp = os.path.join(archive_dir, fn)
+            try:
+                with open(fp, "r", encoding="utf-8") as f:
+                    entry = json.load(f)
+                sid = entry.get("sessionId", fn.replace("_analytics.json", ""))
+                d = entry.get("data", {})
+                summary = d.get("summary", {})
+                results.append({
+                    "sessionId": sid,
+                    "savedAt": entry.get("savedAt", int(os.path.getmtime(fp) * 1000)),
+                    "presentationSlug": d.get("presentationSlug", "slidemesh-showcase"),
+                    "durationSeconds": d.get("durationSeconds", 0),
+                    "totalParticipants": summary.get("totalParticipants", 0),
+                    "totalVotesCast": summary.get("totalVotesCast", 0),
+                    "totalQuestions": summary.get("totalQuestionsSent", 0) or len(d.get("topQuestions", []))
+                })
+            except Exception:
+                continue
+
+    results.sort(key=lambda x: x.get("savedAt", 0), reverse=True)
+    return results
+
+def get_session_analytics_archive(session_id, base_dir=BASE_DIR):
+    """
+    Retorna o relatório analítico detalhado da sessão solicitada.
+    """
+    archive_dir = os.path.join(base_dir, "sessions_archive")
+    clean_id = re.sub(r'[^A-Za-z0-9_-]', '_', str(session_id).strip().upper())
+    filepath = os.path.join(archive_dir, f"{clean_id}_analytics.json")
+
+    if not os.path.exists(filepath):
+        return None
+
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
 
 def get_server_memory_usage_mb():
     """
@@ -642,6 +739,36 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(diag_payload, ensure_ascii=False, indent=2).encode('utf-8'))
             return
 
+        # Endpoints de Analytics e Histórico de Sessões (Plano 09 - Fase 1)
+        if parsed.path == '/api/analytics/history':
+            history = list_sessions_analytics_archive()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Cache-Control', 'no-cache')
+            self.end_headers()
+            self.wfile.write(json.dumps({"success": True, "sessions": history}, ensure_ascii=False).encode('utf-8'))
+            return
+
+        if parsed.path == '/api/analytics/session':
+            qs = parse_qs(parsed.query)
+            session_id = qs.get('id', [''])[0].strip()
+            record = get_session_analytics_archive(session_id)
+            if record:
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Cache-Control', 'no-cache')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True, "session": record}, ensure_ascii=False).encode('utf-8'))
+            else:
+                self.send_response(404)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": f"Sessão analítica '{session_id}' não encontrada."}).encode('utf-8'))
+            return
+
         # Servidor de arquivos estáticos padrão
         super().do_GET()
 
@@ -763,6 +890,9 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                                 session_data["votes"] = {}
                         elif msg_type == 'RESET_ALL_POLLS':
                             session_data["votes"] = {}
+                        elif msg_type == 'ARCHIVE_SESSION':
+                            analytics_data = payload.get('analytics', payload)
+                            save_session_analytics_archive(session_id, analytics_data)
                         elif msg_type == 'USER_BLOCKED_STATUS':
                             pass
 
@@ -842,6 +972,36 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
             except Exception as err:
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": str(err)}).encode('utf-8'))
+                return
+
+        elif parsed.path == '/api/analytics/archive':
+            if content_length > MAX_SYNC_PAYLOAD_BYTES:
+                self.send_response(413)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": "Payload de analytics excede o limite máximo permitido de 5MB."}).encode('utf-8'))
+                return
+
+            body = self.rfile.read(content_length).decode('utf-8')
+            try:
+                data = json.loads(body)
+                sid = data.get('sessionId', '').strip().upper() or data.get('id', '').strip().upper()
+                if not sid:
+                    sid = "SESSION_" + str(int(time.time()))
+                payload = data.get('payload', data)
+                saved_record = save_session_analytics_archive(sid, payload)
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True, "sessionId": sid, "savedAt": saved_record.get("savedAt")}).encode('utf-8'))
+                return
+            except Exception as err:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({"success": False, "error": str(err)}).encode('utf-8'))
                 return

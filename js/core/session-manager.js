@@ -13,6 +13,54 @@
 export class SessionManager {
   constructor() {
     this.historyKey = 'presentation_sessions_history';
+    this.currentSlideIndex = 0;
+    this.slideStartTime = Date.now();
+    this.slideDwellTimes = {};
+  }
+
+  /**
+   * Inicia o temporizador do slide ativo
+   */
+  startSlideTimer(slideIndex = 0) {
+    this.currentSlideIndex = slideIndex;
+    this.slideStartTime = Date.now();
+    if (!this.slideDwellTimes[slideIndex]) {
+      this.slideDwellTimes[slideIndex] = 0;
+    }
+  }
+
+  /**
+   * Registra a transição de slide acumulando o tempo gasto no slide anterior
+   */
+  trackSlideDwellTime(nextSlideIndex) {
+    const now = Date.now();
+    const elapsedSec = (now - this.slideStartTime) / 1000;
+    if (!this.slideDwellTimes[this.currentSlideIndex]) {
+      this.slideDwellTimes[this.currentSlideIndex] = 0;
+    }
+    this.slideDwellTimes[this.currentSlideIndex] += elapsedSec;
+    this.currentSlideIndex = nextSlideIndex;
+    this.slideStartTime = now;
+  }
+
+  /**
+   * Retorna os tempos acumulados por slide em segundos
+   */
+  getSlideDwellTimes() {
+    const now = Date.now();
+    const elapsedSec = (now - this.slideStartTime) / 1000;
+    const copy = { ...this.slideDwellTimes };
+    copy[this.currentSlideIndex] = (copy[this.currentSlideIndex] || 0) + elapsedSec;
+    return copy;
+  }
+
+  /**
+   * Reinicia os temporizadores de slide
+   */
+  resetSlideTimers(initialSlideIndex = 0) {
+    this.currentSlideIndex = initialSlideIndex;
+    this.slideStartTime = Date.now();
+    this.slideDwellTimes = { [initialSlideIndex]: 0 };
   }
 
   /**
@@ -757,5 +805,132 @@ export class SessionManager {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+
+  /**
+   * Constrói o payload analítico consolidado da sessão
+   */
+  buildSessionAnalyticsPayload(sessionId, sessionData = {}, manifest = null, slidesData = null) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const state = sessionData.state || {};
+    const questions = sessionData.questions || [];
+    const votes = sessionData.votes || {};
+    const presence = sessionData.presence || {};
+    const dwellTimes = this.getSlideDwellTimes();
+
+    const presSlug = (manifest && manifest.id) || state.presentationId || 'slidemesh-showcase';
+    const presTitle = (manifest && manifest.title) || 'Apresentação';
+
+    // Total de participantes
+    const totalParticipants = Object.keys(presence).length || sessionData.presenceCount || 0;
+    
+    // Contagem de votos
+    let totalVotesCast = 0;
+    const pollBreakdown = [];
+    for (const [pollId, vList] of Object.entries(votes)) {
+      const vCount = Array.isArray(vList) ? vList.length : 0;
+      totalVotesCast += vCount;
+      pollBreakdown.push({
+        pollId,
+        totalVotes: vCount,
+        votes: vList
+      });
+    }
+
+    // Contagem de perguntas e upvotes
+    const totalQuestions = questions.length;
+    const approvedQuestions = questions.filter(q => q.status === 'approved' || q.status === 'featured' || q.status === 'answered');
+    const totalUpvotes = questions.reduce((acc, q) => acc + (q.upvotes || 0), 0);
+
+    // Mapeamento de slides
+    const slideMetrics = [];
+    const slides = Array.isArray(slidesData) ? slidesData : [];
+    slides.forEach((s, idx) => {
+      slideMetrics.push({
+        slideIndex: idx,
+        slideId: s.id || (idx + 1),
+        title: s.title || `Slide ${idx + 1}`,
+        type: s.type || 'standard',
+        dwellTimeSeconds: Math.round(dwellTimes[idx] || 0)
+      });
+    });
+
+    const startTime = sessionData.startTime || (Date.now() - 3600000);
+    const endTime = Date.now();
+    const durationSeconds = Math.max(1, Math.round((endTime - startTime) / 1000));
+
+    return {
+      sessionId: normSessionId,
+      presentationSlug: presSlug,
+      presentationTitle: presTitle,
+      startTime,
+      endTime,
+      durationSeconds,
+      summary: {
+        totalParticipants,
+        totalVotesCast,
+        totalQuestionsSent: totalQuestions,
+        totalQuestionsApproved: approvedQuestions.length,
+        totalUpvotes
+      },
+      slideMetrics,
+      pollBreakdown,
+      topQuestions: approvedQuestions.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0)).slice(0, 20)
+    };
+  }
+
+  /**
+   * Envia o payload de analytics para o endpoint /api/analytics/archive no servidor
+   */
+  async archiveSessionRemotely(analyticsPayload) {
+    try {
+      const res = await fetch('/api/analytics/archive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(analyticsPayload)
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      return { success: false, status: res.status };
+    } catch (e) {
+      console.warn('Erro ao arquivar sessão remotamente:', e);
+      return { success: false, error: e.message };
+    }
+  }
+
+  /**
+   * Busca a lista de sessões arquivadas no servidor
+   */
+  async fetchRemoteAnalyticsHistory() {
+    try {
+      const res = await fetch('/api/analytics/history');
+      if (res.ok) {
+        const data = await res.json();
+        return data.sessions || [];
+      }
+      return [];
+    } catch (e) {
+      console.warn('Erro ao buscar histórico remoto de analytics:', e);
+      return [];
+    }
+  }
+
+  /**
+   * Busca os detalhes de uma sessão analítica específica no servidor
+   */
+  async fetchRemoteSessionAnalytics(sessionId) {
+    try {
+      const normId = encodeURIComponent((sessionId || '').trim().toUpperCase());
+      const res = await fetch(`/api/analytics/session?id=${normId}`);
+      if (res.ok) {
+        const data = await res.json();
+        return data.session || null;
+      }
+      return null;
+    } catch (e) {
+      console.warn('Erro ao buscar detalhes da sessão analítica:', e);
+      return null;
+    }
   }
 }
