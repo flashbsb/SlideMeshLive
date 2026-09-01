@@ -474,6 +474,30 @@ export class RealtimeEngine {
     this.sendLocalServerEvent('REACTION_SENT', normSessionId, { emoji: emoji });
   }
 
+  async triggerStageFX(sessionId, fxType, options = {}) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const payload = {
+      fx: fxType,
+      options: options,
+      timestamp: Date.now()
+    };
+    if (this.channel) {
+      try {
+        this.channel.postMessage({
+          type: 'TRIGGER_STAGE_FX',
+          sessionId: normSessionId,
+          payload: payload
+        });
+      } catch (e) {}
+    }
+    this._dispatchLocalEvent({
+      type: 'TRIGGER_STAGE_FX',
+      sessionId: normSessionId,
+      payload: payload
+    });
+    return this.sendLocalServerEvent('TRIGGER_STAGE_FX', normSessionId, payload);
+  }
+
   sendVote(sessionId, pollId, optionId, uid) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
     const payload = { pollId, optionId, uid, timestamp: Date.now() };

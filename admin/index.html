@@ -159,6 +159,34 @@
           </div>
         </div>
 
+        <!-- Painel de Efeitos Visuais no Telão (Demanda 02 - Fase 2) -->
+        <div id="admin-stage-fx-card" style="background: rgba(15, 23, 42, 0.4); padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11px; font-weight: 700; color: #ec4899; display: flex; align-items: center; gap: 4px;" data-i18n="admin.stage_fx_title">
+              ✨ Efeitos Visuais no Telão
+            </span>
+            <span class="badge" id="admin-fx-cooldown-badge" style="font-size: 9.5px; background: rgba(236,72,153,0.15); color: #f472b6;" data-i18n="admin.fx_ready">Pronto</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <button class="btn btn-sm btn-stage-fx" data-fx="confetti" style="font-size: 11px; padding: 6px; border-color: rgba(56,189,248,0.3); color: #38bdf8; background: rgba(56,189,248,0.06);" title="Chuva de confetes coloridos" data-i18n="admin.fx_confetti">
+              🎉 Confetes
+            </button>
+            <button class="btn btn-sm btn-stage-fx" data-fx="impact_shake" style="font-size: 11px; padding: 6px; border-color: rgba(239,68,68,0.3); color: #f87171; background: rgba(239,68,68,0.06);" title="Tremor de tela e onda de choque" data-i18n="admin.fx_shake">
+              💥 Impacto
+            </button>
+            <button class="btn btn-sm btn-stage-fx" data-fx="spotlight" style="font-size: 11px; padding: 6px; border-color: rgba(245,158,11,0.3); color: #fbbf24; background: rgba(245,158,11,0.06);" title="Holofote de atenção no slide" data-i18n="admin.fx_spotlight">
+              🔦 Holofote
+            </button>
+            <button class="btn btn-sm btn-stage-fx" data-fx="countdown_burst" style="font-size: 11px; padding: 6px; border-color: rgba(168,85,247,0.3); color: #c084fc; background: rgba(168,85,247,0.06);" title="Contagem 3-2-1 gigante" data-i18n="admin.fx_countdown">
+              ⏱️ Contagem
+            </button>
+          </div>
+          <button class="btn btn-sm btn-stage-fx" data-fx="glitch_flash" style="width: 100%; font-size: 11px; padding: 5px; border-color: rgba(236,72,153,0.3); color: #f472b6; background: rgba(236,72,153,0.06);" title="Flash de energia e faíscas" data-i18n="admin.fx_glitch">
+            ⚡ Flash de Energia
+          </button>
+        </div>
+
         <!-- Lista de Participantes Conectados ao Vivo com Banimento -->
         <div style="border-top: 1px solid var(--border-subtle); padding-top: 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">

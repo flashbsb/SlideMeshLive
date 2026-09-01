@@ -1727,6 +1727,93 @@ def test_demanda01_stage_transitions_engine():
 
     print("✓ Demanda 01 (Fases 1, 2 e 3: Transições Cinematográficas no Telão) 100% HOMOLOGADAS com sucesso.")
 
+def test_demanda02_stage_fx_overlay():
+    print_section("19. Demanda 02: Efeitos Visuais Dinâmicos do Moderador (Fase 1)")
+
+    # 1. Validação do Módulo StageFX (stage-fx.js)
+    stage_fx_path = os.path.join(BASE_DIR, "js", "presenter", "stage-fx.js")
+    assert os.path.exists(stage_fx_path), "Arquivo stage-fx.js não encontrado em js/presenter/"
+    with open(stage_fx_path, "r", encoding="utf-8") as f:
+        fx_code = f.read()
+
+    assert "class StageFX" in fx_code, "Classe StageFX ausente em stage-fx.js"
+    assert "_initConfetti" in fx_code, "Método _initConfetti ausente em stage-fx.js"
+    assert "_initImpactShake" in fx_code, "Método _initImpactShake ausente em stage-fx.js"
+    assert "_initSpotlight" in fx_code, "Método _initSpotlight ausente em stage-fx.js"
+    assert "_initCountdown" in fx_code, "Método _initCountdown ausente em stage-fx.js"
+    assert "_initGlitchFlash" in fx_code, "Método _initGlitchFlash ausente em stage-fx.js"
+    assert "requestAnimationFrame" in fx_code, "Loop de alta performance ausente em stage-fx.js"
+    print("  ✓ StageFX Engine (stage-fx.js): 5 presets de efeitos (confetti, shockwave, spotlight, countdown, glitch) e auto-cleanup validados.")
+
+    # 2. Validação da Camada Canvas no HTML do Telão (presenter/index.html)
+    presenter_html_path = os.path.join(BASE_DIR, "presenter", "index.html")
+    with open(presenter_html_path, "r", encoding="utf-8") as f:
+        presenter_html = f.read()
+
+    assert "stage-fx-canvas" in presenter_html, "Elemento #stage-fx-canvas ausente em presenter/index.html"
+    assert "pointer-events: none" in presenter_html, "Canvas deve possuir pointer-events: none para não interceptar cliques"
+    assert "z-index: 9999" in presenter_html, "Canvas deve possuir z-index superior para flutuar sobre os slides"
+    print("  ✓ Telão HTML (presenter/index.html): Overlay #stage-fx-canvas não-destrutivo integrado.")
+
+    # 3. Validação do PresenterApp (presenter-app.js)
+    presenter_js_path = os.path.join(BASE_DIR, "js", "presenter", "presenter-app.js")
+    with open(presenter_js_path, "r", encoding="utf-8") as f:
+        presenter_code = f.read()
+
+    assert "import { StageFX }" in presenter_code, "Importação de StageFX ausente em presenter-app.js"
+    assert "this.stageFX = new StageFX();" in presenter_code, "Instanciação de StageFX ausente em presenter-app.js"
+    assert "TRIGGER_STAGE_FX" in presenter_code, "Escuta de evento TRIGGER_STAGE_FX ausente em presenter-app.js"
+    print("  ✓ Telão Controller (presenter-app.js): Integração de eventos em tempo real com StageFX validada.")
+
+    # 4. Validação do RealtimeEngine (realtime-engine.js)
+    realtime_path = os.path.join(BASE_DIR, "js", "core", "realtime-engine.js")
+    with open(realtime_path, "r", encoding="utf-8") as f:
+        realtime_code = f.read()
+
+    assert "triggerStageFX" in realtime_code, "Método triggerStageFX ausente em realtime-engine.js"
+    print("  ✓ RealtimeEngine (realtime-engine.js): Despachante multicanal de TRIGGER_STAGE_FX validado.")
+
+    # 5. Validação de Envio e Broadcasting no Servidor Local (server.py)
+    port = 9887
+    server.PERSIST_ENABLED = False
+    server.RATE_LIMIT_ENABLED = False
+    httpd = server.ThreadingHTTPServer(("127.0.0.1", port), server.LiveSyncHTTPRequestHandler)
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    server_thread.start()
+
+    try:
+        url = f"http://127.0.0.1:{port}/api/sync"
+        fx_payload = {
+            "type": "TRIGGER_STAGE_FX",
+            "sessionId": "FX_TEST_SESSION",
+            "payload": {
+                "fx": "confetti",
+                "options": {"duration": 2500},
+                "timestamp": int(time.time() * 1000)
+            }
+        }
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(fx_payload).encode('utf-8'),
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=3) as res:
+            assert res.status == 200
+            resp_data = json.loads(res.read().decode('utf-8'))
+            assert resp_data["success"] is True
+
+        # Consulta sincronização da sessão
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/sync?session=FX_TEST_SESSION", timeout=3) as res:
+            sync_data = json.loads(res.read().decode('utf-8'))
+            events = sync_data.get("events", [])
+            assert any(e.get("type") == "TRIGGER_STAGE_FX" for e in events), "Evento TRIGGER_STAGE_FX não registrado na sessão"
+            print("  ✓ Backend Server (server.py): Processamento e propagação de TRIGGER_STAGE_FX validados.")
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+    print("✓ Demanda 02 (Fase 1: Módulo de Efeitos Canvas no Palco) 100% HOMOLOGADA com sucesso.")
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -1747,6 +1834,7 @@ if __name__ == "__main__":
         test_audience_pacing_lock_and_controlled_navigation()
         test_demanda03_diagnostics_and_capacity_engine()
         test_demanda01_stage_transitions_engine()
+        test_demanda02_stage_fx_overlay()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

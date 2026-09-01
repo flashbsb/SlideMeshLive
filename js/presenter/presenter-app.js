@@ -14,6 +14,7 @@ import { ModerationEngine } from '../core/moderation-engine.js';
 import { SessionManager } from '../core/session-manager.js';
 import { i18n } from '../core/i18n-engine.js';
 import { theme, THEMES } from '../core/theme-engine.js';
+import { StageFX } from './stage-fx.js';
 
 class PresenterApp {
   constructor() {
@@ -23,6 +24,7 @@ class PresenterApp {
     this.interaction = new InteractionEngine(this.realtime, this.auth);
     this.moderation = new ModerationEngine(this.realtime, this.auth);
     this.sessionManager = new SessionManager();
+    this.stageFX = new StageFX();
     
     this.presentationId = PresentationEngine.getPresentationIdFromURL();
     this.sessionId = PresentationEngine.getSessionIdFromURL() || QREngine.generateSessionCode();
@@ -151,6 +153,9 @@ class PresenterApp {
             QREngine.resetCustomHost(this.sessionId);
           }
           this.setupQRCodes();
+        } else if (type === 'TRIGGER_STAGE_FX') {
+          const fxType = payload.fx || 'confetti';
+          this.stageFX.play(fxType, payload.options || {});
         } else if (type === 'SWITCH_ACTIVE_PRESENTATION') {
           const newPid = payload.presentationId || event.presentationId;
           if (newPid && newPid !== this.presentationId) {

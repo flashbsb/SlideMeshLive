@@ -173,6 +173,14 @@ export const TRANSLATIONS = {
     'admin.diag_latency_label': 'Latência Local:',
     'admin.diag_deck_weight_label': 'Peso Total do Deck:',
     'admin.diag_server_mem_label': 'Memória / Uptime:',
+    'admin.stage_fx_title': '✨ Efeitos Visuais no Telão',
+    'admin.fx_confetti': '🎉 Confetes',
+    'admin.fx_shake': '💥 Impacto',
+    'admin.fx_spotlight': '🔦 Holofote',
+    'admin.fx_countdown': '⏱️ Contagem',
+    'admin.fx_glitch': '⚡ Flash de Energia',
+    'admin.fx_ready': 'Pronto',
+    'admin.fx_cooldown': '⏳ Aguarde {seconds}s',
 
     // Modal Host QR Code
     'host_modal.title': '🌐 Configurar Endereço do QR Code',
@@ -415,6 +423,14 @@ export const TRANSLATIONS = {
     'admin.diag_latency_label': 'Local Latency:',
     'admin.diag_deck_weight_label': 'Total Deck Weight:',
     'admin.diag_server_mem_label': 'Memory / Uptime:',
+    'admin.stage_fx_title': '✨ Stage Visual FX',
+    'admin.fx_confetti': '🎉 Confetti',
+    'admin.fx_shake': '💥 Impact Shock',
+    'admin.fx_spotlight': '🔦 Spotlight',
+    'admin.fx_countdown': '⏱️ Countdown',
+    'admin.fx_glitch': '⚡ Energy Flash',
+    'admin.fx_ready': 'Ready',
+    'admin.fx_cooldown': '⏳ Wait {seconds}s',
 
     // QR Host Modal
     'host_modal.title': '🌐 Configure QR Code Host / IP',
