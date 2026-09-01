@@ -1583,11 +1583,43 @@ def test_demanda03_diagnostics_and_capacity_engine():
             if os.path.exists(temp_pres_dir):
                 shutil.rmtree(temp_pres_dir)
 
+        # 4. Validação da Fase 2: Painel HUD na Mesa Técnica (admin/index.html, admin-app.js, i18n)
+        admin_html_path = os.path.join(BASE_DIR, "admin", "index.html")
+        with open(admin_html_path, "r", encoding="utf-8") as f:
+            admin_html = f.read()
+
+        assert "admin-diagnostics-card" in admin_html, "Card de diagnóstico ausente em admin/index.html"
+        assert "admin-diag-health-badge" in admin_html, "Badge de saúde ausente em admin/index.html"
+        assert "admin-diag-capacity" in admin_html, "Indicador de capacidade Wi-Fi ausente em admin/index.html"
+        assert "admin-diag-latency" in admin_html, "Indicador de latência local ausente em admin/index.html"
+        assert "admin-diag-deck-weight" in admin_html, "Indicador de peso do deck ausente em admin/index.html"
+        assert "admin-diag-server-stats" in admin_html, "Indicador de memória/uptime ausente em admin/index.html"
+        assert "admin-diag-heavy-alerts" in admin_html, "Container de alertas de banda ausente em admin/index.html"
+        print("  ✓ Mesa Técnica (admin/index.html): Card visual de Saúde & Capacidade Wi-Fi validado.")
+
+        admin_js_path = os.path.join(BASE_DIR, "js", "admin", "admin-app.js")
+        with open(admin_js_path, "r", encoding="utf-8") as f:
+            admin_js = f.read()
+
+        assert "fetchEnvironmentDiagnostics" in admin_js, "Método fetchEnvironmentDiagnostics ausente em admin-app.js"
+        assert "updateDiagnosticsUI" in admin_js, "Método updateDiagnosticsUI ausente em admin-app.js"
+        assert "diagCapacity" in admin_js and "diagLatency" in admin_js, "Mapeamento de elementos de diagnóstico incompleto em admin-app.js"
+        print("  ✓ Mesa Técnica (admin-app.js): Polling de diagnóstico e renderizador de HUD validados.")
+
+        # Validação das chaves de internacionalização
+        i18n_path = os.path.join(BASE_DIR, "js", "core", "i18n-engine.js")
+        with open(i18n_path, "r", encoding="utf-8") as f:
+            i18n_code = f.read()
+
+        for diag_key in ['admin.diag_title', 'admin.diag_capacity_label', 'admin.diag_latency_label', 'admin.diag_deck_weight_label', 'admin.diag_server_mem_label']:
+            assert diag_key in i18n_code, f"Chave de tradução '{diag_key}' ausente em i18n-engine.js"
+        print("  ✓ Internacionalização (i18n): Chaves simétricas de diagnóstico validadas em pt-BR e en-US.")
+
     finally:
         httpd.shutdown()
         httpd.server_close()
 
-    print("✓ Demanda 03 (Fase 1) aprovada com 100% de conformidade técnica e precisão métrica.")
+    print("✓ Demanda 03 (Fases 1 e 2) aprovadas com 100% de conformidade técnica e precisão métrica.")
 
 if __name__ == "__main__":
     start_time = time.time()

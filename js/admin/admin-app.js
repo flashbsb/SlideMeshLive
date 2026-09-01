@@ -42,6 +42,17 @@ class AdminApp {
       btnNext: document.getElementById('admin-btn-next'),
       selectPacing: document.getElementById('admin-select-pacing'),
       pacingBadge: document.getElementById('admin-pacing-badge'),
+      
+      // Diagnostics & Capacity HUD (Demanda 03 - Fase 2)
+      diagCard: document.getElementById('admin-diagnostics-card'),
+      diagHealthBadge: document.getElementById('admin-diag-health-badge'),
+      diagContent: document.getElementById('admin-diag-content'),
+      diagCapacity: document.getElementById('admin-diag-capacity'),
+      diagLatency: document.getElementById('admin-diag-latency'),
+      diagDeckWeight: document.getElementById('admin-diag-deck-weight'),
+      diagServerStats: document.getElementById('admin-diag-server-stats'),
+      diagHeavyAlerts: document.getElementById('admin-diag-heavy-alerts'),
+
       btnEndSession: document.getElementById('admin-btn-end-session'),
       btnPublishAnalytics: document.getElementById('admin-btn-publish-analytics'),
       qrBox: document.getElementById('admin-qr-box'),
@@ -164,6 +175,10 @@ class AdminApp {
       // Polling de presença
       this.updatePresenceMetrics();
       setInterval(() => this.updatePresenceMetrics(), 4000);
+
+      // Diagnóstico de Ambiente & Capacidade Wi-Fi (Demanda 03 - Fase 2)
+      this.fetchEnvironmentDiagnostics();
+      setInterval(() => this.fetchEnvironmentDiagnostics(), 10000);
 
       // Escuta unificada de eventos em tempo real
       this.realtime.onEvent((event) => {
@@ -336,6 +351,83 @@ class AdminApp {
         this.dom.pacingBadge.textContent = 'Trava Ativa';
         this.dom.pacingBadge.style.color = '#38bdf8';
         this.dom.pacingBadge.style.background = 'rgba(56, 189, 248, 0.15)';
+      }
+    }
+  }
+
+  async fetchEnvironmentDiagnostics() {
+    const t0 = performance.now();
+    try {
+      const res = await fetch(`/api/diagnostics?session=${encodeURIComponent(this.sessionId)}&presentation=${encodeURIComponent(this.presentationId)}`);
+      const latencyMs = Math.round(performance.now() - t0);
+      if (!res.ok) return;
+      const data = await res.json();
+      this.updateDiagnosticsUI(data, latencyMs);
+    } catch (e) {
+      // Ignora silenciosamente em caso de oscilação momentânea de rede
+    }
+  }
+
+  updateDiagnosticsUI(data, latencyMs) {
+    if (!data) return;
+    const sys = data.system || {};
+    const deck = data.deck || {};
+
+    if (this.dom.diagLatency) {
+      this.dom.diagLatency.textContent = `${latencyMs}ms`;
+      this.dom.diagLatency.style.color = latencyMs < 50 ? '#34d399' : latencyMs < 200 ? '#fcd34d' : '#f87171';
+    }
+
+    if (this.dom.diagCapacity) {
+      const cap = deck.recommendedMaxAudienceLocalWifi || 100;
+      this.dom.diagCapacity.textContent = `~${cap} celulares`;
+      this.dom.diagCapacity.style.color = cap >= 80 ? '#34d399' : cap >= 40 ? '#fcd34d' : '#f87171';
+    }
+
+    if (this.dom.diagHealthBadge) {
+      const score = deck.healthScore || 100;
+      if (score >= 85) {
+        this.dom.diagHealthBadge.textContent = `🟢 ${score}% Saudável`;
+        this.dom.diagHealthBadge.style.color = '#34d399';
+        this.dom.diagHealthBadge.style.background = 'rgba(52, 211, 153, 0.15)';
+      } else if (score >= 60) {
+        this.dom.diagHealthBadge.textContent = `🟡 ${score}% Atenção`;
+        this.dom.diagHealthBadge.style.color = '#fcd34d';
+        this.dom.diagHealthBadge.style.background = 'rgba(245, 158, 11, 0.15)';
+      } else {
+        this.dom.diagHealthBadge.textContent = `🔴 ${score}% Risco Alto`;
+        this.dom.diagHealthBadge.style.color = '#f87171';
+        this.dom.diagHealthBadge.style.background = 'rgba(248, 113, 113, 0.15)';
+      }
+    }
+
+    if (this.dom.diagDeckWeight) {
+      const totalKB = deck.totalDeckWeightKB || 0;
+      const avgKB = deck.avgSlideWeightKB || 0;
+      this.dom.diagDeckWeight.textContent = `${totalKB} KB (${avgKB} KB/slide)`;
+    }
+
+    if (this.dom.diagServerStats) {
+      const mem = sys.residentMemoryMB ? `${sys.residentMemoryMB} MB` : '---';
+      const up = sys.uptimeFormatted || '---';
+      this.dom.diagServerStats.textContent = `${mem} • ${up}`;
+    }
+
+    if (this.dom.diagHeavyAlerts) {
+      if (deck.hasHeavySlides && deck.heavySlides && deck.heavySlides.length > 0) {
+        this.dom.diagHeavyAlerts.style.display = 'block';
+        this.dom.diagHeavyAlerts.innerHTML = `
+          <div style="font-weight: 700; margin-bottom: 3px; display: flex; align-items: center; gap: 4px;">
+            ⚠️ Alerta de Pico Wi-Fi:
+          </div>
+          ${deck.heavySlides.map(hs => `
+            <div style="margin-top: 2px;">
+              • Slide #${hs.slideIndex} (${hs.sizeKB}KB): Rajada para 30 celulares gerará pico de <strong>${hs.burst30AttendeesMB}MB</strong>.
+            </div>
+          `).join('')}
+        `;
+      } else {
+        this.dom.diagHeavyAlerts.style.display = 'none';
       }
     }
   }

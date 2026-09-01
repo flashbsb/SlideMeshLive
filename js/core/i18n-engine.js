@@ -159,6 +159,11 @@ export const TRANSLATIONS = {
     'admin.reset_poll': '🔄 Zerar',
     'admin.sort_recent': 'Mais Recentes',
     'admin.sort_upvotes': 'Mais Votadas (Upvotes)',
+    'admin.diag_title': '🏥 Saúde & Capacidade Wi-Fi',
+    'admin.diag_capacity_label': 'Capacidade Wi-Fi:',
+    'admin.diag_latency_label': 'Latência Local:',
+    'admin.diag_deck_weight_label': 'Peso Total do Deck:',
+    'admin.diag_server_mem_label': 'Memória / Uptime:',
 
     // Modal Host QR Code
     'host_modal.title': '🌐 Configurar Endereço do QR Code',
@@ -387,6 +392,11 @@ export const TRANSLATIONS = {
     'admin.reset_poll': '🔄 Reset',
     'admin.sort_recent': 'Most Recent',
     'admin.sort_upvotes': 'Most Upvoted',
+    'admin.diag_title': '🏥 Health & Wi-Fi Capacity',
+    'admin.diag_capacity_label': 'Wi-Fi Capacity:',
+    'admin.diag_latency_label': 'Local Latency:',
+    'admin.diag_deck_weight_label': 'Total Deck Weight:',
+    'admin.diag_server_mem_label': 'Memory / Uptime:',
 
     // QR Host Modal
     'host_modal.title': '🌐 Configure QR Code Host / IP',

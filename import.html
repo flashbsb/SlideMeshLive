@@ -663,17 +663,27 @@
             <div class="form-group">
               <label class="form-label" data-i18n="import.media_label">🖼️ Mídia do Slide (Modo Split-Screen no Telão):</label>
               <input type="file" id="slide-image-file" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display: none;">
-              <div style="display: flex; gap: 8px; align-items: center;">
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                 <button type="button" class="btn btn-sm btn-secondary" id="btn-trigger-media-upload" style="font-size: 11.5px; padding: 4px 10px;" data-i18n="import.btn_choose_image">
                   📁 Escolher Imagem
+                </button>
+                <button type="button" class="btn btn-sm" id="btn-optimize-media" style="font-size: 11px; padding: 4px 10px; display: none; background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.5); color: #fcd34d;" data-i18n="import.btn_optimize_image">
+                  ⚡ Otimizar Imagem (<300KB)
                 </button>
                 <button type="button" class="btn btn-sm btn-danger" id="btn-remove-media" style="font-size: 11.5px; padding: 4px 10px; display: none;" data-i18n="import.btn_remove_image">
                   🗑️ Remover Imagem
                 </button>
               </div>
+
+              <!-- Alerta de Peso de Imagem para Redes Wi-Fi Locais -->
+              <div id="media-weight-alert" style="display: none; font-size: 10.5px; padding: 6px 8px; border-radius: 4px; margin-top: 4px;"></div>
+
               <div id="media-preview-container" class="media-preview-box" style="display: none;">
                 <img id="media-preview-img" src="" alt="Preview" style="max-height: 48px; border-radius: 4px; border: 1px solid var(--border-subtle);">
-                <span id="media-preview-name" style="font-size: 11.5px; color: var(--text-secondary); word-break: break-all;"></span>
+                <div style="display: flex; flex-direction: column; gap: 2px; overflow: hidden;">
+                  <span id="media-preview-name" style="font-size: 11.5px; color: var(--text-secondary); word-break: break-all;"></span>
+                  <span id="media-preview-size" style="font-size: 10px; color: var(--text-muted);"></span>
+                </div>
               </div>
             </div>
 
@@ -1338,10 +1348,47 @@
     // Renderiza e gerencia Mídia / Imagem
     const slideImageInput = document.getElementById('slide-image-file');
     const btnTriggerUpload = document.getElementById('btn-trigger-media-upload');
+    const btnOptimizeMedia = document.getElementById('btn-optimize-media');
     const btnRemoveMedia = document.getElementById('btn-remove-media');
     const mediaPreviewBox = document.getElementById('media-preview-container');
     const mediaPreviewImg = document.getElementById('media-preview-img');
     const mediaPreviewName = document.getElementById('media-preview-name');
+    const mediaPreviewSize = document.getElementById('media-preview-size');
+    const mediaWeightAlert = document.getElementById('media-weight-alert');
+
+    function getBase64SizeBytes(base64Str) {
+      if (!base64Str || typeof base64Str !== 'string') return 0;
+      const head = base64Str.indexOf(',') > -1 ? base64Str.split(',')[1] : base64Str;
+      return Math.round((head.length * 3) / 4);
+    }
+
+    async function optimizeImageBase64(base64Data, maxWidth = 1920, maxHeight = 1080, quality = 0.82) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          let resultBase64 = canvas.toDataURL('image/webp', quality);
+          if (!resultBase64.startsWith('data:image/webp')) {
+            resultBase64 = canvas.toDataURL('image/jpeg', quality);
+          }
+          resolve(resultBase64);
+        };
+        img.onerror = (err) => reject(err);
+        img.src = base64Data;
+      });
+    }
 
     btnTriggerUpload?.addEventListener('click', () => {
       slideImageInput?.click();
@@ -1365,6 +1412,8 @@
         };
 
         if (!currentConvertedData.assets) currentConvertedData.assets = [];
+        // Remove asset pré-existente com mesmo nome se houver
+        currentConvertedData.assets = currentConvertedData.assets.filter(a => a.filename !== cleanName);
         currentConvertedData.assets.push({
           filename: cleanName,
           data: base64Data
@@ -1376,6 +1425,56 @@
         saveDraftToStorage();
       };
       reader.readAsDataURL(file);
+    });
+
+    btnOptimizeMedia?.addEventListener('click', async () => {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (!slide?.presenter?.media?.src) return;
+
+      const oldBytes = getBase64SizeBytes(slide.presenter.media.src);
+      const oldKB = Math.round(oldBytes / 1024);
+
+      try {
+        if (btnOptimizeMedia) btnOptimizeMedia.textContent = '⏳ Otimizando...';
+
+        const optimizedBase64 = await optimizeImageBase64(slide.presenter.media.src);
+        const newBytes = getBase64SizeBytes(optimizedBase64);
+        const newKB = Math.round(newBytes / 1024);
+        const pctSaved = Math.max(0, Math.round(((oldBytes - newBytes) / oldBytes) * 100));
+
+        slide.presenter.media.src = optimizedBase64;
+        slide.presenter.media.type = 'image';
+
+        const cleanName = (slide.presenter.media.alt || 'slide_asset').replace(/[^a-zA-Z0-9._-]/g, '_');
+        const extIdx = cleanName.lastIndexOf('.');
+        const baseName = extIdx > -1 ? cleanName.substring(0, extIdx) : cleanName;
+        const newFileName = `${baseName}.webp`;
+
+        if (!currentConvertedData.assets) currentConvertedData.assets = [];
+        currentConvertedData.assets = currentConvertedData.assets.filter(a => a.filename !== cleanName && a.filename !== newFileName);
+        currentConvertedData.assets.push({
+          filename: newFileName,
+          data: optimizedBase64
+        });
+        slide.presenter.media.alt = newFileName;
+
+        renderMediaEditor(slide);
+        renderSlidesSidebar();
+        renderActiveSlidePreview();
+        saveDraftToStorage();
+
+        if (mediaWeightAlert) {
+          mediaWeightAlert.style.display = 'block';
+          mediaWeightAlert.style.background = 'rgba(16, 185, 129, 0.15)';
+          mediaWeightAlert.style.border = '1px solid rgba(16, 185, 129, 0.35)';
+          mediaWeightAlert.style.color = '#6ee7b7';
+          mediaWeightAlert.innerHTML = `✅ <strong>Otimização Concluída!</strong> Reduzido de ${oldKB} KB para ${newKB} KB (${pctSaved}% economia). Ideal para Wi-Fi do evento!`;
+        }
+      } catch (err) {
+        console.error('Falha na otimização de imagem:', err);
+      } finally {
+        if (btnOptimizeMedia) btnOptimizeMedia.textContent = '⚡ Otimizar Imagem (<300KB)';
+      }
     });
 
     btnRemoveMedia?.addEventListener('click', () => {
@@ -1390,16 +1489,39 @@
     });
 
     function renderMediaEditor(slide) {
-      if (slide.presenter?.media?.src) {
+      const media = slide.presenter?.media;
+
+      if (media?.src) {
         mediaPreviewBox.style.display = 'flex';
         btnRemoveMedia.style.display = 'inline-block';
-        mediaPreviewImg.src = slide.presenter.media.src;
-        mediaPreviewName.textContent = slide.presenter.media.alt || 'Imagem vinculada ao slide';
+        mediaPreviewImg.src = media.src;
+        mediaPreviewName.textContent = media.alt || 'Imagem vinculada ao slide';
+
+        const sizeBytes = getBase64SizeBytes(media.src);
+        const sizeKB = Math.round(sizeBytes / 1024);
+        if (mediaPreviewSize) mediaPreviewSize.textContent = `Tamanho: ${sizeKB} KB`;
+
+        if (sizeKB > 500) {
+          if (btnOptimizeMedia) btnOptimizeMedia.style.display = 'inline-block';
+          if (mediaWeightAlert) {
+            mediaWeightAlert.style.display = 'block';
+            mediaWeightAlert.style.background = 'rgba(239, 68, 68, 0.15)';
+            mediaWeightAlert.style.border = '1px solid rgba(239, 68, 68, 0.35)';
+            mediaWeightAlert.style.color = '#fca5a5';
+            mediaWeightAlert.innerHTML = `⚠️ <strong>Imagem Pesada (${sizeKB} KB):</strong> Em redes Wi-Fi com 30+ celulares, pode causar atraso. Clique em <em>Otimizar Imagem</em> para reduzir para WebP Full HD (<300KB).`;
+          }
+        } else {
+          if (btnOptimizeMedia) btnOptimizeMedia.style.display = 'none';
+          if (mediaWeightAlert) mediaWeightAlert.style.display = 'none';
+        }
       } else {
         mediaPreviewBox.style.display = 'none';
         btnRemoveMedia.style.display = 'none';
+        if (btnOptimizeMedia) btnOptimizeMedia.style.display = 'none';
+        if (mediaWeightAlert) mediaWeightAlert.style.display = 'none';
         mediaPreviewImg.src = '';
         mediaPreviewName.textContent = '';
+        if (mediaPreviewSize) mediaPreviewSize.textContent = '';
       }
     }
 
