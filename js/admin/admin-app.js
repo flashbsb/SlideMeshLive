@@ -96,6 +96,7 @@ class AdminApp {
       btnExportCsv: document.getElementById('admin-btn-export-csv'),
       btnExportMd: document.getElementById('admin-btn-export-md'),
       btnExportDeckHtml: document.getElementById('admin-btn-export-deck-html'),
+      btnExportDeckZip: document.getElementById('admin-btn-export-zip'),
 
       // Host Config Modal
       hostModal: document.getElementById('host-config-modal'),
@@ -1241,6 +1242,13 @@ class AdminApp {
     if (this.dom.btnExportDeckHtml) {
       this.dom.btnExportDeckHtml.addEventListener('click', () => {
         this.sessionManager.downloadFullDeckHTML(this.sessionId, this.engine.manifest, this.engine.slidesData);
+      });
+    }
+
+    // Exportação do Pacote ZIP Completo (.slidemesh.zip) - Plano 12
+    if (this.dom.btnExportDeckZip) {
+      this.dom.btnExportDeckZip.addEventListener('click', () => {
+        window.location.href = `/api/presentations/export?id=${encodeURIComponent(this.presentationId)}`;
       });
     }
 

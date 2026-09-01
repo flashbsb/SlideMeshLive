@@ -427,6 +427,9 @@
     </div>
 
     <div style="display: flex; align-items: center; gap: 10px;">
+      <button type="button" class="btn btn-sm" id="btn-studio-export-zip" style="padding: 4px 10px; font-size: 12px; display: none; align-items: center; gap: 6px; border-color: rgba(56, 189, 248, 0.4); color: var(--accent-primary); cursor: pointer;" title="Exportar Projeto Atual como Pacote ZIP (.slidemesh.zip)">
+        <span data-i18n="import.btn_export_zip">📦 Exportar ZIP</span>
+      </button>
       <button class="btn btn-sm" id="btn-import-lang" style="padding: 4px 8px; font-size: 12px;">🇧🇷 PT</button>
       <button class="btn btn-sm" id="btn-import-theme" style="padding: 4px 8px; font-size: 12px;">🌙 Tema</button>
       <a href="./" class="btn btn-sm" style="padding: 4px 12px; font-size: 12px; text-decoration: none;" data-i18n="import.btn_back_portal">🏠 Portal</a>
@@ -536,7 +539,7 @@
       <!-- Conteúdo da Aba 2: Importador de Arquivos -->
       <div id="tab-content-import" style="display: none;" class="animate-fade-in">
         <div class="drop-zone" id="drop-zone-box">
-          <input type="file" id="file-input" style="display: none;" accept=".pptx,.docx,.md,.markdown,.html,.htm,.pdf">
+          <input type="file" id="file-input" style="display: none;" accept=".zip,.slidemesh,.pptx,.docx,.md,.markdown,.html,.htm,.pdf">
           <span class="drop-icon">📂</span>
           <h2 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px;" data-i18n="import.drop_title">
             Arraste e Solte seu Arquivo Aqui
@@ -555,6 +558,7 @@
           </div>
 
           <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
+            <span class="badge" style="background: rgba(14,165,233,0.15); color: #7dd3fc; border-color: rgba(14,165,233,0.3);">📦 Pacote SlideMesh (.zip)</span>
             <span class="badge" style="background: rgba(239,68,68,0.15); color: #fca5a5; border-color: rgba(239,68,68,0.3);">📊 PowerPoint (.pptx)</span>
             <span class="badge" style="background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.3);">📄 Word (.docx)</span>
             <span class="badge" style="background: rgba(16,185,129,0.15); color: #6ee7b7; border-color: rgba(16,185,129,0.3);">📝 Markdown (.md)</span>
@@ -605,7 +609,10 @@
         <div class="form-group" style="text-align: center;">
           <span class="badge badge-accent" id="slide-stats-badge" style="padding: 6px 12px; font-size: 11.5px;">0 incluídos</span>
         </div>
-        <div class="form-group">
+        <div class="form-group" style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-sm" id="btn-studio-step2-export-zip" style="padding: 10px 14px; font-weight: 700; border-color: rgba(56, 189, 248, 0.4); color: var(--accent-primary); background: rgba(56, 189, 248, 0.08); cursor: pointer;" title="Baixar Pacote ZIP da Apresentação em Edição">
+            <span data-i18n="import.btn_export_zip">📦 Exportar ZIP</span>
+          </button>
           <button class="btn btn-primary" id="btn-publish-all" style="padding: 10px 18px; font-weight: 800;">
             <span id="btn-publish-text" data-i18n="import.btn_publish">🚀 Publicar Apresentação</span>
           </button>
@@ -1066,8 +1073,42 @@
           </div>
         `;
 
-        let fileData;
         const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+
+        if (ext === '.zip' || ext === '.slidemesh') {
+          // Importação do pacote ZIP diretamente no servidor e carregamento no Studio
+          const res = await fetch('/api/presentations/import-zip?mode=overwrite', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/zip' },
+            body: file
+          });
+          const result = await res.json();
+          if (!res.ok || !result.success) {
+            throw new Error(result.error || 'Falha ao processar pacote ZIP no servidor.');
+          }
+
+          const slug = result.presentationId;
+          const [resMan, resSlides] = await Promise.all([
+            fetch(`./presentations/${slug}/manifest.json?t=` + Date.now()),
+            fetch(`./presentations/${slug}/slides.json?t=` + Date.now())
+          ]);
+          const manifest = await resMan.json();
+          manifest.id = manifest.id || slug;
+          const rawSlides = await resSlides.json();
+          const slidesArray = Array.isArray(rawSlides) ? rawSlides : (rawSlides.slides || []);
+
+          currentConvertedData = {
+            manifest: manifest,
+            slides: slidesArray,
+            assets: []
+          };
+          currentConvertedData.slides.forEach(s => s.included = true);
+          isEditingExisting = true;
+          setupStep2Review();
+          return;
+        }
+
+        let fileData;
         if (ext === '.pptx' || ext === '.docx' || ext === '.pdf') {
           fileData = await file.arrayBuffer();
         } else {
@@ -1091,6 +1132,9 @@
       document.getElementById('step-badge-1').classList.add('done');
       document.getElementById('step-badge-2').classList.add('active');
 
+      const btnExportZipHeader = document.getElementById('btn-studio-export-zip');
+      if (btnExportZipHeader) btnExportZipHeader.style.display = 'inline-flex';
+
       document.getElementById('cfg-title').value = currentConvertedData.manifest.title || '';
       document.getElementById('cfg-session').value = currentConvertedData.manifest.defaultSession || '';
       if (currentConvertedData.manifest.security?.mode) {
@@ -1110,6 +1154,48 @@
       applyTranslations();
       saveDraftToStorage();
     }
+
+    async function exportStudioZip() {
+      if (!currentConvertedData || !currentConvertedData.manifest) {
+        alert('Nenhum projeto ativo para exportar.');
+        return;
+      }
+      const activeSlides = currentConvertedData.slides.filter(s => s.included !== false);
+      if (activeSlides.length > 0) {
+        activeSlides.forEach((s, idx) => {
+          s.id = idx + 1;
+          s.slug = s.slug || `slide-${idx + 1}`;
+        });
+        currentConvertedData.manifest.title = document.getElementById('cfg-title')?.value || currentConvertedData.manifest.title;
+        currentConvertedData.manifest.defaultSession = document.getElementById('cfg-session')?.value || currentConvertedData.manifest.defaultSession;
+        if (document.getElementById('cfg-security')) {
+          currentConvertedData.manifest.security.mode = document.getElementById('cfg-security').value;
+        }
+        currentConvertedData.manifest.totalSlides = activeSlides.length;
+
+        const payload = {
+          manifest: currentConvertedData.manifest,
+          slides: activeSlides,
+          assets: currentConvertedData.assets || []
+        };
+
+        try {
+          await fetch('/api/presentations/import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } catch (e) {
+          console.warn('Salvamento pré-exportação:', e);
+        }
+      }
+
+      const slug = currentConvertedData.manifest.id || 'apresentacao';
+      window.location.href = `/api/presentations/export?id=${encodeURIComponent(slug)}`;
+    }
+
+    document.getElementById('btn-studio-export-zip')?.addEventListener('click', exportStudioZip);
+    document.getElementById('btn-studio-step2-export-zip')?.addEventListener('click', exportStudioZip);
 
     // Renderiza a Barra Lateral de Slides
     function renderSlidesSidebar() {

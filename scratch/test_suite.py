@@ -2508,7 +2508,34 @@ def test_demanda12_zip_export_import_portability():
         assert k in i18n_content, f"Chave de tradução {k} ausente em i18n-engine.js"
     print("  ✓ Internacionalização (i18n): Chaves simétricas de importação/exportação ZIP validadas em pt-BR e en-US.")
 
-    # 7. Limpeza e Teardown
+    # 7. Teste de Studio (import.html) e Mesa Técnica (admin/index.html & admin-app.js) - Fase 3
+    studio_path = os.path.join(BASE_DIR, "import.html")
+    with open(studio_path, "r", encoding="utf-8") as f:
+        studio_content = f.read()
+    assert ".zip" in studio_content and ".slidemesh" in studio_content, "Suporte a .zip/.slidemesh ausente no import.html"
+    assert "btn-studio-export-zip" in studio_content, "Botão btn-studio-export-zip ausente no cabeçalho do Studio"
+    assert "btn-studio-step2-export-zip" in studio_content, "Botão btn-studio-step2-export-zip ausente na Etapa 2 do Studio"
+    assert "exportStudioZip" in studio_content, "Função exportStudioZip ausente no script do Studio"
+    assert "/api/presentations/import-zip" in studio_content, "Chamada ao endpoint /api/presentations/import-zip ausente no Studio"
+    print("  ✓ SlideMesh Studio (import.html): Dropzone com suporte a .zip/.slidemesh e botões de exportação ZIP validados.")
+
+    admin_path = os.path.join(BASE_DIR, "admin", "index.html")
+    with open(admin_path, "r", encoding="utf-8") as f:
+        admin_content = f.read()
+    assert "admin-btn-export-zip" in admin_content, "Botão admin-btn-export-zip ausente na Mesa Técnica"
+
+    admin_js_path = os.path.join(BASE_DIR, "js", "admin", "admin-app.js")
+    with open(admin_js_path, "r", encoding="utf-8") as f:
+        admin_js_content = f.read()
+    assert "btnExportDeckZip" in admin_js_content, "Binding btnExportDeckZip ausente em admin-app.js"
+    assert "/api/presentations/export?id=" in admin_js_content, "Ação de download ZIP ausente em admin-app.js"
+    print("  ✓ Mesa Técnica (admin/index.html & admin-app.js): Botão de exportação do pacote ZIP validado.")
+
+    for k in ["admin.export_deck_zip", "import.btn_export_zip"]:
+        assert k in i18n_content, f"Chave de tradução {k} ausente em i18n-engine.js"
+    print("  ✓ Internacionalização (i18n): Chaves admin.export_deck_zip e import.btn_export_zip validadas em pt-BR e en-US.")
+
+    # 8. Limpeza e Teardown
     for cleanup_slug in [imported_slug, "teste-override-zip", "teste-cli-import-zip"]:
         c_dir = os.path.join(BASE_DIR, "presentations", cleanup_slug)
         if os.path.exists(c_dir):
@@ -2525,7 +2552,7 @@ def test_demanda12_zip_export_import_portability():
 
     httpd.shutdown()
     conn.close()
-    print("✓ Demanda 12 (Fases 1 e 2: Backend de Exportação/Importação ZIP, CLIs, Portal index.html e Modais) 100% HOMOLOGADA com sucesso.")
+    print("✓ Demanda 12 (Fases 1, 2 e 3: Backend ZIP, CLIs, Portal index.html, SlideMesh Studio e Mesa Técnica) 100% HOMOLOGADA com sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()
