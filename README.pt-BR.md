@@ -83,6 +83,10 @@ O **SlideMeshLive** foi concebido com uma arquitetura modular baseada em tecnolo
     - O telão do apresentador suporta 5 presets de transição de alta fidelidade acelerados por GPU (`transform` e `opacity` sem reflows): `fade`, `slide` (3D consciente da direção de navegação), `zoom`, `dissolve` e `stagger` (cascata sequencial de marcadores).
     - Configuração global no `manifest.json` (`theme.transition`) e sobreposição individual por slide no `slides.json` (`presenter.transition`), integradas no SlideMesh Studio.
     - Suporte nativo a acessibilidade WCAG com desativação instantânea e graciosa sob `@media (prefers-reduced-motion: reduce)`.
+12. **Efeitos Visuais Dinâmicos e Gamificação do Palco (Stage FX Deck)**:
+    - Camada translúcida e não-destrutiva em Canvas 2D (`#stage-fx-canvas`, `pointer-events: none`, `z-index: 9999`) que renderiza 5 presets de efeitos de alta fidelidade a 60fps sem alterar ou corromper o DOM dos slides: `confetti` (chuva de confetes com gravidade e arrasto), `impact_shake` (tremor e onda de choque concêntrica), `spotlight` (holofote com vinheta suave para direcionamento de foco), `countdown_burst` (contagem 3-2-1 gigante com partículas) e `glitch_flash` (faíscas de energia).
+    - Disparo instantâneo em tempo real via Mesa Técnica (`admin/index.html`) ou Púlpito do Apresentador (`presenter/index.html` com atalhos de teclado `C` para confetes e `X` para impacto).
+    - Mecanismo anti-spam com cooldown obrigatório de 3 segundos e auto-limpeza (auto-cleanup) determinística de memória em 1.5 a 2.6 segundos.
 
 ---
 
@@ -120,7 +124,8 @@ SlideMeshLive/
 │   │   ├── security-guard.js                # Rate limiting, bloqueio e regras de encerramento
 │   │   └── qr-engine.js                     # Geração de URLs de sessão e QR Code
 │   ├── presenter/
-│   │   └── presenter-app.js                 # Controlador da aplicação do Apresentador
+│   │   ├── presenter-app.js                 # Controlador da aplicação do Apresentador
+│   │   └── stage-fx.js                      # Motor de efeitos visuais acelerados em Canvas 2D
 │   ├── audience/
 │   │   └── audience-app.js                  # Controlador da aplicação Mobile do Público
 │   └── admin/

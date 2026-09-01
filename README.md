@@ -84,6 +84,10 @@
     - The clean stage screen supports 5 high-fidelity transition presets accelerated strictly via GPU hardware (`transform` and `opacity` with zero layout reflows): `fade`, `slide` (3D navigation-direction-aware), `zoom`, `dissolve`, and `stagger` (cascading bullet reveals).
     - Fully configurable globally in `manifest.json` (`theme.transition`) and per-slide in `slides.json` (`presenter.transition`) via SlideMesh Studio.
     - Strict WCAG accessibility compliance with instant, graceful motion suppression under `@media (prefers-reduced-motion: reduce)`.
+12. **Dynamic Stage Visual Effects & Non-Destructive Gamification (Stage FX Deck)**:
+    - A transparent, non-destructive 2D Canvas overlay (`#stage-fx-canvas`, `pointer-events: none`, `z-index: 9999`) rendering 5 high-fidelity 60fps visual presets without mutating or destroying the slide DOM: `confetti` (physics-simulated colorful confetti shower), `impact_shake` (haptic screen shake + radial shockwave rings), `spotlight` (soft circular spotlight vignette for attention focalization), `countdown_burst` (giant 3-2-1 countdown burst with radiant sparks), and `glitch_flash` (high-velocity energetic rays).
+    - Instant real-time triggering via the Control Room (`admin/index.html`) or Presenter Pulpit (`presenter/index.html` plus hotkeys `C` for confetti and `X` for impact shake).
+    - Built-in anti-spam protection with mandatory 3-second visual cooldown and deterministic memory auto-cleanup within 1.5 to 2.6 seconds.
 
 ---
 
@@ -121,7 +125,8 @@ SlideMeshLive/
 │   │   ├── security-guard.js                # Rate limiting, anti-abuse, and session limits
 │   │   └── qr-engine.js                     # Dynamic QR Code generation
 │   ├── presenter/
-│   │   └── presenter-app.js                 # Presenter stage controller
+│   │   ├── presenter-app.js                 # Presenter stage controller
+│   │   └── stage-fx.js                      # High-performance 2D Canvas stage effects engine
 │   ├── audience/
 │   │   └── audience-app.js                  # Audience mobile application controller
 │   └── admin/

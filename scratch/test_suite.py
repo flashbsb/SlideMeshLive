@@ -1851,7 +1851,21 @@ def test_demanda02_stage_fx_overlay():
     assert "btn-pulpit-fx" in presenter_code, "Listeners de .btn-pulpit-fx ausentes em presenter-app.js"
     print("  ✓ Púlpito do Apresentador: Atalhos rápidos de teclado (C, X), dock de botões e cooldown local de 3s validados.")
 
-    print("✓ Demanda 02 (Fases 1, 2 e 3: Motor Canvas, Painel da Mesa Técnica e Atalhos do Púlpito) 100% HOMOLOGADAS com sucesso.")
+    # 9. Validação da Fase 4: Documentação Oficial e Homologação Final (Princípio 12)
+    readme_pt_path = os.path.join(BASE_DIR, "README.pt-BR.md")
+    with open(readme_pt_path, "r", encoding="utf-8") as f:
+        readme_pt = f.read()
+    assert "Efeitos Visuais Dinâmicos e Gamificação do Palco" in readme_pt, "Princípio 12 ausente em README.pt-BR.md"
+    assert "stage-fx.js" in readme_pt, "stage-fx.js ausente na árvore de arquivos de README.pt-BR.md"
+
+    readme_en_path = os.path.join(BASE_DIR, "README.md")
+    with open(readme_en_path, "r", encoding="utf-8") as f:
+        readme_en = f.read()
+    assert "Dynamic Stage Visual Effects & Non-Destructive Gamification" in readme_en, "Princípio 12 ausente em README.md"
+    assert "stage-fx.js" in readme_en, "stage-fx.js ausente na árvore de arquivos de README.md"
+    print("  ✓ Documentação Oficial: Princípio 12 e stage-fx.js documentados com paridade em README.pt-BR.md e README.md.")
+
+    print("✓ Demanda 02 (Fases 1, 2, 3 e 4: Stage FX Overlay Engine) 100% HOMOLOGADA com sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()
