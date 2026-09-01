@@ -2325,9 +2325,44 @@ def test_demanda11_media_range_requests():
     assert "MediaCacheEngine" in p_code, "MediaCacheEngine não importado em presenter-app.js"
     assert "this.mediaCache" in p_code, "this.mediaCache não instanciado em PresenterApp"
     assert "this.mediaCache.onSlideChange" in p_code, "onSlideChange não invocado no ciclo de vida de slide do PresenterApp"
-    print("  ✓ Integração Telão (presenter-app.js): Ciclo de vida de pré-cache de mídias acoplado ao motor de apresentação.")
+    assert "handleMediaControlAction" in p_code, "handleMediaControlAction ausente em presenter-app.js"
+    assert "MEDIA_CONTROL_ACTION" in p_code, "Evento MEDIA_CONTROL_ACTION não tratado em presenter-app.js"
+    print("  ✓ Integração Telão (presenter-app.js): Ciclo de vida de pré-cache de mídias e receptor de controle remoto validados.")
 
-    print("✓ Demanda 11 (Fases 1 e 2: HTTP 206 Range Requests e MediaCacheEngine) 100% HOMOLOGADA com sucesso.")
+    # Validação de Controle Remoto de Mídia (Plano 11 - Fase 3)
+    realtime_code_path = os.path.join(BASE_DIR, "js", "core", "realtime-engine.js")
+    with open(realtime_code_path, "r", encoding="utf-8") as f:
+        r_code = f.read()
+    assert "triggerMediaAction" in r_code, "Método triggerMediaAction ausente em realtime-engine.js"
+    assert "MEDIA_CONTROL_ACTION" in r_code, "Tipo de evento MEDIA_CONTROL_ACTION ausente em realtime-engine.js"
+    print("  ✓ RealtimeEngine (realtime-engine.js): Disparador triggerMediaAction em broadcast validado.")
+
+    admin_html_path = os.path.join(BASE_DIR, "admin", "index.html")
+    with open(admin_html_path, "r", encoding="utf-8") as f:
+        a_html = f.read()
+    assert "admin-media-control-card" in a_html, "Container admin-media-control-card ausente em admin/index.html"
+    assert "btn-media-action" in a_html, "Botões btn-media-action ausentes em admin/index.html"
+    assert "admin-media-status-badge" in a_html, "Badge admin-media-status-badge ausente em admin/index.html"
+    print("  ✓ Mesa Técnica HTML (admin/index.html): Card de controle de mídia e botões de ação validados.")
+
+    admin_app_path = os.path.join(BASE_DIR, "js", "admin", "admin-app.js")
+    with open(admin_app_path, "r", encoding="utf-8") as f:
+        a_code = f.read()
+    assert "mediaControlCard" in a_code, "mediaControlCard não mapeado no DOM em admin-app.js"
+    assert "triggerMediaAction" in a_code, "triggerMediaAction ausente no controlador admin-app.js"
+    print("  ✓ Controlador Mesa Técnica (admin-app.js): Métodos e listeners de controle de mídia validados.")
+
+    i18n_path = os.path.join(BASE_DIR, "js", "core", "i18n-engine.js")
+    with open(i18n_path, "r", encoding="utf-8") as f:
+        i_code = f.read()
+    assert "admin.media_control_title" in i_code, "Chave admin.media_control_title ausente em i18n-engine.js"
+    assert "admin.media_play" in i_code, "Chave admin.media_play ausente em i18n-engine.js"
+    assert "admin.media_pause" in i_code, "Chave admin.media_pause ausente em i18n-engine.js"
+    assert "admin.media_restart" in i_code, "Chave admin.media_restart ausente em i18n-engine.js"
+    assert "admin.media_mute" in i_code, "Chave admin.media_mute ausente em i18n-engine.js"
+    print("  ✓ Internacionalização (i18n): Chaves simétricas de controle de mídia em pt-BR e en-US validadas.")
+
+    print("✓ Demanda 11 (Fases 1, 2 e 3: HTTP 206 Range Requests, MediaCacheEngine e Controle Remoto de Mídia) 100% HOMOLOGADA com sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()

@@ -498,6 +498,34 @@ export class RealtimeEngine {
     return this.sendLocalServerEvent('TRIGGER_STAGE_FX', normSessionId, payload);
   }
 
+  /**
+   * Controle Remoto de Mídia no Telão (Plano 11 - Fase 3)
+   * Dispara ações de mídia em tempo real (play, pause, restart, toggle_mute, seek, set_volume)
+   */
+  async triggerMediaAction(sessionId, action, options = {}) {
+    const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
+    const payload = {
+      action: action,
+      options: options,
+      timestamp: Date.now()
+    };
+    if (this.channel) {
+      try {
+        this.channel.postMessage({
+          type: 'MEDIA_CONTROL_ACTION',
+          sessionId: normSessionId,
+          payload: payload
+        });
+      } catch (e) {}
+    }
+    this._dispatchLocalEvent({
+      type: 'MEDIA_CONTROL_ACTION',
+      sessionId: normSessionId,
+      payload: payload
+    });
+    return this.sendLocalServerEvent('MEDIA_CONTROL_ACTION', normSessionId, payload);
+  }
+
   sendVote(sessionId, pollId, optionId, uid) {
     const normSessionId = (sessionId || 'SDWAN2026').trim().toUpperCase();
     const payload = { pollId, optionId, uid, timestamp: Date.now() };

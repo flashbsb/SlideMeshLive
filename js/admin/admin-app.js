@@ -61,6 +61,10 @@ class AdminApp {
       stageFxCard: document.getElementById('admin-stage-fx-card'),
       fxCooldownBadge: document.getElementById('admin-fx-cooldown-badge'),
 
+      // Media Remote Control (Plano 11 - Fase 3)
+      mediaControlCard: document.getElementById('admin-media-control-card'),
+      mediaStatusBadge: document.getElementById('admin-media-status-badge'),
+
       btnEndSession: document.getElementById('admin-btn-end-session'),
       btnPublishAnalytics: document.getElementById('admin-btn-publish-analytics'),
       qrBox: document.getElementById('admin-qr-box'),
@@ -1257,6 +1261,38 @@ class AdminApp {
         this.triggerStageFX(fxType);
       });
     });
+
+    // Controle Remoto de Mídia no Telão (Plano 11 - Fase 3)
+    const mediaButtons = document.querySelectorAll('.btn-media-action');
+    mediaButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action || 'play';
+        this.triggerMediaAction(action);
+      });
+    });
+  }
+
+  triggerMediaAction(action, options = {}) {
+    this.realtime.triggerMediaAction(this.sessionId, action, options);
+    if (this.dom.mediaStatusBadge) {
+      const labels = {
+        play: '▶️ Reproduzindo',
+        pause: '⏸️ Pausado',
+        restart: '🔄 Reiniciado',
+        toggle_mute: '🔇 Mudo/Áudio',
+        seek: '⏩ Ajustado'
+      };
+      this.dom.mediaStatusBadge.textContent = labels[action] || 'Pronto';
+      this.dom.mediaStatusBadge.style.color = '#34d399';
+      this.dom.mediaStatusBadge.style.background = 'rgba(52, 211, 153, 0.15)';
+      setTimeout(() => {
+        if (this.dom.mediaStatusBadge) {
+          this.dom.mediaStatusBadge.textContent = i18n.t('admin.media_standby');
+          this.dom.mediaStatusBadge.style.color = '#c4b5fd';
+          this.dom.mediaStatusBadge.style.background = 'rgba(167, 139, 250, 0.15)';
+        }
+      }, 2500);
+    }
   }
 
   triggerStageFX(fxType) {

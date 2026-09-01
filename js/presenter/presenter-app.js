@@ -174,6 +174,10 @@ class PresenterApp {
           if (newPid && newPid !== this.presentationId) {
             window.location.href = `?presentation=${encodeURIComponent(newPid)}&session=${encodeURIComponent(this.sessionId)}`;
           }
+        } else if (type === 'MEDIA_CONTROL_ACTION') {
+          const action = payload.action;
+          const options = payload.options || {};
+          this.handleMediaControlAction(action, options);
         }
       });
 
@@ -711,6 +715,15 @@ class PresenterApp {
         }
       } else if (e.key.toLowerCase() === 'b') {
         this.dom.root.classList.toggle('blackout-mode');
+      } else if (e.key.toLowerCase() === 'k') {
+        const media = this.dom.canvas ? this.dom.canvas.querySelector('video, audio') : null;
+        if (media) {
+          if (media.paused) {
+            this.handleMediaControlAction('play');
+          } else {
+            this.handleMediaControlAction('pause');
+          }
+        }
       } else if (e.key === 'Escape') {
         this.dom.qrCenterModal.style.display = 'none';
         this.dom.questionsDrawer.style.display = 'none';
@@ -870,6 +883,40 @@ class PresenterApp {
     } else {
       body.classList.add('view-stage-mode');
     }
+  }
+
+  // ==========================================
+  // Controle Remoto de Mídia no Telão (Plano 11 - Fase 3)
+  // ==========================================
+  handleMediaControlAction(action, options = {}) {
+    if (!this.dom.canvas) return;
+    const mediaElements = this.dom.canvas.querySelectorAll('video, audio');
+    if (!mediaElements || mediaElements.length === 0) return;
+
+    mediaElements.forEach(media => {
+      try {
+        if (action === 'play') {
+          media.play().catch(() => {});
+        } else if (action === 'pause') {
+          media.pause();
+        } else if (action === 'restart') {
+          media.currentTime = 0;
+          media.play().catch(() => {});
+        } else if (action === 'toggle_mute') {
+          media.muted = !media.muted;
+        } else if (action === 'seek') {
+          if (typeof options.time === 'number') {
+            media.currentTime = Math.max(0, Math.min(media.duration || 0, options.time));
+          }
+        } else if (action === 'set_volume') {
+          if (typeof options.volume === 'number') {
+            media.volume = Math.max(0, Math.min(1, options.volume));
+          }
+        }
+      } catch (err) {
+        console.warn('[PresenterApp] Erro ao executar ação de mídia:', err);
+      }
+    });
   }
 }
 

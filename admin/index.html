@@ -197,6 +197,34 @@
           </button>
         </div>
 
+        <!-- Painel de Controle Remoto de Mídia no Telão (Plano 11 - Fase 3) -->
+        <div id="admin-media-control-card" style="background: rgba(15, 23, 42, 0.4); padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11px; font-weight: 700; color: #a78bfa; display: flex; align-items: center; gap: 4px;" data-i18n="admin.media_control_title">
+              🎬 Controle de Mídia no Telão
+            </span>
+            <span class="badge" id="admin-media-status-badge" style="font-size: 9.5px; background: rgba(167,139,250,0.15); color: #c4b5fd;" data-i18n="admin.media_standby">Pronto</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+            <button class="btn btn-sm btn-media-action" id="admin-btn-media-play" data-action="play" style="font-size: 11px; padding: 6px; border-color: rgba(52,211,153,0.3); color: #34d399; background: rgba(52,211,153,0.06);" title="Reproduzir Mídia" data-i18n="admin.media_play">
+              ▶️ Play
+            </button>
+            <button class="btn btn-sm btn-media-action" id="admin-btn-media-pause" data-action="pause" style="font-size: 11px; padding: 6px; border-color: rgba(245,158,11,0.3); color: #fbbf24; background: rgba(245,158,11,0.06);" title="Pausar Mídia" data-i18n="admin.media_pause">
+              ⏸️ Pause
+            </button>
+            <button class="btn btn-sm btn-media-action" id="admin-btn-media-restart" data-action="restart" style="font-size: 11px; padding: 6px; border-color: rgba(56,189,248,0.3); color: #38bdf8; background: rgba(56,189,248,0.06);" title="Reiniciar do Início" data-i18n="admin.media_restart">
+              🔄 Reiniciar
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="btn btn-sm btn-media-action" id="admin-btn-media-mute" data-action="toggle_mute" style="flex: 1; font-size: 11px; padding: 5px; border-color: rgba(167,139,250,0.3); color: #c4b5fd; background: rgba(167,139,250,0.06);" title="Alternar Mudo" data-i18n="admin.media_mute">
+              🔇 Mudo / Áudio
+            </button>
+          </div>
+        </div>
+
         <!-- Lista de Participantes Conectados ao Vivo com Banimento -->
         <div style="border-top: 1px solid var(--border-subtle); padding-top: 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">

@@ -196,6 +196,12 @@ export const TRANSLATIONS = {
     'admin.btn_telao_questions': '💬 Telão Mural',
     'admin.btn_telao_polls': '📊 Telão Enquetes',
     'admin.multiscreen_title': '🖥️ Telões Secundários de Palco (Dual Display)',
+    'admin.media_control_title': '🎬 Controle de Mídia no Telão',
+    'admin.media_standby': 'Pronto',
+    'admin.media_play': '▶️ Play',
+    'admin.media_pause': '⏸️ Pause',
+    'admin.media_restart': '🔄 Reiniciar',
+    'admin.media_mute': '🔇 Mudo / Áudio',
 
     // Modal Host QR Code
     'host_modal.title': '🌐 Configurar Endereço do QR Code',
@@ -464,6 +470,12 @@ export const TRANSLATIONS = {
     'admin.btn_telao_questions': '💬 Questions Wall Screen',
     'admin.btn_telao_polls': '📊 Polls Screen',
     'admin.multiscreen_title': '🖥️ Multi-Screen Stage Hub (Dual Display)',
+    'admin.media_control_title': '🎬 Stage Media Control',
+    'admin.media_standby': 'Ready',
+    'admin.media_play': '▶️ Play',
+    'admin.media_pause': '⏸️ Pause',
+    'admin.media_restart': '🔄 Restart',
+    'admin.media_mute': '🔇 Mute / Audio',
 
     // QR Host Modal
     'host_modal.title': '🌐 Configure QR Code Host / IP',
