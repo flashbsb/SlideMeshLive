@@ -568,3 +568,137 @@
     opacity: 0;
   }
 }
+
+/* ==========================================================================
+   Multi-Screen Presenter Hub: Layouts Monumentais (Plano 10 - Fase 2)
+   Estilização de Telões Dedicados para Painéis de LED e Grandes Palcos
+   ========================================================================== */
+
+/* 1. MURAL GIGANTE DE PERGUNTAS (?view=questions_wall) */
+.view-questions-mode .slide-canvas,
+.view-questions-mode .pulpit-sidebar,
+.view-questions-mode #btn-toggle-pulpit,
+.view-questions-mode #btn-toggle-large-qr,
+.view-questions-mode #btn-toggle-mini-qr,
+.view-questions-mode .qr-stage-widget,
+.view-questions-mode .stage-poll-dock,
+.view-questions-mode #btn-close-questions-drawer {
+  display: none !important;
+}
+
+.view-questions-mode .stage-questions-drawer {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100%;
+  max-width: 100%;
+  border: none;
+  border-radius: 0;
+  background: radial-gradient(circle at top center, rgba(15, 23, 42, 0.98), #070a12);
+  z-index: 50;
+  padding: 24px 36px;
+  display: flex !important;
+  flex-direction: column;
+  box-shadow: none;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.view-questions-mode .stage-drawer-header {
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(16px);
+}
+
+.view-questions-mode .stage-drawer-body {
+  padding: 4px;
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 18px;
+  align-content: start;
+}
+
+.view-questions-mode .stage-question-card {
+  background: rgba(30, 41, 59, 0.65);
+  border: 1.5px solid var(--border-medium);
+  border-radius: 14px;
+  padding: 20px 24px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.view-questions-mode .stage-question-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-primary);
+  background: rgba(30, 41, 59, 0.9);
+  box-shadow: 0 12px 32px rgba(56, 189, 248, 0.18);
+}
+
+.view-questions-mode .stage-question-card.top-voted {
+  border: 2px solid #38bdf8;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(129, 140, 248, 0.08));
+  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.25);
+}
+
+/* 2. PAINEL MONUMENTAL DE ENQUETES (?view=polls_live) */
+.view-polls-mode .pulpit-sidebar,
+.view-polls-mode #btn-toggle-pulpit,
+.view-polls-mode #stage-questions-drawer,
+.view-polls-mode .stage-poll-dock,
+.view-polls-mode .slide-content-wrapper {
+  display: none !important;
+}
+
+.view-polls-mode .slide-canvas {
+  padding: 0;
+  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.98), #060913);
+}
+
+.view-polls-mode #stage-poll-results-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100%;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  padding: 32px 48px;
+  z-index: 50;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.view-polls-mode #stage-poll-results-overlay > div {
+  max-width: 1100px !important;
+  width: 90% !important;
+  padding: 44px 56px !important;
+  border-radius: 24px !important;
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 2px solid rgba(56, 189, 248, 0.4) !important;
+  backdrop-filter: blur(24px) !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7) !important;
+}
+
+.view-polls-mode .poll-bar-stage-row {
+  margin-bottom: 8px;
+}
+
+.view-polls-mode .poll-progress-track {
+  height: 22px !important;
+  border-radius: 11px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.view-polls-mode .poll-progress-fill {
+  height: 100%;
+  border-radius: 11px;
+  background: linear-gradient(90deg, #38bdf8, #818cf8) !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}

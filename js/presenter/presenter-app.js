@@ -305,6 +305,33 @@ class PresenterApp {
   }
 
   updatePollResultsInStage() {
+    if (this.viewMode === 'polls_live') {
+      let poll = null;
+      if (this.engine.currentSlide?.interaction?.poll) {
+        poll = this.engine.currentSlide.interaction.poll;
+      } else {
+        const slides = this.engine.slidesData?.slides || [];
+        for (const s of slides) {
+          if (s.interaction?.poll) {
+            poll = s.interaction.poll;
+            break;
+          }
+        }
+      }
+
+      if (poll) {
+        this.pollState.activePollId = poll.id;
+        const res = this.interaction.computePollResults(this.sessionId, poll);
+        if (this.dom.stagePollVotesCount) {
+          this.dom.stagePollVotesCount.textContent = `${res.totalVotes} voto(s)`;
+        }
+        this.renderPollResultsOverlay(res);
+      } else {
+        this.renderEmptyPollStagePlaceholder();
+      }
+      return;
+    }
+
     if (!this.pollState.activePollId || !this.engine.currentSlide) return;
     const poll = this.engine.currentSlide.interaction.poll;
     const res = this.interaction.computePollResults(this.sessionId, poll);
@@ -316,6 +343,24 @@ class PresenterApp {
     if (this.pollState.showResults) {
       this.renderPollResultsOverlay(res);
     }
+  }
+
+  renderEmptyPollStagePlaceholder() {
+    let overlay = document.getElementById('stage-poll-results-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'stage-poll-results-overlay';
+      overlay.className = 'poll-overlay-stage animate-scale-up';
+      this.dom.canvas.appendChild(overlay);
+    }
+
+    overlay.innerHTML = `
+      <div style="background: rgba(30, 41, 59, 0.7); border: 2px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 48px 56px; width: 100%; max-width: 760px; text-align: center; box-shadow: var(--shadow-lg); backdrop-filter: blur(20px);">
+        <div style="font-size: 48px; margin-bottom: 12px;">📊</div>
+        <h2 style="font-size: clamp(20px, 2.2vw, 30px); font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Painel de Enquetes em Tempo Real</h2>
+        <p style="font-size: clamp(13px, 1.2vw, 16px); color: var(--text-secondary);">Aguardando ativação de enquete interativa pelo moderador ou orador...</p>
+      </div>
+    `;
   }
 
   renderPollResultsOverlay(results) {
@@ -497,24 +542,32 @@ class PresenterApp {
 
     if (questions.length === 0) {
       this.dom.questionsList.innerHTML = `
-        <div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 24px;">
-          Nenhuma pergunta aprovada no mural.
+        <div style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 48px; grid-column: 1 / -1;">
+          <div style="font-size: 36px; margin-bottom: 8px;">💬</div>
+          <div style="font-weight: 600; color: var(--text-secondary);">Mural de Perguntas Limpo</div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Aguardando perguntas aprovadas pelo moderador...</div>
         </div>
       `;
       return;
     }
 
-    this.dom.questionsList.innerHTML = questions.map(q => `
-      <div class="stage-question-card ${q.answered ? 'answered' : ''}">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-          <span style="font-size: 12px; font-weight: 700; color: ${q.answered ? 'var(--text-muted)' : 'var(--text-primary)'};">
-            ${q.authorAlias || 'Participante'}
-          </span>
-          <span style="font-size: 10px; color: var(--text-muted);">
+    // Ordena perguntas por upvotes decrescentes e depois por timestamp mais recente
+    const sorted = [...questions].sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0) || (b.timestamp - a.timestamp));
+
+    this.dom.questionsList.innerHTML = sorted.map((q, idx) => `
+      <div class="stage-question-card ${q.answered ? 'answered' : ''} ${idx === 0 && (q.upvotes || 0) > 0 ? 'top-voted' : ''}">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: clamp(12px, 1.1vw, 15px); font-weight: 700; color: ${q.answered ? 'var(--text-muted)' : 'var(--accent-primary)'};">
+              ${q.authorAlias || 'Participante'}
+            </span>
+            ${(q.upvotes || 0) > 0 ? `<span class="badge badge-accent" style="font-size: 11px; padding: 2px 7px;">👍 ${q.upvotes}</span>` : ''}
+          </div>
+          <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">
             ${new Date(q.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
-        <div style="font-size: 13.5px; color: ${q.answered ? 'var(--text-muted)' : '#ffffff'}; line-height: 1.4;">
+        <div class="stage-question-text" style="font-size: clamp(14px, 1.3vw, 19px); color: ${q.answered ? 'var(--text-muted)' : '#ffffff'}; line-height: 1.45;">
           ${q.text}
         </div>
       </div>

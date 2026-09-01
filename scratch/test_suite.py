@@ -2078,14 +2078,16 @@ def test_demanda09_analytics_and_session_archive():
 
 def test_demanda10_multi_screen_presenter_hub():
     """
-    Suíte 21: Validação do Multi-Screen Presenter Hub (Plano 10 - Fase 1)
+    Suíte 21: Validação do Multi-Screen Presenter Hub (Plano 10 - Fases 1 e 2)
     - Roteamento dinâmico de view via URL (?view=stage, questions_wall, polls_live).
     - Presença e injeção de classes CSS no body (.view-stage-mode, .view-questions-mode, .view-polls-mode).
     - Métodos getViewMode, setViewMode e applyViewModeLayout em PresenterApp.
     - Estrutura de containers de palco em presenter/index.html.
+    - Estilização em alta definição para mural de perguntas e enquetes monumentais em presenter.css.
+    - Suporte a Stage FX sincronizado.
     """
     print(f"\n{'='*70}")
-    print(f" 🧪 21. Demanda 10: Multi-Screen Presenter Hub (Fase 1)")
+    print(f" 🧪 21. Demanda 10: Multi-Screen Presenter Hub (Fases 1 e 2)")
     print(f"{'='*70}")
 
     presenter_app_path = os.path.join(BASE_DIR, "js", "presenter", "presenter-app.js")
@@ -2099,6 +2101,7 @@ def test_demanda10_multi_screen_presenter_hub():
     assert "view-questions-mode" in code, "Classe view-questions-mode ausente em applyViewModeLayout"
     assert "view-polls-mode" in code, "Classe view-polls-mode ausente em applyViewModeLayout"
     assert "view-stage-mode" in code, "Classe view-stage-mode ausente em applyViewModeLayout"
+    assert "renderEmptyPollStagePlaceholder" in code, "Método renderEmptyPollStagePlaceholder ausente em PresenterApp"
     print("  ✓ PresenterApp (presenter-app.js): Motor de roteamento de visualização multi-telão validado.")
 
     presenter_html_path = os.path.join(BASE_DIR, "presenter", "index.html")
@@ -2108,9 +2111,19 @@ def test_demanda10_multi_screen_presenter_hub():
     assert 'id="stage-questions-drawer"' in html or "id='stage-questions-drawer'" in html, "Container stage-questions-drawer ausente em presenter/index.html"
     assert 'id="stage-questions-list"' in html or "id='stage-questions-list'" in html, "Lista stage-questions-list ausente em presenter/index.html"
     assert 'id="stage-poll-dock"' in html or "id='stage-poll-dock'" in html, "Dock stage-poll-dock ausente em presenter/index.html"
-    print("  ✓ Telão HTML (presenter/index.html): Estrutura de containers para mural e enquetes validada.")
+    assert 'id="stage-fx-canvas"' in html or "id='stage-fx-canvas'" in html, "Canvas stage-fx-canvas ausente em presenter/index.html"
+    print("  ✓ Telão HTML (presenter/index.html): Estrutura de containers para mural, enquetes e StageFX validada.")
 
-    print("✓ Demanda 10 (Fase 1: Motor de Roteamento de Layout no PresenterApp) 100% HOMOLOGADA com sucesso.")
+    presenter_css_path = os.path.join(BASE_DIR, "css", "presenter.css")
+    with open(presenter_css_path, "r", encoding="utf-8") as f:
+        css = f.read()
+
+    assert ".view-questions-mode" in css, "Estilos .view-questions-mode ausentes em presenter.css"
+    assert ".view-polls-mode" in css, "Estilos .view-polls-mode ausentes em presenter.css"
+    assert "top-voted" in css, "Destaque top-voted ausente em presenter.css"
+    print("  ✓ Estilização Monumental (presenter.css): Regras CSS dedicadas para mural de perguntas e enquetes em tela cheia validadas.")
+
+    print("✓ Demanda 10 (Fases 1 e 2: Motor de Roteamento e Layouts Monumentais CSS) 100% HOMOLOGADA com sucesso.")
 
 if __name__ == "__main__":
     start_time = time.time()
