@@ -15,6 +15,7 @@ import argparse
 import threading
 import queue
 import socketserver
+import mimetypes
 
 try:
     from http.server import HTTPServer, SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -37,10 +38,11 @@ PRESENCE_TIMEOUT_MS = 30000  # Janela de timeout único para poda e contagem (30
 BACKUP_FILE = os.environ.get("SLIDEMESH_BACKUP_FILE", ".session_backup.json")
 PERSIST_ENABLED = False
 
-# Limites de Segurança de Payload e Extensões Permitidas (Fase 3)
+# Limites de Segurança de Payload e Extensões Permitidas (Fase 3 & Plano 11)
 MAX_IMPORT_PAYLOAD_BYTES = 50 * 1024 * 1024  # 50 MB
 MAX_SYNC_PAYLOAD_BYTES = 5 * 1024 * 1024     # 5 MB
-ALLOWED_ASSET_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'}
+MEDIA_EXTENSIONS = {'.mp4', '.webm', '.ogg', '.mp3', '.wav', '.m4a', '.aac', '.flac'}
+ALLOWED_ASSET_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.mp4', '.webm', '.ogg', '.mp3', '.wav', '.m4a'}
 
 # Diretório e Limites de Histórico Analítico (Plano 09 - Fase 1)
 SESSIONS_ARCHIVE_DIR = os.path.join(BASE_DIR, "sessions_archive")
@@ -566,6 +568,118 @@ def import_presentation_files(data):
         "manifest": manifest
     }
 
+def handle_range_request(handler, filepath):
+    """
+    Manipula requisições com suporte a HTTP 206 Partial Content (Range Requests)
+    para streaming de vídeos e áudios com baixa latência e consumo mínimo de RAM (Plano 11 - Fase 1).
+    """
+    try:
+        total_size = os.path.getsize(filepath)
+    except OSError:
+        return False
+
+    ext = os.path.splitext(filepath)[1].lower()
+    mime_type, _ = mimetypes.guess_type(filepath)
+    if not mime_type:
+        mime_map = {
+            '.mp4': 'video/mp4',
+            '.webm': 'video/webm',
+            '.ogg': 'video/ogg',
+            '.mp3': 'audio/mpeg',
+            '.wav': 'audio/wav',
+            '.m4a': 'audio/mp4',
+            '.aac': 'audio/aac',
+            '.flac': 'audio/flac'
+        }
+        mime_type = mime_map.get(ext, 'application/octet-stream')
+
+    range_header = handler.headers.get('Range')
+
+    if not range_header:
+        # Entrega padrão com indicação de Accept-Ranges e streaming sem reter arquivo na RAM
+        handler.send_response(200)
+        handler.send_header('Content-Type', mime_type)
+        handler.send_header('Content-Length', str(total_size))
+        handler.send_header('Accept-Ranges', 'bytes')
+        handler.end_headers()
+
+        if handler.command == 'HEAD':
+            return True
+
+        try:
+            with open(filepath, 'rb') as f:
+                while True:
+                    chunk = f.read(64 * 1024)
+                    if not chunk:
+                        break
+                    handler.wfile.write(chunk)
+                    handler.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError, socket.error):
+            pass
+        return True
+
+    # Parse e validação do cabeçalho Range (ex: bytes=0-1024, bytes=1024-, bytes=-500)
+    range_match = re.match(r'bytes=(\d*)-(\d*)', range_header.strip())
+    if not range_match:
+        handler.send_response(416)
+        handler.send_header('Content-Range', f'bytes */{total_size}')
+        handler.end_headers()
+        return True
+
+    raw_start, raw_end = range_match.groups()
+
+    if raw_start and raw_end:
+        start = int(raw_start)
+        end = int(raw_end)
+    elif raw_start:
+        start = int(raw_start)
+        end = total_size - 1
+    elif raw_end:
+        start = max(0, total_size - int(raw_end))
+        end = total_size - 1
+    else:
+        handler.send_response(416)
+        handler.send_header('Content-Range', f'bytes */{total_size}')
+        handler.end_headers()
+        return True
+
+    if start >= total_size or start > end:
+        handler.send_response(416)
+        handler.send_header('Content-Range', f'bytes */{total_size}')
+        handler.end_headers()
+        return True
+
+    end = min(end, total_size - 1)
+    content_length = end - start + 1
+
+    handler.send_response(206)
+    handler.send_header('Content-Type', mime_type)
+    handler.send_header('Content-Range', f'bytes {start}-{end}/{total_size}')
+    handler.send_header('Content-Length', str(content_length))
+    handler.send_header('Accept-Ranges', 'bytes')
+    handler.end_headers()
+
+    if handler.command == 'HEAD':
+        return True
+
+    try:
+        with open(filepath, 'rb') as f:
+            f.seek(start)
+            bytes_remaining = content_length
+            chunk_size = 64 * 1024
+            while bytes_remaining > 0:
+                to_read = min(chunk_size, bytes_remaining)
+                chunk = f.read(to_read)
+                if not chunk:
+                    break
+                handler.wfile.write(chunk)
+                handler.wfile.flush()
+                bytes_remaining -= len(chunk)
+    except (BrokenPipeError, ConnectionResetError, socket.error):
+        pass
+
+    return True
+
 class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
         # Desativa cache para garantir entrega em tempo real de assets
@@ -573,13 +687,24 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
         self.send_header('Pragma', 'no-cache')
         self.send_header('Expires', '0')
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, HEAD')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With, Range')
+        self.send_header('Access-Control-Expose-Headers', 'Content-Range, Accept-Ranges, Content-Length')
         super().end_headers()
 
     def do_OPTIONS(self):
         self.send_response(200)
         self.end_headers()
+
+    def do_HEAD(self):
+        parsed = urlparse(self.path)
+        filepath = self.translate_path(parsed.path)
+        if os.path.isfile(filepath):
+            ext = os.path.splitext(filepath)[1].lower()
+            if ext in MEDIA_EXTENSIONS or 'Range' in self.headers:
+                if handle_range_request(self, filepath):
+                    return
+        super().do_HEAD()
 
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -768,6 +893,14 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"success": False, "error": f"Sessão analítica '{session_id}' não encontrada."}).encode('utf-8'))
             return
+
+        # Suporte a HTTP 206 Range Requests para arquivos de mídia (Plano 11 - Fase 1)
+        filepath = self.translate_path(parsed.path)
+        if os.path.isfile(filepath):
+            ext = os.path.splitext(filepath)[1].lower()
+            if ext in MEDIA_EXTENSIONS or 'Range' in self.headers:
+                if handle_range_request(self, filepath):
+                    return
 
         # Servidor de arquivos estáticos padrão
         super().do_GET()

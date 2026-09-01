@@ -2179,6 +2179,133 @@ def test_demanda10_multi_screen_presenter_hub():
 
     print("✓ Demanda 10 (Fases 1, 2, 3 e 4: Multi-Screen Presenter Hub, Telões Monumentais, Atalhos e Resiliência) 100% HOMOLOGADA com sucesso.")
 
+def test_demanda11_media_range_requests():
+    """
+    Suíte 22: Validação de HTTP 206 Range Requests para Streaming de Mídias (Plano 11 - Fase 1)
+    - Suporte a HTTP 200 com cabeçalho Accept-Ranges: bytes.
+    - Suporte a HTTP 206 com Range fechado (bytes=0-1023).
+    - Suporte a HTTP 206 com Range aberto (bytes=1024-).
+    - Suporte a HTTP 206 com Range de sufixo (bytes=-500).
+    - Tratamento de HTTP 416 Range Not Satisfiable para offsets inválidos.
+    - Respostas HEAD para arquivos de mídia com Content-Length e Accept-Ranges.
+    - Suporte a formatos de áudio e vídeo (.mp4, .webm, .mp3, .wav).
+    """
+    print(f"\n{'='*70}")
+    print(f" 🧪 22. Demanda 11: HTTP 206 Range Requests & Streaming de Mídias (Fase 1)")
+    print(f"{'='*70}")
+
+    from server import LiveSyncHTTPRequestHandler, ThreadingHTTPServer
+
+    test_video_path = os.path.join(BASE_DIR, "test_media_sample.mp4")
+    test_audio_path = os.path.join(BASE_DIR, "test_audio_sample.mp3")
+
+    # Gera payload sintético determinístico de 256KB para vídeo e 64KB para áudio
+    video_bytes = bytes([i % 256 for i in range(256 * 1024)])
+    audio_bytes = bytes([(i * 7) % 256 for i in range(64 * 1024)])
+
+    with open(test_video_path, "wb") as f:
+        f.write(video_bytes)
+    with open(test_audio_path, "wb") as f:
+        f.write(audio_bytes)
+
+    port = 8899
+    httpd = ThreadingHTTPServer(('127.0.0.1', port), LiveSyncHTTPRequestHandler)
+    server_thread = threading.Thread(target=httpd.serve_forever)
+    server_thread.daemon = True
+    server_thread.start()
+
+    base_url = f"http://127.0.0.1:{port}"
+
+    try:
+        # 1. Teste de GET Padrão (HTTP 200 + Accept-Ranges)
+        with urllib.request.urlopen(f"{base_url}/test_media_sample.mp4") as resp:
+            assert resp.status == 200
+            assert resp.headers.get("Accept-Ranges") == "bytes"
+            assert resp.headers.get("Content-Type") == "video/mp4"
+            assert int(resp.headers.get("Content-Length")) == len(video_bytes)
+            data = resp.read()
+            assert data == video_bytes
+        print("  ✓ HTTP 200 Padrão: Entrega completa com cabeçalho 'Accept-Ranges: bytes' validada.")
+
+        # 2. Teste de HEAD Request
+        req_head = urllib.request.Request(f"{base_url}/test_media_sample.mp4", method='HEAD')
+        with urllib.request.urlopen(req_head) as resp:
+            assert resp.status == 200
+            assert resp.headers.get("Accept-Ranges") == "bytes"
+            assert int(resp.headers.get("Content-Length")) == len(video_bytes)
+            assert len(resp.read()) == 0
+        print("  ✓ HEAD Request: Metadados e cabeçalhos de mídia entregues sem corpo.")
+
+        # 3. Teste de Range Fechado (bytes=0-1023 -> 1024 bytes)
+        req_range1 = urllib.request.Request(f"{base_url}/test_media_sample.mp4", headers={"Range": "bytes=0-1023"})
+        with urllib.request.urlopen(req_range1) as resp:
+            assert resp.status == 206
+            assert resp.headers.get("Content-Range") == f"bytes 0-1023/{len(video_bytes)}"
+            assert int(resp.headers.get("Content-Length")) == 1024
+            chunk1 = resp.read()
+            assert chunk1 == video_bytes[0:1024]
+        print("  ✓ HTTP 206 (Range Fechado bytes=0-1023): Chunk exato de 1024 bytes validado.")
+
+        # 4. Teste de Range Intermediário (bytes=50000-59999 -> 10000 bytes)
+        req_range2 = urllib.request.Request(f"{base_url}/test_media_sample.mp4", headers={"Range": "bytes=50000-59999"})
+        with urllib.request.urlopen(req_range2) as resp:
+            assert resp.status == 206
+            assert resp.headers.get("Content-Range") == f"bytes 50000-59999/{len(video_bytes)}"
+            assert int(resp.headers.get("Content-Length")) == 10000
+            chunk2 = resp.read()
+            assert chunk2 == video_bytes[50000:60000]
+        print("  ✓ HTTP 206 (Range Intermediário bytes=50000-59999): Fatia de 10.000 bytes validada.")
+
+        # 5. Teste de Range Aberto (bytes=260000-)
+        req_range3 = urllib.request.Request(f"{base_url}/test_media_sample.mp4", headers={"Range": "bytes=260000-"})
+        with urllib.request.urlopen(req_range3) as resp:
+            assert resp.status == 206
+            expected_range = f"bytes 260000-{len(video_bytes)-1}/{len(video_bytes)}"
+            assert resp.headers.get("Content-Range") == expected_range
+            chunk3 = resp.read()
+            assert chunk3 == video_bytes[260000:]
+        print("  ✓ HTTP 206 (Range Aberto bytes=260000-): Cauda final do arquivo validada.")
+
+        # 6. Teste de Range com Sufixo (bytes=-500 -> últimos 500 bytes)
+        req_range4 = urllib.request.Request(f"{base_url}/test_media_sample.mp4", headers={"Range": "bytes=-500"})
+        with urllib.request.urlopen(req_range4) as resp:
+            assert resp.status == 206
+            expected_range = f"bytes {len(video_bytes)-500}-{len(video_bytes)-1}/{len(video_bytes)}"
+            assert resp.headers.get("Content-Range") == expected_range
+            chunk4 = resp.read()
+            assert chunk4 == video_bytes[-500:]
+        print("  ✓ HTTP 206 (Range Sufixo bytes=-500): Últimos 500 bytes validados.")
+
+        # 7. Teste de HTTP 416 (Range Fora dos Limites)
+        req_range_inv = urllib.request.Request(f"{base_url}/test_media_sample.mp4", headers={"Range": "bytes=999999-"})
+        try:
+            urllib.request.urlopen(req_range_inv)
+            assert False, "Deveria ter retornado HTTP 416"
+        except urllib.error.HTTPError as e:
+            assert e.code == 416
+            assert e.headers.get("Content-Range") == f"bytes */{len(video_bytes)}"
+        print("  ✓ HTTP 416 (Range Not Satisfiable): Offset além do tamanho do arquivo rejeitado graciosamente.")
+
+        # 8. Teste de Arquivo de Áudio MP3
+        req_audio = urllib.request.Request(f"{base_url}/test_audio_sample.mp3", headers={"Range": "bytes=0-511"})
+        with urllib.request.urlopen(req_audio) as resp:
+            assert resp.status == 206
+            assert resp.headers.get("Content-Type") == "audio/mpeg"
+            assert resp.headers.get("Content-Range") == f"bytes 0-511/{len(audio_bytes)}"
+            assert resp.read() == audio_bytes[0:512]
+        print("  ✓ Suporte a Áudio (.mp3): Content-Type audio/mpeg e Range Request validados.")
+
+    finally:
+        httpd.shutdown()
+        if os.path.exists(test_video_path):
+            try: os.remove(test_video_path)
+            except Exception: pass
+        if os.path.exists(test_audio_path):
+            try: os.remove(test_audio_path)
+            except Exception: pass
+
+    print("✓ Demanda 11 (Fase 1: HTTP 206 Range Requests no server.py) 100% HOMOLOGADA com sucesso.")
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -2202,6 +2329,7 @@ if __name__ == "__main__":
         test_demanda02_stage_fx_overlay()
         test_demanda09_analytics_and_session_archive()
         test_demanda10_multi_screen_presenter_hub()
+        test_demanda11_media_range_requests()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time
