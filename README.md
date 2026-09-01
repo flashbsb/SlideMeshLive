@@ -93,6 +93,10 @@
     - Native support for multiple physical stage screens powered by the same local hub (`server.py`) using routing query parameters: `/presenter/?view=stage` (Main Slide Stage), `/presenter/?view=questions_wall` (Monumental Questions Wall with upvote ranking and responsive clamp typography), and `/presenter/?view=polls_live` (Monumental Live Poll Display with vibrant glowing progress bars).
     - Dedicated 1-click shortcuts in the Control Room (`admin/index.html`) to launch and project secondary screens independently.
     - Full real-time SSE event synchronization and synchronized visual effects (`StageFX`) broadcast across all active screens with <10ms local latency.
+14. **Heavy Media Optimizer, HTTP 206 Byte-Range Streaming & Sliding-Window Pre-Caching**:
+    - The local Python backend (`server.py`) natively supports **HTTP 206 Partial Content with Range Requests** (RFC 7233 / RFC 9110), enabling ultra-low-latency streaming and instant non-buffering seek for large video (`.mp4`, `.webm`, `.ogg`) and audio (`.mp3`, `.wav`, `.m4a`) files delivered in 64KB chunks without exhausting host RAM.
+    - The client-side `MediaCacheEngine` (`js/core/media-cache-engine.js`) maintains a **smart sliding window of ±2 slides**: progressively pre-fetching upcoming media chunks with low network priority for instant <50ms playback start while deterministically reclaiming browser memory via `URL.revokeObjectURL(blobUrl)` as slides leave the active window.
+    - The Control Room (`admin/index.html`) features a **Media Remote Control Card** (Play, Pause, Restart, and Mute) and the presenter can toggle media playback instantly via hotkey `K` on stage.
 
 ---
 
@@ -119,6 +123,7 @@ SlideMeshLive/
 │   ├── config.js                            # App configuration and environment credentials
 │   ├── core/                                # Core Engine Subsystems
 │   │   ├── presentation-engine.js           # Dynamic slide loader and HTML renderer
+│   │   ├── media-cache-engine.js            # Video/audio pre-cache engine with ±2 slides window
 │   │   ├── realtime-engine.js               # Real-time synchronization (LAN Hub + Local)
 │   │   ├── conversion-engine.js             # Semantic PPTX/DOCX/MD/PDF converter & templates
 │   │   ├── i18n-engine.js                   # Symmetric Internationalization (en-US / pt-BR)

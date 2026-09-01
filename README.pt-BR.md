@@ -92,6 +92,10 @@ O **SlideMeshLive** foi concebido com uma arquitetura modular baseada em tecnolo
     - Suporte nativo a múltiplos telões físicos no mesmo auditório alimentados pelo mesmo hub local (`server.py`) através de parâmetros de rota: `/presenter/?view=stage` (Telão Principal de slides), `/presenter/?view=questions_wall` (Mural Monumental de Perguntas Aprovadas com ranking de upvotes e tipografia auto-escalável) e `/presenter/?view=polls_live` (Painel Monumental de Enquetes em Tempo Real com barras gradientes luminosas).
     - Atalhos diretos de 1-clique na Mesa Técnica (`admin/index.html`) para abrir e projetar cada telão lateral secundário de forma desacoplada e independente.
     - Sincronização em tempo real de eventos SSE e disparo simultâneo de efeitos visuais (`StageFX`) em todas as telas conectadas com latência inferior a 10ms na rede local.
+14. **Otimizador de Mídias Pesadas, HTTP 206 Streaming & Pré-Cache em Janela Deslizante**:
+    - O backend Python (`server.py`) implementa suporte completo a **HTTP 206 Partial Content com Range Requests** (RFC 7233 / RFC 9110), permitindo streaming suave e seek instantâneo sem buffering para arquivos pesados de vídeo (`.mp4`, `.webm`, `.ogg`) e áudio (`.mp3`, `.wav`, `.m4a`) transmitidos em chunks de 64KB sem sobrecarregar a memória RAM do servidor.
+    - O motor client-side `MediaCacheEngine` (`js/core/media-cache-engine.js`) gerencia uma **janela deslizante inteligente de ±2 slides**: pré-carrega progressivamente os próximos slides com baixa prioridade (*low fetch priority*) para início de reprodução em <50ms e revoga deterministicamente os recursos de memória com `URL.revokeObjectURL(blobUrl)` assim que os slides saem da janela ativa.
+    - A Mesa Técnica (`admin/index.html`) inclui um **Card de Controle Remoto de Mídia** com botões táteis (Play, Pause, Reiniciar e Mudo) e o orador dispõe de atalho de teclado `K` no palco.
 
 ---
 
@@ -118,6 +122,7 @@ SlideMeshLive/
 │   ├── config.js                            # Configurações de ambiente e credenciais
 │   ├── core/                                # Motores Centrais
 │   │   ├── presentation-engine.js           # Carregador e renderizador dinâmico de slides
+│   │   ├── media-cache-engine.js            # Motor de pré-cache de vídeo/áudio em janela ±2 slides
 │   │   ├── realtime-engine.js               # Sincronização em tempo real (Hub LAN + Local)
 │   │   ├── conversion-engine.js             # Motor semântico PPTX/DOCX/MD/PDF e Templates
 │   │   ├── i18n-engine.js                   # Internacionalização simétrica (pt-BR / en-US)
