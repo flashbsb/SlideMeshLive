@@ -20,6 +20,8 @@ import argparse
 import xml.etree.ElementTree as ET
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 PRESENTATIONS_DIR = os.path.join(BASE_DIR, "presentations")
 CATALOG_PATH = os.path.join(PRESENTATIONS_DIR, "catalog.json")
 
@@ -320,6 +322,31 @@ def import_presentation(filepath, presentation_id=None, title=None, session=None
 
     print(f"🚀 Processando e convertendo: {filename} ({ext.upper()})...")
 
+    if ext in ('.zip', '.slidemesh'):
+        with open(filepath, 'rb') as zf:
+            zip_bytes = zf.read()
+        import server
+        res = server.import_presentation_zip(zip_bytes, mode='overwrite', custom_slug=presentation_id, base_dir=BASE_DIR)
+        slug = res["slug"]
+        manifest = res["manifest"]
+        total_slides = res["totalSlides"]
+        session_code = manifest.get("defaultSession", "SES2026")
+        pres_title = manifest.get("title", slug)
+
+        print(f"\n{'='*65}")
+        print(f"  🎉 PACOTE ZIP IMPORTADO COM SUCESSO NO SLIDEMESHLIVE!")
+        print(f"{'='*65}")
+        print(f"  📌 ID: {slug}")
+        print(f"  📝 Título: {pres_title}")
+        print(f"  📊 Total de Slides: {total_slides}")
+        print(f"  🔑 Sessão: {session_code}")
+        print(f"\n  🌐 LINKS DE ACESSO:")
+        print(f"  🖥️  Telão:      http://localhost:8000/presenter/?presentation={slug}&session={session_code}")
+        print(f"  🛡️  Mesa Técnica: http://localhost:8000/admin/?presentation={slug}&session={session_code}")
+        print(f"  📱  Smartphone:  http://localhost:8000/audience/?presentation={slug}&session={session_code}")
+        print(f"{'='*65}\n")
+        return
+
     if ext == '.pptx':
         slides, assets = parse_pptx(filepath)
     elif ext == '.docx':
@@ -329,7 +356,7 @@ def import_presentation(filepath, presentation_id=None, title=None, session=None
     elif ext == '.pdf':
         slides, assets = parse_pdf(filepath)
     else:
-        raise ValueError(f"Extensão não suportada: {ext}. Formatos suportados: .pptx, .docx, .md, .pdf")
+        raise ValueError(f"Extensão não suportada: {ext}. Formatos suportados: .zip, .slidemesh, .pptx, .docx, .md, .pdf")
 
     manifest = {
         "id": slug,
@@ -415,7 +442,7 @@ def import_presentation(filepath, presentation_id=None, title=None, session=None
 
 def main():
     parser = argparse.ArgumentParser(description="SlideMeshLive CLI — Importador Universal de Conteúdos")
-    parser.add_argument("file", help="Caminho do arquivo (.pptx, .docx, .md, .pdf)")
+    parser.add_argument("file", help="Caminho do arquivo (.zip, .slidemesh, .pptx, .docx, .md, .pdf)")
     parser.add_argument("--id", dest="presentation_id", help="Slug/ID da apresentação no catálogo")
     parser.add_argument("--title", help="Título exibido da apresentação")
     parser.add_argument("--session", help="Código da sessão (ex: SES2026)")

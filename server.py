@@ -16,6 +16,8 @@ import threading
 import queue
 import socketserver
 import mimetypes
+import zipfile
+import io
 
 try:
     from http.server import HTTPServer, SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -38,11 +40,13 @@ PRESENCE_TIMEOUT_MS = 30000  # Janela de timeout único para poda e contagem (30
 BACKUP_FILE = os.environ.get("SLIDEMESH_BACKUP_FILE", ".session_backup.json")
 PERSIST_ENABLED = False
 
-# Limites de Segurança de Payload e Extensões Permitidas (Fase 3 & Plano 11)
-MAX_IMPORT_PAYLOAD_BYTES = 50 * 1024 * 1024  # 50 MB
-MAX_SYNC_PAYLOAD_BYTES = 5 * 1024 * 1024     # 5 MB
+# Limites de Segurança de Payload e Extensões Permitidas (Fase 3, Plano 11 & Plano 12)
+MAX_IMPORT_PAYLOAD_BYTES = 50 * 1024 * 1024       # 50 MB
+MAX_UNCOMPRESSED_ZIP_BYTES = 200 * 1024 * 1024   # 200 MB (Proteção contra Zip Bomb)
+MAX_ZIP_ENTRIES = 500                            # Máximo 500 arquivos por pacote ZIP
+MAX_SYNC_PAYLOAD_BYTES = 5 * 1024 * 1024         # 5 MB
 MEDIA_EXTENSIONS = {'.mp4', '.webm', '.ogg', '.mp3', '.wav', '.m4a', '.aac', '.flac'}
-ALLOWED_ASSET_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.mp4', '.webm', '.ogg', '.mp3', '.wav', '.m4a'}
+ALLOWED_ASSET_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.mp4', '.webm', '.ogg', '.mp3', '.wav', '.m4a', '.aac', '.flac'}
 
 # Diretório e Limites de Histórico Analítico (Plano 09 - Fase 1)
 SESSIONS_ARCHIVE_DIR = os.path.join(BASE_DIR, "sessions_archive")
@@ -568,6 +572,253 @@ def import_presentation_files(data):
         "manifest": manifest
     }
 
+def export_presentation_zip(slug, base_dir=BASE_DIR):
+    """
+    Gera em memória um pacote ZIP completo (.slidemesh.zip) de uma apresentação:
+    - manifest.json
+    - slides.json
+    - pasta assets/ com todos os arquivos
+    Retorna os bytes do arquivo ZIP gerado (Plano 12 - Fase 1).
+    """
+    raw_id = str(slug).strip().lower()
+    clean_slug = re.sub(r'[^a-z0-9_-]', '', raw_id)
+    if not clean_slug:
+        raise ValueError("ID de apresentação inválido para exportação.")
+
+    presentations_root = os.path.abspath(os.path.join(base_dir, "presentations"))
+    target_dir = os.path.abspath(os.path.join(presentations_root, clean_slug))
+
+    # Prevenção de Path Traversal
+    if not target_dir.startswith(presentations_root + os.sep) and target_dir != presentations_root:
+        raise PermissionError("Tentativa de leitura fora do diretório presentations/ bloqueada.")
+
+    if not os.path.isdir(target_dir):
+        raise FileNotFoundError(f"Apresentação '{clean_slug}' não encontrada em presentations/.")
+
+    manifest_path = os.path.join(target_dir, "manifest.json")
+    slides_path = os.path.join(target_dir, "slides.json")
+
+    if not os.path.isfile(manifest_path) or not os.path.isfile(slides_path):
+        raise ValueError(f"Apresentação '{clean_slug}' incompleta (manifest.json ou slides.json ausentes).")
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        # Adiciona manifest.json
+        zf.write(manifest_path, arcname="manifest.json")
+        # Adiciona slides.json
+        zf.write(slides_path, arcname="slides.json")
+
+        # Adiciona pasta assets se houver
+        assets_dir = os.path.join(target_dir, "assets")
+        if os.path.isdir(assets_dir):
+            for root, dirs, files in os.walk(assets_dir):
+                for file in files:
+                    full_file_path = os.path.join(root, file)
+                    rel_to_assets = os.path.relpath(full_file_path, assets_dir)
+                    arcname = os.path.join("assets", rel_to_assets)
+                    zf.write(full_file_path, arcname=arcname)
+
+    buf.seek(0)
+    return buf.getvalue()
+
+def import_presentation_zip(zip_bytes, mode='overwrite', custom_slug=None, base_dir=BASE_DIR):
+    """
+    Descompacta e importa com segurança um pacote ZIP de apresentação:
+    - Proteção estrita contra Zip Slip (rejeita '..' e caminhos absolutos)
+    - Proteção estrita contra Zip Bomb (limite de 200MB e 500 arquivos)
+    - Validação de schema do manifest.json e slides.json
+    - Sanitização de arquivos e extensões de mídia em assets/
+    - Tratamento de modo 'overwrite' ou 'rename'
+    - Atualização atômica do catalog.json sem apagar apresentações pré-existentes (Plano 12 - Fase 1)
+    """
+    if not isinstance(zip_bytes, (bytes, bytearray)) or len(zip_bytes) == 0:
+        raise ValueError("Arquivo ZIP vazio ou inválido.")
+
+    if len(zip_bytes) > MAX_IMPORT_PAYLOAD_BYTES:
+        raise ValueError(f"Tamanho do arquivo ZIP excede o limite máximo permitido de {MAX_IMPORT_PAYLOAD_BYTES // (1024*1024)}MB.")
+
+    buf = io.BytesIO(zip_bytes)
+    if not zipfile.is_zipfile(buf):
+        raise ValueError("O arquivo enviado não é um pacote ZIP válido.")
+
+    buf.seek(0)
+    with zipfile.ZipFile(buf, "r") as z:
+        infolist = z.infolist()
+        if len(infolist) > MAX_ZIP_ENTRIES:
+            raise ValueError(f"Pacote ZIP excede o limite de {MAX_ZIP_ENTRIES} arquivos (Zip Bomb bloqueado).")
+
+        total_uncompressed = sum(info.file_size for info in infolist)
+        if total_uncompressed > MAX_UNCOMPRESSED_ZIP_BYTES:
+            raise ValueError(f"Tamanho descompactado ({total_uncompressed / (1024*1024):.1f}MB) excede o limite de 200MB (Zip Bomb bloqueado).")
+
+        # 1. Zip Slip Check e Mapeamento de Prefixos
+        # Pode conter arquivos na raiz ('manifest.json') ou envoltos em uma pasta única ('slug/manifest.json')
+        root_prefix = ""
+        manifest_entries = [info.filename for info in infolist if info.filename.endswith("manifest.json")]
+        if not manifest_entries:
+            raise ValueError("Pacote ZIP inválido: 'manifest.json' não encontrado na raiz ou subpasta.")
+
+        manifest_entry = manifest_entries[0]
+        if "/" in manifest_entry:
+            parts = manifest_entry.split("/")
+            if len(parts) == 2:
+                root_prefix = parts[0] + "/"
+
+        # Validação estrita de cada caminho do ZIP contra Zip Slip
+        for info in infolist:
+            fname = info.filename
+            if ".." in fname or fname.startswith("/") or fname.startswith("\\") or ":/" in fname or ":\\" in fname:
+                raise PermissionError("Arquivo ZIP contém caminhos de descompressão inseguros (Zip Slip bloqueado).")
+
+            norm = os.path.normpath(fname)
+            if norm.startswith("..") or os.path.isabs(norm):
+                raise PermissionError("Arquivo ZIP contém caminhos de descompressão inseguros (Zip Slip bloqueado).")
+
+        # 2. Leitura e validação de manifest.json e slides.json
+        manifest_rel = root_prefix + "manifest.json"
+        slides_rel = root_prefix + "slides.json"
+
+        try:
+            manifest_raw = z.read(manifest_rel).decode("utf-8")
+            manifest = json.loads(manifest_raw)
+        except Exception as e:
+            raise ValueError(f"Falha ao ler 'manifest.json' do pacote ZIP: {e}")
+
+        try:
+            slides_raw = z.read(slides_rel).decode("utf-8")
+            slides_data = json.loads(slides_raw)
+            slides = slides_data.get("slides") if isinstance(slides_data, dict) else slides_data
+            if not isinstance(slides, list) or len(slides) == 0:
+                raise ValueError("O arquivo 'slides.json' precisa conter uma lista 'slides' com ao menos 1 slide.")
+        except Exception as e:
+            raise ValueError(f"Falha ao ler 'slides.json' do pacote ZIP: {e}")
+
+        # 3. Determinação de Slug / ID e Resolução de Conflitos
+        raw_slug = custom_slug or manifest.get("id") or (root_prefix.strip("/") if root_prefix else "")
+        raw_slug = str(raw_slug).strip().lower()
+        slug = re.sub(r'[^a-z0-9_-]', '', raw_slug)
+        if not slug or len(slug) < 2:
+            slug = f"apresentacao-{int(time.time())}"
+
+        presentations_root = os.path.abspath(os.path.join(base_dir, "presentations"))
+        os.makedirs(presentations_root, exist_ok=True)
+
+        target_dir = os.path.abspath(os.path.join(presentations_root, slug))
+        if not target_dir.startswith(presentations_root + os.sep) and target_dir != presentations_root:
+            raise PermissionError("Tentativa de gravação fora de presentations/ bloqueada.")
+
+        # Tratamento de conflito de slug
+        if mode == "rename" and os.path.exists(target_dir):
+            copy_num = 1
+            cand_slug = f"{slug}-copia"
+            cand_dir = os.path.join(presentations_root, cand_slug)
+            while os.path.exists(cand_dir):
+                copy_num += 1
+                cand_slug = f"{slug}-copia-{copy_num}"
+                cand_dir = os.path.join(presentations_root, cand_slug)
+            slug = cand_slug
+            target_dir = cand_dir
+
+        manifest["id"] = slug
+        manifest["totalSlides"] = len(slides)
+        manifest.setdefault("theme", {"accentColor": "#38bdf8", "background": "#0b0f19"})
+        manifest.setdefault("security", {"mode": manifest.get("securityMode", "public")})
+        manifest.setdefault("defaultSession", "SES" + str(int(time.time()) % 9000 + 1000))
+        manifest.setdefault("securityLabel", "Pública" if manifest.get("security", {}).get("mode") == "public" else "🔒 Protegida por PIN")
+        manifest.setdefault("badgeClass", "badge-accent")
+
+        assets_dir = os.path.join(target_dir, "assets")
+        os.makedirs(assets_dir, exist_ok=True)
+
+        # 4. Extração segura de assets/
+        assets_prefix = root_prefix + "assets/"
+        allowed_all_exts = ALLOWED_ASSET_EXTENSIONS | MEDIA_EXTENSIONS
+
+        for info in infolist:
+            fname = info.filename
+            if fname.startswith(assets_prefix) and not info.is_dir():
+                rel_asset = fname[len(assets_prefix):]
+                # Prevenção de travessia e caracteres inválidos no nome do asset
+                rel_norm = os.path.normpath(rel_asset)
+                if rel_norm.startswith("..") or os.path.isabs(rel_norm):
+                    continue
+
+                asset_fname = os.path.basename(rel_norm)
+                if not asset_fname or asset_fname.startswith("."):
+                    continue
+
+                ext = os.path.splitext(asset_fname)[1].lower()
+                if ext not in allowed_all_exts:
+                    raise ValueError(f"Extensão de asset '{ext}' no pacote ZIP não permitida por segurança.")
+
+                asset_dest_path = os.path.join(assets_dir, rel_norm)
+                os.makedirs(os.path.dirname(asset_dest_path), exist_ok=True)
+
+                with z.open(info) as src, open(asset_dest_path, "wb") as dst:
+                    dst.write(src.read())
+
+        # 5. Gravação atômica de manifest.json e slides.json
+        manifest_path = os.path.join(target_dir, "manifest.json")
+        manifest_tmp = manifest_path + ".tmp"
+        with open(manifest_tmp, "w", encoding="utf-8") as mf:
+            json.dump(manifest, mf, ensure_ascii=False, indent=2)
+            mf.flush()
+            os.fsync(mf.fileno())
+        os.replace(manifest_tmp, manifest_path)
+
+        slides_path = os.path.join(target_dir, "slides.json")
+        slides_tmp = slides_path + ".tmp"
+        with open(slides_tmp, "w", encoding="utf-8") as sf:
+            json.dump({"slides": slides}, sf, ensure_ascii=False, indent=2)
+            sf.flush()
+            os.fsync(sf.fileno())
+        os.replace(slides_tmp, slides_path)
+
+        # 6. Atualização atômica do presentations/catalog.json
+        catalog_path = os.path.join(presentations_root, "catalog.json")
+        with _STATE_LOCK:
+            catalog_data = {"version": "1.0.0", "presentations": []}
+            if os.path.exists(catalog_path):
+                try:
+                    with open(catalog_path, "r", encoding="utf-8") as cf:
+                        catalog_data = json.load(cf)
+                except Exception:
+                    pass
+
+            catalog_presentations = catalog_data.setdefault("presentations", [])
+            catalog_entry = {
+                "id": slug,
+                "code": manifest.get("code", slug.upper()),
+                "title": manifest.get("title", slug),
+                "subtitle": manifest.get("subtitle", ""),
+                "description": manifest.get("description", ""),
+                "defaultSession": manifest.get("defaultSession", "SES2026"),
+                "totalSlides": len(slides),
+                "securityMode": manifest.get("security", {}).get("mode", manifest.get("securityMode", "public")),
+                "securityLabel": manifest.get("securityLabel", "Pública"),
+                "badgeClass": manifest.get("badgeClass", "badge-accent")
+            }
+
+            existing_idx = next((i for i, p in enumerate(catalog_presentations) if p.get("id") == slug), None)
+            if existing_idx is not None:
+                catalog_presentations[existing_idx] = catalog_entry
+            else:
+                catalog_presentations.insert(0, catalog_entry)
+
+            cat_tmp = catalog_path + ".tmp"
+            with open(cat_tmp, "w", encoding="utf-8") as cf:
+                json.dump(catalog_data, cf, ensure_ascii=False, indent=2)
+                cf.flush()
+                os.fsync(cf.fileno())
+            os.replace(cat_tmp, catalog_path)
+
+        return {
+            "success": True,
+            "slug": slug,
+            "manifest": manifest,
+            "totalSlides": len(slides)
+        }
+
 def handle_range_request(handler, filepath):
     """
     Manipula requisições com suporte a HTTP 206 Partial Content (Range Requests)
@@ -894,6 +1145,42 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps({"success": False, "error": f"Sessão analítica '{session_id}' não encontrada."}).encode('utf-8'))
             return
 
+        if parsed.path == '/api/presentations/export':
+            qs = parse_qs(parsed.query)
+            presentation_id = qs.get('id', [''])[0].strip() or qs.get('presentation', [''])[0].strip()
+            if not presentation_id:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": "Parâmetro 'id' ou 'presentation' obrigatório para exportação."}).encode('utf-8'))
+                return
+            try:
+                zip_bytes = export_presentation_zip(presentation_id)
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/zip')
+                self.send_header('Content-Disposition', f'attachment; filename="{presentation_id}.slidemesh.zip"')
+                self.send_header('Content-Length', str(len(zip_bytes)))
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Access-Control-Expose-Headers', 'Content-Disposition')
+                self.end_headers()
+                self.wfile.write(zip_bytes)
+                return
+            except FileNotFoundError as fnf:
+                self.send_response(404)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": str(fnf)}).encode('utf-8'))
+                return
+            except Exception as err:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": str(err)}).encode('utf-8'))
+                return
+
         # Suporte a HTTP 206 Range Requests para arquivos de mídia (Plano 11 - Fase 1)
         filepath = self.translate_path(parsed.path)
         if os.path.isfile(filepath):
@@ -1131,6 +1418,96 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({"success": True, "sessionId": clean_sid, "savedAt": saved_record.get("savedAt")}).encode('utf-8'))
+                return
+            except Exception as err:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": str(err)}).encode('utf-8'))
+                return
+
+        elif parsed.path == '/api/presentations/import-zip':
+            if content_length > MAX_IMPORT_PAYLOAD_BYTES:
+                self.send_response(413)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": "Tamanho do pacote ZIP excede o limite máximo permitido de 50MB."}).encode('utf-8'))
+                return
+
+            qs = parse_qs(parsed.query)
+            query_mode = qs.get('mode', ['overwrite'])[0].strip().lower()
+            custom_slug = qs.get('id', [''])[0].strip().lower() or None
+
+            content_type = self.headers.get('Content-Type', '')
+            raw_body = self.rfile.read(content_length)
+
+            zip_bytes = None
+            mode = query_mode
+
+            if 'application/json' in content_type.lower():
+                try:
+                    jdata = json.loads(raw_body.decode('utf-8'))
+                    b64_data = jdata.get('dataBase64', '')
+                    if ',' in b64_data:
+                        b64_data = b64_data.split(',', 1)[1]
+                    zip_bytes = base64.b64decode(b64_data)
+                    mode = jdata.get('mode', mode)
+                    custom_slug = jdata.get('id', custom_slug)
+                except Exception as e:
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"success": False, "error": f"JSON de upload inválido: {e}"}).encode('utf-8'))
+                    return
+            elif 'multipart/form-data' in content_type.lower():
+                try:
+                    boundary = content_type.split("boundary=")[1].encode()
+                    if b";" in boundary:
+                        boundary = boundary.split(b";")[0]
+                    parts = raw_body.split(b"--" + boundary)
+                    for part in parts:
+                        if b"filename=" in part:
+                            header_and_data = part.split(b"\r\n\r\n", 1)
+                            if len(header_and_data) == 2:
+                                zip_bytes = header_and_data[1].rstrip(b"\r\n")
+                                break
+                    if not zip_bytes:
+                        zip_bytes = raw_body
+                except Exception:
+                    zip_bytes = raw_body
+            else:
+                zip_bytes = raw_body
+
+            try:
+                import_res = import_presentation_zip(zip_bytes, mode=mode, custom_slug=custom_slug)
+                slug = import_res["slug"]
+                manifest = import_res["manifest"]
+
+                response_data = {
+                    "success": True,
+                    "presentationId": slug,
+                    "totalSlides": import_res["totalSlides"],
+                    "presenterUrl": f"/presenter/?presentation={slug}&session={manifest.get('defaultSession', 'SES2026')}",
+                    "audienceUrl": f"/audience/?presentation={slug}&session={manifest.get('defaultSession', 'SES2026')}",
+                    "adminUrl": f"/admin/?presentation={slug}&session={manifest.get('defaultSession', 'SES2026')}",
+                    "message": "Pacote ZIP de apresentação importado e catalogado com sucesso!"
+                }
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps(response_data, ensure_ascii=False).encode('utf-8'))
+                return
+            except PermissionError as pe:
+                self.send_response(403)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": str(pe)}).encode('utf-8'))
                 return
             except Exception as err:
                 self.send_response(400)

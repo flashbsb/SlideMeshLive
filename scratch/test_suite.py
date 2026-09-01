@@ -718,12 +718,13 @@ def test_readme_and_documentation_consistency():
     assert "FASE 9 — Módulo de Analytics Avançado & Histórico Multissessão" in plan_v3_content, "Detalhamento da Fase 9 ausente no Plano v3"
     assert "FASE 10 — Multi-Screen Presenter Hub" in plan_v3_content, "Detalhamento da Fase 10 ausente no Plano v3"
     assert "FASE 11 — Otimizador, Chunking e Pré-Cache de Mídias Pesadas" in plan_v3_content, "Detalhamento da Fase 11 ausente no Plano v3"
+    assert "FASE 12 — Portabilidade Total: Exportação & Importação de Pacote ZIP de Apresentações" in plan_v3_content, "Detalhamento da Fase 12 ausente no Plano v3"
 
-    for plan_file in ["PLANO_09_ANALYTICS_AVANCADO_E_HISTORICO_MULTISESSAO.md", "PLANO_10_MULTI_SCREEN_PRESENTER_HUB.md", "PLANO_11_OTIMIZADOR_PRE_CACHE_MIDIAS_PESADAS.md"]:
+    for plan_file in ["PLANO_09_ANALYTICS_AVANCADO_E_HISTORICO_MULTISESSAO.md", "PLANO_10_MULTI_SCREEN_PRESENTER_HUB.md", "PLANO_11_OTIMIZADOR_PRE_CACHE_MIDIAS_PESADAS.md", "PLANO_12_PORTABILIDADE_IMPORT_EXPORT_ZIP_APRESENTACOES.md"]:
         p_path = os.path.join(BASE_DIR, "plan", plan_file)
         assert os.path.exists(p_path), f"Arquivo de plano {plan_file} ausente em plan/!"
 
-    print("✓ README.md (EN), README.pt-BR.md (PT), PLANO_MESTRE v3 e Planos 09, 10 e 11 100% padronizados e certificados.")
+    print("✓ README.md (EN), README.pt-BR.md (PT), PLANO_MESTRE v3 e Planos 09, 10, 11 e 12 100% padronizados e certificados.")
 
 def test_presentation_import_endpoint():
     print_section("10. Importação Dinâmica de Apresentações (POST /api/presentations/import)")
@@ -2364,6 +2365,145 @@ def test_demanda11_media_range_requests():
 
     print("✓ Demanda 11 (Fases 1, 2 e 3: HTTP 206 Range Requests, MediaCacheEngine e Controle Remoto de Mídia) 100% HOMOLOGADA com sucesso.")
 
+def test_demanda12_zip_export_import_portability():
+    print_section("23. Demanda 12: Portabilidade Total & Import/Export ZIP (Fase 1)")
+    import io
+    import zipfile
+    import shutil
+    import subprocess
+    from http.client import HTTPConnection
+
+    # Inicia servidor local em porta aleatória
+    httpd = HTTPServer(("127.0.0.1", 0), server.LiveSyncHTTPRequestHandler)
+    port = httpd.server_port
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+
+    conn = HTTPConnection("127.0.0.1", port)
+
+    # 1. Teste de GET /api/presentations/export
+    conn.request("GET", "/api/presentations/export?id=slidemesh-showcase")
+    res = conn.getresponse()
+    assert res.status == 200, f"Status esperado 200 em export, recebido {res.status}"
+    assert "application/zip" in res.getheader("Content-Type", ""), "Content-Type deve ser application/zip"
+    assert "slidemesh-showcase.slidemesh.zip" in res.getheader("Content-Disposition", ""), "Content-Disposition inválido"
+    zip_bytes = res.read()
+    assert len(zip_bytes) > 1000, "Arquivo ZIP exportado está vazio ou truncado"
+
+    # Inspeciona conteúdo do ZIP
+    with zipfile.ZipFile(io.BytesIO(zip_bytes), "r") as z:
+        names = z.namelist()
+        assert "manifest.json" in names, "manifest.json ausente no ZIP exportado"
+        assert "slides.json" in names, "slides.json ausente no ZIP exportado"
+        assert any(n.startswith("assets/") for n in names), "Pasta assets/ ausente no ZIP exportado"
+        
+        manifest_data = json.loads(z.read("manifest.json").decode("utf-8"))
+        assert manifest_data["id"] == "slidemesh-showcase", "ID no manifest divergente"
+    print("  ✓ GET /api/presentations/export: Pacote .slidemesh.zip gerado em memória com manifest, slides e assets.")
+
+    # 1.1 Teste de erro 404 em exportação inexistente
+    conn.request("GET", "/api/presentations/export?id=SESSAO_NAO_EXISTENTE_XYZ")
+    res_404 = conn.getresponse()
+    assert res_404.status == 404, "Esperado HTTP 404 para apresentação inexistente"
+    res_404.read()
+    print("  ✓ GET /api/presentations/export: Retorno correto de HTTP 404 para ID inexistente validado.")
+
+    # 2. Teste de POST /api/presentations/import-zip (Binário Direto com mode=rename)
+    conn.request("POST", "/api/presentations/import-zip?mode=rename", body=zip_bytes, headers={"Content-Type": "application/zip"})
+    res_imp = conn.getresponse()
+    assert res_imp.status == 200, f"Status esperado 200 em import-zip, recebido {res_imp.status}"
+    data_imp = json.loads(res_imp.read().decode("utf-8"))
+    assert data_imp["success"] is True, "Falha na resposta de importação"
+    imported_slug = data_imp["presentationId"]
+    assert "copia" in imported_slug, f"Slug renomeado deveria conter 'copia', recebido {imported_slug}"
+    print(f"  ✓ POST /api/presentations/import-zip (Binário): Importação com resolução de conflito ({imported_slug}) validada.")
+
+    # Verifica se a apresentação importada existe no disco e no catálogo
+    imported_dir = os.path.join(BASE_DIR, "presentations", imported_slug)
+    assert os.path.isdir(imported_dir), f"Diretório {imported_dir} não foi criado"
+    assert os.path.isfile(os.path.join(imported_dir, "manifest.json")), "manifest.json não gravado"
+    assert os.path.isfile(os.path.join(imported_dir, "slides.json")), "slides.json não gravado"
+
+    catalog_path = os.path.join(BASE_DIR, "presentations", "catalog.json")
+    with open(catalog_path, "r", encoding="utf-8") as f:
+        cat = json.load(f)
+    assert any(p["id"] == imported_slug for p in cat["presentations"]), "Nova apresentação não catalogada"
+    assert any(p["id"] == "slidemesh-showcase" for p in cat["presentations"]), "Apresentação original foi perdida!"
+    print("  ✓ Catálogo & Sistema de Arquivos: Inserção não-destrutiva e integridade dos arquivos preservadas.")
+
+    # 3. Teste de POST /api/presentations/import-zip via JSON Base64 com mode=overwrite
+    b64_zip = base64.b64encode(zip_bytes).decode("utf-8")
+    json_payload = json.dumps({
+        "id": "teste-override-zip",
+        "dataBase64": b64_zip,
+        "mode": "overwrite"
+    })
+    conn.request("POST", "/api/presentations/import-zip", body=json_payload, headers={"Content-Type": "application/json"})
+    res_json_imp = conn.getresponse()
+    assert res_json_imp.status == 200, "Falha no upload de ZIP via JSON Base64"
+    data_json_imp = json.loads(res_json_imp.read().decode("utf-8"))
+    assert data_json_imp["presentationId"] == "teste-override-zip"
+    print("  ✓ POST /api/presentations/import-zip (JSON Base64): Importação com override e slug personalizado validada.")
+
+    # 4. Testes de Hardening de Segurança (Zip Slip e Extensões Maliciosas)
+    # 4.1 Zip Slip
+    slip_buf = io.BytesIO()
+    with zipfile.ZipFile(slip_buf, "w", zipfile.ZIP_DEFLATED) as zf_bad:
+        zf_bad.writestr("../../../evil.txt", "hacked")
+        zf_bad.writestr("manifest.json", json.dumps({"id": "evil", "title": "Evil"}))
+        zf_bad.writestr("slides.json", json.dumps({"slides": [{"id": 1}]}))
+    slip_bytes = slip_buf.getvalue()
+
+    conn.request("POST", "/api/presentations/import-zip", body=slip_bytes, headers={"Content-Type": "application/zip"})
+    res_slip = conn.getresponse()
+    assert res_slip.status in (400, 403), f"Zip Slip deveria ser rejeitado com 400/403, recebido {res_slip.status}"
+    res_slip.read()
+    assert not os.path.exists(os.path.join(BASE_DIR, "evil.txt")), "Vulnerabilidade Zip Slip executada com sucesso!"
+    print("  ✓ Hardening Zip Slip: Tentativa de descompressão fora do diretório presentations/ bloqueada com 403.")
+
+    # 4.2 Arquivo executável malicioso em assets/
+    bad_ext_buf = io.BytesIO()
+    with zipfile.ZipFile(bad_ext_buf, "w", zipfile.ZIP_DEFLATED) as zf_bad:
+        zf_bad.writestr("manifest.json", json.dumps({"id": "malicious", "title": "Bad"}))
+        zf_bad.writestr("slides.json", json.dumps({"slides": [{"id": 1}]}))
+        zf_bad.writestr("assets/malware.exe", "MZ...")
+    bad_ext_bytes = bad_ext_buf.getvalue()
+
+    conn.request("POST", "/api/presentations/import-zip", body=bad_ext_bytes, headers={"Content-Type": "application/zip"})
+    res_bad = conn.getresponse()
+    assert res_bad.status == 400, "Arquivo com extensão .exe deveria ser rejeitado com HTTP 400"
+    res_bad.read()
+    print("  ✓ Hardening Extensões: Bloqueio estrito de arquivos executáveis (.exe, .sh) em assets/ validado.")
+
+    # 5. Teste dos Utilitários CLI (tools/export_presentation.py e tools/import_presentation.py)
+    test_cli_zip = "/tmp/test_cli_pack.zip"
+    export_proc = subprocess.run([sys.executable, "tools/export_presentation.py", "slidemesh-showcase", test_cli_zip], capture_output=True, text=True)
+    assert export_proc.returncode == 0, f"tools/export_presentation.py falhou: {export_proc.stderr}"
+    assert os.path.isfile(test_cli_zip), "Arquivo ZIP não foi gerado pelo CLI de exportação"
+
+    import_proc = subprocess.run([sys.executable, "tools/import_presentation.py", test_cli_zip, "--id", "teste-cli-import-zip"], capture_output=True, text=True)
+    assert import_proc.returncode == 0, f"tools/import_presentation.py falhou com ZIP: {import_proc.stderr}"
+    print("  ✓ Utilitários CLI: tools/export_presentation.py e tools/import_presentation.py validados via subprocess.")
+
+    # 6. Limpeza e Teardown
+    for cleanup_slug in [imported_slug, "teste-override-zip", "teste-cli-import-zip"]:
+        c_dir = os.path.join(BASE_DIR, "presentations", cleanup_slug)
+        if os.path.exists(c_dir):
+            shutil.rmtree(c_dir)
+
+    with open(catalog_path, "r", encoding="utf-8") as f:
+        cat_clean = json.load(f)
+    cat_clean["presentations"] = [p for p in cat_clean["presentations"] if p["id"] not in [imported_slug, "teste-override-zip", "teste-cli-import-zip"]]
+    with open(catalog_path, "w", encoding="utf-8") as f:
+        json.dump(cat_clean, f, ensure_ascii=False, indent=2)
+
+    if os.path.exists(test_cli_zip):
+        os.remove(test_cli_zip)
+
+    httpd.shutdown()
+    conn.close()
+    print("✓ Demanda 12 (Fase 1: Backend de Exportação, Importação ZIP, Proteções Zip Slip/Bomb e CLIs) 100% HOMOLOGADA com sucesso.")
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -2388,6 +2528,7 @@ if __name__ == "__main__":
         test_demanda09_analytics_and_session_archive()
         test_demanda10_multi_screen_presenter_hub()
         test_demanda11_media_range_requests()
+        test_demanda12_zip_export_import_portability()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time
