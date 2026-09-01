@@ -97,6 +97,10 @@
     - The local Python backend (`server.py`) natively supports **HTTP 206 Partial Content with Range Requests** (RFC 7233 / RFC 9110), enabling ultra-low-latency streaming and instant non-buffering seek for large video (`.mp4`, `.webm`, `.ogg`) and audio (`.mp3`, `.wav`, `.m4a`) files delivered in 64KB chunks without exhausting host RAM.
     - The client-side `MediaCacheEngine` (`js/core/media-cache-engine.js`) maintains a **smart sliding window of ±2 slides**: progressively pre-fetching upcoming media chunks with low network priority for instant <50ms playback start while deterministically reclaiming browser memory via `URL.revokeObjectURL(blobUrl)` as slides leave the active window.
     - The Control Room (`admin/index.html`) features a **Media Remote Control Card** (Play, Pause, Restart, and Mute) and the presenter can toggle media playback instantly via hotkey `K` on stage.
+15. **Full Portability, Presentation Packaging (.slidemesh.zip) & 1-Click Import/Export**:
+    - Native support for exporting and importing complete presentation packages packaged in a single ZIP file (`.slidemesh.zip` or `.zip`), bundling `manifest.json`, `slides.json`, and all media assets inside `assets/`.
+    - High-performance server endpoints (`GET /api/presentations/export?id={slug}` and `POST /api/presentations/import-zip`) with strict hardening against **Zip Slip** (403 rejection for path traversal attempts), **Zip Bomb** (200MB / 500 entry bounds), and dangerous script executable filtering.
+    - Seamless conflict resolution (Overwrite vs New Copy), non-destructive preservation of existing catalog entries in `catalog.json`, and full UI integration across Main Portal (`index.html`), SlideMesh Studio (`import.html`), Control Room (`admin/index.html`), and CLI utilities (`tools/export_presentation.py` and `tools/import_presentation.py`).
 
 ---
 
@@ -157,46 +161,47 @@ SlideMeshLive/
 │   └── treinamento-interno-pin/             # PIN-Protected Technical Presentation
 │
 └── tools/                                   # Command-Line Utilities
-    └── import_presentation.py               # CLI presentation import tool
+    ├── export_presentation.py               # CLI tool to export .slidemesh.zip packages
+    └── import_presentation.py               # CLI presentation import tool (.zip/.pptx/.docx/.md)
 ```
 
 ---
 
-## 4. Quick Start (Local Execution)
+## 4. How to Run Locally
 
 ### 4.1 Prerequisites
 - Python 3.8+ installed.
 - Modern web browser (Chrome, Edge, Firefox, Safari).
 
-### 4.2 Run in 1 Command
-Run the server inside the project root:
+### 4.2 One-Command Startup
+Start the local server from the repository root:
 
 ```bash
 cd /home/flashbsb/projetos/SlideMeshLive
 python3 server.py
 ```
 
-The terminal will display the local and Wi-Fi network endpoints:
+The terminal will display instant local and Wi-Fi access links:
 - **Main Portal:** `http://localhost:8000/`
 - **SlideMesh Studio:** `http://localhost:8000/import.html`
-- **Presenter Stage:** `http://localhost:8000/presenter/?presentation=slidemesh-showcase&session=SHOWCASE2026`
-- **Control Room / Admin:** `http://localhost:8000/admin/?presentation=slidemesh-showcase&session=SHOWCASE2026`
-- **Audience Smartphone:** `http://<YOUR_COMPUTER_IP>:8000/audience/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+- **Stage Screen:** `http://localhost:8000/presenter/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+- **Control Room:** `http://localhost:8000/admin/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+- **Audience Smartphone:** `http://<YOUR_LOCAL_IP>:8000/audience/?presentation=slidemesh-showcase&session=SHOWCASE2026`
 
 ---
 
 ## 5. SlideMesh Studio — Web Creation, Import & Editing
 
-**SlideMesh Studio** (`import.html`) is an integrated visual authoring suite accessible from the portal:
+The **SlideMesh Studio** (`import.html`) is a visual authoring suite accessible from the main portal:
 
-### 5.1 Create a Presentation from Scratch (with Templates)
-1. On the main portal, click **`✨ Create New`** (or open `import.html?mode=new`).
+### 5.1 Create Presentations from Scratch (with Templates)
+1. On the main portal, click **`✨ Create New`** (or navigate to `import.html?mode=new`).
 2. Choose from 4 structured templates:
-   - **👔 Executive & Pitch:** 5 slides (Cover, Challenge, Solution, Live Validation Poll, Next Steps).
-   - **🎓 Class & Training:** 4 slides (Objectives, Conceptual Architecture, Live Quiz, Study Summary).
-   - **🚀 Product Demo:** 4 slides (Overview, Innovative Features, Live Voting, Closing).
-   - **📄 Blank Canvas:** 1 clean slide for complete authoring freedom.
-3. Edit titles, bullets, speaker notes, audience summaries, and detailed sections in real time with auto-save to `localStorage`.
+   - **👔 Executive & Pitch:** 5 slides (Title, Challenge, Solution, Validation Poll, Next Steps).
+   - **🎓 Lecture & Workshop:** 4 slides (Goals, Conceptual Architecture, Live Quiz, Study Summary).
+   - **🚀 Product Demo:** 4 slides (Overview, Feature Spotlight, Audience Vote, Closing).
+   - **📄 Blank Slate:** 1 clean slide for freeform composition.
+3. Edit headlines, bullets, speaker notes, smartphone summary, and deep-dive cards in real-time with `localStorage` auto-save.
 4. Upload images to enable the **Split-Screen (2 columns)** layout on the stage screen.
 5. Click **`🚀 Publish Presentation`**.
 
@@ -206,15 +211,26 @@ The terminal will display the local and Wi-Fi network endpoints:
 3. Modify any content, add new slides, reorder sequence (`🔼` / `🔽`), exclude slides (`☑️`), or convert slides into live polls (`⚡`).
 4. Click **`💾 Save Changes`** to atomically update files on the server.
 
-### 5.3 Import External Documents
+### 5.3 Import External Documents & Packages
 1. In the Studio, switch to the **`📁 Import File`** tab.
-2. Drag and drop any **PowerPoint (`.pptx`)**, **Word (`.docx`)**, **Markdown (`.md`)**, **HTML (`.html`)**, or **PDF (`.pdf`)** file.
+2. Drag and drop any **SlideMesh Package (`.zip`/`.slidemesh`)**, **PowerPoint (`.pptx`)**, **Word (`.docx`)**, **Markdown (`.md`)**, **HTML (`.html`)**, or **PDF (`.pdf`)** file.
 3. The semantic engine extracts headlines, bullets, speaker notes, and embedded media.
-4. Review side-by-side and publish with 1 click.
+4. Review side-by-side and publish or export with 1 click.
 
-### 5.4 Command-Line Interface (CLI)
-You can also import presentations and documents via terminal:
+### 5.4 Full Portability & ZIP Packaging (.slidemesh.zip)
+1. **From Main Portal:** Click **`📦 Export ZIP`** on any presentation card to download the full standalone package.
+2. **From SlideMesh Studio:** Click **`📦 Export ZIP`** in the header or Step 2 toolbar to save the current working draft.
+3. **From Control Room:** Click **`📦 Download Full Package (.zip)`** in the moderation reports section.
+
+### 5.5 Command-Line Interface (CLI)
+You can also export and import presentations directly via terminal:
 ```bash
+# Export a presentation to a standalone ZIP package with all assets
+python3 tools/export_presentation.py slidemesh-showcase backup_showcase.zip
+
+# Import a ZIP package with custom slug override
+python3 tools/import_presentation.py backup_showcase.zip --id imported-keynote
+
 # Import a PowerPoint deck (.pptx)
 python3 tools/import_presentation.py my_decks/architecture.pptx --title "Cloud Architecture"
 

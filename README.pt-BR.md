@@ -96,6 +96,10 @@ O **SlideMeshLive** foi concebido com uma arquitetura modular baseada em tecnolo
     - O backend Python (`server.py`) implementa suporte completo a **HTTP 206 Partial Content com Range Requests** (RFC 7233 / RFC 9110), permitindo streaming suave e seek instantâneo sem buffering para arquivos pesados de vídeo (`.mp4`, `.webm`, `.ogg`) e áudio (`.mp3`, `.wav`, `.m4a`) transmitidos em chunks de 64KB sem sobrecarregar a memória RAM do servidor.
     - O motor client-side `MediaCacheEngine` (`js/core/media-cache-engine.js`) gerencia uma **janela deslizante inteligente de ±2 slides**: pré-carrega progressivamente os próximos slides com baixa prioridade (*low fetch priority*) para início de reprodução em <50ms e revoga deterministicamente os recursos de memória com `URL.revokeObjectURL(blobUrl)` assim que os slides saem da janela ativa.
     - A Mesa Técnica (`admin/index.html`) inclui um **Card de Controle Remoto de Mídia** com botões táteis (Play, Pause, Reiniciar e Mudo) e o orador dispõe de atalho de teclado `K` no palco.
+15. **Portabilidade Total, Empacotamento de Apresentações (.slidemesh.zip) & Import/Export 1-Clique**:
+    - Suporte nativo a exportação e importação de apresentações completas encapsuladas em arquivo ZIP único (`.slidemesh.zip` ou `.zip`), contendo o `manifest.json`, `slides.json` e todos os arquivos de mídia em `assets/`.
+    - Endpoints de alta performance no backend (`GET /api/presentations/export?id={slug}` e `POST /api/presentations/import-zip`), com hardening rigoroso contra **Zip Slip** (bloqueio 403 para caminhos relativos maliciosos), **Zip Bomb** (limite de 200MB / 500 entradas) e sanitização de scripts executáveis.
+    - Resolução intuitiva de conflitos (Sobrescrever vs Criar Nova Cópia), persistência não-destrutiva de apresentações pré-existentes no `catalog.json` e integração visual no Portal (`index.html`), SlideMesh Studio (`import.html`), Mesa Técnica (`admin/index.html`) e utilitários CLI (`tools/export_presentation.py` e `tools/import_presentation.py`).
 
 ---
 
@@ -156,7 +160,8 @@ SlideMeshLive/
 │   └── treinamento-interno-pin/             # Demonstração Protegida por PIN
 │
 └── tools/                                   # Utilitários CLI
-    └── import_presentation.py               # Importador CLI para automação de apresentações
+    ├── export_presentation.py               # Exportador CLI para pacotes .slidemesh.zip
+    └── import_presentation.py               # Importador CLI para automação de apresentações (.zip/.pptx/.docx/.md)
 ```
 
 ---
@@ -207,13 +212,24 @@ O **SlideMesh Studio** (`import.html`) é uma suíte integrada de autoria visual
 
 ### 5.3 Importar Arquivos e Apresentações Externas
 1. No Studio, acesse a aba **`📁 Importar Arquivo`**.
-2. Arraste e solte o arquivo desejado (**PowerPoint `.pptx`**, **Word `.docx`**, **Markdown `.md`**, **HTML `.html`** ou **PDF `.pdf`**).
+2. Arraste e solte o arquivo desejado (**Pacotes SlideMesh `.zip`/`.slidemesh`**, **PowerPoint `.pptx`**, **Word `.docx`**, **Markdown `.md`**, **HTML `.html`** ou **PDF `.pdf`**).
 3. O motor semântico extrai automaticamente títulos, tópicos, notas de orador e ilustrações.
-4. Revise no editor lado a lado e publique em 1 clique.
+4. Revise no editor lado a lado e publique ou exporte o pacote ZIP em 1 clique.
 
-### 5.4 Utilitário de Linha de Comando (CLI)
-Você também pode importar apresentações e documentos diretamente pelo terminal:
+### 5.4 Exportação e Portabilidade Total (.slidemesh.zip)
+1. **Pelo Portal Inicial:** Clique no botão **`📦 Exportar ZIP`** em qualquer card do catálogo para baixar instantaneamente o pacote completo com todas as mídias.
+2. **Pelo SlideMesh Studio:** Clique no botão **`📦 Exportar ZIP`** no cabeçalho ou na barra de ferramentas da Etapa 2 para salvar o projeto em edição.
+3. **Pela Mesa Técnica:** Acesse o painel de moderação e clique em **`📦 Baixar Pacote Completo (.zip)`** na seção de relatórios/exportações.
+
+### 5.5 Utilitários de Linha de Comando (CLI)
+Você também pode exportar e importar apresentações diretamente pelo terminal:
 ```bash
+# Exportar uma apresentação para pacote ZIP com mídias e assets
+python3 tools/export_presentation.py slidemesh-showcase backup_showcase.zip
+
+# Importar um pacote ZIP com resolução de slug personalizada
+python3 tools/import_presentation.py backup_showcase.zip --id palestra-importada
+
 # Importar apresentação do PowerPoint (.pptx)
 python3 tools/import_presentation.py minhas_palestras/arquitetura.pptx --title "Arquitetura Cloud"
 
