@@ -55,6 +55,33 @@ export class SessionManager {
   }
 
   /**
+   * Helper para obter o Session ID ativo a partir da URL ou storage com fallback
+   */
+  getSessionId() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const fromUrl = params.get('session') || params.get('s');
+      if (fromUrl) return fromUrl.trim().toUpperCase();
+      const stored = localStorage.getItem('active_presentation_session');
+      return (stored || 'SHOWCASE2026').trim().toUpperCase();
+    } catch (e) {
+      return 'SHOWCASE2026';
+    }
+  }
+
+  /**
+   * Helper para obter o Presentation ID ativo a partir da URL ou storage com fallback
+   */
+  getPresentationId() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('presentation') || params.get('pres') || 'slidemesh-showcase';
+    } catch (e) {
+      return 'slidemesh-showcase';
+    }
+  }
+
+  /**
    * Reinicia os temporizadores de slide
    */
   resetSlideTimers(initialSlideIndex = 0) {

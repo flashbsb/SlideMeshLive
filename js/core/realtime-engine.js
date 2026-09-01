@@ -22,6 +22,8 @@ export class RealtimeEngine {
     this.presenceTimer = null;
     this.lastProcessedEventId = 0;
     this._locallyDispatchedIds = new Set();
+    this.sessionListeners = new Map();
+    this.eventListeners = [];
 
     // Transporte SSE e Polling Inteligente (Fase 2)
     this.isSSESupported = (typeof EventSource !== 'undefined');
@@ -706,7 +708,7 @@ export class RealtimeEngine {
   _triggerSessionListeners(sessionId, data) {
     if (!data) return;
     const normSessionId = (sessionId || '').trim().toUpperCase();
-    const listeners = this.sessionListeners.get(normSessionId) || [];
+    const listeners = (this.sessionListeners && this.sessionListeners.get(normSessionId)) || [];
     listeners.forEach(cb => {
       try { cb(data); } catch (e) {}
     });

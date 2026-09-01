@@ -25,7 +25,7 @@ class AdminApp {
     this.sessionManager = new SessionManager();
 
     this.presentationId = PresentationEngine.getPresentationIdFromURL();
-    this.sessionId = this.sessionManager.getSessionId();
+    this.sessionId = PresentationEngine.getSessionIdFromURL() || this.sessionManager.getSessionId() || QREngine.generateSessionCode();
     this.activeTab = 'pending';
     this.moderationSort = 'recent';
     this.currentHostUrl = '';
