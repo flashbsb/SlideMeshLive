@@ -132,6 +132,10 @@ export class ConversionEngine {
         },
         security: {
           mode: 'public'
+        },
+        pacing: {
+          mode: 'lock_future',
+          allowReviewPast: true
         }
       },
       slides: [],
@@ -779,7 +783,8 @@ export class ConversionEngine {
       securityLabel: 'Pública',
       badgeClass: 'badge-accent',
       theme: { accentColor: '#38bdf8', background: '#0b0f19' },
-      security: { mode: 'public' }
+      security: { mode: 'public' },
+      pacing: { mode: 'lock_future', allowReviewPast: true }
     };
 
     let slides = [];

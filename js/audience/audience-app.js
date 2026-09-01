@@ -24,6 +24,7 @@ class AudienceApp {
     this.sessionId = PresentationEngine.getSessionIdFromURL();
     this.isLiveSync = true;
     this.presenterSlideIndex = 0;
+    this.pacingMode = 'lock_future'; // 'lock_future' | 'strict_sync' | 'free'
     this.pendingAction = null;
 
     this.pollState = {
@@ -107,6 +108,10 @@ class AudienceApp {
       
       if (this.dom.headerTitle) {
         this.dom.headerTitle.textContent = this.engine.manifest.title || 'Apresentação';
+      }
+
+      if (this.engine.manifest && this.engine.manifest.pacing && this.engine.manifest.pacing.mode) {
+        this.pacingMode = this.engine.manifest.pacing.mode;
       }
 
       this.checkSessionProtection();
@@ -229,18 +234,37 @@ class AudienceApp {
 
   handleRemoteSessionUpdate(state) {
     if (!state) return;
-    // NB03: consolidar em 1 render ao invés de até 3x separados
     let needsRender = false;
+
+    if (state.pacingMode && state.pacingMode !== this.pacingMode) {
+      this.pacingMode = state.pacingMode;
+      needsRender = true;
+    }
 
     if (typeof state.currentSlide === 'number') {
       this.presenterSlideIndex = state.currentSlide;
-      if (this.isLiveSync) {
+      
+      if (this.pacingMode === 'strict_sync') {
+        this.isLiveSync = true;
         this.engine.goToSlide(this.presenterSlideIndex);
         needsRender = true;
-      } else if (this.engine.currentSlideIndex === this.presenterSlideIndex) {
-        this.hideSyncToast();
+      } else if (this.isLiveSync) {
+        this.engine.goToSlide(this.presenterSlideIndex);
+        needsRender = true;
       } else {
-        this.showSyncToast();
+        // Participante está revisando histórico
+        if (this.engine.currentSlideIndex === this.presenterSlideIndex) {
+          this.hideSyncToast();
+          this.isLiveSync = true;
+        } else {
+          this.showSyncToast();
+        }
+        // Clamping de segurança se ultrapassar o limite permitido
+        if (this.pacingMode === 'lock_future' && this.engine.currentSlideIndex > this.presenterSlideIndex) {
+          this.engine.goToSlide(this.presenterSlideIndex);
+          this.isLiveSync = true;
+          needsRender = true;
+        }
       }
     }
 
@@ -270,7 +294,8 @@ class AudienceApp {
       this.renderFinalAnalytics();
     }
 
-    if (needsRender) this.renderAudienceSlide(); // NB03: render único consolidado
+    if (needsRender) this.renderAudienceSlide();
+    this._updateNavigationButtonsState();
   }
 
   showFeaturedQuestion(question) {
@@ -553,21 +578,83 @@ class AudienceApp {
         }
       });
     });
+
+    this._updateNavigationButtonsState();
+  }
+
+  _updateNavigationButtonsState() {
+    if (!this.dom.navNext || !this.dom.navPrev) return;
+
+    const current = this.engine.currentSlideIndex;
+    const presenterMax = this.presenterSlideIndex;
+    const total = this.engine.totalSlides || 1;
+
+    // Atualiza estado visual do botão "Ao Vivo"
+    if (this.dom.btnSync) {
+      if (this.isLiveSync || current === presenterMax) {
+        this.dom.btnSync.classList.add('active');
+      } else {
+        this.dom.btnSync.classList.remove('active');
+      }
+    }
+
+    if (this.pacingMode === 'strict_sync') {
+      this.dom.navPrev.disabled = true;
+      this.dom.navPrev.setAttribute('aria-disabled', 'true');
+      this.dom.navPrev.classList.add('pacing-locked');
+
+      this.dom.navNext.disabled = true;
+      this.dom.navNext.setAttribute('aria-disabled', 'true');
+      this.dom.navNext.classList.add('pacing-locked');
+      this.dom.navNext.title = i18n.t('audience.nav_locked_tooltip');
+    } else if (this.pacingMode === 'free') {
+      const isAtStart = (current <= 0);
+      const isAtEnd = (current >= total - 1);
+
+      this.dom.navPrev.disabled = isAtStart;
+      this.dom.navPrev.setAttribute('aria-disabled', String(isAtStart));
+      this.dom.navPrev.classList.remove('pacing-locked');
+
+      this.dom.navNext.disabled = isAtEnd;
+      this.dom.navNext.setAttribute('aria-disabled', String(isAtEnd));
+      this.dom.navNext.classList.remove('pacing-locked');
+      this.dom.navNext.title = i18n.t('audience.nav_next');
+    } else {
+      // Modo Padrão: 'lock_future' (Trava avanço além do palco, permite recuo)
+      const isAtStart = (current <= 0);
+      const isAtPresenterLimit = (current >= presenterMax);
+
+      this.dom.navPrev.disabled = isAtStart;
+      this.dom.navPrev.setAttribute('aria-disabled', String(isAtStart));
+      this.dom.navPrev.classList.remove('pacing-locked');
+
+      this.dom.navNext.disabled = isAtPresenterLimit;
+      this.dom.navNext.setAttribute('aria-disabled', String(isAtPresenterLimit));
+      this.dom.navNext.classList.toggle('pacing-locked', isAtPresenterLimit);
+      this.dom.navNext.title = isAtPresenterLimit 
+        ? i18n.t('audience.nav_locked_tooltip') 
+        : i18n.t('audience.nav_next');
+    }
   }
 
   showSyncToast() {
     if (!this.dom.syncToast) return;
+    const stageSlideNumber = this.presenterSlideIndex + 1;
+    const badgeText = i18n.t('audience.sync_live_badge', { slide: stageSlideNumber }) || `🔴 Telão no Slide #${stageSlideNumber}`;
     this.dom.syncToast.innerHTML = `
-      <span>O apresentador está no slide <strong>#${this.presenterSlideIndex + 1}</strong>.</span>
+      <span>${badgeText}</span>
       <button class="btn btn-sm btn-primary" id="btn-toast-resync" style="padding: 3px 8px; font-size: 11px;">
-        Sincronizar
+        ${i18n.t('audience.nav_live') || 'Sincronizar'}
       </button>
     `;
     this.dom.syncToast.style.display = 'flex';
 
-    document.getElementById('btn-toast-resync').addEventListener('click', () => {
-      this.resyncToLive();
-    });
+    const btn = document.getElementById('btn-toast-resync');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        this.resyncToLive();
+      });
+    }
   }
 
   hideSyncToast() {
@@ -578,10 +665,11 @@ class AudienceApp {
 
   resyncToLive() {
     this.isLiveSync = true;
-    if (this.dom.btnSync) this.dom.btnSync.classList.add('active'); // NB08: guard null
+    if (this.dom.btnSync) this.dom.btnSync.classList.add('active');
     this.engine.goToSlide(this.presenterSlideIndex);
     this.hideSyncToast();
     this.renderAudienceSlide();
+    this._updateNavigationButtonsState();
   }
 
   openQuestionModal() {
@@ -754,32 +842,49 @@ class AudienceApp {
       });
     }
 
-    // Navegação Inferior
+    // Navegação Inferior com Pacing Lock
     if (this.dom.navPrev) {
       this.dom.navPrev.addEventListener('click', () => {
+        if (this.pacingMode === 'strict_sync') return;
+        if (this.engine.currentSlideIndex <= 0) return;
+
         this.isLiveSync = false;
-        if (this.dom.btnSync) this.dom.btnSync.classList.remove('active'); // guard null
         this.engine.prevSlide();
         this.renderAudienceSlide();
         if (this.engine.currentSlideIndex !== this.presenterSlideIndex) {
           this.showSyncToast();
         } else {
           this.hideSyncToast();
+          this.isLiveSync = true;
         }
+        this._updateNavigationButtonsState();
       });
     }
 
     if (this.dom.navNext) {
       this.dom.navNext.addEventListener('click', () => {
-        this.isLiveSync = false;
-        if (this.dom.btnSync) this.dom.btnSync.classList.remove('active'); // guard null
-        this.engine.nextSlide();
-        this.renderAudienceSlide();
-        if (this.engine.currentSlideIndex !== this.presenterSlideIndex) {
-          this.showSyncToast();
-        } else {
-          this.hideSyncToast();
+        if (this.pacingMode === 'strict_sync') return;
+
+        // Trava em modo lock_future: não permite avançar além do presenterSlideIndex
+        if (this.pacingMode === 'lock_future' && this.engine.currentSlideIndex >= this.presenterSlideIndex) {
+          this._triggerHapticFeedback([15, 30, 15]);
+          return;
         }
+
+        if (this.engine.currentSlideIndex >= this.engine.totalSlides - 1) return;
+
+        this.engine.nextSlide();
+        // Se alcançou o slide do apresentador, restabelece sincronia ao vivo
+        if (this.engine.currentSlideIndex === this.presenterSlideIndex) {
+          this.isLiveSync = true;
+          this.hideSyncToast();
+        } else {
+          this.isLiveSync = false;
+          this.showSyncToast();
+        }
+
+        this.renderAudienceSlide();
+        this._updateNavigationButtonsState();
       });
     }
 

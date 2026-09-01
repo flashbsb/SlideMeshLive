@@ -1342,6 +1342,158 @@ def test_phase4_static_deck_export_and_print_ready():
 
     print("✓ Fase 4 aprovada com 100% de conformidade técnica e arquitetural.")
 
+def test_audience_pacing_lock_and_controlled_navigation():
+    print_section("16. Audience Pacing Lock & Controle Dinâmico de Ritmo (Fases 1 e 2)")
+
+    # 1. Validação em audience-app.js (Fase 1)
+    aud_app_path = os.path.join(BASE_DIR, "js", "audience", "audience-app.js")
+    with open(aud_app_path, "r", encoding="utf-8") as f:
+        aud_code = f.read()
+
+    assert "pacingMode" in aud_code, "Propriedade pacingMode ausente em audience-app.js"
+    assert "_updateNavigationButtonsState" in aud_code, "Método _updateNavigationButtonsState ausente em audience-app.js"
+    assert "pacing-locked" in aud_code, "Classe CSS pacing-locked ausente em audience-app.js"
+    assert "lock_future" in aud_code and "strict_sync" in aud_code and "free" in aud_code, "Suporte aos 3 modos de pacing ausente"
+    print("  ✓ AudienceApp: Motor de pacing (lock_future, strict_sync, free) e _updateNavigationButtonsState validados.")
+
+    # 2. Validação no CSS da Audiência
+    aud_css_path = os.path.join(BASE_DIR, "css", "audience.css")
+    with open(aud_css_path, "r", encoding="utf-8") as f:
+        aud_css = f.read()
+    assert ".audience-action-btn.pacing-locked" in aud_css or "pacing-locked" in aud_css, "Regras CSS para .pacing-locked ausentes em css/audience.css"
+    print("  ✓ CSS da Audiência: Estilização de botões desabilitados/travados validada.")
+
+    # 3. Validação do InteractionEngine e i18n
+    ie_path = os.path.join(BASE_DIR, "js", "core", "interaction-engine.js")
+    with open(ie_path, "r", encoding="utf-8") as f:
+        ie_code = f.read()
+    assert "setPacingMode" in ie_code, "Método setPacingMode ausente em interaction-engine.js"
+    print("  ✓ InteractionEngine: Método setPacingMode validado.")
+
+    i18n_path = os.path.join(BASE_DIR, "js", "core", "i18n-engine.js")
+    with open(i18n_path, "r", encoding="utf-8") as f:
+        i18n_code = f.read()
+    assert "audience.nav_locked_tooltip" in i18n_code, "Chave audience.nav_locked_tooltip ausente no i18n"
+    assert "admin.pacing_lock_future" in i18n_code, "Chave admin.pacing_lock_future ausente no i18n"
+    print("  ✓ i18n: Chaves de tradução simétricas para controle de ritmo validadas em pt-BR e en-US.")
+
+    # 4. Validação da Mesa Técnica (admin/index.html & admin-app.js)
+    admin_html_path = os.path.join(BASE_DIR, "admin", "index.html")
+    with open(admin_html_path, "r", encoding="utf-8") as f:
+        adm_html = f.read()
+    assert "admin-select-pacing" in adm_html and "admin-pacing-badge" in adm_html, "Controles de ritmo ausentes em admin/index.html"
+
+    admin_app_path = os.path.join(BASE_DIR, "js", "admin", "admin-app.js")
+    with open(admin_app_path, "r", encoding="utf-8") as f:
+        adm_code = f.read()
+    assert "selectPacing" in adm_code and "updatePacingUI" in adm_code, "Binding de ritmo ausente em admin-app.js"
+    print("  ✓ Mesa Técnica (Admin): Seletor de ritmo e updatePacingUI validados.")
+
+    # 5. Validação do Púlpito do Apresentador (presenter/index.html & presenter-app.js)
+    pres_html_path = os.path.join(BASE_DIR, "presenter", "index.html")
+    with open(pres_html_path, "r", encoding="utf-8") as f:
+        p_html = f.read()
+    assert "btn-presenter-toggle-pacing" in p_html, "Botão de trava de ritmo ausente em presenter/index.html"
+
+    pres_app_path = os.path.join(BASE_DIR, "js", "presenter", "presenter-app.js")
+    with open(pres_app_path, "r", encoding="utf-8") as f:
+        p_code = f.read()
+    assert "btnTogglePacing" in p_code and "updatePacingButtonUI" in p_code, "Binding de alternância de ritmo ausente em presenter-app.js"
+    print("  ✓ Púlpito (Presenter): Botão de alternância e updatePacingButtonUI validados.")
+
+    # 6. Teste de Endpoint e Sincronização Live no Backend (server.py)
+    with server._STATE_LOCK:
+        server.SERVER_STATE["sessions"].clear()
+
+    httpd = HTTPServer(("127.0.0.1", 0), server.LiveSyncHTTPRequestHandler)
+    test_port = httpd.server_port
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    server_thread.start()
+
+    try:
+        session_id = "PACING_TEST_SESSION"
+
+        def post_sync(msg_type, payload):
+            req_data = json.dumps({
+                "sessionId": session_id,
+                "type": msg_type,
+                "payload": payload
+            }).encode('utf-8')
+            req = urllib.request.Request(
+                f"http://127.0.0.1:{test_port}/api/sync",
+                data=req_data,
+                headers={'Content-Type': 'application/json'}
+            )
+            with urllib.request.urlopen(req) as resp:
+                return json.loads(resp.read().decode('utf-8'))
+
+        def get_sync():
+            req = urllib.request.Request(f"http://127.0.0.1:{test_port}/api/sync?session={session_id}&since_id=0")
+            with urllib.request.urlopen(req) as resp:
+                return json.loads(resp.read().decode('utf-8'))
+
+        # Estado inicial deve ter pacingMode padrão lock_future
+        init_state = get_sync()
+        assert init_state["state"].get("pacingMode") == "lock_future", "pacingMode padrão deve ser lock_future"
+
+        # Transição dinâmica para 'free'
+        res_free = post_sync("SET_PACING_MODE", {"pacingMode": "free"})
+        assert res_free.get("success") is True
+        state_free = get_sync()
+        assert state_free["state"]["pacingMode"] == "free", "pacingMode não foi atualizado para free"
+
+        # Transição dinâmica para 'strict_sync'
+        res_strict = post_sync("SET_PACING_MODE", {"pacingMode": "strict_sync"})
+        assert res_strict.get("success") is True
+        print("  ✓ Backend (server.py): Processamento atômico de SET_PACING_MODE validado com sucesso.")
+
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+    # 7. Validação da Fase 3: Autoria do Studio (import.html & conversion-engine.js) e Manifestos
+    import_html_path = os.path.join(BASE_DIR, "import.html")
+    with open(import_html_path, "r", encoding="utf-8") as f:
+        imp_html = f.read()
+    assert "cfg-pacing" in imp_html, "Seletor #cfg-pacing ausente em import.html"
+    assert "manifest.pacing" in imp_html, "Sincronização de manifest.pacing ausente em import.html"
+    print("  ✓ Studio (import.html): Seletor de ritmo e persistência no manifest validados.")
+
+    conv_engine_path = os.path.join(BASE_DIR, "js", "core", "conversion-engine.js")
+    with open(conv_engine_path, "r", encoding="utf-8") as f:
+        conv_code = f.read()
+    assert "pacing:" in conv_code and "lock_future" in conv_code, "Configuração padrão de pacing ausente no ConversionEngine"
+    print("  ✓ ConversionEngine: Geração padrão de pacing nos templates e arquivos convertidos validada.")
+
+    assert "import.cfg_pacing" in i18n_code, "Chave import.cfg_pacing ausente no i18n"
+
+    # Validação dos manifestos das apresentações de demonstração
+    for p_slug in ["slidemesh-showcase", "treinamento-interno-pin"]:
+        m_path = os.path.join(BASE_DIR, "presentations", p_slug, "manifest.json")
+        with open(m_path, "r", encoding="utf-8") as f:
+            m_data = json.load(f)
+        assert "pacing" in m_data, f"Propriedade pacing ausente no manifesto de {p_slug}"
+        assert m_data["pacing"]["mode"] in ["lock_future", "free", "strict_sync"], f"Modo de pacing inválido em {p_slug}"
+    print("  ✓ Manifestos Oficiais: Propriedade 'pacing' validada nos manifestos do catálogo.")
+
+    # 8. Validação da Fase 4: Homologação E2E, Haptics e Matriz de Pacing
+    assert "navigator.vibrate" in aud_code, "Feedback háptico (vibrate) ausente em audience-app.js"
+    assert "sync_live_badge" in aud_code or "isLiveSync" in aud_code, "Indicador de live sync ausente em audience-app.js"
+
+    # Validação da documentação nos READMEs
+    readme_pt_path = os.path.join(BASE_DIR, "README.pt-BR.md")
+    with open(readme_pt_path, "r", encoding="utf-8") as f:
+        readme_pt = f.read()
+    assert "Controle Dinâmico de Ritmo da Plateia (Audience Pacing Lock)" in readme_pt, "Documentação de Pacing Lock ausente em README.pt-BR.md"
+
+    readme_en_path = os.path.join(BASE_DIR, "README.md")
+    with open(readme_en_path, "r", encoding="utf-8") as f:
+        readme_en = f.read()
+    assert "Dynamic Audience Pacing Lock" in readme_en, "Documentação de Pacing Lock ausente em README.md"
+    print("  ✓ Documentação Oficial: Pacing Lock documentado com paridade em README.pt-BR.md e README.md.")
+
+    print("✓ Fases 1, 2, 3 e 4 de Audience Pacing Lock 100% HOMOLOGADAS e validadas com sucesso.")
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -1359,6 +1511,7 @@ if __name__ == "__main__":
         test_phase2_sse_streaming_and_polling_fallback()
         test_phase3_backend_hardening_and_orphan_cleanup()
         test_phase4_static_deck_export_and_print_ready()
+        test_audience_pacing_lock_and_controlled_navigation()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

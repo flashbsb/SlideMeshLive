@@ -16,5 +16,9 @@
     "description": "Apresentação pública demonstrativa aberta para todos os participantes."
   },
   "defaultSession": "SHOWCASE2026",
+  "pacing": {
+    "mode": "lock_future",
+    "allowReviewPast": true
+  },
   "tags": ["Demonstração", "Showcase", "Tutorial", "Open Source", "Interativo"]
 }

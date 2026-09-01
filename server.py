@@ -402,7 +402,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
 
             with _STATE_LOCK:
                 session_data = SERVER_STATE["sessions"].setdefault(session_id, {
-                    "state": { "currentSlide": 0, "slideId": 1, "pollStatus": "open", "showResults": False },
+                    "state": { "currentSlide": 0, "slideId": 1, "pollStatus": "open", "showResults": False, "pacingMode": "lock_future" },
                     "events": [],
                     "questions": [],
                     "votes": {},
@@ -464,7 +464,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
 
                 with _STATE_LOCK:
                     session_data = SERVER_STATE["sessions"].setdefault(session_id, {
-                        "state": { "currentSlide": 0, "slideId": 1, "pollStatus": "open", "showResults": False },
+                        "state": { "currentSlide": 0, "slideId": 1, "pollStatus": "open", "showResults": False, "pacingMode": "lock_future" },
                         "events": [],
                         "questions": [],
                         "votes": {},
@@ -503,6 +503,9 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                         # Atualiza memória de estado conforme o tipo de mensagem
                         if msg_type in ('SESSION_STATE_UPDATE', 'SESSION_UPDATE'):
                             session_data["state"].update(payload)
+                        elif msg_type in ('SET_PACING_MODE', 'PACING_MODE_CHANGED'):
+                            pacing_mode = payload.get('pacingMode', 'lock_future')
+                            session_data["state"]["pacingMode"] = pacing_mode
                         elif msg_type == 'NEW_QUESTION':
                             q = payload.get('question')
                             if q and not any(existing.get('id') == q.get('id') for existing in session_data["questions"]):
@@ -574,7 +577,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 if msg_type in ('PRESENCE_PING', 'PRESENCE_LEAVE'):
                     broadcast_sse(session_id, "presence", {"presenceCount": current_presence_count})
                 else:
-                    if msg_type in ('SESSION_STATE_UPDATE', 'SESSION_UPDATE'):
+                    if msg_type in ('SESSION_STATE_UPDATE', 'SESSION_UPDATE', 'SET_PACING_MODE', 'PACING_MODE_CHANGED'):
                         broadcast_sse(session_id, "state", current_state)
                     elif msg_type in ('NEW_QUESTION', 'QUESTION_STATUS_CHANGE', 'CLEAR_ALL_QUESTIONS', 'QUESTION_UPVOTE'):
                         broadcast_sse(session_id, "questions", current_questions)

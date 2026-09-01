@@ -13,5 +13,9 @@
     "mode": "pin",
     "pin": "7482",
     "pinHint": "Digite o código de 4 dígitos informado pelo palestrante (PIN: 7482)"
+  },
+  "pacing": {
+    "mode": "lock_future",
+    "allowReviewPast": true
   }
 }

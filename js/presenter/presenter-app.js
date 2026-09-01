@@ -46,6 +46,7 @@ class PresenterApp {
       btnFullscreen: document.getElementById('btn-fullscreen'),
       btnTogglePulpit: document.getElementById('btn-toggle-pulpit'),
       pulpitSlideSorter: document.getElementById('pulpit-slide-sorter'),
+      btnTogglePacing: document.getElementById('btn-presenter-toggle-pacing'),
       btnExportDeck: document.getElementById('btn-presenter-export-deck'),
       btnToggleLang: document.getElementById('btn-toggle-lang'),
       btnToggleTheme: document.getElementById('btn-toggle-theme'),
@@ -111,6 +112,11 @@ class PresenterApp {
     try {
       await this.engine.loadPresentation(this.presentationId);
       this.dom.title.textContent = this.engine.manifest.title || 'Apresentação';
+
+      if (this.engine.manifest?.pacing?.mode) {
+        this.pacingMode = this.engine.manifest.pacing.mode;
+        this.updatePacingButtonUI();
+      }
 
       this.setupQRCodes();
       this.updateSlideView();
@@ -389,6 +395,28 @@ class PresenterApp {
     if (state.showFinalAnalytics) {
       this.renderFinalAnalyticsOnStage();
     }
+
+    if (state.pacingMode) {
+      this.pacingMode = state.pacingMode;
+      this.updatePacingButtonUI();
+    }
+  }
+
+  updatePacingButtonUI() {
+    if (!this.dom.btnTogglePacing) return;
+    if (this.pacingMode === 'free') {
+      this.dom.btnTogglePacing.textContent = '🔓 Navegação Livre';
+      this.dom.btnTogglePacing.style.color = '#34d399';
+      this.dom.btnTogglePacing.style.borderColor = 'rgba(52, 211, 153, 0.4)';
+    } else if (this.pacingMode === 'strict_sync') {
+      this.dom.btnTogglePacing.textContent = '🎯 Espelho Estrito';
+      this.dom.btnTogglePacing.style.color = '#f87171';
+      this.dom.btnTogglePacing.style.borderColor = 'rgba(248, 113, 113, 0.4)';
+    } else {
+      this.dom.btnTogglePacing.textContent = '🔒 Trava Ativa';
+      this.dom.btnTogglePacing.style.color = '#38bdf8';
+      this.dom.btnTogglePacing.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+    }
   }
 
   showFeaturedQuestion(question) {
@@ -633,6 +661,16 @@ class PresenterApp {
     if (this.dom.btnExportDeck) {
       this.dom.btnExportDeck.addEventListener('click', () => {
         this.sessionManager.downloadFullDeckHTML(this.sessionId, this.engine.manifest, this.engine.slidesData);
+      });
+    }
+
+    // Controle Dinâmico de Ritmo da Plateia (Pacing Lock) - Fase 2
+    if (this.dom.btnTogglePacing) {
+      this.dom.btnTogglePacing.addEventListener('click', async () => {
+        const nextMode = (this.pacingMode === 'lock_future') ? 'free' : 'lock_future';
+        this.pacingMode = nextMode;
+        await this.interaction.setPacingMode(this.sessionId, nextMode);
+        this.updatePacingButtonUI();
       });
     }
   }

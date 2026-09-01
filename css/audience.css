@@ -179,6 +179,18 @@ body.audience-body {
   color: var(--accent-primary);
 }
 
+.audience-action-btn:disabled,
+.audience-action-btn.pacing-locked {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(0.6);
+}
+
+.audience-action-btn:disabled:hover,
+.audience-action-btn.pacing-locked:hover {
+  color: var(--text-secondary);
+}
+
 .audience-action-btn svg {
   width: 20px;
   height: 20px;

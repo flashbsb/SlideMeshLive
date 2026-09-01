@@ -40,6 +40,8 @@ class AdminApp {
       currentSlideTitle: document.getElementById('admin-current-slide-title'),
       btnPrev: document.getElementById('admin-btn-prev'),
       btnNext: document.getElementById('admin-btn-next'),
+      selectPacing: document.getElementById('admin-select-pacing'),
+      pacingBadge: document.getElementById('admin-pacing-badge'),
       btnEndSession: document.getElementById('admin-btn-end-session'),
       btnPublishAnalytics: document.getElementById('admin-btn-publish-analytics'),
       qrBox: document.getElementById('admin-qr-box'),
@@ -140,6 +142,10 @@ class AdminApp {
       await this.engine.loadPresentation(this.presentationId);
       if (this.dom.presSelector) {
         this.dom.presSelector.value = this.presentationId;
+      }
+
+      if (this.engine.manifest?.pacing?.mode) {
+        this.updatePacingUI(this.engine.manifest.pacing.mode);
       }
 
       // Registra a sessão atual no histórico
@@ -303,11 +309,35 @@ class AdminApp {
       this.updateView();
       needsPollRender = true; // nova enquete pode estar no novo slide
     }
+    if ('pacingMode' in state) {
+      this.updatePacingUI(state.pacingMode);
+    }
     if ('pollStatus' in state || 'showResults' in state) needsPollRender = true;
     if ('featuredQuestion' in state) needsModerationRender = true;
 
     if (needsPollRender) this.renderPollsList();
     if (needsModerationRender) this.renderModerationList();
+  }
+
+  updatePacingUI(mode) {
+    if (this.dom.selectPacing && this.dom.selectPacing.value !== mode) {
+      this.dom.selectPacing.value = mode;
+    }
+    if (this.dom.pacingBadge) {
+      if (mode === 'free') {
+        this.dom.pacingBadge.textContent = 'Livre';
+        this.dom.pacingBadge.style.color = '#34d399';
+        this.dom.pacingBadge.style.background = 'rgba(52, 211, 153, 0.15)';
+      } else if (mode === 'strict_sync') {
+        this.dom.pacingBadge.textContent = 'Estrito';
+        this.dom.pacingBadge.style.color = '#f87171';
+        this.dom.pacingBadge.style.background = 'rgba(248, 113, 113, 0.15)';
+      } else {
+        this.dom.pacingBadge.textContent = 'Trava Ativa';
+        this.dom.pacingBadge.style.color = '#38bdf8';
+        this.dom.pacingBadge.style.background = 'rgba(56, 189, 248, 0.15)';
+      }
+    }
   }
 
   updateView() {
@@ -1028,6 +1058,15 @@ class AdminApp {
     if (this.dom.btnExportDeckHtml) {
       this.dom.btnExportDeckHtml.addEventListener('click', () => {
         this.sessionManager.downloadFullDeckHTML(this.sessionId, this.engine.manifest, this.engine.slidesData);
+      });
+    }
+
+    // Controle de Ritmo da Plateia (Audience Pacing Lock) - Fase 2
+    if (this.dom.selectPacing) {
+      this.dom.selectPacing.addEventListener('change', async (e) => {
+        const mode = e.target.value;
+        await this.interaction.setPacingMode(this.sessionId, mode);
+        this.updatePacingUI(mode);
       });
     }
   }

@@ -43,6 +43,20 @@ export class InteractionEngine {
   }
 
   /**
+   * Apresentador / Mesa Técnica: Altera o modo de ritmo da audiência (Audience Pacing Lock)
+   * @param {string} sessionId
+   * @param {'lock_future' | 'strict_sync' | 'free'} pacingMode
+   */
+  async setPacingMode(sessionId, pacingMode = 'lock_future') {
+    await this.realtime.updateSessionState(sessionId, {
+      pacingMode: pacingMode
+    });
+    await this.realtime.sendLocalServerEvent('SET_PACING_MODE', sessionId, {
+      pacingMode: pacingMode
+    });
+  }
+
+  /**
    * Participante: Submete um voto em uma opção de enquete
    */
   async submitVote(sessionId, pollId, optionId) {

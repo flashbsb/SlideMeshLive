@@ -211,8 +211,8 @@
       padding: 16px 20px;
       margin-bottom: 20px;
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr auto;
-      gap: 14px;
+      grid-template-columns: 2fr 1.1fr 1fr 1.2fr auto auto;
+      gap: 12px;
       align-items: flex-end;
     }
 
@@ -582,6 +582,14 @@
           <select id="cfg-security" class="form-select">
             <option value="public" data-i18n="import.sec_public">Pública (Sem Senha)</option>
             <option value="pin" data-i18n="import.sec_pin">Protegida por PIN</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="import.cfg_pacing">Ritmo da Plateia</label>
+          <select id="cfg-pacing" class="form-select">
+            <option value="lock_future" data-i18n="admin.pacing_lock_future">🔒 Travar Avanço (Padrão)</option>
+            <option value="free" data-i18n="admin.pacing_free">🔓 Navegação Livre</option>
+            <option value="strict_sync" data-i18n="admin.pacing_strict">🎯 Espelho Estrito</option>
           </select>
         </div>
         <div class="form-group" style="text-align: center;">
@@ -1057,6 +1065,9 @@
       if (currentConvertedData.manifest.security?.mode) {
         document.getElementById('cfg-security').value = currentConvertedData.manifest.security.mode;
       }
+      const pacingMode = currentConvertedData.manifest.pacing?.mode || 'lock_future';
+      const selectPacing = document.getElementById('cfg-pacing');
+      if (selectPacing) selectPacing.value = pacingMode;
 
       selectedSlideIndex = 0;
       renderSlidesSidebar();
@@ -1644,6 +1655,11 @@
       currentConvertedData.manifest.title = document.getElementById('cfg-title').value || currentConvertedData.manifest.title;
       currentConvertedData.manifest.defaultSession = document.getElementById('cfg-session').value || currentConvertedData.manifest.defaultSession;
       currentConvertedData.manifest.security.mode = document.getElementById('cfg-security').value;
+      const pacingVal = document.getElementById('cfg-pacing')?.value || 'lock_future';
+      currentConvertedData.manifest.pacing = {
+        mode: pacingVal,
+        allowReviewPast: (pacingVal !== 'strict_sync')
+      };
       currentConvertedData.manifest.totalSlides = activeSlides.length;
 
       const payload = {

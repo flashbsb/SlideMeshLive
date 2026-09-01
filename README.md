@@ -72,7 +72,10 @@
 7. **Session Resilience & Disk State Snapshotting**:
    - The Python server saves atomic disk snapshots (`snapshot_state.json`), preserving votes and questions across unexpected restarts.
 8. **Data Export & Executive Reporting**:
-   - The control room exports complete session engagement reports in **Structured CSV** and **Executive Markdown** formats.
+   - The control room exports complete session engagement reports in **Structured CSV**, **Executive Markdown**, and **Self-Contained Standalone HTML/PDF Slide Decks**.
+9. **Dynamic Audience Pacing Lock**:
+   - Intelligent forward navigation lock preventing attendees from peeking ahead of the presenter's stage slide (`lock_future`), preserving narrative surprise and engagement.
+   - Allows attendees to freely review past slides while providing real-time dynamic switching (`Free Navigation`, `Future Lock`, `Strict Sync`) from the Control Room or Pulpit.
 
 ---
 
