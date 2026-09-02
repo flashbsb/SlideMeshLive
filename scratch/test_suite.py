@@ -2075,7 +2075,7 @@ def test_demanda09_analytics_and_session_archive():
         # Limpeza de arquivos de teste
         if os.path.exists(archive_dir):
             for fn in os.listdir(archive_dir):
-                if fn.startswith("TEST_") or fn.startswith("ROTATION_TEST_") or fn.startswith("CONCURRENT_TEST_") or "malicious" in fn:
+                if fn.startswith("TEST_") or fn.startswith("ROTATION_TEST_") or fn.startswith("CONCURRENT_TEST_") or "malicious" in fn.lower():
                     try:
                         os.remove(os.path.join(archive_dir, fn))
                     except Exception:
