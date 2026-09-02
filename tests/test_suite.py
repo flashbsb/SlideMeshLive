@@ -3652,6 +3652,120 @@ def test_plano17_phase5_smartphone_hardening_anti_spoofing_and_https():
     print("✓ Plano 17 (Fase 5: Blindagem Smartphone-Servidor, Anti-Spoofing & HTTPS) 100% HOMOLOGADO.")
 
 
+def test_plano17_phase6_governance_matrix_and_wizard_redesign():
+    """Valida a Matriz de Governança Multi-Auth, o Setup Wizard e os controles da Mesa Técnica (Plano 17 - Fase 6)."""
+    print(f"\n{'='*70}")
+    print(" 🧪 36. Plano 17: Matriz de Governança Multi-Auth & Setup Wizard (Fase 6)")
+    print(f"{'='*70}")
+
+    # 1. Validação estática de setup.html
+    setup_html_path = os.path.join(BASE_DIR, "setup.html")
+    with open(setup_html_path, "r", encoding="utf-8") as f:
+        setup_content = f.read()
+
+    assert 'id="check-method-pin"' in setup_content, "Toggle check-method-pin não encontrado em setup.html"
+    assert 'id="check-method-local"' in setup_content, "Toggle check-method-local não encontrado em setup.html"
+    assert 'id="check-method-google"' in setup_content, "Toggle check-method-google não encontrado em setup.html"
+    assert 'id="scope-check-admin"' in setup_content, "Escopo scope-check-admin não encontrado em setup.html"
+    assert 'id="scope-check-presenter"' in setup_content, "Escopo scope-check-presenter não encontrado em setup.html"
+    assert 'id="scope-check-studio"' in setup_content, "Escopo scope-check-studio não encontrado em setup.html"
+    assert 'id="scope-check-portal"' in setup_content, "Escopo scope-check-portal não encontrado em setup.html"
+    assert 'toggleMethod' in setup_content, "Método toggleMethod ausente em setup.html"
+    print("  ✓ Setup Wizard (setup.html): Stepper, seleção de métodos Multi-Auth e escopos de proteção validados.")
+
+    # 2. Validação estática de admin/index.html e admin-app.js
+    admin_html_path = os.path.join(BASE_DIR, "admin", "index.html")
+    with open(admin_html_path, "r", encoding="utf-8") as f:
+        admin_content = f.read()
+
+    assert 'id="sec-method-toggle-pin"' in admin_content, "Toggle sec-method-toggle-pin não encontrado em admin/index.html"
+    assert 'id="sec-method-toggle-local"' in admin_content, "Toggle sec-method-toggle-local não encontrado em admin/index.html"
+    assert 'id="sec-method-toggle-google"' in admin_content, "Toggle sec-method-toggle-google não encontrado em admin/index.html"
+    assert 'id="sec-check-scope-presenter"' in admin_content, "Escopo sec-check-scope-presenter não encontrado em admin/index.html"
+    assert 'id="sec-check-scope-studio"' in admin_content, "Escopo sec-check-scope-studio não encontrado em admin/index.html"
+    assert 'id="sec-check-scope-portal"' in admin_content, "Escopo sec-check-scope-portal não encontrado em admin/index.html"
+
+    admin_app_path = os.path.join(BASE_DIR, "js", "admin", "admin-app.js")
+    with open(admin_app_path, "r", encoding="utf-8") as f:
+        admin_app_code = f.read()
+
+    assert 'updateMultiAuthCounters' in admin_app_code, "Método updateMultiAuthCounters ausente em admin-app.js"
+    assert 'handleMethodToggle' in admin_app_code, "Função handleMethodToggle com anti-lockout ausente em admin-app.js"
+    print("  ✓ Mesa Técnica (admin/index.html & admin-app.js): Painel da Matriz Multi-Auth e anti-lockout validados.")
+
+    # 3. Validação de Endpoints e Regra Anti-Lockout no Servidor
+    httpd = server.ThreadingHTTPServer(('127.0.0.1', 0), server.LiveSyncHTTPRequestHandler)
+    test_port = httpd.server_port
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    time.sleep(0.1)
+
+    base_url = f"http://127.0.0.1:{test_port}"
+
+    try:
+        # A) Tentativa de desativar todos os 3 métodos -> Esperado 400 Bad Request
+        req_lockout = urllib.request.Request(
+            f"{base_url}/api/security/config",
+            data=json.dumps({
+                "admin": {"pin": "7788", "requirePinForAdmin": True, "users": []},
+                "multiAuth": {
+                    "methods": {"pin": False, "localUsers": False, "google": False},
+                    "scopes": {"admin": True, "presenter": True, "studio": True, "portal": False}
+                }
+            }).encode('utf-8'),
+            headers={"Content-Type": "application/json", "X-Session-Auth": "admin_session"},
+            method="POST"
+        )
+        try:
+            with urllib.request.urlopen(req_lockout, timeout=3) as res:
+                assert False, f"Esperado 400 ao desativar todos os métodos, retornado {res.status}"
+        except urllib.error.HTTPError as he:
+            assert he.code == 400, f"Código inesperado: {he.code}"
+            err_data = json.loads(he.read().decode('utf-8'))
+            assert "Pelo menos um método de autenticação" in err_data.get("error", "")
+        print("  ✓ Anti-Lockout Gatekeeper: Bloqueio estrito da tentativa de desativar todos os métodos validado.")
+
+        # B) Atualização legítima com Matriz Multi-Auth
+        req_valid = urllib.request.Request(
+            f"{base_url}/api/security/config",
+            data=json.dumps({
+                "admin": {
+                    "pin": "2026",
+                    "requirePinForAdmin": True,
+                    "allowedEmails": ["admin@empresa.com.br"],
+                    "users": [{"username": "admin", "password": "slidemesh2026", "role": "admin", "name": "Mesa Técnica"}]
+                },
+                "multiAuth": {
+                    "methods": {"pin": True, "localUsers": True, "google": True},
+                    "scopes": {"admin": True, "presenter": True, "studio": True, "portal": False}
+                },
+                "offlineAudience": {"enabled": True, "users": []}
+            }).encode('utf-8'),
+            headers={"Content-Type": "application/json", "X-Session-Auth": "admin_session"},
+            method="POST"
+        )
+        with urllib.request.urlopen(req_valid, timeout=3) as res:
+            assert res.status == 200
+            resp_data = json.loads(res.read().decode('utf-8'))
+            assert resp_data.get("success") is True
+
+        # C) Leitura e Confirmação da Matriz via GET
+        with urllib.request.urlopen(f"{base_url}/api/security/config", timeout=3) as res:
+            assert res.status == 200
+            sec_get = json.loads(res.read().decode('utf-8'))
+            cfg = sec_get.get("config", {})
+            assert "multiAuth" in cfg, "Objeto multiAuth ausente na resposta de /api/security/config"
+            assert cfg["multiAuth"]["methods"]["pin"] is True
+            assert cfg["multiAuth"]["methods"]["localUsers"] is True
+            assert cfg["multiAuth"]["scopes"]["presenter"] is True
+        print("  ✓ Persistência & Leitura: Configuração de Matriz Multi-Auth e Escopos salva e recuperada com sucesso.")
+
+    finally:
+        httpd.shutdown()
+
+    print("✓ Plano 17 (Fase 6: Matriz de Governança Multi-Auth & Setup Wizard) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -3689,6 +3803,7 @@ if __name__ == "__main__":
         test_plano17_phase3_portal_actions_and_zip_export_protection()
         test_plano17_phase4_studio_hardening_and_zip_governance()
         test_plano17_phase5_smartphone_hardening_anti_spoofing_and_https()
+        test_plano17_phase6_governance_matrix_and_wizard_redesign()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

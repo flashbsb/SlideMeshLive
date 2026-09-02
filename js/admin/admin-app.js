@@ -194,7 +194,16 @@ class AdminApp {
       secBtnAddAudienceUser: document.getElementById('sec-btn-add-audience-user'),
       secAudienceUsersTbody: document.getElementById('sec-audience-users-tbody'),
       secInputAllowedEmails: document.getElementById('sec-input-allowed-emails'),
-      secFeedbackMsg: document.getElementById('sec-feedback-msg')
+      secFeedbackMsg: document.getElementById('sec-feedback-msg'),
+      secMethodTogglePin: document.getElementById('sec-method-toggle-pin'),
+      secMethodToggleLocal: document.getElementById('sec-method-toggle-local'),
+      secMethodToggleGoogle: document.getElementById('sec-method-toggle-google'),
+      secCheckScopePresenter: document.getElementById('sec-check-scope-presenter'),
+      secCheckScopeStudio: document.getElementById('sec-check-scope-studio'),
+      secCheckScopePortal: document.getElementById('sec-check-scope-portal'),
+      secAdminUsersCount: document.getElementById('sec-admin-users-count'),
+      secGoogleEmailsCount: document.getElementById('sec-google-emails-count'),
+      secActiveMethodsCount: document.getElementById('sec-active-methods-count')
     };
 
     this.cachedSecurityConfig = null;
@@ -1241,6 +1250,30 @@ class AdminApp {
         if (this.dom.secInputPin) this.dom.secInputPin.value = pin;
       });
     }
+
+    const handleMethodToggle = (toggledElem) => {
+      let activeCount = 0;
+      if (this.dom.secMethodTogglePin && this.dom.secMethodTogglePin.checked) activeCount++;
+      if (this.dom.secMethodToggleLocal && this.dom.secMethodToggleLocal.checked) activeCount++;
+      if (this.dom.secMethodToggleGoogle && this.dom.secMethodToggleGoogle.checked) activeCount++;
+
+      if (activeCount === 0) {
+        alert('Pelo menos um método de autenticação (PIN, Usuário Local ou Google) deve permanecer ativo.');
+        if (toggledElem) toggledElem.checked = true;
+      }
+      this.updateMultiAuthCounters();
+    };
+
+    if (this.dom.secMethodTogglePin) {
+      this.dom.secMethodTogglePin.addEventListener('change', () => handleMethodToggle(this.dom.secMethodTogglePin));
+    }
+    if (this.dom.secMethodToggleLocal) {
+      this.dom.secMethodToggleLocal.addEventListener('change', () => handleMethodToggle(this.dom.secMethodToggleLocal));
+    }
+    if (this.dom.secMethodToggleGoogle) {
+      this.dom.secMethodToggleGoogle.addEventListener('change', () => handleMethodToggle(this.dom.secMethodToggleGoogle));
+    }
+
     if (this.dom.secBtnShowAddUser) {
       this.dom.secBtnShowAddUser.addEventListener('click', () => this.showAddAdminUserForm());
     }
@@ -2048,13 +2081,37 @@ class AdminApp {
     if (!cfg) return;
     const admin = cfg.admin || {};
     const audience = cfg.offlineAudience || {};
+    const multiAuth = cfg.multiAuth || {};
+    const methods = multiAuth.methods || {};
+    const scopes = multiAuth.scopes || {};
 
     if (this.dom.secInputPin) {
       this.dom.secInputPin.value = admin.pin || '2026';
     }
     if (this.dom.secCheckRequirePin) {
-      this.dom.secCheckRequirePin.checked = admin.requirePinForAdmin !== false;
+      this.dom.secCheckRequirePin.checked = scopes.admin !== undefined ? scopes.admin : (admin.requirePinForAdmin !== false);
     }
+    if (this.dom.secCheckScopePresenter) {
+      this.dom.secCheckScopePresenter.checked = scopes.presenter !== false;
+    }
+    if (this.dom.secCheckScopeStudio) {
+      this.dom.secCheckScopeStudio.checked = scopes.studio !== false;
+    }
+    if (this.dom.secCheckScopePortal) {
+      this.dom.secCheckScopePortal.checked = scopes.portal === true || cfg.catalog?.requireAuth === true;
+    }
+
+    // Toggles dos métodos
+    if (this.dom.secMethodTogglePin) {
+      this.dom.secMethodTogglePin.checked = methods.pin !== false;
+    }
+    if (this.dom.secMethodToggleLocal) {
+      this.dom.secMethodToggleLocal.checked = methods.localUsers !== false;
+    }
+    if (this.dom.secMethodToggleGoogle) {
+      this.dom.secMethodToggleGoogle.checked = methods.google !== false && (admin.allowedEmails?.length > 0);
+    }
+
     if (this.dom.secCheckAudienceEnabled) {
       this.dom.secCheckAudienceEnabled.checked = audience.enabled !== false;
     }
@@ -2062,8 +2119,30 @@ class AdminApp {
       this.dom.secInputAllowedEmails.value = (admin.allowedEmails || []).join(', ');
     }
 
+    this.updateMultiAuthCounters();
     this.renderSecurityAdminUsers();
     this.renderSecurityAudienceUsers();
+  }
+
+  updateMultiAuthCounters() {
+    const adminUsers = (this.cachedSecurityConfig && this.cachedSecurityConfig.admin && this.cachedSecurityConfig.admin.users) || [];
+    const emails = (this.cachedSecurityConfig && this.cachedSecurityConfig.admin && this.cachedSecurityConfig.admin.allowedEmails) || [];
+
+    if (this.dom.secAdminUsersCount) {
+      this.dom.secAdminUsersCount.textContent = `${adminUsers.length} conta${adminUsers.length === 1 ? '' : 's'} ativa${adminUsers.length === 1 ? '' : 's'}`;
+    }
+    if (this.dom.secGoogleEmailsCount) {
+      this.dom.secGoogleEmailsCount.textContent = emails.length > 0 ? `${emails.length} e-mail${emails.length === 1 ? '' : 's'} na whitelist` : 'Nenhum e-mail configurado';
+    }
+
+    let activeCount = 0;
+    if (this.dom.secMethodTogglePin && this.dom.secMethodTogglePin.checked) activeCount++;
+    if (this.dom.secMethodToggleLocal && this.dom.secMethodToggleLocal.checked) activeCount++;
+    if (this.dom.secMethodToggleGoogle && this.dom.secMethodToggleGoogle.checked) activeCount++;
+
+    if (this.dom.secActiveMethodsCount) {
+      this.dom.secActiveMethodsCount.textContent = `${activeCount} método${activeCount === 1 ? '' : 's'} ativo${activeCount === 1 ? '' : 's'}`;
+    }
   }
 
   renderSecurityAdminUsers() {
@@ -2281,7 +2360,22 @@ class AdminApp {
       return;
     }
 
+    // Leitura dos métodos Multi-Auth
+    const methodPin = this.dom.secMethodTogglePin ? this.dom.secMethodTogglePin.checked : true;
+    const methodLocal = this.dom.secMethodToggleLocal ? this.dom.secMethodToggleLocal.checked : true;
+    const methodGoogle = this.dom.secMethodToggleGoogle ? this.dom.secMethodToggleGoogle.checked : false;
+
+    // Regra Anti-Lockout: ao menos 1 método deve permanecer ativo
+    if (!methodPin && !methodLocal && !methodGoogle) {
+      this.showSecurityFeedback('Erro: Pelo menos um método de autenticação (PIN, Usuário Local ou Google) deve permanecer ativo.', false);
+      return;
+    }
+
     const requirePin = this.dom.secCheckRequirePin ? this.dom.secCheckRequirePin.checked : true;
+    const scopePresenter = this.dom.secCheckScopePresenter ? this.dom.secCheckScopePresenter.checked : true;
+    const scopeStudio = this.dom.secCheckScopeStudio ? this.dom.secCheckScopeStudio.checked : true;
+    const scopePortal = this.dom.secCheckScopePortal ? this.dom.secCheckScopePortal.checked : false;
+
     const audienceEnabled = this.dom.secCheckAudienceEnabled ? this.dom.secCheckAudienceEnabled.checked : true;
     const rawEmails = (this.dom.secInputAllowedEmails && this.dom.secInputAllowedEmails.value) ? this.dom.secInputAllowedEmails.value : '';
     const allowedEmails = rawEmails.split(/[\n,]+/).map(e => e.trim().toLowerCase()).filter(Boolean);
@@ -2292,6 +2386,22 @@ class AdminApp {
         requirePinForAdmin: requirePin,
         allowedEmails,
         users: (this.cachedSecurityConfig.admin && this.cachedSecurityConfig.admin.users) || []
+      },
+      catalog: {
+        requireAuth: scopePortal
+      },
+      multiAuth: {
+        methods: {
+          pin: methodPin,
+          localUsers: methodLocal,
+          google: methodGoogle
+        },
+        scopes: {
+          admin: requirePin,
+          presenter: scopePresenter,
+          studio: scopeStudio,
+          portal: scopePortal
+        }
       },
       offlineAudience: {
         enabled: audienceEnabled,
@@ -2313,7 +2423,7 @@ class AdminApp {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        this.showSecurityFeedback('✓ Configurações de segurança atualizadas com sucesso!', true);
+        this.showSecurityFeedback('✓ Matriz de segurança atualizada com sucesso!', true);
         if (this.auth && typeof this.auth.loadSecurityConfig === 'function') {
           await this.auth.loadSecurityConfig();
         }

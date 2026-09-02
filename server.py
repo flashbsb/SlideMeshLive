@@ -1334,6 +1334,19 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                     "catalog": {
                         "requireAuth": bool(sec_cfg.get("catalog", {}).get("requireAuth", False) or sec_cfg.get("requireAuthForCatalog", False))
                     },
+                    "multiAuth": {
+                        "methods": {
+                            "pin": bool(sec_cfg.get("multiAuth", {}).get("methods", {}).get("pin", bool(sec_cfg.get("admin", {}).get("pin", "2026")))),
+                            "localUsers": bool(sec_cfg.get("multiAuth", {}).get("methods", {}).get("localUsers", len(sec_cfg.get("admin", {}).get("users", [])) > 0)),
+                            "google": bool(sec_cfg.get("multiAuth", {}).get("methods", {}).get("google", len(sec_cfg.get("admin", {}).get("allowedEmails", [])) > 0))
+                        },
+                        "scopes": {
+                            "admin": bool(sec_cfg.get("multiAuth", {}).get("scopes", {}).get("admin", sec_cfg.get("admin", {}).get("requirePinForAdmin", True))),
+                            "presenter": bool(sec_cfg.get("multiAuth", {}).get("scopes", {}).get("presenter", True)),
+                            "studio": bool(sec_cfg.get("multiAuth", {}).get("scopes", {}).get("studio", True)),
+                            "portal": bool(sec_cfg.get("multiAuth", {}).get("scopes", {}).get("portal", sec_cfg.get("catalog", {}).get("requireAuth", False) or sec_cfg.get("requireAuthForCatalog", False)))
+                        }
+                    },
                     "offlineAudience": {
                         "enabled": bool(sec_cfg.get("offlineAudience", {}).get("enabled", True)),
                         "users": [
@@ -1725,6 +1738,11 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 return
 
             # Sanitização e montagem do config/security.json
+            multi_auth = payload.get('multiAuth', {})
+            multi_methods = multi_auth.get('methods', {})
+            multi_scopes = multi_auth.get('scopes', {})
+            require_catalog_auth = bool(payload.get('catalog', {}).get('requireAuth', False) or payload.get('requireAuthForCatalog', False) or multi_scopes.get('portal', False))
+
             new_security_config = {
                 "_comment": "SlideMeshLive — Configuração de segurança de produção gerada pelo Setup Wizard.",
                 "admin": {
@@ -1739,6 +1757,22 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                             "name": admin_name
                         }
                     ]
+                },
+                "catalog": {
+                    "requireAuth": require_catalog_auth
+                },
+                "multiAuth": {
+                    "methods": {
+                        "pin": bool(multi_methods.get('pin', True)),
+                        "localUsers": bool(multi_methods.get('localUsers', True)),
+                        "google": bool(multi_methods.get('google', len(allowed_emails) > 0))
+                    },
+                    "scopes": {
+                        "admin": bool(multi_scopes.get('admin', require_pin)),
+                        "presenter": bool(multi_scopes.get('presenter', True)),
+                        "studio": bool(multi_scopes.get('studio', True)),
+                        "portal": require_catalog_auth
+                    }
                 },
                 "offlineAudience": {
                     "enabled": bool(offline_aud.get('enabled', True)),
@@ -1775,11 +1809,11 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({
                 "success": True,
-                "message": "Configuração inicial de segurança criada com sucesso!"
+                "message": "Configuração inicial de segurança ativada com sucesso!"
             }, ensure_ascii=False).encode('utf-8'))
             return
 
-        # Endpoint de Atualização da Configuração de Segurança pela Mesa Técnica (Plano 14 - Fase 2)
+        # Endpoint de Atualização da Configuração de Segurança pela Mesa Técnica (Plano 14 - Fase 2 & Plano 17 - Fase 6)
         if parsed.path == '/api/security/config':
             try:
                 raw_body = self.rfile.read(content_length).decode('utf-8')
@@ -1804,6 +1838,28 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                     "error": "O PIN mestre de administração deve conter no mínimo 4 dígitos numéricos."
                 }, ensure_ascii=False).encode('utf-8'))
                 return
+
+            # Validação anti-lockout dos métodos
+            multi_auth = payload.get('multiAuth', {})
+            multi_methods = multi_auth.get('methods', {})
+            multi_scopes = multi_auth.get('scopes', {})
+
+            method_pin = bool(multi_methods.get('pin', True))
+            method_local = bool(multi_methods.get('localUsers', True))
+            method_google = bool(multi_methods.get('google', len(allowed_emails) > 0))
+
+            if not (method_pin or method_local or method_google):
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "success": False,
+                    "error": "Pelo menos um método de autenticação (PIN, Usuário Local ou Google) deve estar habilitado."
+                }, ensure_ascii=False).encode('utf-8'))
+                return
+
+            require_catalog_auth = bool(payload.get('catalog', {}).get('requireAuth', False) or payload.get('requireAuthForCatalog', False) or multi_scopes.get('portal', False))
 
             # Sanitização de usuários administrativos
             cleaned_admin_users = []
@@ -1842,6 +1898,22 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                     "requirePinForAdmin": require_pin,
                     "allowedEmails": allowed_emails,
                     "users": cleaned_admin_users
+                },
+                "catalog": {
+                    "requireAuth": require_catalog_auth
+                },
+                "multiAuth": {
+                    "methods": {
+                        "pin": method_pin,
+                        "localUsers": method_local,
+                        "google": method_google
+                    },
+                    "scopes": {
+                        "admin": bool(multi_scopes.get('admin', require_pin)),
+                        "presenter": bool(multi_scopes.get('presenter', True)),
+                        "studio": bool(multi_scopes.get('studio', True)),
+                        "portal": require_catalog_auth
+                    }
                 },
                 "offlineAudience": {
                     "enabled": bool(offline_aud.get('enabled', True)),

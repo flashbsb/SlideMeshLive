@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configuração de Segurança Inicial — SlideMesh Live</title>
+  <title>Setup Wizard & Governança Multi-Auth — SlideMesh Live</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -21,12 +21,12 @@
     }
 
     .setup-header {
-      padding: 24px 32px;
+      padding: 20px 32px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid var(--border-subtle);
-      background: rgba(11, 15, 25, 0.6);
+      background: rgba(11, 15, 25, 0.7);
       backdrop-filter: blur(12px);
     }
 
@@ -60,8 +60,8 @@
 
     .setup-card {
       width: 100%;
-      max-width: 680px;
-      background: rgba(17, 24, 39, 0.85);
+      max-width: 760px;
+      background: rgba(17, 24, 39, 0.9);
       border: 1.5px solid var(--border-medium);
       border-radius: var(--radius-lg);
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 40px rgba(56, 189, 248, 0.08);
@@ -75,7 +75,7 @@
       display: flex;
       justify-content: space-between;
       position: relative;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
 
     .stepper::before {
@@ -150,26 +150,104 @@
       display: block;
     }
 
-    .form-group {
+    /* Cards de Métodos */
+    .method-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      transition: all var(--transition-normal);
+    }
+
+    .method-card.active {
+      border-color: var(--accent-primary);
+      background: rgba(56, 189, 248, 0.05);
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.1);
+    }
+
+    .method-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .method-title-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .method-icon {
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-sm);
+    }
+
+    .method-card.active .method-icon {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-primary);
+    }
+
+    .method-body {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+      display: none;
+    }
+
+    .method-card.active .method-body {
+      display: block;
+    }
+
+    .scope-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 14px;
       margin-bottom: 20px;
+    }
+
+    .scope-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .scope-card.recommended {
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
     }
 
     .form-label {
       display: block;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 700;
       color: var(--text-secondary);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .form-input {
       width: 100%;
-      padding: 12px 16px;
+      padding: 10px 14px;
       background: var(--bg-input);
       border: 1.5px solid var(--border-medium);
       border-radius: var(--radius-md);
       color: var(--text-primary);
-      font-size: 14px;
+      font-size: 13.5px;
       font-family: inherit;
       box-sizing: border-box;
       transition: all var(--transition-fast);
@@ -182,11 +260,11 @@
     }
 
     .form-input-lg {
-      font-size: 24px;
+      font-size: 20px;
       font-family: var(--font-mono);
-      letter-spacing: 4px;
+      letter-spacing: 3px;
       text-align: center;
-      padding: 14px 20px;
+      padding: 10px 16px;
     }
 
     .input-with-action {
@@ -194,27 +272,12 @@
       gap: 10px;
     }
 
-    .pass-strength-bar {
-      height: 4px;
-      border-radius: 2px;
-      background: var(--border-subtle);
-      margin-top: 6px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .pass-strength-fill {
-      height: 100%;
-      width: 0%;
-      transition: width 0.3s ease, background-color 0.3s ease;
-    }
-
     .nav-buttons {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 32px;
-      padding-top: 24px;
+      margin-top: 28px;
+      padding-top: 20px;
       border-top: 1px solid var(--border-subtle);
     }
 
@@ -222,12 +285,12 @@
       background: rgba(245, 158, 11, 0.12);
       border: 1px solid rgba(245, 158, 11, 0.35);
       border-radius: var(--radius-md);
-      padding: 14px 18px;
+      padding: 12px 16px;
       display: flex;
       align-items: flex-start;
       gap: 12px;
-      margin-bottom: 24px;
-      font-size: 13px;
+      margin-bottom: 20px;
+      font-size: 12.5px;
       color: #fbbf24;
       line-height: 1.5;
     }
@@ -262,10 +325,10 @@
     <div class="setup-logo">
       <span>📡</span>
       <span>SlideMesh <span style="color: var(--accent-primary);">Live</span></span>
-      <span class="setup-logo-badge">Setup Wizard</span>
+      <span class="setup-logo-badge">Setup & Governança</span>
     </div>
     <div style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">
-      v2.0 • Security Gatekeeper
+      Plano 17 • Multi-Auth Matrix
     </div>
   </header>
 
@@ -276,15 +339,15 @@
       <div class="stepper" id="wizard-stepper">
         <div class="step-item active" id="step-node-1">
           <div class="step-circle">1</div>
-          <span class="step-label">PIN Mestre</span>
+          <span class="step-label">Métodos Multi-Auth</span>
         </div>
         <div class="step-item" id="step-node-2">
           <div class="step-circle">2</div>
-          <span class="step-label">Conta Admin</span>
+          <span class="step-label">Escopos de Proteção</span>
         </div>
         <div class="step-item" id="step-node-3">
           <div class="step-circle">3</div>
-          <span class="step-label">Políticas</span>
+          <span class="step-label">Revisão & Ativação</span>
         </div>
       </div>
 
@@ -292,103 +355,166 @@
       <div class="alert-banner" id="setup-alert-box">
         <span style="font-size: 18px;">🛡️</span>
         <div>
-          <strong>Configuração Obrigatória de Segurança:</strong>
-          Defina seu PIN e usuário de administração para proteger a Mesa Técnica e evitar acessos com credenciais padrão.
+          <strong>Assistente de Governança e Primeiro Uso:</strong>
+          Defina quais métodos de autenticação estarão disponíveis na plataforma (ao menos um é obrigatório) e configure as políticas de segurança iniciais.
         </div>
       </div>
 
       <form id="setup-form" onsubmit="return false;">
         
-        <!-- PASSO 1: PIN MESTRE -->
+        <!-- PASSO 1: SELEÇÃO DE MÉTODOS MULTI-AUTH -->
         <div class="step-pane active" id="pane-step-1">
-          <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px;">
-            🔑 Passo 1: PIN Mestre da Mesa Técnica
+          <h2 style="font-size: 19px; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.3px;">
+            🔑 Passo 1: Métodos de Autenticação Ativos
           </h2>
-          <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 24px;">
-            O PIN mestre é o código numérico rápido utilizado para destravar o console de moderação e telões em palco.
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px;">
+            Selecione quais mecanismos de autenticação o administrador e os palestrantes poderão utilizar para acessar áreas restritas:
           </p>
 
-          <div class="form-group">
-            <label class="form-label" for="input-pin">PIN de Administração (4 a 8 dígitos numéricos):</label>
-            <div class="input-with-action">
-              <input type="text" id="input-pin" class="form-input form-input-lg" placeholder="2026" maxlength="8" autocomplete="off" required>
-              <button type="button" class="btn btn-secondary" id="btn-generate-pin" style="white-space: nowrap; font-weight: 700;">
-                🎲 Gerar PIN
-              </button>
+          <!-- MÉTODO 1: PIN MESTRE -->
+          <div class="method-card active" id="card-method-pin">
+            <div class="method-header" onclick="window.setupApp.toggleMethod('pin')">
+              <div class="method-title-box">
+                <div class="method-icon">🔑</div>
+                <div>
+                  <strong style="font-size: 14px; display: block; color: #ffffff;">PIN Mestre de Acesso Rápido</strong>
+                  <span style="font-size: 12px; color: var(--text-muted);">Código numérico de 4 a 8 dígitos para operadores de palco e mesa</span>
+                </div>
+              </div>
+              <input type="checkbox" id="check-method-pin" checked style="width: 20px; height: 20px; accent-color: var(--accent-primary);" onclick="event.stopPropagation(); window.setupApp.toggleMethod('pin')">
+            </div>
+            <div class="method-body">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="input-pin">Defina o PIN Mestre (4 a 8 dígitos numéricos):</label>
+                <div class="input-with-action" style="max-width: 320px;">
+                  <input type="text" id="input-pin" class="form-input form-input-lg" placeholder="2026" maxlength="8" autocomplete="off" value="2026">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-generate-pin" style="white-space: nowrap; font-weight: 700;">
+                    🎲 Gerar PIN
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="form-group" style="margin-top: 18px;">
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; color: var(--text-secondary);">
-              <input type="checkbox" id="check-require-pin" checked style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
-              <span>Exigir autenticação para acessar a Mesa Técnica</span>
-            </label>
+          <!-- MÉTODO 2: CONTA LOCAL -->
+          <div class="method-card active" id="card-method-local">
+            <div class="method-header" onclick="window.setupApp.toggleMethod('local')">
+              <div class="method-title-box">
+                <div class="method-icon">👤</div>
+                <div>
+                  <strong style="font-size: 14px; display: block; color: #ffffff;">Conta Local de Administrador (RBAC)</strong>
+                  <span style="font-size: 12px; color: var(--text-muted);">Usuário e senha dedicados para o coordenador da Mesa Técnica</span>
+                </div>
+              </div>
+              <input type="checkbox" id="check-method-local" checked style="width: 20px; height: 20px; accent-color: var(--accent-primary);" onclick="event.stopPropagation(); window.setupApp.toggleMethod('local')">
+            </div>
+            <div class="method-body">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" for="input-admin-name">Nome de Exibição:</label>
+                  <input type="text" id="input-admin-name" class="form-input" value="Mesa Técnica" placeholder="Coordenador do Evento">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" for="input-admin-user">Usuário (Username):</label>
+                  <input type="text" id="input-admin-user" class="form-input" value="admin" placeholder="admin" autocomplete="username">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" for="input-admin-pass">Senha de Acesso:</label>
+                  <div class="input-with-action">
+                    <input type="password" id="input-admin-pass" class="form-input" placeholder="Senha forte" value="slidemesh2026" autocomplete="new-password">
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-pass" style="padding: 8px 12px;">👁️</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MÉTODO 3: GOOGLE WORKSPACE -->
+          <div class="method-card" id="card-method-google">
+            <div class="method-header" onclick="window.setupApp.toggleMethod('google')">
+              <div class="method-title-box">
+                <div class="method-icon">🌐</div>
+                <div>
+                  <strong style="font-size: 14px; display: block; color: #ffffff;">Google Workspace / SSO Corporativo</strong>
+                  <span style="font-size: 12px; color: var(--text-muted);">Whitelist de e-mails corporativos autorizados a moderar via Google</span>
+                </div>
+              </div>
+              <input type="checkbox" id="check-method-google" style="width: 20px; height: 20px; accent-color: var(--accent-primary);" onclick="event.stopPropagation(); window.setupApp.toggleMethod('google')">
+            </div>
+            <div class="method-body">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="input-allowed-emails">E-mails Corporativos Autorizados (separados por vírgula):</label>
+                <input type="text" id="input-allowed-emails" class="form-input" placeholder="admin@suaempresa.com.br, palestrante@suaempresa.com.br">
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- PASSO 2: CONTA ADMIN -->
+        <!-- PASSO 2: ESCOPOS DE PROTEÇÃO INICIAIS -->
         <div class="step-pane" id="pane-step-2">
-          <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px;">
-            👤 Passo 2: Conta do Administrador Principal
+          <h2 style="font-size: 19px; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.3px;">
+            🛡️ Passo 2: Escopos de Proteção Iniciais
           </h2>
-          <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 24px;">
-            Crie as credenciais locais do operador principal da plataforma.
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px;">
+            Defina quais interfaces e operações devem exigir autenticação prévia:
           </p>
 
-          <div class="form-group">
-            <label class="form-label" for="input-admin-name">Nome de Exibição:</label>
-            <input type="text" id="input-admin-name" class="form-input" value="Mesa Técnica" placeholder="Ex: Coordenador do Evento" required>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="input-admin-user">Usuário de Acesso (Username):</label>
-            <input type="text" id="input-admin-user" class="form-input" value="admin" placeholder="admin" required autocomplete="username">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="input-admin-pass">Senha de Acesso (Mínimo 4 caracteres):</label>
-            <div class="input-with-action">
-              <input type="password" id="input-admin-pass" class="form-input" placeholder="Digite uma senha forte" required autocomplete="new-password">
-              <button type="button" class="btn btn-secondary" id="btn-toggle-pass" style="padding: 10px 14px;">👁️</button>
+          <div class="scope-grid">
+            <div class="scope-card recommended">
+              <div>
+                <strong style="font-size: 13.5px; display: block; color: #ffffff;">🎛️ Mesa Técnica (/admin/)</strong>
+                <span style="font-size: 11.5px; color: var(--text-muted);">Bloqueia visualização de moderação, perguntas e notas sem PIN/login</span>
+              </div>
+              <input type="checkbox" id="scope-check-admin" checked style="width: 20px; height: 20px; accent-color: var(--accent-primary);">
             </div>
-            <div class="pass-strength-bar">
-              <div class="pass-strength-fill" id="pass-strength-indicator"></div>
+
+            <div class="scope-card recommended">
+              <div>
+                <strong style="font-size: 13.5px; display: block; color: #ffffff;">🎤 Telão de Palco (/presenter/)</strong>
+                <span style="font-size: 11.5px; color: var(--text-muted);">Exige PIN ou credencial para abrir decks confidenciais no púlpito</span>
+              </div>
+              <input type="checkbox" id="scope-check-presenter" checked style="width: 20px; height: 20px; accent-color: var(--accent-primary);">
             </div>
-            <div id="pass-strength-text" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;"></div>
+
+            <div class="scope-card recommended">
+              <div>
+                <strong style="font-size: 13.5px; display: block; color: #ffffff;">🎨 Studio & Exportação ZIP</strong>
+                <span style="font-size: 11.5px; color: var(--text-muted);">Exige validação de PIN para editar ou baixar ZIP de decks protegidos</span>
+              </div>
+              <input type="checkbox" id="scope-check-studio" checked style="width: 20px; height: 20px; accent-color: var(--accent-primary);">
+            </div>
+
+            <div class="scope-card">
+              <div>
+                <strong style="font-size: 13.5px; display: block; color: #ffffff;">🏢 Modo Intranet Fechado (/index.html)</strong>
+                <span style="font-size: 11.5px; color: var(--text-muted);">Exige login prévio antes de visualizar o catálogo inicial de decks</span>
+              </div>
+              <input type="checkbox" id="scope-check-portal" style="width: 20px; height: 20px; accent-color: var(--accent-primary);">
+            </div>
           </div>
-        </div>
 
-        <!-- PASSO 3: POLÍTICAS & AUDIÊNCIA -->
-        <div class="step-pane" id="pane-step-3">
-          <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px;">
-            📱 Passo 3: Políticas de Audiência e Login Corporativo
-          </h2>
-          <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 24px;">
-            Defina como os participantes locais e administradores corporativos podem se conectar.
-          </p>
-
-          <div class="form-group" style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px 16px;">
             <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
               <div>
-                <strong style="display: block; font-size: 14px;">Modo Audiência Offline</strong>
-                <span style="font-size: 12px; color: var(--text-secondary);">Permite participantes anônimos ou com crachá local na rede Wi-Fi</span>
+                <strong style="font-size: 13.5px; display: block; color: #cbd5e1;">📱 Modo Audiência Offline (Smartphones)</strong>
+                <span style="font-size: 11.5px; color: var(--text-muted);">Permite que participantes na rede Wi-Fi participem de enquetes e perguntas</span>
               </div>
               <input type="checkbox" id="check-audience-enabled" checked style="width: 20px; height: 20px; accent-color: #10b981;">
             </label>
           </div>
+        </div>
 
-          <div class="form-group" style="margin-top: 20px;">
-            <label class="form-label" for="input-allowed-emails">Whitelist Google Workspace (Opcional):</label>
-            <input type="text" id="input-allowed-emails" class="form-input" placeholder="ex: admin@empresa.com.br, palestrante@empresa.com.br">
-            <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: block;">
-              Separe múltiplos e-mails por vírgula. Contas nesta lista recebem privilégios de moderação via Google Sign-In.
-            </span>
-          </div>
+        <!-- PASSO 3: REVISÃO & ATIVAÇÃO -->
+        <div class="step-pane" id="pane-step-3">
+          <h2 style="font-size: 19px; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.3px;">
+            📋 Passo 3: Revisão da Matriz de Governança
+          </h2>
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px;">
+            Confira as políticas ativas antes de gravar a configuração definitiva:
+          </p>
 
-          <!-- Resumo -->
-          <div style="margin-top: 24px; padding: 14px; background: rgba(56, 189, 248, 0.06); border: 1px dashed rgba(56, 189, 248, 0.3); border-radius: var(--radius-md); font-size: 12.5px;">
-            <div style="font-weight: 700; color: var(--accent-primary); margin-bottom: 6px;">📋 Resumo da Configuração:</div>
-            <div id="setup-summary-text" style="color: var(--text-secondary); line-height: 1.6;"></div>
+          <div style="background: rgba(15, 23, 42, 0.8); border: 1.5px solid var(--border-medium); border-radius: var(--radius-md); padding: 18px 20px; font-size: 13px; line-height: 1.6;">
+            <div id="setup-summary-text"></div>
           </div>
         </div>
 
@@ -397,10 +523,10 @@
           <div class="success-pane">
             <div class="success-icon">🎉</div>
             <h2 style="font-size: 24px; font-weight: 800; color: #10b981; margin-bottom: 8px;">
-              Segurança Configurada com Sucesso!
+              Segurança & Governança Ativadas com Sucesso!
             </h2>
-            <p style="font-size: 14px; color: var(--text-secondary); max-width: 480px; margin: 0 auto 28px; line-height: 1.6;">
-              O arquivo de produção <code>config/security.json</code> foi gravado atomicamente no servidor. A plataforma agora está 100% protegida contra acessos indevidos.
+            <p style="font-size: 14px; color: var(--text-secondary); max-width: 520px; margin: 0 auto 28px; line-height: 1.6;">
+              O arquivo <code>config/security.json</code> foi gravado de forma atômica. A Matriz Multi-Auth e as travas de proteção já estão operacionais em todo o ecossistema.
             </p>
             <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
               <a href="admin/?presentation=slidemesh-showcase" class="btn btn-primary" style="padding: 12px 24px; font-weight: 800;">
@@ -421,7 +547,7 @@
               Segurança Já Configurada
             </h2>
             <p style="font-size: 14px; color: var(--text-secondary); max-width: 480px; margin: 0 auto 28px; line-height: 1.6;">
-              O arquivo <code>config/security.json</code> já existe e está ativo no servidor. Para alterar credenciais ou adicionar palestrantes, utilize o menu de segurança da Mesa Técnica.
+              O arquivo <code>config/security.json</code> já existe e está ativo. Para alterar credenciais ou ajustar a Matriz de Governança, utilize o painel de segurança da Mesa Técnica.
             </p>
             <div style="display: flex; justify-content: center; gap: 14px;">
               <a href="admin/?presentation=slidemesh-showcase" class="btn btn-primary" style="padding: 12px 24px; font-weight: 800;">
@@ -439,7 +565,7 @@
           <button type="button" class="btn btn-secondary" id="btn-step-prev" style="visibility: hidden;">
             ← Voltar
           </button>
-          <div id="error-msg" style="color: #ef4444; font-size: 13px; font-weight: 600; display: none;"></div>
+          <div id="error-msg" style="color: #ef4444; font-size: 12.5px; font-weight: 600; display: none;"></div>
           <button type="button" class="btn btn-primary" id="btn-step-next" style="font-weight: 800;">
             Avançar →
           </button>
@@ -450,246 +576,310 @@
   </main>
 
   <script type="module">
-    let currentStep = 1;
-    const totalSteps = 3;
+    class SetupWizardApp {
+      constructor() {
+        this.currentStep = 1;
+        this.totalSteps = 3;
 
-    const pane1 = document.getElementById('pane-step-1');
-    const pane2 = document.getElementById('pane-step-2');
-    const pane3 = document.getElementById('pane-step-3');
-    const paneSuccess = document.getElementById('pane-step-success');
-    const paneAlreadyDone = document.getElementById('pane-step-already-done');
+        this.methods = {
+          pin: true,
+          local: true,
+          google: false
+        };
 
-    const node1 = document.getElementById('step-node-1');
-    const node2 = document.getElementById('step-node-2');
-    const node3 = document.getElementById('step-node-3');
+        this.scopes = {
+          admin: true,
+          presenter: true,
+          studio: true,
+          portal: false
+        };
 
-    const btnPrev = document.getElementById('btn-step-prev');
-    const btnNext = document.getElementById('btn-step-next');
-    const errorMsg = document.getElementById('error-msg');
-    const navButtons = document.getElementById('wizard-nav-buttons');
-    const stepper = document.getElementById('wizard-stepper');
-    const alertBox = document.getElementById('setup-alert-box');
+        this.dom = {
+          pane1: document.getElementById('pane-step-1'),
+          pane2: document.getElementById('pane-step-2'),
+          pane3: document.getElementById('pane-step-3'),
+          paneSuccess: document.getElementById('pane-step-success'),
+          paneAlreadyDone: document.getElementById('pane-step-already-done'),
+          node1: document.getElementById('step-node-1'),
+          node2: document.getElementById('step-node-2'),
+          node3: document.getElementById('step-node-3'),
+          btnPrev: document.getElementById('btn-step-prev'),
+          btnNext: document.getElementById('btn-step-next'),
+          errorMsg: document.getElementById('error-msg'),
+          navButtons: document.getElementById('wizard-nav-buttons'),
+          stepper: document.getElementById('wizard-stepper'),
+          alertBox: document.getElementById('setup-alert-box'),
+          inputPin: document.getElementById('input-pin'),
+          inputAdminName: document.getElementById('input-admin-name'),
+          inputAdminUser: document.getElementById('input-admin-user'),
+          inputAdminPass: document.getElementById('input-admin-pass'),
+          inputAllowedEmails: document.getElementById('input-allowed-emails'),
+          checkMethodPin: document.getElementById('check-method-pin'),
+          checkMethodLocal: document.getElementById('check-method-local'),
+          checkMethodGoogle: document.getElementById('check-method-google'),
+          cardMethodPin: document.getElementById('card-method-pin'),
+          cardMethodLocal: document.getElementById('card-method-local'),
+          cardMethodGoogle: document.getElementById('card-method-google'),
+          scopeCheckAdmin: document.getElementById('scope-check-admin'),
+          scopeCheckPresenter: document.getElementById('scope-check-presenter'),
+          scopeCheckStudio: document.getElementById('scope-check-studio'),
+          scopeCheckPortal: document.getElementById('scope-check-portal'),
+          checkAudienceEnabled: document.getElementById('check-audience-enabled'),
+          summaryText: document.getElementById('setup-summary-text')
+        };
 
-    const inputPin = document.getElementById('input-pin');
-    const inputAdminName = document.getElementById('input-admin-name');
-    const inputAdminUser = document.getElementById('input-admin-user');
-    const inputAdminPass = document.getElementById('input-admin-pass');
-    const checkRequirePin = document.getElementById('check-require-pin');
-    const checkAudienceEnabled = document.getElementById('check-audience-enabled');
-    const inputAllowedEmails = document.getElementById('input-allowed-emails');
-    const passIndicator = document.getElementById('pass-strength-indicator');
-    const passText = document.getElementById('pass-strength-text');
-
-    // 1. Verifica se o setup é necessário
-    async function checkSetupStatus() {
-      try {
-        const res = await fetch('/api/auth/public-config');
-        if (res.ok) {
-          const cfg = await res.json();
-          if (cfg.setupRequired === false) {
-            showAlreadyDone();
-            return;
-          }
-        }
-      } catch (e) {}
-
-      // Gera PIN sugerido padrão caso esteja em branco
-      if (!inputPin.value) {
-        inputPin.value = '2026';
-      }
-    }
-
-    function showAlreadyDone() {
-      [pane1, pane2, pane3, paneSuccess].forEach(p => p.classList.remove('active'));
-      paneAlreadyDone.classList.add('active');
-      stepper.style.display = 'none';
-      alertBox.style.display = 'none';
-      navButtons.style.display = 'none';
-    }
-
-    // 2. Gerador de PIN
-    document.getElementById('btn-generate-pin').addEventListener('click', () => {
-      const pin = Math.floor(1000 + Math.random() * 9000).toString();
-      inputPin.value = pin;
-      inputPin.focus();
-      inputPin.select();
-    });
-
-    // 3. Toggle de visualização da senha
-    document.getElementById('btn-toggle-pass').addEventListener('click', () => {
-      inputAdminPass.type = inputAdminPass.type === 'password' ? 'text' : 'password';
-    });
-
-    // 4. Medidor de força de senha
-    inputAdminPass.addEventListener('input', () => {
-      const val = inputAdminPass.value;
-      let strength = 0;
-      if (val.length >= 4) strength += 25;
-      if (val.length >= 8) strength += 25;
-      if (/[A-Z]/.test(val) && /[0-9]/.test(val)) strength += 25;
-      if (/[^A-Za-z0-9]/.test(val)) strength += 25;
-
-      passIndicator.style.width = strength + '%';
-      if (strength <= 25) {
-        passIndicator.style.backgroundColor = '#ef4444';
-        passText.innerText = 'Senha Fraca (recomendado adicionar números ou símbolos)';
-        passText.style.color = '#ef4444';
-      } else if (strength <= 50) {
-        passIndicator.style.backgroundColor = '#f59e0b';
-        passText.innerText = 'Senha Razoável';
-        passText.style.color = '#f59e0b';
-      } else {
-        passIndicator.style.backgroundColor = '#10b981';
-        passText.innerText = 'Senha Forte e Segura!';
-        passText.style.color = '#10b981';
-      }
-    });
-
-    // 5. Navegação do Wizard
-    btnPrev.addEventListener('click', () => {
-      if (currentStep > 1) {
-        currentStep--;
-        renderStep();
-      }
-    });
-
-    btnNext.addEventListener('click', async () => {
-      hideError();
-
-      if (currentStep === 1) {
-        const pin = inputPin.value.trim();
-        if (pin.length < 4 || !/^\d+$/.test(pin)) {
-          showError('Por favor, informe um PIN numérico válido de no mínimo 4 dígitos.');
-          inputPin.focus();
-          return;
-        }
-        currentStep = 2;
-        renderStep();
-        return;
+        this.bindEvents();
+        this.checkSetupStatus();
       }
 
-      if (currentStep === 2) {
-        const user = inputAdminUser.value.trim();
-        const pass = inputAdminPass.value.trim();
-        if (user.length < 3) {
-          showError('O nome de usuário deve conter no mínimo 3 caracteres.');
-          inputAdminUser.focus();
-          return;
-        }
-        if (pass.length < 4) {
-          showError('A senha de administração deve conter no mínimo 4 caracteres.');
-          inputAdminPass.focus();
-          return;
-        }
-        currentStep = 3;
-        renderStep();
-        updateSummary();
-        return;
-      }
-
-      if (currentStep === 3) {
-        await submitSetup();
-      }
-    });
-
-    function renderStep() {
-      [pane1, pane2, pane3, paneSuccess, paneAlreadyDone].forEach(p => p.classList.remove('active'));
-      [node1, node2, node3].forEach((n, idx) => {
-        n.classList.remove('active', 'completed');
-        if (idx + 1 === currentStep) n.classList.add('active');
-        if (idx + 1 < currentStep) n.classList.add('completed');
-      });
-
-      if (currentStep === 1) {
-        pane1.classList.add('active');
-        btnPrev.style.visibility = 'hidden';
-        btnNext.innerHTML = 'Avançar →';
-      } else if (currentStep === 2) {
-        pane2.classList.add('active');
-        btnPrev.style.visibility = 'visible';
-        btnNext.innerHTML = 'Avançar →';
-      } else if (currentStep === 3) {
-        pane3.classList.add('active');
-        btnPrev.style.visibility = 'visible';
-        btnNext.innerHTML = '🚀 Salvar e Ativar Segurança';
-      }
-    }
-
-    function updateSummary() {
-      const pin = inputPin.value.trim();
-      const user = inputAdminUser.value.trim();
-      const name = inputAdminName.value.trim() || 'Mesa Técnica';
-      const audEnabled = checkAudienceEnabled.checked ? 'Ativada (Wi-Fi Local)' : 'Desativada';
-      const emails = inputAllowedEmails.value.trim() || 'Nenhum e-mail Google adicionado';
-
-      document.getElementById('setup-summary-text').innerHTML = `
-        • <strong>PIN Mestre:</strong> ${pin}<br>
-        • <strong>Administrador:</strong> ${name} (<code>${user}</code>)<br>
-        • <strong>Audiência Offline:</strong> ${audEnabled}<br>
-        • <strong>Google Whitelist:</strong> ${emails}
-      `;
-    }
-
-    async function submitSetup() {
-      btnNext.disabled = true;
-      btnNext.innerHTML = '⏳ Salvando...';
-
-      const payload = {
-        pin: inputPin.value.trim(),
-        requirePinForAdmin: checkRequirePin.checked,
-        adminUser: {
-          username: inputAdminUser.value.trim(),
-          password: inputAdminPass.value.trim(),
-          name: inputAdminName.value.trim() || 'Mesa Técnica'
-        },
-        allowedEmails: inputAllowedEmails.value.split(',').map(e => e.trim()).filter(Boolean),
-        offlineAudience: {
-          enabled: checkAudienceEnabled.checked,
-          users: [
-            { username: "participante1", password: "123", name: "Participante 01" },
-            { username: "participante2", password: "123", name: "Participante 02" },
-            { username: "convidado", password: "123", name: "Convidado Especial" }
-          ]
-        }
-      };
-
-      try {
-        const res = await fetch('/api/auth/setup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+      bindEvents() {
+        document.getElementById('btn-generate-pin').addEventListener('click', () => {
+          const pin = Math.floor(1000 + Math.random() * 9000).toString();
+          this.dom.inputPin.value = pin;
+          this.dom.inputPin.focus();
         });
 
-        const data = await res.json();
-        if (res.ok && data.success) {
-          // Exibe tela de sucesso
-          [pane1, pane2, pane3].forEach(p => p.classList.remove('active'));
-          paneSuccess.classList.add('active');
-          stepper.style.display = 'none';
-          alertBox.style.display = 'none';
-          navButtons.style.display = 'none';
-        } else {
-          showError(data.error || 'Falha ao salvar configuração inicial de segurança.');
-          btnNext.disabled = false;
-          btnNext.innerHTML = '🚀 Salvar e Ativar Segurança';
+        document.getElementById('btn-toggle-pass').addEventListener('click', () => {
+          this.dom.inputAdminPass.type = this.dom.inputAdminPass.type === 'password' ? 'text' : 'password';
+        });
+
+        this.dom.btnPrev.addEventListener('click', () => {
+          if (this.currentStep > 1) {
+            this.currentStep--;
+            this.renderStep();
+          }
+        });
+
+        this.dom.btnNext.addEventListener('click', () => this.handleNext());
+      }
+
+      toggleMethod(type) {
+        if (type === 'pin') {
+          this.methods.pin = !this.methods.pin;
+          this.dom.checkMethodPin.checked = this.methods.pin;
+          this.dom.cardMethodPin.classList.toggle('active', this.methods.pin);
+        } else if (type === 'local') {
+          this.methods.local = !this.methods.local;
+          this.dom.checkMethodLocal.checked = this.methods.local;
+          this.dom.cardMethodLocal.classList.toggle('active', this.methods.local);
+        } else if (type === 'google') {
+          this.methods.google = !this.methods.google;
+          this.dom.checkMethodGoogle.checked = this.methods.google;
+          this.dom.cardMethodGoogle.classList.toggle('active', this.methods.google);
         }
-      } catch (err) {
-        showError('Erro de conexão com o servidor ao salvar setup: ' + err.message);
-        btnNext.disabled = false;
-        btnNext.innerHTML = '🚀 Salvar e Ativar Segurança';
+      }
+
+      async checkSetupStatus() {
+        try {
+          const res = await fetch('/api/auth/public-config');
+          if (res.ok) {
+            const cfg = await res.json();
+            if (cfg.setupRequired === false) {
+              this.showAlreadyDone();
+            }
+          }
+        } catch (e) {}
+      }
+
+      showAlreadyDone() {
+        [this.dom.pane1, this.dom.pane2, this.dom.pane3, this.dom.paneSuccess].forEach(p => p.classList.remove('active'));
+        this.dom.paneAlreadyDone.classList.add('active');
+        this.dom.stepper.style.display = 'none';
+        this.dom.alertBox.style.display = 'none';
+        this.dom.navButtons.style.display = 'none';
+      }
+
+      handleNext() {
+        this.hideError();
+
+        if (this.currentStep === 1) {
+          // Validação: ao menos 1 método ativo
+          if (!this.methods.pin && !this.methods.local && !this.methods.google) {
+            this.showError('Pelo menos um método de autenticação (PIN, Conta Local ou Google) deve estar selecionado.');
+            return;
+          }
+
+          if (this.methods.pin) {
+            const pin = this.dom.inputPin.value.trim();
+            if (!pin || pin.length < 4 || !/^\d+$/.test(pin)) {
+              this.showError('Informe um PIN numérico válido de no mínimo 4 dígitos.');
+              this.dom.inputPin.focus();
+              return;
+            }
+          }
+
+          if (this.methods.local) {
+            const user = this.dom.inputAdminUser.value.trim();
+            const pass = this.dom.inputAdminPass.value.trim();
+            if (user.length < 3) {
+              this.showError('O usuário local deve conter no mínimo 3 caracteres.');
+              this.dom.inputAdminUser.focus();
+              return;
+            }
+            if (pass.length < 4) {
+              this.showError('A senha do administrador local deve conter no mínimo 4 caracteres.');
+              this.dom.inputAdminPass.focus();
+              return;
+            }
+          }
+
+          if (this.methods.google) {
+            const emails = this.dom.inputAllowedEmails.value.trim();
+            if (!emails) {
+              this.showError('Informe ao menos um e-mail ou domínio corporativo autorizado para o Google Workspace.');
+              this.dom.inputAllowedEmails.focus();
+              return;
+            }
+          }
+
+          this.currentStep = 2;
+          this.renderStep();
+          return;
+        }
+
+        if (this.currentStep === 2) {
+          this.scopes.admin = this.dom.scopeCheckAdmin.checked;
+          this.scopes.presenter = this.dom.scopeCheckPresenter.checked;
+          this.scopes.studio = this.dom.scopeCheckStudio.checked;
+          this.scopes.portal = this.dom.scopeCheckPortal.checked;
+
+          this.currentStep = 3;
+          this.renderStep();
+          this.updateSummary();
+          return;
+        }
+
+        if (this.currentStep === 3) {
+          this.submitSetup();
+        }
+      }
+
+      renderStep() {
+        [this.dom.pane1, this.dom.pane2, this.dom.pane3, this.dom.paneSuccess, this.dom.paneAlreadyDone].forEach(p => p.classList.remove('active'));
+        [this.dom.node1, this.dom.node2, this.dom.node3].forEach((n, idx) => {
+          n.classList.remove('active', 'completed');
+          if (idx + 1 === this.currentStep) n.classList.add('active');
+          if (idx + 1 < this.currentStep) n.classList.add('completed');
+        });
+
+        if (this.currentStep === 1) {
+          this.dom.pane1.classList.add('active');
+          this.dom.btnPrev.style.visibility = 'hidden';
+          this.dom.btnNext.innerHTML = 'Avançar →';
+        } else if (this.currentStep === 2) {
+          this.dom.pane2.classList.add('active');
+          this.dom.btnPrev.style.visibility = 'visible';
+          this.dom.btnNext.innerHTML = 'Avançar →';
+        } else if (this.currentStep === 3) {
+          this.dom.pane3.classList.add('active');
+          this.dom.btnPrev.style.visibility = 'visible';
+          this.dom.btnNext.innerHTML = '🚀 Salvar e Ativar Governança';
+        }
+      }
+
+      updateSummary() {
+        const methodsList = [];
+        if (this.methods.pin) methodsList.push(`🟢 <strong>PIN Mestre:</strong> <code>${this.dom.inputPin.value.trim()}</code>`);
+        if (this.methods.local) methodsList.push(`🟢 <strong>Conta Local:</strong> ${this.dom.inputAdminName.value.trim() || 'Mesa Técnica'} (<code>${this.dom.inputAdminUser.value.trim()}</code>)`);
+        if (this.methods.google) methodsList.push(`🟢 <strong>Google Whitelist:</strong> ${this.dom.inputAllowedEmails.value.trim()}`);
+
+        const scopesList = [];
+        if (this.scopes.admin) scopesList.push('🔒 Mesa Técnica (/admin/)');
+        if (this.scopes.presenter) scopesList.push('🔒 Telão de Palco (/presenter/)');
+        if (this.scopes.studio) scopesList.push('🔒 Studio & Exportação ZIP');
+        if (this.scopes.portal) scopesList.push('🔒 Modo Intranet Fechado (/index.html)');
+        else scopesList.push('🌐 Catálogo Aberto (/index.html)');
+
+        this.dom.summaryText.innerHTML = `
+          <div style="margin-bottom: 12px;">
+            <strong style="color: var(--accent-primary); display: block; margin-bottom: 4px;">Mecanismos Multi-Auth Habilitados:</strong>
+            ${methodsList.join('<br>')}
+          </div>
+          <div style="margin-bottom: 12px;">
+            <strong style="color: var(--accent-primary); display: block; margin-bottom: 4px;">Escopos de Proteção Ativos:</strong>
+            ${scopesList.join(' • ')}
+          </div>
+          <div>
+            <strong style="color: var(--accent-primary); display: block; margin-bottom: 4px;">Audiência Mobile:</strong>
+            ${this.dom.checkAudienceEnabled.checked ? '🟢 Modo Offline Habilitado (Wi-Fi Local)' : '⚪ Modo Offline Desativado'}
+          </div>
+        `;
+      }
+
+      async submitSetup() {
+        this.dom.btnNext.disabled = true;
+        this.dom.btnNext.innerHTML = '⏳ Salvando Governança...';
+
+        const payload = {
+          pin: this.dom.inputPin.value.trim() || '2026',
+          requirePinForAdmin: this.scopes.admin,
+          requireAuthForCatalog: this.scopes.portal,
+          adminUser: {
+            username: this.dom.inputAdminUser.value.trim() || 'admin',
+            password: this.dom.inputAdminPass.value.trim() || 'slidemesh2026',
+            name: this.dom.inputAdminName.value.trim() || 'Mesa Técnica'
+          },
+          allowedEmails: this.dom.inputAllowedEmails.value.split(',').map(e => e.trim()).filter(Boolean),
+          multiAuth: {
+            methods: {
+              pin: this.methods.pin,
+              localUsers: this.methods.local,
+              google: this.methods.google
+            },
+            scopes: {
+              admin: this.scopes.admin,
+              presenter: this.scopes.presenter,
+              studio: this.scopes.studio,
+              portal: this.scopes.portal
+            }
+          },
+          offlineAudience: {
+            enabled: this.dom.checkAudienceEnabled.checked,
+            users: [
+              { username: "participante1", password: "123", name: "Participante 01" },
+              { username: "participante2", password: "123", name: "Participante 02" },
+              { username: "convidado", password: "123", name: "Convidado Especial" }
+            ]
+          }
+        };
+
+        try {
+          const res = await fetch('/api/auth/setup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            [this.dom.pane1, this.dom.pane2, this.dom.pane3].forEach(p => p.classList.remove('active'));
+            this.dom.paneSuccess.classList.add('active');
+            this.dom.stepper.style.display = 'none';
+            this.dom.alertBox.style.display = 'none';
+            this.dom.navButtons.style.display = 'none';
+          } else {
+            this.showError(data.error || 'Falha ao salvar configuração inicial.');
+            this.dom.btnNext.disabled = false;
+            this.dom.btnNext.innerHTML = '🚀 Salvar e Ativar Governança';
+          }
+        } catch (err) {
+          this.showError('Erro de conexão: ' + err.message);
+          this.dom.btnNext.disabled = false;
+          this.dom.btnNext.innerHTML = '🚀 Salvar e Ativar Governança';
+        }
+      }
+
+      showError(msg) {
+        this.dom.errorMsg.innerText = msg;
+        this.dom.errorMsg.style.display = 'block';
+      }
+
+      hideError() {
+        this.dom.errorMsg.style.display = 'none';
       }
     }
 
-    function showError(msg) {
-      errorMsg.innerText = msg;
-      errorMsg.style.display = 'block';
-    }
-
-    function hideError() {
-      errorMsg.style.display = 'none';
-    }
-
-    checkSetupStatus();
+    window.setupApp = new SetupWizardApp();
   </script>
 </body>
 </html>

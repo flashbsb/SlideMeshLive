@@ -566,8 +566,8 @@
 
       <!-- Abas de Segurança -->
       <div style="display: flex; gap: 6px; background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 8px; border: 1px solid var(--border-subtle); margin-bottom: 18px; flex-wrap: wrap;">
-        <button class="btn btn-sm btn-primary" id="sec-tab-pin-btn" style="flex: 1; font-size: 11.5px; padding: 6px 12px;" type="button">
-          🔑 PIN & Políticas
+        <button class="btn btn-sm btn-primary" id="sec-tab-pin-btn" style="flex: 1.2; font-size: 11.5px; padding: 6px 12px;" type="button">
+          🔑 Matriz Multi-Auth & Escopos
         </button>
         <button class="btn btn-sm" id="sec-tab-users-btn" style="flex: 1; font-size: 11.5px; padding: 6px 12px; background: transparent; border-color: transparent; color: var(--text-muted);" type="button">
           👥 Usuários & Oradores
@@ -580,29 +580,110 @@
         </button>
       </div>
 
-      <!-- PAINEL 1: PIN & Políticas -->
+      <!-- PAINEL 1: Matriz Multi-Auth & Escopos de Proteção -->
       <div id="sec-panel-pin" style="display: block;">
-        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 18px; margin-bottom: 16px;">
-          <label style="font-size: 13px; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 8px;">
-            PIN Mestre da Mesa Técnica (4 a 8 dígitos):
-          </label>
-          <div style="display: flex; gap: 10px; align-items: center; max-width: 360px;">
-            <input type="text" id="sec-input-pin" maxlength="8" style="flex: 1; padding: 10px 14px; background: rgba(9, 13, 22, 0.9); border: 1.5px solid var(--border-medium); border-radius: 6px; color: #ffffff; font-family: var(--font-mono); font-size: 18px; font-weight: 700; text-align: center; letter-spacing: 2px;">
-            <button type="button" class="btn btn-secondary btn-sm" id="sec-btn-generate-pin" style="padding: 10px 12px; font-weight: 700; white-space: nowrap;">
-              🎲 Gerar PIN
-            </button>
+        
+        <!-- SEÇÃO: MÉTODOS DE AUTENTICAÇÃO HABILITADOS -->
+        <div style="margin-bottom: 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 12.5px; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px;">
+              1. Mecanismos Multi-Auth Habilitados:
+            </span>
+            <span style="font-size: 11px; color: var(--accent-primary); font-weight: 700;" id="sec-active-methods-count">
+              3 métodos disponíveis
+            </span>
           </div>
-          <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 8px;">
-            Este código numérico é utilizado para autenticação rápida em palcos e no desbloqueio da Mesa Técnica.
-          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px;">
+            
+            <!-- Card PIN -->
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1.5px solid var(--border-medium); border-radius: 8px; padding: 12px;" id="sec-method-card-pin">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 700; color: #ffffff;">🔑 PIN Mestre</span>
+                <input type="checkbox" id="sec-method-toggle-pin" checked style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+              </div>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <input type="text" id="sec-input-pin" maxlength="8" style="width: 100%; padding: 6px 8px; background: rgba(9, 13, 22, 0.9); border: 1px solid var(--border-subtle); border-radius: 6px; color: #ffffff; font-family: var(--font-mono); font-size: 14px; font-weight: 700; text-align: center; letter-spacing: 1px;" value="2026">
+                <button type="button" class="btn btn-secondary btn-sm" id="sec-btn-generate-pin" style="padding: 6px 8px; font-size: 11px; font-weight: 700;" title="Gerar PIN Aleatório">
+                  🎲
+                </button>
+              </div>
+            </div>
+
+            <!-- Card Usuários Locais -->
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1.5px solid var(--border-medium); border-radius: 8px; padding: 12px;" id="sec-method-card-local">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 700; color: #ffffff;">👤 Contas Locais</span>
+                <input type="checkbox" id="sec-method-toggle-local" checked style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--text-muted);">
+                <span id="sec-admin-users-count">2 contas ativas</span>
+                <button type="button" class="btn btn-sm" onclick="document.getElementById('sec-tab-users-btn').click()" style="padding: 3px 8px; font-size: 10.5px; border-color: rgba(255,255,255,0.15);">
+                  Gerenciar →
+                </button>
+              </div>
+            </div>
+
+            <!-- Card Google Workspace -->
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1.5px solid var(--border-medium); border-radius: 8px; padding: 12px;" id="sec-method-card-google">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 700; color: #ffffff;">🌐 Google SSO</span>
+                <input type="checkbox" id="sec-method-toggle-google" checked style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--text-muted);">
+                <span id="sec-google-emails-count">Whitelist ativa</span>
+                <button type="button" class="btn btn-sm" onclick="document.getElementById('sec-tab-google-btn').click()" style="padding: 3px 8px; font-size: 10.5px; border-color: rgba(255,255,255,0.15);">
+                  Configurar →
+                </button>
+              </div>
+            </div>
+
+          </div>
         </div>
 
-        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 14px 18px;">
-          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 13px; color: #cbd5e1;">
-            <input type="checkbox" id="sec-check-require-pin" checked style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
-            <span><strong>Exigir autenticação para acessar a Mesa Técnica</strong> (Impede visualização aberta de notas de orador e moderação)</span>
-          </label>
+        <!-- SEÇÃO: ESCOPOS DE PROTEÇÃO -->
+        <div>
+          <span style="font-size: 12.5px; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 10px;">
+            2. Escopos de Proteção & Travas do Ecossistema:
+          </span>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px;">
+            
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="font-size: 12.5px; display: block; color: #ffffff;">🎛️ Mesa Técnica (/admin/)</strong>
+                <span style="font-size: 11px; color: var(--text-muted);">Exige PIN mestre ou login admin</span>
+              </div>
+              <input type="checkbox" id="sec-check-require-pin" checked style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="font-size: 12.5px; display: block; color: #ffffff;">🎤 Telão de Palco (/presenter/)</strong>
+                <span style="font-size: 11px; color: var(--text-muted);">Protege decks restritos e notas</span>
+              </div>
+              <input type="checkbox" id="sec-check-scope-presenter" checked style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="font-size: 12.5px; display: block; color: #ffffff;">🎨 Studio & Exportação ZIP</strong>
+                <span style="font-size: 11px; color: var(--text-muted);">Protege edição e download de decks</span>
+              </div>
+              <input type="checkbox" id="sec-check-scope-studio" checked style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="font-size: 12.5px; display: block; color: #ffffff;">🏢 Modo Intranet Fechado (/index.html)</strong>
+                <span style="font-size: 11px; color: var(--text-muted);">Exige login antes do catálogo</span>
+              </div>
+              <input type="checkbox" id="sec-check-scope-portal" style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+            </div>
+
+          </div>
         </div>
+
       </div>
 
       <!-- PAINEL 2: Usuários Administradores & Palestrantes -->
