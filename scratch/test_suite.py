@@ -3034,6 +3034,112 @@ def test_plano14_phase3_studio_security_and_pacing_config():
     print("✓ Plano 14 (Fase 3: Configuração de Segurança e Ritmo no SlideMesh Studio) 100% HOMOLOGADO.")
 
 
+def test_plano14_phase4_audience_pin_and_admin_health_badge():
+    print(f"\n{'='*70}")
+    print(" 🧪 29. Plano 14: PIN na Audiência Mobile e Badge de Saúde no Admin (Fase 4)")
+    print(f"{'='*70}")
+
+    # 1. Validação de HTML da Audiência Mobile (audience/index.html)
+    aud_html_path = os.path.join(BASE_DIR, "audience", "index.html")
+    with open(aud_html_path, "r", encoding="utf-8") as f:
+        aud_html = f.read()
+
+    assert 'id="session-pin-modal"' in aud_html, "Modal #session-pin-modal ausente em audience/index.html"
+    assert 'id="input-session-pin"' in aud_html, "Input #input-session-pin ausente em audience/index.html"
+    assert 'id="session-pin-hint"' in aud_html, "Hint #session-pin-hint ausente em audience/index.html"
+    assert 'id="session-pin-error"' in aud_html, "Error #session-pin-error ausente em audience/index.html"
+    assert 'id="btn-submit-session-pin"' in aud_html, "Botão #btn-submit-session-pin ausente em audience/index.html"
+    print("  ✓ Audiência Mobile UI (audience/index.html): Modal de bloqueio por PIN com hint e input validados.")
+
+    # 2. Validação do Controlador Mobile (audience-app.js)
+    aud_js_path = os.path.join(BASE_DIR, "js", "audience", "audience-app.js")
+    with open(aud_js_path, "r", encoding="utf-8") as f:
+        aud_js = f.read()
+
+    assert 'checkSessionProtection' in aud_js, "Método checkSessionProtection ausente em audience-app.js"
+    assert 'unlockWithPIN' in aud_js, "Método unlockWithPIN ausente em audience-app.js"
+    assert 'verifyAdminPIN' in aud_js, "Validação de PIN via AuthEngine ausente em audience-app.js"
+    print("  ✓ Controlador Audiência (audience-app.js): Métodos de validação e desbloqueio por PIN integrados.")
+
+    # 3. Validação do Badge de Saúde no Admin (admin/index.html e admin-app.js)
+    admin_html_path = os.path.join(BASE_DIR, "admin", "index.html")
+    with open(admin_html_path, "r", encoding="utf-8") as f:
+        admin_html = f.read()
+
+    assert 'id="admin-sec-health-badge"' in admin_html, "Badge #admin-sec-health-badge ausente em admin/index.html"
+    assert 'id="admin-diag-security-level"' in admin_html, "Row #admin-diag-security-level ausente em admin/index.html"
+
+    admin_js_path = os.path.join(BASE_DIR, "js", "admin", "admin-app.js")
+    with open(admin_js_path, "r", encoding="utf-8") as f:
+        admin_js = f.read()
+
+    assert 'secHealthBadge' in admin_js, "Mapeamento secHealthBadge ausente em admin-app.js"
+    assert 'updateSecurityHealthBadge' in admin_js, "Método updateSecurityHealthBadge ausente em admin-app.js"
+    print("  ✓ Mesa Técnica HUD (admin/index.html & admin-app.js): Badge de saúde e nível de segurança RBAC validados.")
+
+    # 4. Validação ponta a ponta de verificação de PIN de deck
+    httpd = server.ThreadingHTTPServer(("127.0.0.1", 0), server.LiveSyncHTTPRequestHandler)
+    httpd.daemon_threads = True
+    port = httpd.server_port
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    server_thread.start()
+    base_url = f"http://127.0.0.1:{port}"
+
+    test_slug = "test-aud-sec-deck"
+    test_dir = os.path.join(BASE_DIR, "presentations", test_slug)
+    os.makedirs(test_dir, exist_ok=True)
+
+    try:
+        manifest = {
+            "id": test_slug,
+            "title": "Apresentação com PIN Audiência",
+            "defaultSession": "SECDECK2026",
+            "security": {
+                "mode": "pin",
+                "pin": "7733",
+                "pinHint": "Código exclusivo do evento"
+            },
+            "pacing": {
+                "mode": "lock_future",
+                "allowReviewPast": True
+            }
+        }
+        with open(os.path.join(test_dir, "manifest.json"), "w", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2)
+
+        # Rejeição com PIN incorreto
+        req_bad = urllib.request.Request(
+            f"{base_url}/api/auth/verify-pin",
+            data=json.dumps({"pin": "0000", "presentationId": test_slug}).encode('utf-8'),
+            headers={"Content-Type": "application/json"}
+        )
+        try:
+            urllib.request.urlopen(req_bad, timeout=3)
+            assert False, "Deveria ter rejeitado PIN incorreto"
+        except urllib.error.HTTPError as e:
+            assert e.code == 401, f"Status esperado 401, recebido {e.code}"
+
+        # Aceitação com PIN correto
+        req_good = urllib.request.Request(
+            f"{base_url}/api/auth/verify-pin",
+            data=json.dumps({"pin": "7733", "presentationId": test_slug}).encode('utf-8'),
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req_good, timeout=3) as res:
+            assert res.status == 200
+            data = json.loads(res.read().decode('utf-8'))
+            assert data.get("authorized") is True
+
+        print("  ✓ PIN Verification Gatekeeper: Validação de PIN de deck específico aprovada com sucesso.")
+
+    finally:
+        httpd.shutdown()
+        if os.path.exists(test_dir):
+            shutil.rmtree(test_dir, ignore_errors=True)
+
+    print("✓ Plano 14 (Fase 4: Integração de PIN na Audiência Mobile e Badge de Saúde no Admin) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -3064,6 +3170,7 @@ if __name__ == "__main__":
         test_plano14_phase1_security_setup_wizard()
         test_plano14_phase2_admin_security_panel()
         test_plano14_phase3_studio_security_and_pacing_config()
+        test_plano14_phase4_audience_pin_and_admin_health_badge()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

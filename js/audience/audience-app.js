@@ -208,14 +208,52 @@ class AudienceApp {
     }
   }
 
-  unlockWithPIN() {
-    const entered = this.dom.inputSessionPin.value;
-    const required = this.engine.manifest.security.pin;
-    if (entered === required) {
-      sessionStorage.setItem(`unlocked_session_${this.sessionId}`, 'true');
-      this.dom.sessionPinModal.classList.remove('active');
-    } else {
-      this.dom.sessionPinError.style.display = 'block';
+  async unlockWithPIN() {
+    const entered = (this.dom.inputSessionPin && this.dom.inputSessionPin.value) ? this.dom.inputSessionPin.value.trim() : '';
+    if (!entered) {
+      if (this.dom.sessionPinError) {
+        this.dom.sessionPinError.textContent = '✕ Digite o PIN de acesso.';
+        this.dom.sessionPinError.style.display = 'block';
+      }
+      return;
+    }
+
+    if (this.dom.btnSubmitSessionPin) this.dom.btnSubmitSessionPin.disabled = true;
+
+    try {
+      let isValid = false;
+      if (this.auth && typeof this.auth.verifyAdminPIN === 'function') {
+        isValid = await this.auth.verifyAdminPIN(entered, this.presentationId);
+      }
+
+      if (!isValid && this.engine.manifest && this.engine.manifest.security) {
+        const required = String(this.engine.manifest.security.pin || '').trim();
+        if (required && entered === required) {
+          isValid = true;
+        }
+      }
+
+      if (isValid) {
+        sessionStorage.setItem(`unlocked_session_${this.sessionId}`, 'true');
+        if (this.dom.sessionPinError) this.dom.sessionPinError.style.display = 'none';
+        if (this.dom.sessionPinModal) this.dom.sessionPinModal.classList.remove('active');
+      } else {
+        if (this.dom.sessionPinError) {
+          this.dom.sessionPinError.textContent = '✕ PIN incorreto. Tente novamente.';
+          this.dom.sessionPinError.style.display = 'block';
+        }
+        if (this.dom.inputSessionPin) {
+          this.dom.inputSessionPin.focus();
+          this.dom.inputSessionPin.select();
+        }
+      }
+    } catch (e) {
+      if (this.dom.sessionPinError) {
+        this.dom.sessionPinError.textContent = '✕ Erro ao validar PIN. Tente novamente.';
+        this.dom.sessionPinError.style.display = 'block';
+      }
+    } finally {
+      if (this.dom.btnSubmitSessionPin) this.dom.btnSubmitSessionPin.disabled = false;
     }
   }
 

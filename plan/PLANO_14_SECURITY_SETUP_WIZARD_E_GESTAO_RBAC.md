@@ -73,12 +73,12 @@ Este plano detalha a arquitetura, experiência do usuário (UX) e especificaçõ
     }
     ```
 
-### 🚀 Fase 4: Experiência da Audiência e Alertas de Saúde de Segurança
-- [ ] **Validação de PIN no Smartphone (`audience/index.html` e `audience-app.js`):**
-  - Quando uma apresentação tiver `security.mode: "pin"`, exibir modal de bloqueio solicitando o PIN específico da apresentação com a dica cadastrada (`pinHint`).
-  - Validação do PIN via `POST /api/auth/verify-pin` enviando o `presentationId`.
-- [ ] **Badge de Alerta na Mesa Técnica:**
-  - Indicador visual no cabeçalho: `🛡️ Segurança: Personalizada` ou `⚠️ Segurança: Alerta (Setup Pendente)`.
+### 🚀 Fase 4: Experiência da Audiência e Alertas de Saúde de Segurança — [CONCLUÍDA]
+- [x] **Validação de PIN no Smartphone (`audience/index.html` e `audience-app.js`):**
+  - [x] Quando uma apresentação tiver `security.mode: "pin"`, exibir modal de bloqueio solicitando o PIN específico da apresentação com a dica cadastrada (`pinHint`).
+  - [x] Validação do PIN via `POST /api/auth/verify-pin` enviando o `presentationId` com fallback offline.
+- [x] **Badge de Alerta na Mesa Técnica (`admin/index.html` e `admin-app.js`):**
+  - [x] Indicador visual no card de saúde / diagnóstico: `🛡️ Seg. Alta` (PIN customizado + RBAC) ou `⚠️ PIN Padrão` (Setup Pendente).
 
 ### 🚀 Fase 5: Testes Automatizados, Homologação e Documentação
 - [ ] Adicionar testes na suíte `scratch/test_suite.py`:

@@ -1643,6 +1643,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({
                     "success": True,
+                    "authorized": True,
                     "role": role,
                     "message": "PIN verificado com sucesso."
                 }, ensure_ascii=False).encode('utf-8'))

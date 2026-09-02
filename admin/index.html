@@ -148,7 +148,10 @@
             <span style="font-size: 11px; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 4px;" data-i18n="admin.diag_title">
               🏥 Saúde & Capacidade Wi-Fi
             </span>
-            <span class="badge" id="admin-diag-health-badge" style="font-size: 9.5px; background: rgba(52, 211, 153, 0.15); color: #34d399;">🟢 100% Saudável</span>
+            <div style="display: flex; gap: 4px; align-items: center;">
+              <span class="badge" id="admin-sec-health-badge" style="font-size: 9px; background: rgba(56, 189, 248, 0.15); color: #38bdf8;">🛡️ Seg. Alta</span>
+              <span class="badge" id="admin-diag-health-badge" style="font-size: 9.5px; background: rgba(52, 211, 153, 0.15); color: #34d399;">🟢 100% Saudável</span>
+            </div>
           </div>
 
           <div id="admin-diag-content" style="display: flex; flex-direction: column; gap: 6px; font-size: 11px;">
@@ -170,6 +173,10 @@
             <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-secondary); font-size: 10.5px;">
               <span data-i18n="admin.diag_server_mem_label">Memória / Uptime:</span>
               <span id="admin-diag-server-stats" style="font-weight: 600; color: #ffffff;">---</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-secondary); font-size: 10.5px;">
+              <span>Nível de Proteção (RBAC):</span>
+              <span id="admin-diag-security-level" style="font-weight: 700; color: #38bdf8;">🛡️ Alta (RBAC Ativo)</span>
             </div>
 
             <!-- Lista de Alertas de Slides Pesados / Riscos de Banda -->

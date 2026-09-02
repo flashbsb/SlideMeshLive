@@ -49,12 +49,14 @@ class AdminApp {
       
       // Diagnostics & Capacity HUD (Demanda 03 - Fase 2)
       diagCard: document.getElementById('admin-diagnostics-card'),
+      secHealthBadge: document.getElementById('admin-sec-health-badge'),
       diagHealthBadge: document.getElementById('admin-diag-health-badge'),
       diagContent: document.getElementById('admin-diag-content'),
       diagCapacity: document.getElementById('admin-diag-capacity'),
       diagLatency: document.getElementById('admin-diag-latency'),
       diagDeckWeight: document.getElementById('admin-diag-deck-weight'),
       diagServerStats: document.getElementById('admin-diag-server-stats'),
+      diagSecurityLevel: document.getElementById('admin-diag-security-level'),
       diagHeavyAlerts: document.getElementById('admin-diag-heavy-alerts'),
 
       // Stage FX Deck (Demanda 02 - Fase 2)
@@ -652,6 +654,45 @@ class AdminApp {
         `;
       } else {
         this.dom.diagHeavyAlerts.style.display = 'none';
+      }
+    }
+
+    this.updateSecurityHealthBadge();
+  }
+
+  updateSecurityHealthBadge() {
+    const cfg = this.cachedSecurityConfig || (this.auth && this.auth.securityConfig) || {};
+    const adminPin = (cfg.admin && cfg.admin.pin) ? String(cfg.admin.pin) : '2026';
+    const users = (cfg.admin && Array.isArray(cfg.admin.users)) ? cfg.admin.users : ((cfg.users && Array.isArray(cfg.users)) ? cfg.users : []);
+    const isCustomPin = (adminPin !== '2026' && adminPin.length >= 4);
+    const hasUsers = users.length > 0;
+
+    if (this.dom.secHealthBadge) {
+      if (isCustomPin && hasUsers) {
+        this.dom.secHealthBadge.textContent = '🟢 Seg. Alta';
+        this.dom.secHealthBadge.style.background = 'rgba(52, 211, 153, 0.15)';
+        this.dom.secHealthBadge.style.color = '#34d399';
+      } else if (isCustomPin || hasUsers) {
+        this.dom.secHealthBadge.textContent = '🟡 Seg. Média';
+        this.dom.secHealthBadge.style.background = 'rgba(245, 158, 11, 0.15)';
+        this.dom.secHealthBadge.style.color = '#fcd34d';
+      } else {
+        this.dom.secHealthBadge.textContent = '⚠️ PIN Padrão';
+        this.dom.secHealthBadge.style.background = 'rgba(239, 68, 68, 0.15)';
+        this.dom.secHealthBadge.style.color = '#fca5a5';
+      }
+    }
+
+    if (this.dom.diagSecurityLevel) {
+      if (isCustomPin && hasUsers) {
+        this.dom.diagSecurityLevel.textContent = '🛡️ Alta (RBAC Ativo)';
+        this.dom.diagSecurityLevel.style.color = '#34d399';
+      } else if (isCustomPin || hasUsers) {
+        this.dom.diagSecurityLevel.textContent = '🛡️ Média (Parcial)';
+        this.dom.diagSecurityLevel.style.color = '#fcd34d';
+      } else {
+        this.dom.diagSecurityLevel.textContent = '⚠️ Padrão (Requer Setup)';
+        this.dom.diagSecurityLevel.style.color = '#fca5a5';
       }
     }
   }
@@ -2236,6 +2277,7 @@ class AdminApp {
         if (this.auth && typeof this.auth.loadSecurityConfig === 'function') {
           await this.auth.loadSecurityConfig();
         }
+        this.updateSecurityHealthBadge();
         setTimeout(() => {
           this.closeSecuritySettingsModal();
         }, 1500);
