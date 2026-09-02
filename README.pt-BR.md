@@ -4,7 +4,8 @@
 
 [![English](https://img.shields.io/badge/Documentation-English-blue.svg)](./README.md)
 [![Português](https://img.shields.io/badge/Documentação-Português-green.svg)](./README.pt-BR.md)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![CI](https://github.com/flashbsb/SlideMeshLive/actions/workflows/ci.yml/badge.svg)](https://github.com/flashbsb/SlideMeshLive/actions/workflows/ci.yml)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES_Modules-f7df1e?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 [![Python](https://img.shields.io/badge/Python-3.9+-3776ab?logo=python&logoColor=white)](https://python.org)
 
@@ -115,11 +116,19 @@ O **SlideMeshLive** foi concebido com uma arquitetura modular baseada em tecnolo
 SlideMeshLive/
 ├── index.html                               # Portal Inicial / Catálogo de Apresentações
 ├── import.html                              # SlideMesh Studio (Criação, Importação e Edição)
-├── setup.html                               # Assistente de Primeiro Uso (First-Run Security Setup)
+├── setup.html                               # Assistente de Primeiro Uso & Segurança
 ├── docs.html                                # Visualizador Dinâmico de Documentação Markdown
 ├── server.py                                # Servidor Local em Python com Hub HTTP Sequencial
 ├── README.md                                # Documentação Oficial (Inglês)
 ├── README.pt-BR.md                          # Documentação Oficial (Português)
+├── LICENSE                                  # Licença Aberta MIT
+├── SECURITY.md                              # Política de Segurança & Reporte Responsável
+├── CONTRIBUTING.md                          # Diretrizes de Contribuição & Padrões
+├── .editorconfig                            # Padrão de Formatação (UTF-8, LF, Indentação)
+│
+├── .github/                                 # Automações GitHub
+│   └── workflows/
+│       └── ci.yml                           # Pipeline de CI/CD (Matriz Python 3.9–3.12 & Auditorias)
 │
 ├── config/                                  # Configurações de Segurança & RBAC
 │   ├── security.json                        # Configuração Ativa de Produção (Protegida)
@@ -170,6 +179,9 @@ SlideMeshLive/
 │   ├── slidemesh-showcase/                  # Apresentação Demonstrativa Oficial
 │   └── treinamento-interno-pin/             # Demonstração Protegida por PIN
 │
+├── tests/                                   # Suíte de Testes Automatizados
+│   └── test_suite.py                        # Runner Unificado de Testes de Integração & Segurança
+│
 └── tools/                                   # Utilitários CLI
     ├── export_presentation.py               # Exportador CLI para pacotes .slidemesh.zip
     └── import_presentation.py               # Importador CLI para automação de apresentações (.zip/.pptx/.docx/.md)
@@ -180,23 +192,32 @@ SlideMeshLive/
 ## 4. Como Executar Localmente
 
 ### 4.1 Pré-requisitos
-- Python 3.8 ou superior instalado.
+- Python 3.9 ou superior instalado.
 - Navegador moderno (Chrome, Edge, Firefox, Safari).
 
 ### 4.2 Inicialização com 1 Comando
 Execute o servidor no diretório do projeto:
 
 ```bash
-cd /home/flashbsb/projetos/SlideMeshLive
 python3 server.py
 ```
 
 O terminal exibirá os links de acesso local e na rede Wi-Fi:
-- **Portal Inicial:** `http://localhost:8000/`
-- **SlideMesh Studio:** `http://localhost:8000/import.html`
-- **Telão Apresentador:** `http://localhost:8000/presenter/?presentation=slidemesh-showcase&session=SHOWCASE2026`
-- **Mesa Técnica / Admin:** `http://localhost:8000/admin/?presentation=slidemesh-showcase&session=SHOWCASE2026`
-- **Celular do Público:** `http://<IP_DO_SEU_COMPUTADOR>:8000/audience/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+- **Portal Inicial:** `http://localhost:8080/`
+- **SlideMesh Studio:** `http://localhost:8080/import.html`
+- **Telão Apresentador:** `http://localhost:8080/presenter/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+- **Mesa Técnica / Admin:** `http://localhost:8080/admin/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+- **Celular do Público:** `http://<IP_DO_SEU_COMPUTADOR>:8080/audience/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+
+### 4.3 Testes Automatizados
+Execute a suíte completa de testes de regressão e segurança:
+```bash
+# Via Python
+python3 tests/test_suite.py
+
+# Ou via npm
+npm test
+```
 
 ---
 
@@ -280,6 +301,13 @@ python3 tools/import_presentation.py notas.md --session LIVE2026 --security pin
 
 ---
 
-## 8. Licença
+## 8. Contribuição & Segurança
+
+- **Contribuição:** Leia nosso guia [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes sobre fluxo de desenvolvimento, commits semânticos e abertura de Pull Requests.
+- **Segurança:** Para relatar vulnerabilidades de forma responsável, consulte nossa política de segurança em [SECURITY.md](SECURITY.md).
+
+---
+
+## 9. Licença
 
 Distribuído sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.

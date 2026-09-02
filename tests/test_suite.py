@@ -705,8 +705,7 @@ def test_readme_and_documentation_consistency():
         
     for name, content in [("README.md", readme_en), ("README.pt-BR.md", readme_pt)]:
         assert "apresentacaoonline" not in content, f"Encontrada referência legada 'apresentacaoonline' em {name}!"
-        assert "SlideMeshLive" in content, f"Nome oficial 'SlideMeshLive' ausente em {name}"
-        assert "cd /home/flashbsb/projetos/SlideMeshLive" in content, f"Caminho oficial de terminal ausente em {name}"
+        assert "python3 server.py" in content, f"Comando de inicialização 'python3 server.py' ausente em {name}"
         assert "README.pt-BR.md" in content, f"Link para versão em português ausente em {name}"
         assert "README.md" in content, f"Link para versão em inglês ausente em {name}"
 

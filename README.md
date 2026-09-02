@@ -4,7 +4,8 @@
 
 [![English](https://img.shields.io/badge/Documentation-English-blue.svg)](./README.md)
 [![Português](https://img.shields.io/badge/Documentação-Português-green.svg)](./README.pt-BR.md)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![CI](https://github.com/flashbsb/SlideMeshLive/actions/workflows/ci.yml/badge.svg)](https://github.com/flashbsb/SlideMeshLive/actions/workflows/ci.yml)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES_Modules-f7df1e?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 [![Python](https://img.shields.io/badge/Python-3.9+-3776ab?logo=python&logoColor=white)](https://python.org)
 
@@ -121,6 +122,14 @@ SlideMeshLive/
 ├── server.py                                # Local Python Server with Sequential HTTP Hub
 ├── README.md                                # Official Documentation (English)
 ├── README.pt-BR.md                          # Official Documentation (Portuguese)
+├── LICENSE                                  # MIT Open-Source License
+├── SECURITY.md                              # Security & Responsible Disclosure Policy
+├── CONTRIBUTING.md                          # Contribution Guidelines & Code Standards
+├── .editorconfig                            # Formatting Standards (UTF-8, LF, Indentation)
+│
+├── .github/                                 # GitHub Automation
+│   └── workflows/
+│       └── ci.yml                           # CI/CD Pipeline (Python 3.9–3.12 Matrix & Audits)
 │
 ├── config/                                  # Security & RBAC Configurations
 │   ├── security.json                        # Active Production Configuration (Protected)
@@ -171,6 +180,9 @@ SlideMeshLive/
 │   ├── slidemesh-showcase/                  # Official Showcase Presentation
 │   └── treinamento-interno-pin/             # PIN-Protected Technical Presentation
 │
+├── tests/                                   # Automated Test Suite
+│   └── test_suite.py                        # Complete Integration & Security Test Runner
+│
 └── tools/                                   # Command-Line Utilities
     ├── export_presentation.py               # CLI tool to export .slidemesh.zip packages
     └── import_presentation.py               # CLI presentation import tool (.zip/.pptx/.docx/.md)
@@ -181,23 +193,32 @@ SlideMeshLive/
 ## 4. How to Run Locally
 
 ### 4.1 Prerequisites
-- Python 3.8+ installed.
+- Python 3.9+ installed.
 - Modern web browser (Chrome, Edge, Firefox, Safari).
 
 ### 4.2 One-Command Startup
 Start the local server from the repository root:
 
 ```bash
-cd /home/flashbsb/projetos/SlideMeshLive
 python3 server.py
 ```
 
 The terminal will display instant local and Wi-Fi access links:
-- **Main Portal:** `http://localhost:8000/`
-- **SlideMesh Studio:** `http://localhost:8000/import.html`
-- **Stage Screen:** `http://localhost:8000/presenter/?presentation=slidemesh-showcase&session=SHOWCASE2026`
-- **Control Room:** `http://localhost:8000/admin/?presentation=slidemesh-showcase&session=SHOWCASE2026`
-- **Audience Smartphone:** `http://<YOUR_LOCAL_IP>:8000/audience/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+- **Main Portal:** `http://localhost:8080/`
+- **SlideMesh Studio:** `http://localhost:8080/import.html`
+- **Stage Screen:** `http://localhost:8080/presenter/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+- **Control Room:** `http://localhost:8080/admin/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+- **Audience Smartphone:** `http://<YOUR_LOCAL_IP>:8080/audience/?presentation=slidemesh-showcase&session=SHOWCASE2026`
+
+### 4.3 Automated Testing
+Execute the complete regression and security test suite:
+```bash
+# Via Python
+python3 tests/test_suite.py
+
+# Or via npm
+npm test
+```
 
 ---
 
@@ -281,6 +302,13 @@ python3 tools/import_presentation.py notes.md --session LIVE2026 --security pin
 
 ---
 
-## 8. License
+## 8. Contributing & Security
+
+- **Contributing:** Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for details on code standards, conventional commits, and the pull request process.
+- **Security:** To report security vulnerabilities responsibly, please review our [SECURITY.md](SECURITY.md).
+
+---
+
+## 9. License
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more details.
