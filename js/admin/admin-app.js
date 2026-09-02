@@ -264,11 +264,16 @@ class AdminApp {
     this.bindEvents();
     this.updateLanguageButton();
     this.updateThemeButton();
-    await this.loadCatalogOptions();
-    await this.auth.loadSecurityConfig();
+
+    try {
+      await this.auth.loadSecurityConfig();
+    } catch (e) {
+      console.warn('Erro ao carregar configurações de segurança:', e);
+    }
 
     if (!this.auth.isAdminAuthenticated()) {
       this.showLockScreen();
+      this.loadCatalogOptions().catch(err => console.warn('Erro ao carregar catálogo em background:', err));
     } else {
       await this.startAdminSession();
     }
