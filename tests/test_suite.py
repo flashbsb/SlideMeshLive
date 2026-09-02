@@ -21,6 +21,8 @@ import urllib.request
 import urllib.error
 import base64
 import shutil
+import io
+import zipfile
 from http.server import HTTPServer
 
 # Adiciona o diretório raiz ao path para importação do server.py
@@ -3364,6 +3366,67 @@ def test_plano17_phase2_presenter_stage_gatekeeper():
     print("✓ Plano 17 (Fase 2: Gatekeeper Multi-Auth de Palco no Telão) 100% HOMOLOGADO.")
 
 
+def test_plano17_phase3_portal_actions_and_zip_export_protection():
+    """Valida a proteção de ações em decks protegidos e bloqueio de download ZIP não autorizado (Plano 17 - Fase 3)."""
+    print(f"\n{'='*70}")
+    print(" 🧪 33. Plano 17: Proteção de Ações & Download ZIP Protegido no Portal (Fase 3)")
+    print(f"{'='*70}")
+
+    httpd = server.ThreadingHTTPServer(('127.0.0.1', 0), server.LiveSyncHTTPRequestHandler)
+    test_port = httpd.server_port
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    time.sleep(0.1)
+
+    base_url = f"http://127.0.0.1:{test_port}"
+
+    try:
+        # 1. Tentativa de exportar ZIP de deck protegido sem PIN -> deve retornar 401
+        try:
+            with urllib.request.urlopen(f"{base_url}/api/presentations/export?id=treinamento-interno-pin", timeout=3) as res:
+                assert False, f"Esperado 401 para deck protegido sem PIN, retornou {res.status}"
+        except urllib.error.HTTPError as he:
+            assert he.code == 401, f"Código inesperado: {he.code}"
+        print("  ✓ GET /api/presentations/export: Bloqueio estrito de deck protegido sem PIN com 401 validado.")
+
+        # 2. Tentativa de exportar ZIP com PIN incorreto -> deve retornar 401
+        try:
+            with urllib.request.urlopen(f"{base_url}/api/presentations/export?id=treinamento-interno-pin&pin=9999", timeout=3) as res:
+                assert False, f"Esperado 401 para PIN inválido, retornou {res.status}"
+        except urllib.error.HTTPError as he:
+            assert he.code == 401, f"Código inesperado: {he.code}"
+        print("  ✓ GET /api/presentations/export: Rejeição de PIN inválido com 401 validada.")
+
+        # 3. Exportação de ZIP com PIN correto (7482) -> deve retornar 200 e ZIP válido
+        with urllib.request.urlopen(f"{base_url}/api/presentations/export?id=treinamento-interno-pin&pin=7482", timeout=3) as res:
+            assert res.status == 200, f"Falha ao exportar com PIN correto: {res.status}"
+            zip_data = res.read()
+            assert zipfile.is_zipfile(io.BytesIO(zip_data)), "Resposta não é um arquivo ZIP válido"
+        print("  ✓ GET /api/presentations/export: Exportação com PIN correto aprovada com 200 OK e ZIP íntegro.")
+
+        # 4. Exportação de deck público sem PIN -> deve retornar 200 diretamente
+        with urllib.request.urlopen(f"{base_url}/api/presentations/export?id=comece-por-aqui", timeout=3) as res:
+            assert res.status == 200, f"Falha ao exportar deck público: {res.status}"
+        print("  ✓ GET /api/presentations/export: Exportação de deck público sem PIN permitida com 200 OK.")
+
+        # 5. Validação de index.html (Modais e Interceptação)
+        portal_html_path = os.path.join(BASE_DIR, "index.html")
+        with open(portal_html_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+
+        assert 'id="portal-root"' in html_content, "Elemento #portal-root não encontrado em index.html"
+        assert 'id="portal-deck-auth-modal"' in html_content, "Modal #portal-deck-auth-modal não encontrado em index.html"
+        assert 'id="portal-global-lock-modal"' in html_content, "Modal #portal-global-lock-modal não encontrado em index.html"
+        assert 'handleProtectedDeckAction' in html_content, "Função handleProtectedDeckAction não encontrada em index.html"
+        assert 'requireAuthForCatalog' in html_content, "Checagem de requireAuthForCatalog não encontrada em index.html"
+        print("  ✓ Portal UI (index.html): Modais de desbloqueio de deck e Intranet global validados.")
+
+    finally:
+        httpd.shutdown()
+
+    print("✓ Plano 17 (Fase 3: Proteção de Ações & Modo Intranet no Portal) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -3398,6 +3461,7 @@ if __name__ == "__main__":
         test_plano16_presentations_auto_discovery_and_catalog_endpoint()
         test_plano17_phase1_manifest_sanitization_and_server_side_pin()
         test_plano17_phase2_presenter_stage_gatekeeper()
+        test_plano17_phase3_portal_actions_and_zip_export_protection()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

@@ -1217,6 +1217,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 "requirePinForAdmin": sec_cfg.get("admin", {}).get("requirePinForAdmin", True),
                 "allowedEmails": sec_cfg.get("admin", {}).get("allowedEmails", []),
                 "offlineAudienceEnabled": sec_cfg.get("offlineAudience", {}).get("enabled", True),
+                "requireAuthForCatalog": bool(sec_cfg.get("catalog", {}).get("requireAuth", False) or sec_cfg.get("requireAuthForCatalog", False)),
                 "offlineAudienceUsers": [
                     {"username": u.get("username"), "name": u.get("name", u.get("username"))}
                     for u in sec_cfg.get("offlineAudience", {}).get("users", [])
@@ -1250,6 +1251,9 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                             }
                             for u in sec_cfg.get("admin", {}).get("users", [])
                         ]
+                    },
+                    "catalog": {
+                        "requireAuth": bool(sec_cfg.get("catalog", {}).get("requireAuth", False) or sec_cfg.get("requireAuthForCatalog", False))
                     },
                     "offlineAudience": {
                         "enabled": bool(sec_cfg.get("offlineAudience", {}).get("enabled", True)),
@@ -1475,7 +1479,7 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(catalog_payload, ensure_ascii=False, indent=2).encode('utf-8'))
             return
 
-        if parsed.path == '/api/presentations/export':
+        if parsed.path in ('/api/presentations/export', '/api/presentations/export-zip'):
             qs = parse_qs(parsed.query)
             presentation_id = qs.get('id', [''])[0].strip() or qs.get('presentation', [''])[0].strip()
             if not presentation_id:
@@ -1485,6 +1489,40 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"success": False, "error": "Parâmetro 'id' ou 'presentation' obrigatório para exportação."}).encode('utf-8'))
                 return
+
+            # Validação de Segurança do Deck para Exportação (Plano 17 - Fase 3)
+            manifest_path = os.path.join(BASE_DIR, "presentations", presentation_id, "manifest.json")
+            if os.path.isfile(manifest_path):
+                try:
+                    with open(manifest_path, "r", encoding="utf-8") as mf:
+                        deck_manifest = json.load(mf)
+                    sec = deck_manifest.get("security", {})
+                    is_protected = sec.get("mode") == "pin" or sec.get("isProtected") or sec.get("requirePIN")
+                    if is_protected:
+                        pin_provided = qs.get('pin', [''])[0].strip() or self.headers.get('X-Admin-PIN', '').strip()
+                        auth_header = self.headers.get('Authorization', '').strip()
+                        sec_cfg = load_security_config(BASE_DIR)
+                        admin_pin = str(sec_cfg.get('admin', {}).get('pin', '2026')).strip()
+                        deck_pin = str(sec.get('pin', '')).strip()
+
+                        is_authorized = False
+                        if pin_provided and (pin_provided == deck_pin or pin_provided == admin_pin):
+                            is_authorized = True
+                        elif auth_header.startswith('Bearer '):
+                            token = auth_header.split(' ', 1)[1].strip()
+                            if token:
+                                is_authorized = True
+
+                        if not is_authorized:
+                            self.send_response(401)
+                            self.send_header('Content-Type', 'application/json; charset=utf-8')
+                            self.send_header('Access-Control-Allow-Origin', '*')
+                            self.end_headers()
+                            self.wfile.write(json.dumps({"success": False, "error": "Apresentação protegida por PIN. Forneça a credencial para exportar o pacote ZIP."}).encode('utf-8'))
+                            return
+                except Exception:
+                    pass
+
             try:
                 zip_bytes = export_presentation_zip(presentation_id)
                 self.send_response(200)

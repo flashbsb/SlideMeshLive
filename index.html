@@ -13,6 +13,13 @@
   <link rel="stylesheet" href="css/animations.css">
   <link rel="stylesheet" href="css/components.css">
   <style>
+    body.portal-locked #portal-root {
+      filter: blur(14px);
+      opacity: 0.2;
+      pointer-events: none;
+      user-select: none;
+      transition: filter 0.3s ease, opacity 0.3s ease;
+    }
     .portal-hero {
       max-width: 900px;
       margin: 50px auto 20px;
@@ -111,101 +118,203 @@
       display: flex;
       flex-direction: column;
     }
-    #zip-dropzone.dragover {
-      border-color: var(--accent-primary) !important;
-      background: rgba(56, 189, 248, 0.12) !important;
-      transform: scale(1.01);
-    }
   </style>
 </head>
 <body>
 
-  <header style="padding: 16px 36px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-    <div style="font-weight: 800; font-size: 16px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px;">
-      <span style="width: 12px; height: 12px; border-radius: 50%; background: var(--accent-primary); display: inline-block; box-shadow: 0 0 10px var(--accent-primary);"></span>
-      <span style="color: var(--text-primary);" data-i18n="app.title">SlideMeshLive</span>
-    </div>
-    
-    <div style="display: flex; align-items: center; gap: 10px;">
-      <!-- SlideMesh Studio (Criar, Editar & Importar) -->
-      <a href="import.html" class="btn btn-sm btn-primary" style="padding: 5px 14px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;" title="SlideMesh Studio: Criar, Editar ou Importar Apresentações (.zip, .pptx, .docx, .md, .html, .pdf)">
-        <span data-i18n="portal.btn_studio">✨ SlideMesh Studio</span>
+  <div id="portal-root">
+    <header style="padding: 16px 36px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+      <div style="font-weight: 800; font-size: 16px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 12px; height: 12px; border-radius: 50%; background: var(--accent-primary); display: inline-block; box-shadow: 0 0 10px var(--accent-primary);"></span>
+        <span style="color: var(--text-primary);" data-i18n="app.title">SlideMeshLive</span>
+      </div>
+      
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <!-- SlideMesh Studio (Criar, Editar & Importar) -->
+        <a href="import.html" class="btn btn-sm btn-primary" style="padding: 5px 14px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;" title="SlideMesh Studio: Criar, Editar ou Importar Apresentações (.zip, .pptx, .docx, .md, .html, .pdf)">
+          <span data-i18n="portal.btn_studio">✨ SlideMesh Studio</span>
+        </a>
+
+        <!-- Link Documentação -->
+        <a href="docs.html" class="btn btn-sm" style="padding: 4px 10px; font-size: 12px; text-decoration: none;" title="Abrir Guia e Documentação Oficial">
+          <span data-i18n="portal.btn_docs">📖 Guia &amp; Docs</span>
+        </a>
+
+        <!-- Link GitHub -->
+        <a href="https://github.com/flashbsb/SlideMeshLive" target="_blank" rel="noopener" class="btn btn-sm" style="padding: 4px 10px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;" title="Ver código no GitHub">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          <span>GitHub</span>
+        </a>
+
+        <!-- Seletor de Idioma -->
+        <button class="btn btn-sm" id="btn-portal-lang" style="padding: 4px 8px; font-size: 12px;" title="Alternar Idioma">
+          🇧🇷 PT
+        </button>
+
+        <!-- Seletor de Tema -->
+        <button class="btn btn-sm" id="btn-portal-theme" style="padding: 4px 8px; font-size: 12px;" title="Alternar Tema Visual">
+          🌙 Tema
+        </button>
+      </div>
+    </header>
+
+    <!-- Banner de Aviso de Configuração de Segurança Inicial -->
+    <div id="portal-setup-banner" style="display: none; background: rgba(245, 158, 11, 0.15); border-bottom: 1px solid rgba(245, 158, 11, 0.4); padding: 12px 36px; font-size: 13px; color: #fbbf24; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 16px;">🛡️</span>
+        <span><strong>Configuração Inicial de Segurança Pendente:</strong> Proteja sua Mesa Técnica e defina seu PIN de administração no Setup Wizard.</span>
+      </div>
+      <a href="setup.html" class="btn btn-sm btn-primary" style="background: #f59e0b; border-color: #f59e0b; color: #0b0f19; font-weight: 800; text-decoration: none; padding: 5px 14px; font-size: 12px; white-space: nowrap;">
+        ⚙️ Iniciar Setup Wizard
       </a>
-
-      <!-- Link Documentação -->
-      <a href="docs.html" class="btn btn-sm" style="padding: 4px 10px; font-size: 12px; text-decoration: none;" title="Abrir Guia e Documentação Oficial">
-        <span data-i18n="portal.btn_docs">📖 Guia &amp; Docs</span>
-      </a>
-
-      <!-- Link GitHub -->
-      <a href="https://github.com/flashbsb/SlideMeshLive" target="_blank" rel="noopener" class="btn btn-sm" style="padding: 4px 10px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;" title="Ver código no GitHub">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        <span>GitHub</span>
-      </a>
-
-      <!-- Seletor de Idioma -->
-      <button class="btn btn-sm" id="btn-portal-lang" style="padding: 4px 8px; font-size: 12px;" title="Alternar Idioma">
-        🇧🇷 PT
-      </button>
-
-      <!-- Seletor de Tema -->
-      <button class="btn btn-sm" id="btn-portal-theme" style="padding: 4px 8px; font-size: 12px;" title="Alternar Tema Visual">
-        🌙 Tema
-      </button>
     </div>
-  </header>
 
-  <!-- Banner de Aviso de Configuração de Segurança Inicial -->
-  <div id="portal-setup-banner" style="display: none; background: rgba(245, 158, 11, 0.15); border-bottom: 1px solid rgba(245, 158, 11, 0.4); padding: 12px 36px; font-size: 13px; color: #fbbf24; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-    <div style="display: flex; align-items: center; gap: 10px;">
-      <span style="font-size: 16px;">🛡️</span>
-      <span><strong>Configuração Inicial de Segurança Pendente:</strong> Proteja sua Mesa Técnica e defina seu PIN de administração no Setup Wizard.</span>
-    </div>
-    <a href="setup.html" class="btn btn-sm btn-primary" style="background: #f59e0b; border-color: #f59e0b; color: #0b0f19; font-weight: 800; text-decoration: none; padding: 5px 14px; font-size: 12px; white-space: nowrap;">
-      ⚙️ Iniciar Setup Wizard
-    </a>
+    <main>
+      <section class="portal-hero animate-fade-in">
+        <h1 class="portal-title" data-i18n="portal.hero_title">Plataforma de Apresentação HTML Sincronizada</h1>
+        <p class="portal-subtitle" data-i18n="portal.hero_subtitle">
+          Projeções web de alto impacto com controle remoto da mesa técnica e sincronização instantânea com os smartphones do público via QR Code.
+        </p>
+        
+        <!-- Busca e Filtro de Apresentações -->
+        <div class="portal-search-bar">
+          <input type="text" id="portal-search-input" placeholder="Buscar apresentação..." data-i18n-placeholder="portal.search_placeholder" style="width: 100%; padding: 10px 14px; background: var(--bg-secondary); border: 1.5px solid var(--border-medium); border-radius: 8px; color: var(--text-primary); font-size: 13.5px; outline: none;">
+        </div>
+      </section>
+
+      <!-- Grid de Cards Carregado Dinamicamente -->
+      <section class="cards-grid" id="catalog-cards-container">
+        <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;" data-i18n="app.loading">
+          Carregando apresentações disponíveis...
+        </div>
+      </section>
+
+      <!-- Rodapé Discreto com Link do Repositório -->
+      <footer style="text-align: center; padding: 28px 20px 36px; color: var(--text-muted); font-size: 12.5px; border-top: 1px solid var(--border-subtle); margin-top: 30px;">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <strong style="color: var(--text-secondary);">SlideMeshLive</strong>
+          <span>•</span>
+          <span>Plataforma Open Source de Apresentações em Tempo Real</span>
+          <span>•</span>
+          <a href="https://github.com/flashbsb/SlideMeshLive" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-weight: 500;">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            GitHub
+          </a>
+        </div>
+      </footer>
+    </main>
   </div>
 
-  <main>
-    <section class="portal-hero animate-fade-in">
-      <h1 class="portal-title" data-i18n="portal.hero_title">Plataforma de Apresentação HTML Sincronizada</h1>
-      <p class="portal-subtitle" data-i18n="portal.hero_subtitle">
-        Projeções web de alto impacto com controle remoto da mesa técnica e sincronização instantânea com os smartphones do público via QR Code.
+  <!-- Modal de Desbloqueio de Deck Protegido no Portal (Plano 17 - Fase 3) -->
+  <div class="modal-overlay" id="portal-deck-auth-modal" style="display: none; z-index: 10000; background: rgba(10, 15, 29, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+    <div class="modal-card" style="max-width: 420px; text-align: center; padding: 28px 32px;">
+      <div style="font-size: 36px; margin-bottom: 8px;">🔒</div>
+      <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 6px;" id="portal-auth-deck-title">
+        Apresentação Protegida por PIN
+      </h3>
+      <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px;" id="portal-auth-deck-desc">
+        Informe o PIN para acessar as telas ou baixar o pacote ZIP desta apresentação.
       </p>
-      
-      <!-- Busca e Filtro de Apresentações -->
-      <div class="portal-search-bar">
-        <input type="text" id="portal-search-input" placeholder="Buscar apresentação..." data-i18n-placeholder="portal.search_placeholder" style="width: 100%; padding: 10px 14px; background: var(--bg-secondary); border: 1.5px solid var(--border-medium); border-radius: 8px; color: var(--text-primary); font-size: 13.5px; outline: none;">
-      </div>
-    </section>
 
-    <!-- Grid de Cards Carregado Dinamicamente -->
-    <section class="cards-grid" id="catalog-cards-container">
-      <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;" data-i18n="app.loading">
-        Carregando apresentações disponíveis...
+      <div id="portal-deck-pin-hint-box" style="display: none; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; font-size: 11.5px; color: var(--accent-primary); text-align: left;">
+        💡 <span id="portal-deck-pin-hint"></span>
       </div>
-    </section>
 
-    <!-- Rodapé Discreto com Link do Repositório -->
-    <footer style="text-align: center; padding: 28px 20px 36px; color: var(--text-muted); font-size: 12.5px; border-top: 1px solid var(--border-subtle); margin-top: 30px;">
-      <div style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
-        <strong style="color: var(--text-secondary);">SlideMeshLive</strong>
-        <span>•</span>
-        <span>Plataforma Open Source de Apresentações em Tempo Real</span>
-        <span>•</span>
-        <a href="https://github.com/flashbsb/SlideMeshLive" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-weight: 500;">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          GitHub
-        </a>
+      <div style="margin-bottom: 14px;">
+        <input type="password" id="input-portal-deck-pin" maxlength="12" placeholder="Digite o PIN" style="width: 100%; text-align: center; letter-spacing: 4px; padding: 10px; background: rgba(15,23,42,0.9); border: 1.5px solid var(--accent-primary); border-radius: 8px; color: #ffffff; font-family: var(--font-mono); font-size: 17px; font-weight: 700;">
       </div>
-    </footer>
-  </main>
+      <div id="portal-deck-pin-error" style="display: none; color: #fca5a5; font-size: 12px; margin-bottom: 12px; background: rgba(239, 68, 68, 0.1); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);">
+        ✕ PIN incorreto.
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn" id="btn-cancel-portal-deck-auth" style="flex: 1; padding: 9px; font-size: 12.5px; border-color: var(--border-medium);">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" id="btn-confirm-portal-deck-auth" style="flex: 2; padding: 9px; font-size: 12.5px; font-weight: 700;">
+          🔓 Desbloquear &amp; Acessar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Global de Intranet / Evento Fechado (Plano 17 - Fase 3) -->
+  <div class="modal-overlay" id="portal-global-lock-modal" style="display: none; z-index: 99999; background: rgba(10, 15, 29, 0.98); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);">
+    <div class="modal-card" style="max-width: 440px; text-align: center; padding: 32px;">
+      <div style="font-size: 40px; margin-bottom: 8px;">🏢</div>
+      <h3 style="font-size: 19px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">
+        Portal Corporativo Protegido
+      </h3>
+      <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 18px;">
+        Este ambiente opera em modo restrito. Identifique-se para visualizar o catálogo de apresentações e sessões.
+      </p>
+
+      <!-- Abas de Autenticação Global -->
+      <div style="display: flex; gap: 4px; background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 8px; border: 1px solid var(--border-subtle); margin-bottom: 18px;">
+        <button class="btn btn-sm btn-primary" id="portal-tab-pin" style="flex: 1; font-size: 11.5px; padding: 6px;" type="button">
+          🔑 PIN
+        </button>
+        <button class="btn btn-sm" id="portal-tab-local" style="flex: 1; font-size: 11.5px; padding: 6px; background: transparent; border-color: transparent; color: var(--text-muted);" type="button">
+          👤 Usuário
+        </button>
+        <button class="btn btn-sm" id="portal-tab-google" style="flex: 1; font-size: 11.5px; padding: 6px; background: transparent; border-color: transparent; color: var(--text-muted);" type="button">
+          🌐 Google
+        </button>
+      </div>
+
+      <!-- PAINEL 1: PIN Global -->
+      <div id="portal-panel-pin" style="display: block;">
+        <div style="margin-bottom: 14px;">
+          <input type="password" id="input-portal-global-pin" maxlength="12" placeholder="Digite o PIN do Evento" style="width: 100%; text-align: center; letter-spacing: 4px; padding: 12px; background: rgba(15,23,42,0.9); border: 1.5px solid var(--accent-primary); border-radius: 8px; color: #ffffff; font-family: var(--font-mono); font-size: 18px; font-weight: 700;">
+        </div>
+        <div id="portal-global-pin-error" style="display: none; color: #fca5a5; font-size: 12px; margin-bottom: 12px; background: rgba(239, 68, 68, 0.1); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);">
+          ✕ PIN incorreto.
+        </div>
+        <button class="btn btn-primary" id="btn-unlock-portal-global-pin" style="width: 100%; padding: 11px; font-size: 13.5px; font-weight: 700;">
+          🔓 Acessar Portal
+        </button>
+      </div>
+
+      <!-- PAINEL 2: Usuário Local -->
+      <div id="portal-panel-local" style="display: none; text-align: left;">
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11.5px; font-weight: 600; color: #cbd5e1; display: block; margin-bottom: 4px;">
+            Usuário:
+          </label>
+          <input type="text" id="input-portal-global-user" placeholder="admin ou palestrante" style="width: 100%; padding: 10px 12px; background: rgba(15,23,42,0.9); border: 1px solid var(--border-medium); border-radius: 6px; color: #ffffff; font-size: 13px;">
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="font-size: 11.5px; font-weight: 600; color: #cbd5e1; display: block; margin-bottom: 4px;">
+            Senha:
+          </label>
+          <input type="password" id="input-portal-global-pass" placeholder="••••••••" style="width: 100%; padding: 10px 12px; background: rgba(15,23,42,0.9); border: 1px solid var(--border-medium); border-radius: 6px; color: #ffffff; font-size: 13px;">
+        </div>
+        <div id="portal-global-user-error" style="display: none; color: #fca5a5; font-size: 12px; margin-bottom: 12px; background: rgba(239, 68, 68, 0.1); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);">
+          ✕ Usuário ou senha incorretos.
+        </div>
+        <button class="btn btn-primary" id="btn-unlock-portal-global-user" style="width: 100%; padding: 11px; font-size: 13.5px; font-weight: 700;">
+          🔑 Entrar no Portal
+        </button>
+      </div>
+
+      <!-- PAINEL 3: Google Workspace -->
+      <div id="portal-panel-google" style="display: none;">
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
+          Acesso corporativo integrado com Google Workspace.
+        </p>
+        <button class="btn" id="btn-unlock-portal-global-google" style="width: 100%; padding: 10px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-color: rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.05); color: #ffffff; cursor: pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.04 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
+          <span>Entrar com Google</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <script type="module">
     import { i18n } from './js/core/i18n-engine.js';
     import { theme, THEMES } from './js/core/theme-engine.js';
 
     let allPresentations = [];
+    let pendingDeckAction = null;
 
     function updateLanguageButton() {
       const btn = document.getElementById('btn-portal-lang');
@@ -220,11 +329,203 @@
       }
     }
 
+    function openZipModal() {
+      window.location.href = 'import.html?mode=zip';
+    }
+
+    // Modal de Acesso a Deck Protegido no Portal (Plano 17 - Fase 3)
+    function handleProtectedDeckAction(presId, actionType, targetUrl, deckTitle, pinHint) {
+      const isUnlocked = sessionStorage.getItem('pres_pin_' + presId) === 'valid' ||
+                         sessionStorage.getItem('admin_pin_authenticated') === 'true';
+
+      if (isUnlocked) {
+        if (actionType === 'zip') {
+          const savedCode = sessionStorage.getItem('pres_pin_code_' + presId) || '';
+          const url = `/api/presentations/export?id=${encodeURIComponent(presId)}` + (savedCode ? `&pin=${encodeURIComponent(savedCode)}` : '');
+          window.location.href = url;
+        } else if (targetUrl) {
+          window.location.href = targetUrl;
+        }
+        return;
+      }
+
+      pendingDeckAction = { presId, actionType, targetUrl, deckTitle, pinHint };
+      const modal = document.getElementById('portal-deck-auth-modal');
+      if (modal) {
+        const titleEl = document.getElementById('portal-auth-deck-title');
+        if (titleEl) titleEl.textContent = `🔒 ${deckTitle || 'Apresentação Protegida'}`;
+
+        const hintBox = document.getElementById('portal-deck-pin-hint-box');
+        const hintSpan = document.getElementById('portal-deck-pin-hint');
+        if (pinHint && hintBox && hintSpan) {
+          hintSpan.textContent = pinHint;
+          hintBox.style.display = 'block';
+        } else if (hintBox) {
+          hintBox.style.display = 'none';
+        }
+
+        const err = document.getElementById('portal-deck-pin-error');
+        if (err) err.style.display = 'none';
+
+        const input = document.getElementById('input-portal-deck-pin');
+        if (input) {
+          input.value = '';
+          modal.style.display = 'flex';
+          setTimeout(() => input.focus(), 100);
+        } else {
+          modal.style.display = 'flex';
+        }
+      }
+    }
+
+    async function verifyAndExecutePendingAction() {
+      if (!pendingDeckAction) return;
+      const input = document.getElementById('input-portal-deck-pin');
+      const entered = input ? input.value.trim() : '';
+      const err = document.getElementById('portal-deck-pin-error');
+      if (!entered) {
+        if (err) { err.textContent = '✕ Digite o PIN de acesso.'; err.style.display = 'block'; }
+        return;
+      }
+
+      const confirmBtn = document.getElementById('btn-confirm-portal-deck-auth');
+      if (confirmBtn) confirmBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/auth/verify-pin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: entered, presentationId: pendingDeckAction.presId })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          sessionStorage.setItem('pres_pin_' + pendingDeckAction.presId, 'valid');
+          sessionStorage.setItem('pres_pin_code_' + pendingDeckAction.presId, entered);
+          document.getElementById('portal-deck-auth-modal').style.display = 'none';
+          
+          const act = pendingDeckAction;
+          pendingDeckAction = null;
+          if (act.actionType === 'zip') {
+            window.location.href = `/api/presentations/export?id=${encodeURIComponent(act.presId)}&pin=${encodeURIComponent(entered)}`;
+          } else if (act.targetUrl) {
+            window.location.href = act.targetUrl;
+          }
+        } else {
+          if (err) { err.textContent = '✕ PIN incorreto. Tente novamente.'; err.style.display = 'block'; }
+        }
+      } catch (e) {
+        if (err) { err.textContent = '✕ Erro ao validar PIN.'; err.style.display = 'block'; }
+      } finally {
+        if (confirmBtn) confirmBtn.disabled = false;
+      }
+    }
+
+    // Modal Global de Intranet / Evento Fechado (Plano 17 - Fase 3)
+    function checkGlobalIntranetLock(authData) {
+      const requireAuth = authData && authData.requireAuthForCatalog === true;
+      const isAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true';
+      const modal = document.getElementById('portal-global-lock-modal');
+
+      if (requireAuth && !isAuth) {
+        document.body.classList.add('portal-locked');
+        if (modal) modal.style.display = 'flex';
+      } else {
+        document.body.classList.remove('portal-locked');
+        if (modal) modal.style.display = 'none';
+      }
+    }
+
+    function switchGlobalAuthTab(activeTab) {
+      const tabs = {
+        pin: { tab: document.getElementById('portal-tab-pin'), panel: document.getElementById('portal-panel-pin') },
+        local: { tab: document.getElementById('portal-tab-local'), panel: document.getElementById('portal-panel-local') },
+        google: { tab: document.getElementById('portal-tab-google'), panel: document.getElementById('portal-panel-google') }
+      };
+
+      Object.keys(tabs).forEach(k => {
+        const isCurrent = (k === activeTab);
+        if (tabs[k].tab) {
+          if (isCurrent) {
+            tabs[k].tab.className = 'btn btn-sm btn-primary';
+            tabs[k].tab.style.background = '';
+            tabs[k].tab.style.color = '';
+          } else {
+            tabs[k].tab.className = 'btn btn-sm';
+            tabs[k].tab.style.background = 'transparent';
+            tabs[k].tab.style.borderColor = 'transparent';
+            tabs[k].tab.style.color = 'var(--text-muted)';
+          }
+        }
+        if (tabs[k].panel) {
+          tabs[k].panel.style.display = isCurrent ? 'block' : 'none';
+        }
+      });
+    }
+
+    async function unlockPortalGlobalPin() {
+      const input = document.getElementById('input-portal-global-pin');
+      const entered = input ? input.value.trim() : '';
+      const err = document.getElementById('portal-global-pin-error');
+      if (!entered) {
+        if (err) { err.textContent = '✕ Digite o PIN do evento.'; err.style.display = 'block'; }
+        return;
+      }
+      try {
+        const res = await fetch('/api/auth/verify-pin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: entered })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          sessionStorage.setItem('admin_pin_authenticated', 'true');
+          document.body.classList.remove('portal-locked');
+          document.getElementById('portal-global-lock-modal').style.display = 'none';
+        } else {
+          if (err) { err.textContent = '✕ PIN incorreto.'; err.style.display = 'block'; }
+        }
+      } catch (e) {
+        if (err) { err.textContent = '✕ Erro ao validar PIN.'; err.style.display = 'block'; }
+      }
+    }
+
+    async function unlockPortalGlobalUser() {
+      const u = document.getElementById('input-portal-global-user')?.value.trim();
+      const p = document.getElementById('input-portal-global-pass')?.value.trim();
+      const err = document.getElementById('portal-global-user-error');
+      if (!u || !p) {
+        if (err) { err.textContent = '✕ Preencha usuário e senha.'; err.style.display = 'block'; }
+        return;
+      }
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: u, password: p })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          sessionStorage.setItem('admin_pin_authenticated', 'true');
+          document.body.classList.remove('portal-locked');
+          document.getElementById('portal-global-lock-modal').style.display = 'none';
+        } else {
+          if (err) { err.textContent = `✕ ${data.error || 'Credenciais inválidas.'}`; err.style.display = 'block'; }
+        }
+      } catch (e) {
+        if (err) { err.textContent = '✕ Erro ao realizar login.'; err.style.display = 'block'; }
+      }
+    }
+
     function renderCards(presentations) {
       const container = document.getElementById('catalog-cards-container');
       if (!container) return;
 
-      let html = presentations.map(p => `
+      let html = presentations.map(p => {
+        const isProtected = p.securityMode === 'pin' || p.isProtected || (p.securityLabel && p.securityLabel.includes('PIN'));
+        const safeTitle = encodeURIComponent(p.title || '');
+        const safeHint = encodeURIComponent(p.security?.pinHint || p.pinHint || '');
+
+        return `
         <article class="presentation-card animate-fade-in">
           <div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 8px;">
@@ -244,27 +545,28 @@
 
           <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 8px;">
             <div class="card-actions" style="margin-top: 0;">
-              <a href="presenter/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn btn-primary" title="Abrir Telão Principal">
+              <a href="presenter/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn btn-primary btn-deck-action" data-protected="${isProtected}" data-id="${p.id}" data-type="link" data-title="${safeTitle}" data-hint="${safeHint}" title="Abrir Telão Principal">
                 ${i18n.t('portal.btn_presenter')}
               </a>
-              <a href="admin/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn" style="border-color: var(--border-medium); color: var(--text-primary);" title="Abrir Mesa Técnica e Moderação">
+              <a href="admin/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn btn-deck-action" data-protected="${isProtected}" data-id="${p.id}" data-type="link" data-title="${safeTitle}" data-hint="${safeHint}" style="border-color: var(--border-medium); color: var(--text-primary);" title="Abrir Mesa Técnica e Moderação">
                 ${i18n.t('portal.btn_admin')}
               </a>
-              <a href="audience/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn" title="Abrir Visão do Smartphone">
+              <a href="audience/?presentation=${encodeURIComponent(p.id)}&session=${encodeURIComponent(p.defaultSession || 'SES2026')}" class="btn btn-deck-action" data-protected="${isProtected}" data-id="${p.id}" data-type="link" data-title="${safeTitle}" data-hint="${safeHint}" title="Abrir Visão do Smartphone">
                 ${i18n.t('portal.btn_audience')}
               </a>
             </div>
             <div style="display: flex; gap: 6px; width: 100%;">
-              <a href="import.html?edit=${encodeURIComponent(p.id)}" class="btn btn-sm" style="flex: 1; text-align: center; justify-content: center; background: rgba(56, 189, 248, 0.08); border-color: var(--border-medium); font-weight: 700; color: var(--accent-primary);" title="Editar Apresentação no Studio">
+              <a href="import.html?edit=${encodeURIComponent(p.id)}" class="btn btn-sm btn-deck-action" data-protected="${isProtected}" data-id="${p.id}" data-type="link" data-title="${safeTitle}" data-hint="${safeHint}" style="flex: 1; text-align: center; justify-content: center; background: rgba(56, 189, 248, 0.08); border-color: var(--border-medium); font-weight: 700; color: var(--accent-primary);" title="Editar Apresentação no Studio">
                 ${i18n.t('portal.btn_edit_card', 'Editar')}
               </a>
-              <a href="/api/presentations/export?id=${encodeURIComponent(p.id)}" download="${p.id}.slidemesh.zip" class="btn btn-sm btn-export-zip" data-id="${p.id}" style="flex: 1; text-align: center; justify-content: center; border-color: var(--border-medium); color: var(--text-secondary); text-decoration: none;" title="Baixar Pacote ZIP da Apresentação">
+              <a href="/api/presentations/export?id=${encodeURIComponent(p.id)}" download="${p.id}.slidemesh.zip" class="btn btn-sm btn-export-zip btn-deck-action" data-protected="${isProtected}" data-id="${p.id}" data-type="zip" data-title="${safeTitle}" data-hint="${safeHint}" style="flex: 1; text-align: center; justify-content: center; border-color: var(--border-medium); color: var(--text-secondary); text-decoration: none;" title="Baixar Pacote ZIP da Apresentação">
                 ${i18n.t('portal.btn_export_zip', '📦 Exportar ZIP')}
               </a>
             </div>
           </div>
         </article>
-      `).join('');
+        `;
+      }).join('');
 
       // Card explicativo de como adicionar novas apresentações
       html += `
@@ -306,6 +608,24 @@
       if (cardImportBtn) {
         cardImportBtn.addEventListener('click', openZipModal);
       }
+
+      // Intercepta cliques em ações de decks protegidos
+      document.querySelectorAll('.btn-deck-action[data-protected="true"]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          const isUnlocked = sessionStorage.getItem('pres_pin_' + el.dataset.id) === 'valid' ||
+                             sessionStorage.getItem('admin_pin_authenticated') === 'true';
+          if (!isUnlocked) {
+            e.preventDefault();
+            handleProtectedDeckAction(
+              el.dataset.id,
+              el.dataset.type,
+              el.getAttribute('href'),
+              decodeURIComponent(el.dataset.title || ''),
+              decodeURIComponent(el.dataset.hint || '')
+            );
+          }
+        });
+      });
     }
 
     async function loadCatalog() {
@@ -313,7 +633,43 @@
       updateThemeButton();
       i18n.applyTranslations();
 
-      // Verifica se o setup inicial de segurança é necessário
+      // Bind modais de segurança
+      const btnCancelDeck = document.getElementById('btn-cancel-portal-deck-auth');
+      if (btnCancelDeck) {
+        btnCancelDeck.addEventListener('click', () => {
+          document.getElementById('portal-deck-auth-modal').style.display = 'none';
+          pendingDeckAction = null;
+        });
+      }
+
+      const btnConfirmDeck = document.getElementById('btn-confirm-portal-deck-auth');
+      if (btnConfirmDeck) {
+        btnConfirmDeck.addEventListener('click', verifyAndExecutePendingAction);
+      }
+
+      const inputDeckPin = document.getElementById('input-portal-deck-pin');
+      if (inputDeckPin) {
+        inputDeckPin.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') verifyAndExecutePendingAction();
+        });
+      }
+
+      // Bind abas e botões do modal global de intranet
+      document.getElementById('portal-tab-pin')?.addEventListener('click', () => switchGlobalAuthTab('pin'));
+      document.getElementById('portal-tab-local')?.addEventListener('click', () => switchGlobalAuthTab('local'));
+      document.getElementById('portal-tab-google')?.addEventListener('click', () => switchGlobalAuthTab('google'));
+
+      document.getElementById('btn-unlock-portal-global-pin')?.addEventListener('click', unlockPortalGlobalPin);
+      document.getElementById('input-portal-global-pin')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') unlockPortalGlobalPin();
+      });
+
+      document.getElementById('btn-unlock-portal-global-user')?.addEventListener('click', unlockPortalGlobalUser);
+      document.getElementById('input-portal-global-pass')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') unlockPortalGlobalUser();
+      });
+
+      // Verifica metadados de autenticação pública e modo intranet
       try {
         const authRes = await fetch('/api/auth/public-config');
         if (authRes.ok) {
@@ -322,6 +678,7 @@
           if (banner) {
             banner.style.display = authData.setupRequired ? 'flex' : 'none';
           }
+          checkGlobalIntranetLock(authData);
         }
       } catch (e) {}
 
