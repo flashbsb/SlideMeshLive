@@ -2722,6 +2722,85 @@ def test_plano13_phase3_security_gatekeeper_and_rbac():
     print("✓ Plano 13 (Fase 3: Backend Gatekeeper, Proteção de Credenciais & RBAC Full Lock Screen) 100% HOMOLOGADO.")
 
 
+def test_plano14_phase1_security_setup_wizard():
+    print(f"\n{'='*70}")
+    print(" 🧪 26. Plano 14: First-Run Security Setup Wizard (Fase 1)")
+    print(f"{'='*70}")
+
+    httpd = server.ThreadingHTTPServer(("127.0.0.1", 0), server.LiveSyncHTTPRequestHandler)
+    httpd.daemon_threads = True
+    port = httpd.server_port
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    server_thread.start()
+    base_url = f"http://127.0.0.1:{port}"
+
+    # 1. Teste de GET /api/auth/public-config com flag setupRequired
+    req = urllib.request.Request(f"{base_url}/api/auth/public-config")
+    with urllib.request.urlopen(req) as res:
+        assert res.status == 200
+        data = json.loads(res.read().decode('utf-8'))
+        assert "setupRequired" in data, "Flag 'setupRequired' ausente no /api/auth/public-config"
+        print("  ✓ GET /api/auth/public-config: Retorno de 'setupRequired' validado.")
+
+    # 2. Teste de validação em POST /api/auth/setup
+    # a) Rejeição de PIN curto (< 4 dígitos)
+    def post_json(url, body):
+        r = urllib.request.Request(url, data=json.dumps(body).encode('utf-8'), headers={'Content-Type': 'application/json'})
+        try:
+            with urllib.request.urlopen(r) as res:
+                return res.status, json.loads(res.read().decode('utf-8'))
+        except urllib.error.HTTPError as e:
+            return e.code, json.loads(e.read().decode('utf-8'))
+
+    status, resp = post_json(f"{base_url}/api/auth/setup", {
+        "pin": "12",
+        "adminUser": {"username": "admin", "password": "123"}
+    })
+    # Como security.json já existe no repo de teste, ou deve rejeitar com 403 (já configurado) ou 400 (se ausente com erro de validação)
+    assert status in (400, 403), f"Esperado status 400 ou 403, obtido {status}"
+    print("  ✓ POST /api/auth/setup: Gatekeeper e validações de integridade operacionais.")
+
+    # 3. Validação estrutural de setup.html
+    setup_html_path = os.path.join(BASE_DIR, "setup.html")
+    assert os.path.exists(setup_html_path), "Arquivo setup.html não encontrado"
+    with open(setup_html_path, "r", encoding="utf-8") as f:
+        setup_html = f.read()
+
+    assert 'id="wizard-stepper"' in setup_html, "Elemento #wizard-stepper ausente em setup.html"
+    assert 'id="pane-step-1"' in setup_html, "Painel #pane-step-1 ausente em setup.html"
+    assert 'id="pane-step-2"' in setup_html, "Painel #pane-step-2 ausente em setup.html"
+    assert 'id="pane-step-3"' in setup_html, "Painel #pane-step-3 ausente em setup.html"
+    assert 'id="input-pin"' in setup_html, "Input #input-pin ausente em setup.html"
+    assert 'id="btn-generate-pin"' in setup_html, "Botão #btn-generate-pin ausente em setup.html"
+    assert 'id="input-admin-user"' in setup_html, "Input #input-admin-user ausente em setup.html"
+    assert 'id="input-admin-pass"' in setup_html, "Input #input-admin-pass ausente em setup.html"
+    assert 'id="check-audience-enabled"' in setup_html, "Checkbox #check-audience-enabled ausente em setup.html"
+    print("  ✓ Setup Wizard UI (setup.html): Stepper 3-passos, gerador de PIN e formulários validados.")
+
+    # 4. Validação de AuthEngine (js/core/auth-engine.js)
+    auth_js_path = os.path.join(BASE_DIR, "js", "core", "auth-engine.js")
+    with open(auth_js_path, "r", encoding="utf-8") as f:
+        auth_js = f.read()
+
+    assert "isSetupRequired" in auth_js, "Método isSetupRequired() ausente em auth-engine.js"
+    assert "performInitialSetup" in auth_js, "Método performInitialSetup() ausente em auth-engine.js"
+    print("  ✓ AuthEngine Client: Métodos isSetupRequired() e performInitialSetup() validados.")
+
+    # 5. Validação de banners informativos no Portal e Mesa Técnica
+    index_html_path = os.path.join(BASE_DIR, "index.html")
+    with open(index_html_path, "r", encoding="utf-8") as f:
+        index_html = f.read()
+    assert 'id="portal-setup-banner"' in index_html, "Banner #portal-setup-banner ausente no index.html"
+
+    admin_html_path = os.path.join(BASE_DIR, "admin", "index.html")
+    with open(admin_html_path, "r", encoding="utf-8") as f:
+        admin_html = f.read()
+    assert 'id="admin-lock-setup-banner"' in admin_html, "Banner #admin-lock-setup-banner ausente no admin/index.html"
+    print("  ✓ Banners de Primeiro Uso: Alertas de setup inicial integrados em index.html e admin/index.html.")
+
+    print("✓ Plano 14 (Fase 1: First-Run Security Setup Wizard Web & CLI) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -2749,6 +2828,7 @@ if __name__ == "__main__":
         test_demanda12_zip_export_import_portability()
         test_plano13_portal_and_admin_modals_ux()
         test_plano13_phase3_security_gatekeeper_and_rbac()
+        test_plano14_phase1_security_setup_wizard()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

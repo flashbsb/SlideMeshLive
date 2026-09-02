@@ -118,6 +118,7 @@ export class AuthEngine {
       }
     } catch (e) {
       this.securityConfig = {
+        setupRequired: false,
         requirePinForAdmin: true,
         allowedEmails: [],
         offlineAudienceEnabled: true,
@@ -125,6 +126,34 @@ export class AuthEngine {
         hasAdminUsers: true
       };
     }
+  }
+
+  /**
+   * Indica se a aplicação está em modo de primeiro uso e necessita de setup inicial
+   */
+  isSetupRequired() {
+    return Boolean(this.securityConfig && this.securityConfig.setupRequired === true);
+  }
+
+  /**
+   * Executa a gravação da configuração inicial de segurança (/api/auth/setup)
+   */
+  async performInitialSetup(setupData) {
+    if (!setupData) throw new Error('Dados de configuração inválidos.');
+
+    const res = await fetch('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(setupData)
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Falha ao salvar configuração inicial de segurança.');
+    }
+
+    await this.loadSecurityConfig();
+    return data;
   }
 
   _setCurrentUser(user) {

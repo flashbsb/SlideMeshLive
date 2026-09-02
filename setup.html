@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuração de Segurança Inicial — SlideMesh Live</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: radial-gradient(circle at top center, rgba(56, 189, 248, 0.12) 0%, rgba(11, 15, 25, 0.98) 70%), var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+    }
+
+    .setup-header {
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(11, 15, 25, 0.6);
+      backdrop-filter: blur(12px);
+    }
+
+    .setup-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+    }
+
+    .setup-logo-badge {
+      background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+      color: #ffffff;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .setup-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .setup-card {
+      width: 100%;
+      max-width: 680px;
+      background: rgba(17, 24, 39, 0.85);
+      border: 1.5px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 40px rgba(56, 189, 248, 0.08);
+      backdrop-filter: blur(20px);
+      padding: 36px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 32px;
+    }
+
+    .stepper::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 30px;
+      right: 30px;
+      height: 2px;
+      background: var(--border-subtle);
+      z-index: 1;
+    }
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .step-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-medium);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: all var(--transition-normal);
+    }
+
+    .step-item.active .step-circle {
+      background: var(--accent-primary);
+      border-color: #ffffff;
+      color: #0b0f19;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    .step-item.completed .step-circle {
+      background: #10b981;
+      border-color: #10b981;
+      color: #ffffff;
+    }
+
+    .step-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+    }
+
+    .step-item.active .step-label {
+      color: var(--accent-primary);
+    }
+
+    .step-item.completed .step-label {
+      color: #10b981;
+    }
+
+    .step-pane {
+      display: none;
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    .step-pane.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+      box-sizing: border-box;
+      transition: all var(--transition-fast);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .form-input-lg {
+      font-size: 24px;
+      font-family: var(--font-mono);
+      letter-spacing: 4px;
+      text-align: center;
+      padding: 14px 20px;
+    }
+
+    .input-with-action {
+      display: flex;
+      gap: 10px;
+    }
+
+    .pass-strength-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border-subtle);
+      margin-top: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .pass-strength-fill {
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .alert-banner {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #fbbf24;
+      line-height: 1.5;
+    }
+
+    .success-pane {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .success-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+      display: inline-block;
+      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      70% { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="setup-header">
+    <div class="setup-logo">
+      <span>📡</span>
+      <span>SlideMesh <span style="color: var(--accent-primary);">Live</span></span>
+      <span class="setup-logo-badge">Setup Wizard</span>
+    </div>
+    <div style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">
+      v2.0 • Security Gatekeeper
+    </div>
+  </header>
+
+  <main class="setup-main">
+    <div class="setup-card animate-fade-in" id="wizard-card">
+      
+      <!-- Stepper Visual -->
+      <div class="stepper" id="wizard-stepper">
+        <div class="step-item active" id="step-node-1">
+          <div class="step-circle">1</div>
+          <span class="step-label">PIN Mestre</span>
+        </div>
+        <div class="step-item" id="step-node-2">
+          <div class="step-circle">2</div>
+          <span class="step-label">Conta Admin</span>
+        </div>
+        <div class="step-item" id="step-node-3">
+          <div class="step-circle">3</div>
+          <span class="step-label">Políticas</span>
+        </div>
+      </div>
+
+      <!-- ALERTA DE PRIMEIRO USO -->
+      <div class="alert-banner" id="setup-alert-box">
+        <span style="font-size: 18px;">🛡️</span>
+        <div>
+          <strong>Configuração Obrigatória de Segurança:</strong>
+          Defina seu PIN e usuário de administração para proteger a Mesa Técnica e evitar acessos com credenciais padrão.
+        </div>
+      </div>
+
+      <form id="setup-form" onsubmit="return false;">
+        
+        <!-- PASSO 1: PIN MESTRE -->
+        <div class="step-pane active" id="pane-step-1">
+          <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px;">
+            🔑 Passo 1: PIN Mestre da Mesa Técnica
+          </h2>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 24px;">
+            O PIN mestre é o código numérico rápido utilizado para destravar o console de moderação e telões em palco.
+          </p>
+
+          <div class="form-group">
+            <label class="form-label" for="input-pin">PIN de Administração (4 a 8 dígitos numéricos):</label>
+            <div class="input-with-action">
+              <input type="text" id="input-pin" class="form-input form-input-lg" placeholder="2026" maxlength="8" autocomplete="off" required>
+              <button type="button" class="btn btn-secondary" id="btn-generate-pin" style="white-space: nowrap; font-weight: 700;">
+                🎲 Gerar PIN
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 18px;">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; color: var(--text-secondary);">
+              <input type="checkbox" id="check-require-pin" checked style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+              <span>Exigir autenticação para acessar a Mesa Técnica</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- PASSO 2: CONTA ADMIN -->
+        <div class="step-pane" id="pane-step-2">
+          <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px;">
+            👤 Passo 2: Conta do Administrador Principal
+          </h2>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 24px;">
+            Crie as credenciais locais do operador principal da plataforma.
+          </p>
+
+          <div class="form-group">
+            <label class="form-label" for="input-admin-name">Nome de Exibição:</label>
+            <input type="text" id="input-admin-name" class="form-input" value="Mesa Técnica" placeholder="Ex: Coordenador do Evento" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="input-admin-user">Usuário de Acesso (Username):</label>
+            <input type="text" id="input-admin-user" class="form-input" value="admin" placeholder="admin" required autocomplete="username">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="input-admin-pass">Senha de Acesso (Mínimo 4 caracteres):</label>
+            <div class="input-with-action">
+              <input type="password" id="input-admin-pass" class="form-input" placeholder="Digite uma senha forte" required autocomplete="new-password">
+              <button type="button" class="btn btn-secondary" id="btn-toggle-pass" style="padding: 10px 14px;">👁️</button>
+            </div>
+            <div class="pass-strength-bar">
+              <div class="pass-strength-fill" id="pass-strength-indicator"></div>
+            </div>
+            <div id="pass-strength-text" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;"></div>
+          </div>
+        </div>
+
+        <!-- PASSO 3: POLÍTICAS & AUDIÊNCIA -->
+        <div class="step-pane" id="pane-step-3">
+          <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px;">
+            📱 Passo 3: Políticas de Audiência e Login Corporativo
+          </h2>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 24px;">
+            Defina como os participantes locais e administradores corporativos podem se conectar.
+          </p>
+
+          <div class="form-group" style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+              <div>
+                <strong style="display: block; font-size: 14px;">Modo Audiência Offline</strong>
+                <span style="font-size: 12px; color: var(--text-secondary);">Permite participantes anônimos ou com crachá local na rede Wi-Fi</span>
+              </div>
+              <input type="checkbox" id="check-audience-enabled" checked style="width: 20px; height: 20px; accent-color: #10b981;">
+            </label>
+          </div>
+
+          <div class="form-group" style="margin-top: 20px;">
+            <label class="form-label" for="input-allowed-emails">Whitelist Google Workspace (Opcional):</label>
+            <input type="text" id="input-allowed-emails" class="form-input" placeholder="ex: admin@empresa.com.br, palestrante@empresa.com.br">
+            <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: block;">
+              Separe múltiplos e-mails por vírgula. Contas nesta lista recebem privilégios de moderação via Google Sign-In.
+            </span>
+          </div>
+
+          <!-- Resumo -->
+          <div style="margin-top: 24px; padding: 14px; background: rgba(56, 189, 248, 0.06); border: 1px dashed rgba(56, 189, 248, 0.3); border-radius: var(--radius-md); font-size: 12.5px;">
+            <div style="font-weight: 700; color: var(--accent-primary); margin-bottom: 6px;">📋 Resumo da Configuração:</div>
+            <div id="setup-summary-text" style="color: var(--text-secondary); line-height: 1.6;"></div>
+          </div>
+        </div>
+
+        <!-- TELA DE SUCESSO -->
+        <div class="step-pane" id="pane-step-success">
+          <div class="success-pane">
+            <div class="success-icon">🎉</div>
+            <h2 style="font-size: 24px; font-weight: 800; color: #10b981; margin-bottom: 8px;">
+              Segurança Configurada com Sucesso!
+            </h2>
+            <p style="font-size: 14px; color: var(--text-secondary); max-width: 480px; margin: 0 auto 28px; line-height: 1.6;">
+              O arquivo de produção <code>config/security.json</code> foi gravado atomicamente no servidor. A plataforma agora está 100% protegida contra acessos indevidos.
+            </p>
+            <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+              <a href="admin/?presentation=slidemesh-showcase" class="btn btn-primary" style="padding: 12px 24px; font-weight: 800;">
+                🎛️ Acessar Mesa Técnica
+              </a>
+              <a href="/" class="btn btn-secondary" style="padding: 12px 20px; font-weight: 700;">
+                🏠 Ir para o Portal
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- TELA DE JÁ CONFIGURADO -->
+        <div class="step-pane" id="pane-step-already-done">
+          <div class="success-pane">
+            <div class="success-icon">🔒</div>
+            <h2 style="font-size: 22px; font-weight: 800; color: var(--accent-primary); margin-bottom: 8px;">
+              Segurança Já Configurada
+            </h2>
+            <p style="font-size: 14px; color: var(--text-secondary); max-width: 480px; margin: 0 auto 28px; line-height: 1.6;">
+              O arquivo <code>config/security.json</code> já existe e está ativo no servidor. Para alterar credenciais ou adicionar palestrantes, utilize o menu de segurança da Mesa Técnica.
+            </p>
+            <div style="display: flex; justify-content: center; gap: 14px;">
+              <a href="admin/?presentation=slidemesh-showcase" class="btn btn-primary" style="padding: 12px 24px; font-weight: 800;">
+                🎛️ Ir para a Mesa Técnica
+              </a>
+              <a href="/" class="btn btn-secondary" style="padding: 12px 20px; font-weight: 700;">
+                🏠 Portal Inicial
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botões de Navegação -->
+        <div class="nav-buttons" id="wizard-nav-buttons">
+          <button type="button" class="btn btn-secondary" id="btn-step-prev" style="visibility: hidden;">
+            ← Voltar
+          </button>
+          <div id="error-msg" style="color: #ef4444; font-size: 13px; font-weight: 600; display: none;"></div>
+          <button type="button" class="btn btn-primary" id="btn-step-next" style="font-weight: 800;">
+            Avançar →
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+  <script type="module">
+    let currentStep = 1;
+    const totalSteps = 3;
+
+    const pane1 = document.getElementById('pane-step-1');
+    const pane2 = document.getElementById('pane-step-2');
+    const pane3 = document.getElementById('pane-step-3');
+    const paneSuccess = document.getElementById('pane-step-success');
+    const paneAlreadyDone = document.getElementById('pane-step-already-done');
+
+    const node1 = document.getElementById('step-node-1');
+    const node2 = document.getElementById('step-node-2');
+    const node3 = document.getElementById('step-node-3');
+
+    const btnPrev = document.getElementById('btn-step-prev');
+    const btnNext = document.getElementById('btn-step-next');
+    const errorMsg = document.getElementById('error-msg');
+    const navButtons = document.getElementById('wizard-nav-buttons');
+    const stepper = document.getElementById('wizard-stepper');
+    const alertBox = document.getElementById('setup-alert-box');
+
+    const inputPin = document.getElementById('input-pin');
+    const inputAdminName = document.getElementById('input-admin-name');
+    const inputAdminUser = document.getElementById('input-admin-user');
+    const inputAdminPass = document.getElementById('input-admin-pass');
+    const checkRequirePin = document.getElementById('check-require-pin');
+    const checkAudienceEnabled = document.getElementById('check-audience-enabled');
+    const inputAllowedEmails = document.getElementById('input-allowed-emails');
+    const passIndicator = document.getElementById('pass-strength-indicator');
+    const passText = document.getElementById('pass-strength-text');
+
+    // 1. Verifica se o setup é necessário
+    async function checkSetupStatus() {
+      try {
+        const res = await fetch('/api/auth/public-config');
+        if (res.ok) {
+          const cfg = await res.json();
+          if (cfg.setupRequired === false) {
+            showAlreadyDone();
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // Gera PIN sugerido padrão caso esteja em branco
+      if (!inputPin.value) {
+        inputPin.value = '2026';
+      }
+    }
+
+    function showAlreadyDone() {
+      [pane1, pane2, pane3, paneSuccess].forEach(p => p.classList.remove('active'));
+      paneAlreadyDone.classList.add('active');
+      stepper.style.display = 'none';
+      alertBox.style.display = 'none';
+      navButtons.style.display = 'none';
+    }
+
+    // 2. Gerador de PIN
+    document.getElementById('btn-generate-pin').addEventListener('click', () => {
+      const pin = Math.floor(1000 + Math.random() * 9000).toString();
+      inputPin.value = pin;
+      inputPin.focus();
+      inputPin.select();
+    });
+
+    // 3. Toggle de visualização da senha
+    document.getElementById('btn-toggle-pass').addEventListener('click', () => {
+      inputAdminPass.type = inputAdminPass.type === 'password' ? 'text' : 'password';
+    });
+
+    // 4. Medidor de força de senha
+    inputAdminPass.addEventListener('input', () => {
+      const val = inputAdminPass.value;
+      let strength = 0;
+      if (val.length >= 4) strength += 25;
+      if (val.length >= 8) strength += 25;
+      if (/[A-Z]/.test(val) && /[0-9]/.test(val)) strength += 25;
+      if (/[^A-Za-z0-9]/.test(val)) strength += 25;
+
+      passIndicator.style.width = strength + '%';
+      if (strength <= 25) {
+        passIndicator.style.backgroundColor = '#ef4444';
+        passText.innerText = 'Senha Fraca (recomendado adicionar números ou símbolos)';
+        passText.style.color = '#ef4444';
+      } else if (strength <= 50) {
+        passIndicator.style.backgroundColor = '#f59e0b';
+        passText.innerText = 'Senha Razoável';
+        passText.style.color = '#f59e0b';
+      } else {
+        passIndicator.style.backgroundColor = '#10b981';
+        passText.innerText = 'Senha Forte e Segura!';
+        passText.style.color = '#10b981';
+      }
+    });
+
+    // 5. Navegação do Wizard
+    btnPrev.addEventListener('click', () => {
+      if (currentStep > 1) {
+        currentStep--;
+        renderStep();
+      }
+    });
+
+    btnNext.addEventListener('click', async () => {
+      hideError();
+
+      if (currentStep === 1) {
+        const pin = inputPin.value.trim();
+        if (pin.length < 4 || !/^\d+$/.test(pin)) {
+          showError('Por favor, informe um PIN numérico válido de no mínimo 4 dígitos.');
+          inputPin.focus();
+          return;
+        }
+        currentStep = 2;
+        renderStep();
+        return;
+      }
+
+      if (currentStep === 2) {
+        const user = inputAdminUser.value.trim();
+        const pass = inputAdminPass.value.trim();
+        if (user.length < 3) {
+          showError('O nome de usuário deve conter no mínimo 3 caracteres.');
+          inputAdminUser.focus();
+          return;
+        }
+        if (pass.length < 4) {
+          showError('A senha de administração deve conter no mínimo 4 caracteres.');
+          inputAdminPass.focus();
+          return;
+        }
+        currentStep = 3;
+        renderStep();
+        updateSummary();
+        return;
+      }
+
+      if (currentStep === 3) {
+        await submitSetup();
+      }
+    });
+
+    function renderStep() {
+      [pane1, pane2, pane3, paneSuccess, paneAlreadyDone].forEach(p => p.classList.remove('active'));
+      [node1, node2, node3].forEach((n, idx) => {
+        n.classList.remove('active', 'completed');
+        if (idx + 1 === currentStep) n.classList.add('active');
+        if (idx + 1 < currentStep) n.classList.add('completed');
+      });
+
+      if (currentStep === 1) {
+        pane1.classList.add('active');
+        btnPrev.style.visibility = 'hidden';
+        btnNext.innerHTML = 'Avançar →';
+      } else if (currentStep === 2) {
+        pane2.classList.add('active');
+        btnPrev.style.visibility = 'visible';
+        btnNext.innerHTML = 'Avançar →';
+      } else if (currentStep === 3) {
+        pane3.classList.add('active');
+        btnPrev.style.visibility = 'visible';
+        btnNext.innerHTML = '🚀 Salvar e Ativar Segurança';
+      }
+    }
+
+    function updateSummary() {
+      const pin = inputPin.value.trim();
+      const user = inputAdminUser.value.trim();
+      const name = inputAdminName.value.trim() || 'Mesa Técnica';
+      const audEnabled = checkAudienceEnabled.checked ? 'Ativada (Wi-Fi Local)' : 'Desativada';
+      const emails = inputAllowedEmails.value.trim() || 'Nenhum e-mail Google adicionado';
+
+      document.getElementById('setup-summary-text').innerHTML = `
+        • <strong>PIN Mestre:</strong> ${pin}<br>
+        • <strong>Administrador:</strong> ${name} (<code>${user}</code>)<br>
+        • <strong>Audiência Offline:</strong> ${audEnabled}<br>
+        • <strong>Google Whitelist:</strong> ${emails}
+      `;
+    }
+
+    async function submitSetup() {
+      btnNext.disabled = true;
+      btnNext.innerHTML = '⏳ Salvando...';
+
+      const payload = {
+        pin: inputPin.value.trim(),
+        requirePinForAdmin: checkRequirePin.checked,
+        adminUser: {
+          username: inputAdminUser.value.trim(),
+          password: inputAdminPass.value.trim(),
+          name: inputAdminName.value.trim() || 'Mesa Técnica'
+        },
+        allowedEmails: inputAllowedEmails.value.split(',').map(e => e.trim()).filter(Boolean),
+        offlineAudience: {
+          enabled: checkAudienceEnabled.checked,
+          users: [
+            { username: "participante1", password: "123", name: "Participante 01" },
+            { username: "participante2", password: "123", name: "Participante 02" },
+            { username: "convidado", password: "123", name: "Convidado Especial" }
+          ]
+        }
+      };
+
+      try {
+        const res = await fetch('/api/auth/setup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          // Exibe tela de sucesso
+          [pane1, pane2, pane3].forEach(p => p.classList.remove('active'));
+          paneSuccess.classList.add('active');
+          stepper.style.display = 'none';
+          alertBox.style.display = 'none';
+          navButtons.style.display = 'none';
+        } else {
+          showError(data.error || 'Falha ao salvar configuração inicial de segurança.');
+          btnNext.disabled = false;
+          btnNext.innerHTML = '🚀 Salvar e Ativar Segurança';
+        }
+      } catch (err) {
+        showError('Erro de conexão com o servidor ao salvar setup: ' + err.message);
+        btnNext.disabled = false;
+        btnNext.innerHTML = '🚀 Salvar e Ativar Segurança';
+      }
+    }
+
+    function showError(msg) {
+      errorMsg.innerText = msg;
+      errorMsg.style.display = 'block';
+    }
+
+    function hideError() {
+      errorMsg.style.display = 'none';
+    }
+
+    checkSetupStatus();
+  </script>
+</body>
+</html>

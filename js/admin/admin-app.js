@@ -207,6 +207,12 @@ class AdminApp {
     if (this.dom.adminLockModal) {
       this.dom.adminLockModal.classList.add('active');
       this.switchAuthTab('pin');
+
+      const setupBanner = document.getElementById('admin-lock-setup-banner');
+      if (setupBanner) {
+        setupBanner.style.display = (this.auth && this.auth.isSetupRequired()) ? 'flex' : 'none';
+      }
+
       if (this.dom.inputAdminPin) {
         setTimeout(() => this.dom.inputAdminPin.focus(), 150);
       }

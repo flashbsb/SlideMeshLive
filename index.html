@@ -155,6 +155,17 @@
     </div>
   </header>
 
+  <!-- Banner de Aviso de Configuração de Segurança Inicial -->
+  <div id="portal-setup-banner" style="display: none; background: rgba(245, 158, 11, 0.15); border-bottom: 1px solid rgba(245, 158, 11, 0.4); padding: 12px 36px; font-size: 13px; color: #fbbf24; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 16px;">🛡️</span>
+      <span><strong>Configuração Inicial de Segurança Pendente:</strong> Proteja sua Mesa Técnica e defina seu PIN de administração no Setup Wizard.</span>
+    </div>
+    <a href="setup.html" class="btn btn-sm btn-primary" style="background: #f59e0b; border-color: #f59e0b; color: #0b0f19; font-weight: 800; text-decoration: none; padding: 5px 14px; font-size: 12px; white-space: nowrap;">
+      ⚙️ Iniciar Setup Wizard
+    </a>
+  </div>
+
   <main>
     <section class="portal-hero animate-fade-in">
       <h1 class="portal-title" data-i18n="portal.hero_title">Plataforma de Apresentação HTML Sincronizada</h1>
@@ -301,6 +312,18 @@
       updateLanguageButton();
       updateThemeButton();
       i18n.applyTranslations();
+
+      // Verifica se o setup inicial de segurança é necessário
+      try {
+        const authRes = await fetch('/api/auth/public-config');
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          const banner = document.getElementById('portal-setup-banner');
+          if (banner) {
+            banner.style.display = authData.setupRequired ? 'flex' : 'none';
+          }
+        }
+      } catch (e) {}
 
       try {
         const res = await fetch('presentations/catalog.json?t=' + Date.now());

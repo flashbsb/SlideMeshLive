@@ -185,6 +185,85 @@ def load_security_config(base_dir=BASE_DIR):
         }
     }
 
+def is_security_setup_required(base_dir=BASE_DIR):
+    """
+    Retorna True se o arquivo de configuração de segurança de produção (config/security.json)
+    ainda não foi criado (Plano 14 - Fase 1).
+    """
+    sec_path = os.path.join(base_dir, "config", "security.json")
+    return not os.path.exists(sec_path)
+
+def run_cli_security_setup(base_dir=BASE_DIR):
+    """
+    Assistente Interativo de Linha de Comando (CLI) para primeiro uso de segurança (Plano 14 - Fase 1).
+    """
+    sec_path = os.path.join(base_dir, "config", "security.json")
+    print("=" * 72)
+    print(" 🔐 SlideMeshLive — Assistente Interativo de Segurança Inicial (CLI)")
+    print("=" * 72)
+    if os.path.exists(sec_path):
+        print(" [!] O arquivo config/security.json já existe.")
+        resp = input(" Deseja reconfigurar e sobrescrever? (s/N): ").strip().lower()
+        if resp not in ('s', 'sim', 'y', 'yes'):
+            print(" [x] Operação cancelada.")
+            return False
+
+    print("\n Passo 1: PIN Mestre da Mesa Técnica (4 a 8 dígitos)")
+    while True:
+        pin = input(" Digite o PIN de Administração (padrão: 2026): ").strip() or "2026"
+        if len(pin) >= 4 and pin.isdigit():
+            break
+        print(" [!] O PIN deve conter no mínimo 4 dígitos numéricos.")
+
+    print("\n Passo 2: Conta do Administrador Principal")
+    while True:
+        admin_user = input(" Usuário do Administrador (padrão: admin): ").strip().lower() or "admin"
+        if len(admin_user) >= 3:
+            break
+        print(" [!] O usuário deve ter no mínimo 3 caracteres.")
+
+    while True:
+        admin_pass = input(" Senha do Administrador (mínimo 4 caracteres): ").strip()
+        if len(admin_pass) >= 4:
+            break
+        print(" [!] A senha deve conter no mínimo 4 caracteres.")
+
+    admin_name = input(" Nome de exibição (padrão: Mesa Técnica): ").strip() or "Mesa Técnica"
+
+    new_config = {
+        "_comment": "SlideMeshLive — Configuração de segurança de produção gerada pelo Setup Wizard CLI.",
+        "admin": {
+            "pin": pin,
+            "requirePinForAdmin": True,
+            "allowedEmails": [],
+            "users": [
+                {
+                    "username": admin_user,
+                    "password": admin_pass,
+                    "role": "admin",
+                    "name": admin_name
+                }
+            ]
+        },
+        "offlineAudience": {
+            "enabled": True,
+            "users": [
+                {"username": "participante1", "password": "123", "name": "Participante 01"},
+                {"username": "participante2", "password": "123", "name": "Participante 02"},
+                {"username": "convidado", "password": "123", "name": "Convidado Especial"}
+            ]
+        }
+    }
+
+    os.makedirs(os.path.join(base_dir, "config"), exist_ok=True)
+    tmp_path = os.path.join(base_dir, "config", ".security.json.tmp")
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(new_config, f, indent=2, ensure_ascii=False)
+    os.replace(tmp_path, sec_path)
+    print("\n [✓] Configuração de segurança de produção salva com sucesso em config/security.json!")
+    print("=" * 72)
+    return True
+
 def get_server_memory_usage_mb():
     """
     Retorna o consumo de memória residente (RSS) do processo Python em Megabytes.
@@ -1017,11 +1096,13 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
             }, ensure_ascii=False).encode('utf-8'))
             return
 
-        # Endpoint Seguro de Metadados Públicos de Autenticação (Plano 13 - Fase 3)
+        # Endpoint Seguro de Metadados Públicos de Autenticação (Plano 13 e 14)
         if parsed.path == '/api/auth/public-config':
             sec_cfg = load_security_config(BASE_DIR)
+            setup_req = is_security_setup_required(BASE_DIR)
             public_data = {
                 "success": True,
+                "setupRequired": setup_req,
                 "requirePinForAdmin": sec_cfg.get("admin", {}).get("requirePinForAdmin", True),
                 "allowedEmails": sec_cfg.get("admin", {}).get("allowedEmails", []),
                 "offlineAudienceEnabled": sec_cfg.get("offlineAudience", {}).get("enabled", True),
@@ -1274,6 +1355,113 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
         content_length = int(self.headers.get('Content-Length', 0))
+
+        # Endpoint de Configuração Inicial de Segurança (Plano 14 - Fase 1)
+        if parsed.path == '/api/auth/setup':
+            sec_path = os.path.join(BASE_DIR, "config", "security.json")
+            if os.path.exists(sec_path):
+                self.send_response(403)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "success": False,
+                    "error": "A configuração de segurança inicial já foi realizada. Acesse o painel administrativo para alterações."
+                }, ensure_ascii=False).encode('utf-8'))
+                return
+
+            try:
+                raw_body = self.rfile.read(content_length).decode('utf-8')
+                payload = json.loads(raw_body)
+            except Exception:
+                payload = {}
+
+            pin = str(payload.get('pin', '')).strip()
+            require_pin = bool(payload.get('requirePinForAdmin', True))
+            admin_user_data = payload.get('adminUser', {})
+            admin_username = str(admin_user_data.get('username', '')).strip().lower()
+            admin_password = str(admin_user_data.get('password', '')).strip()
+            admin_name = str(admin_user_data.get('name', '')).strip() or "Mesa Técnica"
+            allowed_emails = payload.get('allowedEmails', [])
+            offline_aud = payload.get('offlineAudience', {})
+
+            # Validações de integridade
+            if not pin or len(pin) < 4:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "success": False,
+                    "error": "O PIN mestre deve possuir no mínimo 4 dígitos."
+                }, ensure_ascii=False).encode('utf-8'))
+                return
+
+            if not admin_username or not admin_password or len(admin_password) < 4:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "success": False,
+                    "error": "O usuário administrador e sua senha devem possuir no mínimo 4 caracteres."
+                }, ensure_ascii=False).encode('utf-8'))
+                return
+
+            # Sanitização e montagem do config/security.json
+            new_security_config = {
+                "_comment": "SlideMeshLive — Configuração de segurança de produção gerada pelo Setup Wizard.",
+                "admin": {
+                    "pin": pin,
+                    "requirePinForAdmin": require_pin,
+                    "allowedEmails": [str(e).strip().lower() for e in allowed_emails if str(e).strip()],
+                    "users": [
+                        {
+                            "username": admin_username,
+                            "password": admin_password,
+                            "role": "admin",
+                            "name": admin_name
+                        }
+                    ]
+                },
+                "offlineAudience": {
+                    "enabled": bool(offline_aud.get('enabled', True)),
+                    "users": offline_aud.get('users', [
+                        {"username": "participante1", "password": "123", "name": "Participante 01"},
+                        {"username": "participante2", "password": "123", "name": "Participante 02"},
+                        {"username": "convidado", "password": "123", "name": "Convidado Especial"}
+                    ])
+                }
+            }
+
+            os.makedirs(os.path.join(BASE_DIR, "config"), exist_ok=True)
+            tmp_path = os.path.join(BASE_DIR, "config", ".security.json.tmp")
+            try:
+                with open(tmp_path, "w", encoding="utf-8") as f:
+                    json.dump(new_security_config, f, indent=2, ensure_ascii=False)
+                os.replace(tmp_path, sec_path)
+            except Exception as e:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "success": False,
+                    "error": f"Erro ao gravar arquivo config/security.json: {e}"
+                }, ensure_ascii=False).encode('utf-8'))
+                return
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                "success": True,
+                "message": "Configuração inicial de segurança criada com sucesso!"
+            }, ensure_ascii=False).encode('utf-8'))
+            return
 
         # Endpoint de Verificação Segura de PIN no Backend (Plano 13 - Fase 3)
         if parsed.path == '/api/auth/verify-pin':
@@ -1732,11 +1920,18 @@ def main():
     parser.add_argument('--dir', '-d', type=str, default='.', help='Diretório raiz (padrão: .)')
     parser.add_argument('--persist', action='store_true', help='Habilita persistência e restauração de sessões em disco (.session_backup.json)')
     parser.add_argument('--backup-file', type=str, default='.session_backup.json', help='Caminho do arquivo de snapshot (padrão: .session_backup.json)')
+    parser.add_argument('--setup', action='store_true', help='Executa o assistente de configuração de segurança inicial interativo no terminal (CLI)')
     args = parser.parse_args()
 
     os.chdir(args.dir)
+
+    if args.setup:
+        run_cli_security_setup(args.dir)
+        sys.exit(0)
+
     port = args.port
     local_ip = get_local_ip()
+    setup_needed = is_security_setup_required(args.dir)
 
     if args.persist:
         PERSIST_ENABLED = True
@@ -1752,8 +1947,16 @@ def main():
     print("=" * 72)
     print(" 📡 SlideMeshLive — Servidor de Sincronização em Tempo Real (LAN / Wi-Fi)")
     print("=" * 72)
+    if setup_needed:
+        print(" ⚠️  [Segurança] AVISO: config/security.json não encontrado.")
+        print(f"    Modo de Primeiro Uso ATIVO. Configure suas credenciais em:")
+        print(f"    👉 http://localhost:{port}/setup.html (ou execute: python3 server.py --setup)")
+        print("-" * 72)
+
     print(f" 💻 Acesso Local no Computador (Navegador):")
     print(f"    Portal Inicial:     http://localhost:{port}/")
+    if setup_needed:
+        print(f"    Assistente Setup:   http://localhost:{port}/setup.html")
     print(f"    Telão Apresentador: http://localhost:{port}/presenter/?presentation=slidemesh-showcase")
     print(f"    Mesa Técnica/Admin: http://localhost:{port}/admin/?presentation=slidemesh-showcase")
     print("")
