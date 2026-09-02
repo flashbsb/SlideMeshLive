@@ -14,11 +14,25 @@
           "Taxa de pacotes por segundo e consumo de banda em KB/s",
           "Badge de Segurança: Verde (Segurança Alta), Amarelo (Média), Alerta (PIN padrão)"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/guia-diagnostico-troubleshooting/assets/diagnostics-hud-visual.svg",
+          "alt": "HUD de Telemetria ao Vivo",
+          "maxHeight": "240px",
+          "caption": "Latência RTT, Pacotes/s, Banda e Saúde de Segurança"
+        },
         "notes": "Explique como o operador na Mesa Técnica acompanha a saúde da conexão sem precisar abrir terminais adicionais."
       },
       "audience": {
         "summary": "Métricas de diagnóstico monitoradas pela equipe técnica do evento.",
         "sections": [
+          {
+            "title": "Painel de Telemetria",
+            "type": "image",
+            "src": "/presentations/guia-diagnostico-troubleshooting/assets/diagnostics-hud-visual.svg",
+            "alt": "Métricas de Telemetria",
+            "caption": "Monitoramento em tempo real de latência, vazão e segurança."
+          },
           {
             "title": "Indicadores de Telemetria",
             "type": "table",
@@ -45,13 +59,27 @@
           "Basta um roteador Wi-Fi simples para conectar centenas de celulares no mesmo ambiente",
           "Tripla redundância de sincronização: WebSocket primário, Long-Polling e Snapshot HTTP"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/guia-diagnostico-troubleshooting/assets/offline-lan-topology.svg",
+          "alt": "Topologia de Rede Local 100% Offline",
+          "maxHeight": "240px",
+          "caption": "Notebook ➔ Roteador Wi-Fi Local ➔ Celulares da Plateia"
+        },
         "notes": "Destaque a paz de espírito para eventos em hotéis, auditórios e feiras onde a internet externa costuma cair ou falhar."
       },
       "audience": {
         "summary": "Por que o SlideMeshLive não depende de conexão com a internet externa.",
         "sections": [
           {
-            "title": "Topologia Recomendada para Eventos",
+            "title": "Topologia de Rede",
+            "type": "image",
+            "src": "/presentations/guia-diagnostico-troubleshooting/assets/offline-lan-topology.svg",
+            "alt": "Diagrama de Rede Local",
+            "caption": "Estrutura 100% autônoma sem dependência de internet externa."
+          },
+          {
+            "title": "Passo a Passo de Instalação no Evento",
             "type": "list",
             "items": [
               "1. Notebook do Palestrante: Conectado ao projetor HDMI e rodando 'python3 server.py'.",

@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%" style="background: linear-gradient(135deg, #070a12 0%, #0c1427 100%); border-radius: 14px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
+  <defs>
+    <linearGradient id="q1Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="q2Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="q3Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#be185d"/>
+    </linearGradient>
+    <linearGradient id="q4Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <filter id="qGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Title Header -->
+  <text x="460" y="30" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="800" letter-spacing="2.5">O CICLO DE MODERAÇÃO DE PERGUNTAS EM 4 FASES (Q&amp;A)</text>
+
+  <!-- Stage 1: Pendente -->
+  <g transform="translate(25, 48)">
+    <rect width="195" height="330" rx="12" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="195" height="40" rx="12" fill="url(#q1Grad)" fill-opacity="0.3"/>
+    <text x="97" y="25" text-anchor="middle" fill="#fbbf24" font-size="11.5" font-weight="800">1. PENDENTE (FILA)</text>
+    
+    <g transform="translate(15, 54)">
+      <rect width="165" height="44" rx="6" fill="#1e293b" stroke="#334155"/>
+      <text x="82" y="20" text-anchor="middle" fill="#f1f5f9" font-size="10.5" font-weight="700">Enviada pelo Celular</text>
+      <text x="82" y="35" text-anchor="middle" fill="#fbbf24" font-size="9.5">Visível só ao moderador</text>
+    </g>
+
+    <text x="16" y="125" fill="#e2e8f0" font-size="10.5" font-weight="700">Ações do Moderador:</text>
+    <text x="16" y="148" fill="#cbd5e1" font-size="10">• Triagem em tempo real</text>
+    <text x="16" y="170" fill="#cbd5e1" font-size="10">• Bloqueio de spam</text>
+    <text x="16" y="192" fill="#cbd5e1" font-size="10">• Filtro de duplicidades</text>
+
+    <g transform="translate(15, 260)">
+      <rect width="165" height="44" rx="6" fill="#1e293b" stroke="#d97706"/>
+      <text x="82" y="22" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="800">Botão [Aprovar]</text>
+      <text x="82" y="36" text-anchor="middle" fill="#94a3b8" font-size="9">1 Clique para liberar</text>
+    </g>
+  </g>
+
+  <!-- Flow Connector 1 -->
+  <g transform="translate(220, 200)">
+    <line x1="0" y1="0" x2="16" y2="0" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3,3"/>
+  </g>
+
+  <!-- Stage 2: Aprovada -->
+  <g transform="translate(240, 48)">
+    <rect width="195" height="330" rx="12" fill="#0f172a" stroke="#3b82f6" stroke-width="1.5"/>
+    <rect width="195" height="40" rx="12" fill="url(#q2Grad)" fill-opacity="0.3"/>
+    <text x="97" y="25" text-anchor="middle" fill="#60a5fa" font-size="11.5" font-weight="800">2. APROVADA</text>
+    
+    <g transform="translate(15, 54)">
+      <rect width="165" height="44" rx="6" fill="#1e293b" stroke="#334155"/>
+      <text x="82" y="20" text-anchor="middle" fill="#f1f5f9" font-size="10.5" font-weight="700">Lista Pronta</text>
+      <text x="82" y="35" text-anchor="middle" fill="#60a5fa" font-size="9.5">Disponível para seleção</text>
+    </g>
+
+    <text x="16" y="125" fill="#e2e8f0" font-size="10.5" font-weight="700">Ações do Moderador:</text>
+    <text x="16" y="148" fill="#cbd5e1" font-size="10">• Organização temática</text>
+    <text x="16" y="170" fill="#cbd5e1" font-size="10">• Alerta para o orador</text>
+    <text x="16" y="192" fill="#cbd5e1" font-size="10">• Priorização por relevância</text>
+
+    <g transform="translate(15, 260)">
+      <rect width="165" height="44" rx="6" fill="#1e293b" stroke="#1d4ed8"/>
+      <text x="82" y="22" text-anchor="middle" fill="#60a5fa" font-size="10" font-weight="800">Botão [Destacar]</text>
+      <text x="82" y="36" text-anchor="middle" fill="#94a3b8" font-size="9">Envia para o telão</text>
+    </g>
+  </g>
+
+  <!-- Flow Connector 2 -->
+  <g transform="translate(435, 200)">
+    <line x1="0" y1="0" x2="16" y2="0" stroke="#3b82f6" stroke-width="2" stroke-dasharray="3,3"/>
+  </g>
+
+  <!-- Stage 3: Destaque no Telão [M] -->
+  <g transform="translate(455, 48)">
+    <rect width="215" height="330" rx="12" fill="#090d16" stroke="#ec4899" stroke-width="2" filter="url(#qGlow)"/>
+    <rect width="215" height="40" rx="12" fill="url(#q3Grad)" fill-opacity="0.4"/>
+    <text x="107" y="25" text-anchor="middle" fill="#f472b6" font-size="11.5" font-weight="900">3. DESTAQUE TELÃO [M]</text>
+    
+    <g transform="translate(15, 54)">
+      <rect width="185" height="44" rx="6" fill="#1e293b" stroke="#ec4899"/>
+      <text x="92" y="20" text-anchor="middle" fill="#ffffff" font-size="10.5" font-weight="800">OVERLAY NO PALCO</text>
+      <text x="92" y="35" text-anchor="middle" fill="#f472b6" font-size="9.5">Todo o auditório visualiza</text>
+    </g>
+
+    <text x="16" y="125" fill="#e2e8f0" font-size="10.5" font-weight="700">Experiência Visual:</text>
+    <text x="16" y="148" fill="#cbd5e1" font-size="10">• Banner flutuante translúcido</text>
+    <text x="16" y="170" fill="#cbd5e1" font-size="10">• Nome do autor anônimo</text>
+    <text x="16" y="192" fill="#cbd5e1" font-size="10">• Animação de entrada suave</text>
+
+    <g transform="translate(15, 260)">
+      <rect width="185" height="44" rx="6" fill="#831843" stroke="#ec4899"/>
+      <text x="92" y="22" text-anchor="middle" fill="#fdf2f8" font-size="10" font-weight="800">Atalho Teclado [M]</text>
+      <text x="92" y="36" text-anchor="middle" fill="#fbcfe8" font-size="9">Fecha o mural do palco</text>
+    </g>
+  </g>
+
+  <!-- Flow Connector 3 -->
+  <g transform="translate(670, 200)">
+    <line x1="0" y1="0" x2="16" y2="0" stroke="#ec4899" stroke-width="2" stroke-dasharray="3,3"/>
+  </g>
+
+  <!-- Stage 4: Arquivada / Respondida -->
+  <g transform="translate(690, 48)">
+    <rect width="200" height="330" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="200" height="40" rx="12" fill="url(#q4Grad)" fill-opacity="0.3"/>
+    <text x="100" y="25" text-anchor="middle" fill="#34d399" font-size="11.5" font-weight="800">4. ARQUIVADA</text>
+    
+    <g transform="translate(15, 54)">
+      <rect width="170" height="44" rx="6" fill="#1e293b" stroke="#334155"/>
+      <text x="85" y="20" text-anchor="middle" fill="#f1f5f9" font-size="10.5" font-weight="700">Respondida / Salva</text>
+      <text x="85" y="35" text-anchor="middle" fill="#34d399" font-size="9.5">Gravada no histórico</text>
+    </g>
+
+    <text x="16" y="125" fill="#e2e8f0" font-size="10.5" font-weight="700">Relatório Pós-Evento:</text>
+    <text x="16" y="148" fill="#cbd5e1" font-size="10">• Exportada em CSV</text>
+    <text x="16" y="170" fill="#cbd5e1" font-size="10">• Inclusa no Markdown</text>
+    <text x="16" y="192" fill="#cbd5e1" font-size="10">• Base para FAQ e CRM</text>
+
+    <g transform="translate(15, 260)">
+      <rect width="170" height="44" rx="6" fill="#064e3b" stroke="#10b981"/>
+      <text x="85" y="22" text-anchor="middle" fill="#34d399" font-size="10" font-weight="800">✓ Ciclo Concluído</text>
+      <text x="85" y="36" text-anchor="middle" fill="#a7f3d0" font-size="9">Histórico preservado</text>
+    </g>
+  </g>
+</svg>

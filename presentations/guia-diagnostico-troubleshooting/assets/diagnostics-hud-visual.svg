@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%" style="background: linear-gradient(135deg, #070a12 0%, #150f1f 100%); border-radius: 14px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
+  <defs>
+    <linearGradient id="hudGradRose" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f43f5e"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <linearGradient id="metricCardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#f43f5e" stop-opacity="0.05"/>
+    </linearGradient>
+    <filter id="pulseRose" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes heartbeatGlow {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(244, 63, 94, 0.4)); }
+      50% { filter: drop-shadow(0 0 16px rgba(14, 165, 233, 0.8)); }
+    }
+    .anim-hud-pulse { animation: heartbeatGlow 2.8s infinite ease-in-out; }
+  </style>
+
+  <!-- Title Header -->
+  <text x="460" y="30" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="800" letter-spacing="2.5">O PAINEL DE TELEMETRIA AO VIVO DA MESA TÉCNICA (/admin)</text>
+
+  <!-- Metric 1: RTT Latency -->
+  <g transform="translate(30, 48)">
+    <rect width="195" height="330" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="195" height="40" rx="12" fill="#064e3b" fill-opacity="0.4"/>
+    <text x="97" y="25" text-anchor="middle" fill="#34d399" font-size="11.5" font-weight="800">1. LATÊNCIA RTT</text>
+    
+    <g transform="translate(15, 54)">
+      <rect width="165" height="75" rx="8" fill="#1e293b" stroke="#10b981"/>
+      <text x="82" y="35" text-anchor="middle" fill="#34d399" font-size="24" font-weight="900">18 ms</text>
+      <text x="82" y="58" text-anchor="middle" fill="#a7f3d0" font-size="9.5" font-weight="700">🟢 EXCELENTE (&lt;50ms)</text>
+    </g>
+
+    <text x="16" y="150" fill="#e2e8f0" font-size="10.5" font-weight="700">Classificação RTT:</text>
+    <text x="16" y="172" fill="#34d399" font-size="10">• &lt; 50ms: Verde (Ótimo)</text>
+    <text x="16" y="192" fill="#fbbf24" font-size="10">• 50-150ms: Amarelo (Estável)</text>
+    <text x="16" y="212" fill="#f87171" font-size="10">• &gt; 150ms: Vermelho (Lento)</text>
+
+    <g transform="translate(15, 260)">
+      <rect width="165" height="44" rx="6" fill="#064e3b" stroke="#10b981"/>
+      <text x="82" y="22" text-anchor="middle" fill="#34d399" font-size="10" font-weight="800">Sincronia Instantânea</text>
+      <text x="82" y="36" text-anchor="middle" fill="#a7f3d0" font-size="9">Ida e volta sub-50ms</text>
+    </g>
+  </g>
+
+  <!-- Metric 2: Taxa de Pacotes -->
+  <g transform="translate(245, 48)">
+    <rect width="195" height="330" rx="12" fill="#0f172a" stroke="#0ea5e9" stroke-width="1.5"/>
+    <rect width="195" height="40" rx="12" fill="#0369a1" fill-opacity="0.3"/>
+    <text x="97" y="25" text-anchor="middle" fill="#38bdf8" font-size="11.5" font-weight="800">2. PACOTES / SEG</text>
+    
+    <g transform="translate(15, 54)">
+      <rect width="165" height="75" rx="8" fill="#1e293b" stroke="#0ea5e9"/>
+      <text x="82" y="35" text-anchor="middle" fill="#38bdf8" font-size="24" font-weight="900">12 pkt/s</text>
+      <text x="82" y="58" text-anchor="middle" fill="#bae6fd" font-size="9.5" font-weight="700">FLUXO ATIVO</text>
+    </g>
+
+    <text x="16" y="150" fill="#e2e8f0" font-size="10.5" font-weight="700">Dinâmica de Pacotes:</text>
+    <text x="16" y="172" fill="#cbd5e1" font-size="10">• Heartbeat síncrono</text>
+    <text x="16" y="192" fill="#cbd5e1" font-size="10">• Push de avanço de slide</text>
+    <text x="16" y="212" fill="#cbd5e1" font-size="10">• Broadcast de enquetes</text>
+
+    <g transform="translate(15, 260)">
+      <rect width="165" height="44" rx="6" fill="#082f49" stroke="#0ea5e9"/>
+      <text x="82" y="22" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="800">Trafego Otimizado</text>
+      <text x="82" y="36" text-anchor="middle" fill="#bae6fd" font-size="9">Delta updates ultraleves</text>
+    </g>
+  </g>
+
+  <!-- Metric 3: Consumo de Banda -->
+  <g transform="translate(460, 48)">
+    <rect width="195" height="330" rx="12" fill="#0f172a" stroke="#8b5cf6" stroke-width="1.5"/>
+    <rect width="195" height="40" rx="12" fill="#6d28d9" fill-opacity="0.3"/>
+    <text x="97" y="25" text-anchor="middle" fill="#a78bfa" font-size="11.5" font-weight="800">3. BANDA (KB/s)</text>
+    
+    <g transform="translate(15, 54)">
+      <rect width="165" height="75" rx="8" fill="#1e293b" stroke="#8b5cf6"/>
+      <text x="82" y="35" text-anchor="middle" fill="#a78bfa" font-size="24" font-weight="900">4.2 KB/s</text>
+      <text x="82" y="58" text-anchor="middle" fill="#ddd6fe" font-size="9.5" font-weight="700">ULTRALEVE</text>
+    </g>
+
+    <text x="16" y="150" fill="#e2e8f0" font-size="10.5" font-weight="700">Uso de Rede Local:</text>
+    <text x="16" y="172" fill="#cbd5e1" font-size="10">• Não satura o roteador Wi-Fi</text>
+    <text x="16" y="192" fill="#cbd5e1" font-size="10">• Suporta +500 participantes</text>
+    <text x="16" y="212" fill="#cbd5e1" font-size="10">• Compressão gzip nativa</text>
+
+    <g transform="translate(15, 260)">
+      <rect width="165" height="44" rx="6" fill="#2e1065" stroke="#8b5cf6"/>
+      <text x="82" y="22" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="800">Escalabilidade Local</text>
+      <text x="82" y="36" text-anchor="middle" fill="#ddd6fe" font-size="9">Mínima carga de Wi-Fi</text>
+    </g>
+  </g>
+
+  <!-- Metric 4: Badge de Saúde RBAC -->
+  <g class="anim-hud-pulse" transform="translate(675, 48)">
+    <rect width="215" height="330" rx="12" fill="#090d16" stroke="#f43f5e" stroke-width="2" filter="url(#pulseRose)"/>
+    <rect width="215" height="40" rx="12" fill="#be123c" fill-opacity="0.3"/>
+    <text x="107" y="25" text-anchor="middle" fill="#fb7185" font-size="11.5" font-weight="900">4. SAÚDE DE SEGURANÇA</text>
+    
+    <g transform="translate(20, 54)">
+      <rect width="175" height="75" rx="8" fill="#1e293b" stroke="#f43f5e"/>
+      <text x="87" y="35" text-anchor="middle" fill="#fb7185" font-size="18" font-weight="900">🟢 Seg. Alta</text>
+      <text x="87" y="58" text-anchor="middle" fill="#fecdd3" font-size="9.5" font-weight="700">RBAC ATIVO &amp; PIN FORTE</text>
+    </g>
+
+    <text x="20" y="150" fill="#e2e8f0" font-size="10.5" font-weight="700">Níveis de Alerta:</text>
+    <text x="20" y="172" fill="#34d399" font-size="10">• 🟢 Seg. Alta: PIN + RBAC</text>
+    <text x="20" y="192" fill="#fbbf24" font-size="10">• 🟡 Seg. Média: Apenas PIN</text>
+    <text x="20" y="212" fill="#f87171" font-size="10">• ⚠️ Alerta: Credenciais Padrão</text>
+
+    <g transform="translate(20, 260)">
+      <rect width="175" height="44" rx="6" fill="#881337" stroke="#f43f5e"/>
+      <text x="87" y="22" text-anchor="middle" fill="#fb7185" font-size="10" font-weight="800">Proteção Auditável</text>
+      <text x="87" y="36" text-anchor="middle" fill="#fecdd3" font-size="9">Feedback visual contínuo</text>
+    </g>
+  </g>
+</svg>

@@ -14,6 +14,13 @@
           "Painel independente de moderação de perguntas e controle de enquetes",
           "Protegido por autenticação de administrador configurável no Setup Wizard"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/guia-moderacao-e-analytics/assets/admin-console-layout.svg",
+          "alt": "Setores Operacionais da Mesa Técnica",
+          "maxHeight": "240px",
+          "caption": "Navegação, Moderação de Q&A e Mídias/Segurança"
+        },
         "notes": "Explique que a Mesa Técnica (/admin) permite que o produtor do evento auxilie o palestrante sem que a plateia perceba as intervenções de bastidor."
       },
       "audience": {
@@ -21,6 +28,13 @@
         "sections": [
           {
             "title": "Setores da Mesa Técnica",
+            "type": "image",
+            "src": "/presentations/guia-moderacao-e-analytics/assets/admin-console-layout.svg",
+            "alt": "Layout da Mesa Técnica",
+            "caption": "Operação invisível de palco e moderação de audiência."
+          },
+          {
+            "title": "Recursos do Admin",
             "type": "list",
             "items": [
               "Navegação de Slides: Miniaturas visuais e avanço síncrono.",
@@ -45,11 +59,25 @@
           "3. Destaque no Telão [M]: A pergunta surge flutuando em overlay no palco",
           "4. Arquivadas: Marcação de pergunta respondida para manter a fila limpa"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/guia-moderacao-e-analytics/assets/qa-moderation-lifecycle.svg",
+          "alt": "Ciclo de Moderação de Perguntas",
+          "maxHeight": "240px",
+          "caption": "Pendente ➔ Aprovada ➔ Destaque [M] ➔ Arquivada"
+        },
         "notes": "Abra o mural com a tecla [M] no telão para mostrar como as perguntas aprovadas são exibidas de forma elegante sobre a apresentação."
       },
       "audience": {
         "summary": "Como suas dúvidas são recebidas e moderadas pela equipe do evento.",
         "sections": [
+          {
+            "title": "Fluxo de Moderação",
+            "type": "image",
+            "src": "/presentations/guia-moderacao-e-analytics/assets/qa-moderation-lifecycle.svg",
+            "alt": "Ciclo das 4 Fases",
+            "caption": "Triagem e aprovação em tempo real pela mesa técnica."
+          },
           {
             "title": "O Ciclo de 4 Fases",
             "type": "table",

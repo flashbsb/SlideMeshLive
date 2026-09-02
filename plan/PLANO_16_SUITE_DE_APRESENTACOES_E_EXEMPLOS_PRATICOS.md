@@ -214,8 +214,8 @@ O **SlideMeshLive** é uma plataforma moderna para apresentações em tempo real
 - [x] Criar diretório [`presentations/guia-criacao-studio-zip/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-criacao-studio-zip/) com `manifest.json`, `slides.json` (5 slides), assets SVG de templates e pipeline de importação. *(Concluído)*
 
 ### 🚀 Fase 4: Construção do Guia de Moderação (`guia-moderacao-e-analytics`) e Guia de Diagnóstico & Troubleshooting (`guia-diagnostico-troubleshooting`)
-- [ ] Criar diretório [`presentations/guia-moderacao-e-analytics/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-moderacao-e-analytics/) com `manifest.json`, `slides.json` (5 slides) e assets SVG do ciclo de moderação de Q&A e relatórios.
-- [ ] Criar diretório [`presentations/guia-diagnostico-troubleshooting/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-diagnostico-troubleshooting/) com `manifest.json`, `slides.json` (5 slides) e assets SVG de telemetria e topologia LAN.
+- [x] Criar diretório [`presentations/guia-moderacao-e-analytics/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-moderacao-e-analytics/) com `manifest.json`, `slides.json` (5 slides) e assets SVG do ciclo de moderação de Q&A e relatórios. *(Concluído)*
+- [x] Criar diretório [`presentations/guia-diagnostico-troubleshooting/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-diagnostico-troubleshooting/) com `manifest.json`, `slides.json` (5 slides) e assets SVG de telemetria e topologia LAN. *(Concluído)*
 
 ### 🚀 Fase 5: Homologação Completa da Suíte & Atualização da Documentação Oficial
 - [ ] Executar bateria completa de testes automatizados (`python3 tests/test_suite.py` e `npm test`) garantindo 100% de aprovação em todas as suítes e integridade dos 7 decks.

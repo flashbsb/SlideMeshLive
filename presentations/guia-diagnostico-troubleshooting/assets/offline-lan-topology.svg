@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%" style="background: linear-gradient(135deg, #070a12 0%, #0d1527 100%); border-radius: 14px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
+  <defs>
+    <linearGradient id="lanPulseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f43f5e"/>
+      <stop offset="50%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <filter id="lanGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes pulseWifiWave {
+      0% { r: 12px; opacity: 1; }
+      100% { r: 48px; opacity: 0; }
+    }
+    .anim-wifi-wave { animation: pulseWifiWave 2s infinite ease-out; }
+  </style>
+
+  <!-- Title Header -->
+  <text x="460" y="30" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="800" letter-spacing="2.5">TOPOLOGIA DE REDE LOCAL 100% OFFLINE (ZERO NUVEM)</text>
+
+  <!-- Node 1: Notebook do Palestrante -->
+  <g transform="translate(30, 48)">
+    <rect width="250" height="330" rx="14" fill="#0f172a" stroke="#0ea5e9" stroke-width="1.5"/>
+    <rect width="250" height="42" rx="14" fill="#0369a1" fill-opacity="0.3"/>
+    <text x="125" y="26" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="800">1. NOTEBOOK / SERVIDOR</text>
+
+    <!-- Content -->
+    <g transform="translate(18, 58)">
+      <circle cx="8" cy="8" r="4" fill="#0ea5e9"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Python Server Hub</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="9.5">Executa 'python3 server.py'</text>
+    </g>
+
+    <g transform="translate(18, 108)">
+      <circle cx="8" cy="8" r="4" fill="#0ea5e9"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Saída de Vídeo HDMI</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="9.5">Conectado ao Projetor / TV</text>
+    </g>
+
+    <g transform="translate(18, 158)">
+      <circle cx="8" cy="8" r="4" fill="#0ea5e9"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Conexão de Rede</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="9.5">Cabo Ethernet ou Wi-Fi Local</text>
+    </g>
+
+    <g transform="translate(16, 230)">
+      <rect width="218" height="78" rx="8" fill="#082f49" stroke="#0ea5e9"/>
+      <text x="109" y="30" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="800">HUB AUTÔNOMO</text>
+      <text x="109" y="50" text-anchor="middle" fill="#cbd5e1" font-size="10">IP Local: 192.168.1.50:8080</text>
+      <text x="109" y="66" text-anchor="middle" fill="#bae6fd" font-size="9.5">Sem envio de dados externos</text>
+    </g>
+  </g>
+
+  <!-- Flow Arrow 1 -->
+  <g transform="translate(280, 200)">
+    <line x1="0" y1="0" x2="55" y2="0" stroke="#0ea5e9" stroke-width="2.5" stroke-dasharray="4,4"/>
+  </g>
+
+  <!-- Node 2: Roteador Wi-Fi Local -->
+  <g transform="translate(335, 48)">
+    <rect width="250" height="330" rx="14" fill="#090d16" stroke="url(#lanPulseGrad)" stroke-width="2" filter="url(#lanGlow)"/>
+    <rect width="250" height="42" rx="14" fill="#1e1b4b" fill-opacity="0.4"/>
+    <text x="125" y="26" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="900">2. ROTEADOR WI-FI LOCAL</text>
+
+    <!-- Wi-Fi Wave Visual -->
+    <g transform="translate(125, 100)">
+      <circle cx="0" cy="0" r="16" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+      <text x="0" y="7" text-anchor="middle" font-size="18">📶</text>
+      <circle cx="0" cy="0" r="28" fill="none" stroke="#38bdf8" stroke-width="1.5" class="anim-wifi-wave"/>
+    </g>
+
+    <!-- Details -->
+    <g transform="translate(18, 145)">
+      <text x="107" y="14" text-anchor="middle" fill="#f1f5f9" font-size="11" font-weight="700">SSID do Evento</text>
+      <text x="107" y="32" text-anchor="middle" fill="#38bdf8" font-size="10.5">Ex: "Palestra-Ao-Vivo"</text>
+      <text x="107" y="50" text-anchor="middle" fill="#94a3b8" font-size="9.5">Frequência: 2.4 GHz ou 5 GHz</text>
+    </g>
+
+    <g transform="translate(16, 230)">
+      <rect width="218" height="78" rx="8" fill="#064e3b" stroke="#10b981"/>
+      <text x="109" y="30" text-anchor="middle" fill="#34d399" font-size="11" font-weight="800">ISOLADO DA INTERNET</text>
+      <text x="109" y="50" text-anchor="middle" fill="#a7f3d0" font-size="10">Funciona mesmo sem sinal WAN</text>
+      <text x="109" y="66" text-anchor="middle" fill="#cbd5e1" font-size="9.5">Blindagem contra quedas de link</text>
+    </g>
+  </g>
+
+  <!-- Flow Arrow 2 -->
+  <g transform="translate(585, 200)">
+    <line x1="0" y1="0" x2="55" y2="0" stroke="#10b981" stroke-width="2.5" stroke-dasharray="4,4"/>
+  </g>
+
+  <!-- Node 3: Smartphones da Audiência -->
+  <g transform="translate(640, 48)">
+    <rect width="250" height="330" rx="14" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="250" height="42" rx="14" fill="#064e3b" fill-opacity="0.3"/>
+    <text x="125" y="26" text-anchor="middle" fill="#34d399" font-size="12" font-weight="800">3. CELULARES DA PLATEIA</text>
+
+    <!-- Content -->
+    <g transform="translate(18, 58)">
+      <circle cx="8" cy="8" r="4" fill="#10b981"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Leitura do QR Code</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="9.5">Abre direto no navegador nativo</text>
+    </g>
+
+    <g transform="translate(18, 108)">
+      <circle cx="8" cy="8" r="4" fill="#10b981"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Conexão WebSocket Local</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="9.5">ws://192.168.1.50:8080/ws</text>
+    </g>
+
+    <g transform="translate(18, 158)">
+      <circle cx="8" cy="8" r="4" fill="#10b981"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Reconexão Automática</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="9.5">Sub-segundo caso a tela apague</text>
+    </g>
+
+    <g transform="translate(16, 230)">
+      <rect width="218" height="78" rx="8" fill="#064e3b" stroke="#10b981"/>
+      <text x="109" y="30" text-anchor="middle" fill="#34d399" font-size="11" font-weight="800">RESILIÊNCIA MÁXIMA</text>
+      <text x="109" y="50" text-anchor="middle" fill="#a7f3d0" font-size="10">Zero falhas de conexão externa</text>
+      <text x="109" y="66" text-anchor="middle" fill="#cbd5e1" font-size="9.5">Total controle pela equipe de TI</text>
+    </g>
+  </g>
+</svg>
