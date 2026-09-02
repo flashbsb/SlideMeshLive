@@ -218,8 +218,8 @@ O **SlideMeshLive** é uma plataforma moderna para apresentações em tempo real
 - [x] Criar diretório [`presentations/guia-diagnostico-troubleshooting/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-diagnostico-troubleshooting/) com `manifest.json`, `slides.json` (5 slides) e assets SVG de telemetria e topologia LAN. *(Concluído)*
 
 ### 🚀 Fase 5: Homologação Completa da Suíte & Atualização da Documentação Oficial
-- [ ] Executar bateria completa de testes automatizados (`python3 tests/test_suite.py` e `npm test`) garantindo 100% de aprovação em todas as suítes e integridade dos 7 decks.
-- [ ] Atualizar [`README.md`](file:///home/flashbsb/projetos/SlideMeshLive/README.md) e [`README.pt-BR.md`](file:///home/flashbsb/projetos/SlideMeshLive/README.pt-BR.md) documentando as 3 Trilhas de Conhecimento e a tabela com os 7 Manuais Vivos disponíveis no repositório.
+- [x] Executar bateria completa de testes automatizados (`python3 tests/test_suite.py` e `npm test`) garantindo 100% de aprovação em todas as suítes e integridade dos 7 decks. *(Concluído)*
+- [x] Atualizar `README.md` e `README.pt-BR.md` documentando as 3 Trilhas de Conhecimento e a tabela com os 7 Manuais Vivos disponíveis no repositório. *(Concluído)*
 
 ---
 

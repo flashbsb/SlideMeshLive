@@ -176,8 +176,13 @@ SlideMeshLive/
 │
 ├── presentations/                           # Diretório de Apresentações
 │   ├── catalog.json                         # Registro central de apresentações disponíveis
-│   ├── slidemesh-showcase/                  # Apresentação Demonstrativa Oficial
-│   └── treinamento-interno-pin/             # Demonstração Protegida por PIN
+│   ├── comece-por-aqui/                     # Guia Inicial: Arquitetura & Interfaces (5 slides)
+│   ├── slidemesh-showcase/                  # Apresentação Demonstrativa Oficial (10 slides)
+│   ├── guia-animacoes-e-palco/              # Manual de Animações, Transições & Mídia (5 slides)
+│   ├── guia-criacao-studio-zip/             # Manual do SlideMesh Studio & Pacotes ZIP (5 slides)
+│   ├── guia-moderacao-e-analytics/          # Manual da Mesa Técnica & Moderação de Q&A (5 slides)
+│   ├── treinamento-interno-pin/             # Manual de Segurança, PIN & RBAC (5 slides)
+│   └── guia-diagnostico-troubleshooting/    # Manual de Diagnóstico, Telemetria & Rede (5 slides)
 │
 ├── tests/                                   # Suíte de Testes Automatizados
 │   └── test_suite.py                        # Runner Unificado de Testes de Integração & Segurança
@@ -274,7 +279,44 @@ python3 tools/import_presentation.py notas.md --session LIVE2026 --security pin
 
 ---
 
-## 6. Atalhos de Teclado no Telão do Apresentador
+## 6. Biblioteca Oficial de Manuais Vivos (7 Guias Práticos)
+
+O SlideMeshLive adota a filosofia **"Show, Don't Tell"**: a documentação prática do ecossistema é entregue no próprio formato da aplicação através de **7 Manuais Vivos Interativos**, organizados em **3 Trilhas de Aprendizado**:
+
+```
+╔════════════════════════════════════════════════════════════════════════════════════════════╗
+║                   TRILHAS DE CONHECIMENTO DO SLIDEMESHLIVE                                 ║
+╠════════════════════════════════════════════════════════════════════════════════════════════╣
+║ 🚀 TRILHA 1: ONBOARDING & ARQUITETURA                                                      ║
+║    ├── comece-por-aqui                (5 slides  | SES-START    | Zero Nuvem & Interfaces) ║
+║    └── slidemesh-showcase             (10 slides | SES-SHOWCASE | Tour Completo de Recursos)║
+║                                                                                            ║
+║ 🎨 TRILHA 2: PALCO, CRIAÇÃO & MODERAÇÃO                                                    ║
+║    ├── guia-animacoes-e-palco         (5 slides  | SES-PALCO    | Transições, Canvas & GPU)║
+║    ├── guia-criacao-studio-zip        (5 slides  | SES-STUDIO   | Templates & Pacotes ZIP) ║
+║    └── guia-moderacao-e-analytics     (5 slides  | SES-MESA     | Fila de Q&A & Relatórios)║
+║                                                                                            ║
+║ 🛡️ TRILHA 3: SEGURANÇA, INFRAESTRUTURA & OPERAÇÃO                                          ║
+║    ├── treinamento-interno-pin        (5 slides  | SES-SEG7482  | PIN 7482, Pacing & RBAC) ║
+║    └── guia-diagnostico-troubleshooting(5 slides | SES-SUPORTE  | Telemetria & Rede Local) ║
+╚════════════════════════════════════════════════════════════════════════════════════════════╝
+```
+
+### Tabela de Referência Rápida dos Decks
+
+| Trilha | Apresentação (ID) | Slides | Sessão Padrão | Segurança / PIN | Tópicos & Recursos Práticos |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| **1. Onboarding** | [`comece-por-aqui`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/comece-por-aqui/) | 5 | `SES-START` | Aberta | Arquitetura desacoplada, escopo das 5 interfaces e enquete de perfil. |
+| **1. Onboarding** | [`slidemesh-showcase`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/slidemesh-showcase/) | 10 | `SES-SHOWCASE` | Aberta | Tour completo, 4 temas, voto em tempo real, mural de dúvidas e mídia. |
+| **2. Palco & Criação** | [`guia-animacoes-e-palco`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-animacoes-e-palco/) | 5 | `SES-PALCO` | Aberta | As 4 transições nativas, efeitos Canvas 2D, pré-cache de mídia e atalhos. |
+| **2. Palco & Criação** | [`guia-criacao-studio-zip`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-criacao-studio-zip/) | 5 | `SES-STUDIO` | Aberta | 4 templates prontos, split-screen, importação PPTX/DOCX/MD e `.slidemesh.zip`. |
+| **2. Palco & Criação** | [`guia-moderacao-e-analytics`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-moderacao-e-analytics/) | 5 | `SES-MESA` | Admin | Console `/admin`, moderação de Q&A em 4 fases, controle de enquetes e CSV/MD. |
+| **3. Infra & Segurança** | [`treinamento-interno-pin`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/treinamento-interno-pin/) | 5 | `SES-SEG7482` | **PIN: 7482** | Gatekeeper de PIN, bloqueio de avanço prévio (Pacing Lock) e matriz RBAC. |
+| **3. Infra & Segurança** | [`guia-diagnostico-troubleshooting`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-diagnostico-troubleshooting/) | 5 | `SES-SUPORTE` | Aberta | HUD de telemetria (RTT/Banda/RBAC), rede 100% offline e guia de emergências. |
+
+---
+
+## 7. Atalhos de Teclado no Telão do Apresentador
 
 | Tecla | Ação | Descrição |
 | :--- | :--- | :--- |
@@ -292,7 +334,7 @@ python3 tools/import_presentation.py notas.md --session LIVE2026 --security pin
 
 ---
 
-## 7. Design System & Acessibilidade
+## 8. Design System & Acessibilidade
 
 - **4 Temas Visuais Modernos:** `Dark` (Padrão), `Light`, `Slate` e `High Contrast` (WCAG 2.2 AAA).
 - **Feedback Tátil (Haptics):** Suporte a `navigator.vibrate` ao votar e enviar perguntas pelo smartphone.
@@ -301,13 +343,13 @@ python3 tools/import_presentation.py notas.md --session LIVE2026 --security pin
 
 ---
 
-## 8. Contribuição & Segurança
+## 9. Contribuição & Segurança
 
 - **Contribuição:** Leia nosso guia [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes sobre fluxo de desenvolvimento, commits semânticos e abertura de Pull Requests.
 - **Segurança:** Para relatar vulnerabilidades de forma responsável, consulte nossa política de segurança em [SECURITY.md](SECURITY.md).
 
 ---
 
-## 9. Licença
+## 10. Licença
 
 Distribuído sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.

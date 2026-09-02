@@ -177,8 +177,13 @@ SlideMeshLive/
 │
 ├── presentations/                           # Presentations Storage Directory
 │   ├── catalog.json                         # Central registry of available presentations
-│   ├── slidemesh-showcase/                  # Official Showcase Presentation
-│   └── treinamento-interno-pin/             # PIN-Protected Technical Presentation
+│   ├── comece-por-aqui/                     # Onboarding Guide: Architecture & Interfaces (5 slides)
+│   ├── slidemesh-showcase/                  # Official Showcase & Feature Tour (10 slides)
+│   ├── guia-animacoes-e-palco/              # Stage Animations, Transitions & Media Guide (5 slides)
+│   ├── guia-criacao-studio-zip/             # SlideMesh Studio & ZIP Packages Guide (5 slides)
+│   ├── guia-moderacao-e-analytics/          # Control Room & Q&A Moderation Guide (5 slides)
+│   ├── treinamento-interno-pin/             # Security, PIN Protection & RBAC Guide (5 slides)
+│   └── guia-diagnostico-troubleshooting/    # Telemetry, LAN & Troubleshooting Guide (5 slides)
 │
 ├── tests/                                   # Automated Test Suite
 │   └── test_suite.py                        # Complete Integration & Security Test Runner
@@ -275,7 +280,44 @@ python3 tools/import_presentation.py notes.md --session LIVE2026 --security pin
 
 ---
 
-## 6. Presenter Stage Keyboard Shortcuts
+## 6. Official Interactive Living Manuals Library (7 Guide Decks)
+
+SlideMeshLive follows a **"Show, Don't Tell"** philosophy: practical ecosystem documentation is delivered in the application's native format through **7 Interactive Living Manuals**, organized across **3 Learning Tracks**:
+
+```
+╔════════════════════════════════════════════════════════════════════════════════════════════╗
+║                   SLIDEMESHLIVE KNOWLEDGE & LEARNING TRACKS                                ║
+╠════════════════════════════════════════════════════════════════════════════════════════════╣
+║ 🚀 TRACK 1: ONBOARDING & ARCHITECTURE                                                      ║
+║    ├── comece-por-aqui                (5 slides  | SES-START    | Zero Cloud & Interfaces) ║
+║    └── slidemesh-showcase             (10 slides | SES-SHOWCASE | Complete Feature Tour)   ║
+║                                                                                            ║
+║ 🎨 TRACK 2: STAGE, AUTHORING & MODERATION                                                  ║
+║    ├── guia-animacoes-e-palco         (5 slides  | SES-PALCO    | Transitions, Canvas & GPU║
+║    ├── guia-criacao-studio-zip        (5 slides  | SES-STUDIO   | Templates & ZIP Packages)║
+║    └── guia-moderacao-e-analytics     (5 slides  | SES-MESA     | Q&A Queue & Analytics)   ║
+║                                                                                            ║
+║ 🛡️ TRACK 3: SECURITY, INFRASTRUCTURE & SUPPORT                                             ║
+║    ├── treinamento-interno-pin        (5 slides  | SES-SEG7482  | PIN 7482, Pacing & RBAC) ║
+║    └── guia-diagnostico-troubleshooting(5 slides | SES-SUPORTE  | Telemetry & Local LAN)   ║
+╚════════════════════════════════════════════════════════════════════════════════════════════╝
+```
+
+### Quick Reference Table of Guide Decks
+
+| Track | Deck (ID) | Slides | Default Session | Security / PIN | Topics & Practical Features |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| **1. Onboarding** | [`comece-por-aqui`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/comece-por-aqui/) | 5 | `SES-START` | Open | Decoupled architecture, 5-interface scope, and audience poll. |
+| **1. Onboarding** | [`slidemesh-showcase`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/slidemesh-showcase/) | 10 | `SES-SHOWCASE` | Open | Feature tour, 4 themes, live voting, questions wall, and media. |
+| **2. Stage & Authoring** | [`guia-animacoes-e-palco`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-animacoes-e-palco/) | 5 | `SES-PALCO` | Open | 4 native transitions, Canvas 2D effects, media pre-cache, and shortcuts. |
+| **2. Stage & Authoring** | [`guia-criacao-studio-zip`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-criacao-studio-zip/) | 5 | `SES-STUDIO` | Open | 4 built-in templates, split-screen, PPTX/DOCX/MD import, and `.slidemesh.zip`. |
+| **2. Stage & Authoring** | [`guia-moderacao-e-analytics`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-moderacao-e-analytics/) | 5 | `SES-MESA` | Admin | `/admin` console, 4-phase Q&A moderation, live poll controls, and CSV/MD. |
+| **3. Infra & Security** | [`treinamento-interno-pin`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/treinamento-interno-pin/) | 5 | `SES-SEG7482` | **PIN: 7482** | PIN Gatekeeper, Pacing Lock (advance protection), and RBAC matrix. |
+| **3. Infra & Security** | [`guia-diagnostico-troubleshooting`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-diagnostico-troubleshooting/) | 5 | `SES-SUPORTE` | Open | Real-time telemetry HUD (RTT/Bandwidth/RBAC), 100% offline LAN, emergency guide. |
+
+---
+
+## 7. Presenter Stage Keyboard Shortcuts
 
 | Key | Action | Description |
 | :--- | :--- | :--- |
@@ -293,7 +335,7 @@ python3 tools/import_presentation.py notes.md --session LIVE2026 --security pin
 
 ---
 
-## 7. Design System & Accessibility
+## 8. Design System & Accessibility
 
 - **4 Modern Visual Themes:** `Dark` (Default), `Light`, `Slate`, and `High Contrast` (WCAG 2.2 AAA).
 - **Haptic Touch Feedback:** Native `navigator.vibrate` on smartphone vote casts and question submissions.
@@ -302,13 +344,13 @@ python3 tools/import_presentation.py notes.md --session LIVE2026 --security pin
 
 ---
 
-## 8. Contributing & Security
+## 9. Contributing & Security
 
 - **Contributing:** Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for details on code standards, conventional commits, and the pull request process.
 - **Security:** To report security vulnerabilities responsibly, please review our [SECURITY.md](SECURITY.md).
 
 ---
 
-## 9. License
+## 10. License
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more details.
