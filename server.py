@@ -658,10 +658,24 @@ def import_presentation_files(data):
     manifest["id"] = slug
     manifest["totalSlides"] = len(slides)
     manifest.setdefault("theme", {"accentColor": "#38bdf8", "background": "#0b0f19"})
-    manifest.setdefault("security", {"mode": "public"})
+    
+    # Governança e Hardening de Segurança (Plano 17 - Fase 4)
+    sec_data = manifest.setdefault("security", {"mode": "public"})
+    if sec_data.get("mode") == "pin":
+        manifest["isProtected"] = True
+        manifest["securityLabel"] = "🔒 Protegida por PIN"
+        raw_pin = str(sec_data.get("pin", "")).strip()
+        if not raw_pin or len(raw_pin) < 4:
+            raw_pin = "2026"
+        sec_data["pin"] = raw_pin
+    else:
+        manifest["isProtected"] = False
+        manifest["securityLabel"] = "Pública"
+        sec_data.pop("pin", None)
+        sec_data.pop("pinHint", None)
+
     manifest.setdefault("defaultSession", "SES" + str(int(time.time()) % 9000 + 1000))
-    manifest.setdefault("securityLabel", "Pública")
-    manifest.setdefault("badgeClass", "badge-accent")
+    manifest.setdefault("badgeClass", "badge-accent" if not manifest.get("isProtected") else "badge")
 
     presentations_root = os.path.abspath(os.path.join(BASE_DIR, "presentations"))
     target_dir = os.path.abspath(os.path.join(presentations_root, slug))
@@ -946,10 +960,23 @@ def import_presentation_zip(zip_bytes, mode='overwrite', custom_slug=None, base_
         manifest["id"] = slug
         manifest["totalSlides"] = len(slides)
         manifest.setdefault("theme", {"accentColor": "#38bdf8", "background": "#0b0f19"})
-        manifest.setdefault("security", {"mode": manifest.get("securityMode", "public")})
+        
+        sec_data = manifest.setdefault("security", {"mode": manifest.get("securityMode", "public")})
+        if sec_data.get("mode") == "pin":
+            manifest["isProtected"] = True
+            manifest["securityLabel"] = "🔒 Protegida por PIN"
+            raw_pin = str(sec_data.get("pin", "")).strip()
+            if not raw_pin or len(raw_pin) < 4:
+                raw_pin = "2026"
+            sec_data["pin"] = raw_pin
+        else:
+            manifest["isProtected"] = False
+            manifest["securityLabel"] = "Pública"
+            sec_data.pop("pin", None)
+            sec_data.pop("pinHint", None)
+
         manifest.setdefault("defaultSession", "SES" + str(int(time.time()) % 9000 + 1000))
-        manifest.setdefault("securityLabel", "Pública" if manifest.get("security", {}).get("mode") == "public" else "🔒 Protegida por PIN")
-        manifest.setdefault("badgeClass", "badge-accent")
+        manifest.setdefault("badgeClass", "badge-accent" if not manifest.get("isProtected") else "badge")
 
         # 4. Pré-validação e extração segura de assets/
         assets_prefix = root_prefix + "assets/"

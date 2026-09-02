@@ -827,6 +827,42 @@
     </section>
   </main>
 
+  <!-- MODAL DE DESBLOQUEIO DE DECK NO STUDIO (Plano 17 - Fase 4) -->
+  <div id="studio-deck-auth-modal" style="display: none; position: fixed; inset: 0; z-index: 10000; background: rgba(11, 15, 25, 0.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); align-items: center; justify-content: center; padding: 20px;">
+    <div class="card animate-scale-in" style="max-width: 440px; width: 100%; border: 1.5px solid rgba(56, 189, 248, 0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center; padding: 32px 28px; background: rgba(15, 23, 42, 0.98);">
+      <div style="font-size: 44px; margin-bottom: 12px; filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.5));">
+        🔒
+      </div>
+      <h3 style="font-size: 19px; font-weight: 800; color: #ffffff; margin-bottom: 8px;" id="studio-auth-deck-title">
+        Apresentação Protegida
+      </h3>
+      <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">
+        Esta apresentação possui acesso restrito. Digite o PIN de segurança para carregar e editar os slides no Studio.
+      </p>
+
+      <div id="studio-deck-pin-hint-box" style="display: none; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #bae6fd; margin-bottom: 16px; text-align: left;">
+        💡 <strong>Dica do Orador:</strong> <span id="studio-deck-pin-hint"></span>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <input type="password" id="input-studio-deck-pin" maxlength="12" placeholder="••••" style="width: 100%; padding: 12px; background: rgba(15,23,42,0.9); border: 1.5px solid var(--border-medium); border-radius: 8px; color: #ffffff; font-family: var(--font-mono); font-size: 20px; font-weight: 700; text-align: center; letter-spacing: 6px;">
+      </div>
+
+      <div id="studio-deck-pin-error" style="display: none; color: #fca5a5; font-size: 12px; margin-bottom: 14px; background: rgba(239, 68, 68, 0.1); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);">
+        ✕ PIN incorreto. Tente novamente.
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button class="btn" id="btn-cancel-studio-deck-auth" style="flex: 1; border-color: var(--border-medium); color: var(--text-secondary);">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" id="btn-confirm-studio-deck-auth" style="flex: 1.2; font-weight: 700;">
+          🔓 Desbloquear
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { conversionEngine } from './js/core/conversion-engine.js';
     import { presentationEngine } from './js/core/presentation-engine.js';
@@ -836,6 +872,7 @@
     let currentConvertedData = null;
     let selectedSlideIndex = 0;
     let isEditingExisting = false;
+    let pendingProtectedSlug = null;
     const DRAFT_STORAGE_KEY = 'slidemesh_studio_draft';
 
     function updateLanguageButton() {
@@ -925,8 +962,88 @@
       document.getElementById('draft-alert-banner').style.display = 'none';
     });
 
-    // Carregar Apresentação Existente para Edição
-    async function loadExistingPresentation(slug) {
+    // Modal de Desbloqueio no Studio
+    function promptStudioUnlock(slug, manifest) {
+      pendingProtectedSlug = slug;
+      const modal = document.getElementById('studio-deck-auth-modal');
+      if (!modal) return;
+
+      const titleEl = document.getElementById('studio-auth-deck-title');
+      if (titleEl) titleEl.textContent = `🔒 ${manifest.title || slug}`;
+
+      const hintBox = document.getElementById('studio-deck-pin-hint-box');
+      const hintSpan = document.getElementById('studio-deck-pin-hint');
+      const hint = manifest.security?.pinHint || manifest.pinHint || '';
+      if (hint && hintBox && hintSpan) {
+        hintSpan.textContent = hint;
+        hintBox.style.display = 'block';
+      } else if (hintBox) {
+        hintBox.style.display = 'none';
+      }
+
+      const err = document.getElementById('studio-deck-pin-error');
+      if (err) err.style.display = 'none';
+
+      const input = document.getElementById('input-studio-deck-pin');
+      if (input) {
+        input.value = '';
+        modal.style.display = 'flex';
+        setTimeout(() => input.focus(), 100);
+      } else {
+        modal.style.display = 'flex';
+      }
+    }
+
+    async function verifyStudioPin() {
+      if (!pendingProtectedSlug) return;
+      const input = document.getElementById('input-studio-deck-pin');
+      const entered = input ? input.value.trim() : '';
+      const err = document.getElementById('studio-deck-pin-error');
+      if (!entered) {
+        if (err) { err.textContent = '✕ Digite o PIN de acesso.'; err.style.display = 'block'; }
+        return;
+      }
+
+      const btnConfirm = document.getElementById('btn-confirm-studio-deck-auth');
+      if (btnConfirm) btnConfirm.disabled = true;
+
+      try {
+        const res = await fetch('/api/auth/verify-pin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: entered, presentationId: pendingProtectedSlug })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          sessionStorage.setItem('pres_pin_' + pendingProtectedSlug, 'valid');
+          sessionStorage.setItem('pres_pin_code_' + pendingProtectedSlug, entered);
+          document.getElementById('studio-deck-auth-modal').style.display = 'none';
+          
+          const slug = pendingProtectedSlug;
+          pendingProtectedSlug = null;
+          loadExistingPresentation(slug, true);
+        } else {
+          if (err) { err.textContent = '✕ PIN incorreto. Tente novamente.'; err.style.display = 'block'; }
+        }
+      } catch (e) {
+        if (err) { err.textContent = '✕ Erro ao validar PIN.'; err.style.display = 'block'; }
+      } finally {
+        if (btnConfirm) btnConfirm.disabled = false;
+      }
+    }
+
+    document.getElementById('btn-cancel-studio-deck-auth')?.addEventListener('click', () => {
+      document.getElementById('studio-deck-auth-modal').style.display = 'none';
+      window.location.href = './';
+    });
+
+    document.getElementById('btn-confirm-studio-deck-auth')?.addEventListener('click', verifyStudioPin);
+    document.getElementById('input-studio-deck-pin')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') verifyStudioPin();
+    });
+
+    // Carregar Apresentação Existente para Edição (Plano 17 - Fase 4)
+    async function loadExistingPresentation(slug, bypassAuthCheck = false) {
       try {
         document.getElementById('section-step-1').innerHTML = `
           <div class="animate-pulse" style="padding: 60px 0; text-align: center;">
@@ -935,17 +1052,25 @@
           </div>
         `;
 
-        const [resMan, resSlides] = await Promise.all([
-          fetch(`./presentations/${slug}/manifest.json`),
-          fetch(`./presentations/${slug}/slides.json`)
-        ]);
-
-        if (!resMan.ok || !resSlides.ok) {
-          throw new Error('Apresentação não encontrada no servidor.');
-        }
+        const resMan = await fetch(`./presentations/${slug}/manifest.json?t=` + Date.now());
+        if (!resMan.ok) throw new Error('Apresentação não encontrada no servidor.');
 
         const manifest = await resMan.json();
         manifest.id = manifest.id || slug;
+
+        // Gatekeeper de Segurança no Studio (Plano 17 - Fase 4)
+        const isProtected = manifest.security?.mode === 'pin' || manifest.isProtected || (manifest.securityLabel && manifest.securityLabel.includes('PIN'));
+        const isAuth = sessionStorage.getItem('pres_pin_' + slug) === 'valid' ||
+                       sessionStorage.getItem('admin_pin_authenticated') === 'true';
+
+        if (isProtected && !isAuth && !bypassAuthCheck) {
+          promptStudioUnlock(slug, manifest);
+          return;
+        }
+
+        const resSlides = await fetch(`./presentations/${slug}/slides.json?t=` + Date.now());
+        if (!resSlides.ok) throw new Error('Falha ao carregar slides da apresentação.');
+
         const rawSlides = await resSlides.json();
         const slidesArray = Array.isArray(rawSlides) ? rawSlides : (rawSlides.slides || []);
 
@@ -1266,11 +1391,21 @@
         currentConvertedData.manifest.security = currentConvertedData.manifest.security || {};
         currentConvertedData.manifest.security.mode = secMode;
         if (secMode === 'pin') {
-          currentConvertedData.manifest.security.pin = document.getElementById('cfg-pin-code')?.value.trim() || '2026';
+          const pinVal = document.getElementById('cfg-pin-code')?.value.trim() || '';
+          if (!pinVal || pinVal.length < 4) {
+            alert('Por segurança, o PIN do Deck precisa conter no mínimo 4 dígitos.');
+            document.getElementById('cfg-pin-code')?.focus();
+            return;
+          }
+          currentConvertedData.manifest.security.pin = pinVal;
           currentConvertedData.manifest.security.pinHint = document.getElementById('cfg-pin-hint')?.value.trim() || '';
+          currentConvertedData.manifest.isProtected = true;
+          currentConvertedData.manifest.securityLabel = '🔒 Protegida por PIN';
         } else {
           delete currentConvertedData.manifest.security.pin;
           delete currentConvertedData.manifest.security.pinHint;
+          currentConvertedData.manifest.isProtected = false;
+          currentConvertedData.manifest.securityLabel = 'Pública';
         }
 
         const pacingVal = document.getElementById('cfg-pacing')?.value || 'lock_future';
@@ -2022,11 +2157,23 @@
       currentConvertedData.manifest.security = currentConvertedData.manifest.security || {};
       currentConvertedData.manifest.security.mode = secMode;
       if (secMode === 'pin') {
-        currentConvertedData.manifest.security.pin = document.getElementById('cfg-pin-code')?.value.trim() || '2026';
+        const pinVal = document.getElementById('cfg-pin-code')?.value.trim() || '';
+        if (!pinVal || pinVal.length < 4) {
+          alert('Por segurança, o PIN do Deck precisa conter no mínimo 4 dígitos.');
+          document.getElementById('cfg-pin-code')?.focus();
+          btn.disabled = false;
+          btn.textContent = i18n.t('import.btn_publish_now');
+          return;
+        }
+        currentConvertedData.manifest.security.pin = pinVal;
         currentConvertedData.manifest.security.pinHint = document.getElementById('cfg-pin-hint')?.value.trim() || '';
+        currentConvertedData.manifest.isProtected = true;
+        currentConvertedData.manifest.securityLabel = '🔒 Protegida por PIN';
       } else {
         delete currentConvertedData.manifest.security.pin;
         delete currentConvertedData.manifest.security.pinHint;
+        currentConvertedData.manifest.isProtected = false;
+        currentConvertedData.manifest.securityLabel = 'Pública';
       }
 
       const pacingVal = document.getElementById('cfg-pacing')?.value || 'lock_future';

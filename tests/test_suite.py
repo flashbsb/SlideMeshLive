@@ -3427,6 +3427,92 @@ def test_plano17_phase3_portal_actions_and_zip_export_protection():
     print("✓ Plano 17 (Fase 3: Proteção de Ações & Modo Intranet no Portal) 100% HOMOLOGADO.")
 
 
+def test_plano17_phase4_studio_hardening_and_zip_governance():
+    """Valida o Hardening do SlideMesh Studio (/import.html) e Governança de Pacotes ZIP (Plano 17 - Fase 4)."""
+    print(f"\n{'='*70}")
+    print(" 🧪 34. Plano 17: Hardening do SlideMesh Studio & Governança de Pacotes ZIP (Fase 4)")
+    print(f"{'='*70}")
+
+    slug_pin = None
+    slug_pub = None
+
+    try:
+        # 1. Validação de import_presentation_files com segurança
+        test_payload_pin = {
+            "manifest": {
+                "id": "deck-teste-fase4-pin",
+                "title": "Apresentação Teste Fase 4 PIN",
+                "security": {
+                    "mode": "pin",
+                    "pin": "8899",
+                    "pinHint": "Dica 8899"
+                }
+            },
+            "slides": [
+                {"id": 1, "title": "Slide 1", "presenter": {"headline": "H1"}, "audience": {"summary": "S1"}}
+            ]
+        }
+
+        import_res = server.import_presentation_files(test_payload_pin)
+        slug_pin = import_res["slug"]
+        man_path = os.path.join(BASE_DIR, "presentations", slug_pin, "manifest.json")
+        with open(man_path, "r", encoding="utf-8") as f:
+            saved_man = json.load(f)
+
+        assert saved_man.get("isProtected") is True, "isProtected não foi definido como True no manifest"
+        assert saved_man.get("securityLabel") == "🔒 Protegida por PIN", f"securityLabel incorreta: {saved_man.get('securityLabel')}"
+        assert saved_man.get("security", {}).get("pin") == "8899", "PIN não foi persistido corretamente no backend"
+        print("  ✓ Importação de Deck Protegido: isProtected=True, securityLabel sanitizada e PIN gravados com sucesso.")
+
+        # 2. Validação de import_presentation_files em modo público
+        test_payload_pub = {
+            "manifest": {
+                "id": "deck-teste-fase4-pub",
+                "title": "Apresentação Teste Fase 4 Pública",
+                "security": {
+                    "mode": "public",
+                    "pin": "1234"  # Deve ser expurgado
+                }
+            },
+            "slides": [
+                {"id": 1, "title": "Slide 1", "presenter": {"headline": "H1"}, "audience": {"summary": "S1"}}
+            ]
+        }
+
+        import_res_pub = server.import_presentation_files(test_payload_pub)
+        slug_pub = import_res_pub["slug"]
+        man_pub_path = os.path.join(BASE_DIR, "presentations", slug_pub, "manifest.json")
+        with open(man_pub_path, "r", encoding="utf-8") as f:
+            saved_man_pub = json.load(f)
+
+        assert saved_man_pub.get("isProtected") is False, "isProtected não foi definido como False no manifest público"
+        assert saved_man_pub.get("securityLabel") == "Pública", f"securityLabel incorreta: {saved_man_pub.get('securityLabel')}"
+        assert "pin" not in saved_man_pub.get("security", {}), "PIN não foi expurgado de manifest público"
+        print("  ✓ Importação de Deck Público: Expurgo de chaves de PIN e isProtected=False validados.")
+
+        # 3. Validação de import.html (Modal e Gatekeeper no Studio)
+        import_html_path = os.path.join(BASE_DIR, "import.html")
+        with open(import_html_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+
+        assert 'id="studio-deck-auth-modal"' in html_content, "Modal #studio-deck-auth-modal não encontrado em import.html"
+        assert 'promptStudioUnlock' in html_content, "Função promptStudioUnlock não encontrada em import.html"
+        assert 'verifyStudioPin' in html_content, "Função verifyStudioPin não encontrada em import.html"
+        assert 'mínimo 4 dígitos' in html_content, "Validação de força de PIN mínimo 4 dígitos não encontrada em import.html"
+        print("  ✓ Studio UI (import.html): Modal de desbloqueio, gatekeeper de edição e validação de PIN validados.")
+
+    finally:
+        # Limpeza robusta e sincronização do catálogo
+        for s in [slug_pin, slug_pub, "deck-teste-fase4-pin", "deck-teste-fase4-pub"]:
+            if s:
+                d = os.path.join(BASE_DIR, "presentations", s)
+                if os.path.isdir(d):
+                    shutil.rmtree(d, ignore_errors=True)
+        server.sync_and_verify_presentations_catalog(BASE_DIR)
+
+    print("✓ Plano 17 (Fase 4: Hardening do SlideMesh Studio & Governança de Pacotes ZIP) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -3462,6 +3548,7 @@ if __name__ == "__main__":
         test_plano17_phase1_manifest_sanitization_and_server_side_pin()
         test_plano17_phase2_presenter_stage_gatekeeper()
         test_plano17_phase3_portal_actions_and_zip_export_protection()
+        test_plano17_phase4_studio_hardening_and_zip_governance()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time
