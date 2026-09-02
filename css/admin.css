@@ -10,6 +10,15 @@
   flex-direction: column;
 }
 
+.admin-body.admin-locked .admin-grid,
+.admin-body.admin-locked .admin-header {
+  filter: blur(10px);
+  opacity: 0.3;
+  pointer-events: none;
+  user-select: none;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
 .admin-header {
   height: 60px;
   background: var(--bg-glass);

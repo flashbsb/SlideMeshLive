@@ -206,28 +206,57 @@ class AdminApp {
   async loadCatalogOptions() {
     if (!this.dom.presSelector) return;
     try {
+      let list = [];
       let res = await fetch('/api/presentations/catalog?t=' + Date.now());
       if (!res.ok) {
         res = await fetch('../presentations/catalog.json?t=' + Date.now());
       }
       if (res.ok) {
         const data = await res.json();
-        const list = data.presentations || [];
-        if (list.length > 0) {
-          const exists = list.some(p => p.id === this.presentationId);
-          if (!exists) {
-            this.presentationId = list[0].id;
-          }
-          this.dom.presSelector.innerHTML = list.map(p => `
-            <option value="${p.id}" ${p.id === this.presentationId ? 'selected' : ''}>
-              ${p.title}
-            </option>
-          `).join('');
-          this.dom.presSelector.value = this.presentationId;
+        list = data.presentations || [];
+      }
+      
+      if (!list || list.length === 0) {
+        list = [
+          { id: 'comece-por-aqui', title: 'Comece por Aqui: Mapa do Ecossistema & Guia das Interfaces', totalSlides: 5 },
+          { id: 'slidemesh-showcase', title: 'SlideMeshLive: A Mágica das Apresentações Interativas', totalSlides: 10 },
+          { id: 'guia-animacoes-e-palco', title: 'Manual Prático: Transições de Telão, Efeitos & Controle de Mídia', totalSlides: 5 },
+          { id: 'guia-criacao-studio-zip', title: 'Manual Prático: SlideMesh Studio — Criação, Importação & Pacotes ZIP', totalSlides: 5 },
+          { id: 'guia-moderacao-e-analytics', title: 'Manual Prático: Mesa Técnica — Moderação de Q&A & Gestão de Enquetes', totalSlides: 5 },
+          { id: 'treinamento-interno-pin', title: 'Manual Prático: Segurança, PINs de Acesso & Gestão RBAC', totalSlides: 5 },
+          { id: 'guia-diagnostico-troubleshooting', title: 'Manual Prático: Diagnóstico de Rede, Monitoramento & Resolução de Falhas', totalSlides: 5 }
+        ];
+      }
+
+      if (list.length > 0) {
+        const exists = list.some(p => p.id === this.presentationId);
+        if (!exists) {
+          this.presentationId = list[0].id;
         }
+        this.dom.presSelector.innerHTML = list.map(p => `
+          <option value="${p.id}" ${p.id === this.presentationId ? 'selected' : ''}>
+            ${p.title}
+          </option>
+        `).join('');
+        this.dom.presSelector.value = this.presentationId;
       }
     } catch (e) {
       console.warn('Erro ao carregar catálogo de apresentações:', e);
+      const fallbackList = [
+        { id: 'comece-por-aqui', title: 'Comece por Aqui: Mapa do Ecossistema & Guia das Interfaces' },
+        { id: 'slidemesh-showcase', title: 'SlideMeshLive: A Mágica das Apresentações Interativas' },
+        { id: 'guia-animacoes-e-palco', title: 'Manual Prático: Transições de Telão, Efeitos & Controle de Mídia' },
+        { id: 'guia-criacao-studio-zip', title: 'Manual Prático: SlideMesh Studio — Criação, Importação & Pacotes ZIP' },
+        { id: 'guia-moderacao-e-analytics', title: 'Manual Prático: Mesa Técnica — Moderação de Q&A & Gestão de Enquetes' },
+        { id: 'treinamento-interno-pin', title: 'Manual Prático: Segurança, PINs de Acesso & Gestão RBAC' },
+        { id: 'guia-diagnostico-troubleshooting', title: 'Manual Prático: Diagnóstico de Rede, Monitoramento & Resolução de Falhas' }
+      ];
+      this.dom.presSelector.innerHTML = fallbackList.map(p => `
+        <option value="${p.id}" ${p.id === this.presentationId ? 'selected' : ''}>
+          ${p.title}
+        </option>
+      `).join('');
+      this.dom.presSelector.value = this.presentationId;
     }
   }
 
@@ -235,6 +264,7 @@ class AdminApp {
     this.bindEvents();
     this.updateLanguageButton();
     this.updateThemeButton();
+    await this.loadCatalogOptions();
     await this.auth.loadSecurityConfig();
 
     if (!this.auth.isAdminAuthenticated()) {
@@ -245,6 +275,7 @@ class AdminApp {
   }
 
   showLockScreen() {
+    document.body.classList.add('admin-locked');
     if (this.dom.adminLockModal) {
       this.dom.adminLockModal.classList.add('active');
       this.switchAuthTab('pin');
@@ -296,6 +327,7 @@ class AdminApp {
 
   async startAdminSession() {
     this.sessionStarted = true;
+    document.body.classList.remove('admin-locked');
     if (this.dom.adminLockModal) {
       this.dom.adminLockModal.classList.remove('active');
     }
@@ -1954,7 +1986,7 @@ class AdminApp {
   // ==========================================
   async openSecuritySettingsModal() {
     if (!this.dom.securityModal) return;
-    this.dom.securityModal.style.display = 'flex';
+    this.dom.securityModal.classList.add('active');
     this.switchSecurityTab('pin');
     if (this.dom.secFeedbackMsg) {
       this.dom.secFeedbackMsg.style.display = 'none';
@@ -1980,7 +2012,7 @@ class AdminApp {
 
   closeSecuritySettingsModal() {
     if (this.dom.securityModal) {
-      this.dom.securityModal.style.display = 'none';
+      this.dom.securityModal.classList.remove('active');
     }
   }
 

@@ -244,19 +244,17 @@ export class AuthEngine {
   }
 
   isAdminAuthenticated() {
-    if (this.securityConfig && this.securityConfig.requirePinForAdmin === false) {
-      return true;
-    }
-    if (this.securityConfig && this.securityConfig.admin && this.securityConfig.admin.requirePinForAdmin === false) {
+    const requirePin = (this.securityConfig && this.securityConfig.requirePinForAdmin !== undefined)
+      ? this.securityConfig.requirePinForAdmin
+      : ((this.securityConfig && this.securityConfig.admin && this.securityConfig.admin.requirePinForAdmin !== undefined)
+          ? this.securityConfig.admin.requirePinForAdmin
+          : true);
+
+    if (requirePin === false) {
       return true;
     }
     const isPinAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true';
-    const isRoleAdmin = this.currentUser && (
-      this.currentUser.role === 'admin' || 
-      this.currentUser.role === 'presenter' || 
-      this.isEmailAdmin(this.currentUser.email)
-    );
-    return isPinAuth || isRoleAdmin;
+    return isPinAuth;
   }
 
   /**
