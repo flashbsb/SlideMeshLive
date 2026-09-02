@@ -2010,8 +2010,8 @@ class AdminApp {
         this.showSecurityFeedback('Não foi possível carregar as configurações do servidor.', false);
       }
     } catch (err) {
-      console.error('Erro ao buscar /api/security/config:', err);
-      this.showSecurityFeedback('Erro de conexão ao carregar configurações de segurança.', false);
+      console.error('Erro ao abrir configurações de segurança:', err);
+      this.showSecurityFeedback('Erro ao processar configurações de segurança: ' + (err.message || 'Falha de conexão.'), false);
     }
   }
 
@@ -2333,6 +2333,16 @@ class AdminApp {
         this.dom.btnSaveSecuritySettings.textContent = '💾 Salvar Configurações de Segurança';
       }
     }
+  }
+
+  escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   showSecurityFeedback(msg, isSuccess) {
