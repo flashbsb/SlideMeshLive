@@ -1,0 +1,163 @@
+{
+  "presentationId": "guia-diagnostico-troubleshooting",
+  "title": "Manual Prático: Diagnóstico de Rede, Monitoramento & Resolução de Falhas",
+  "slides": [
+    {
+      "id": 1,
+      "slug": "telemetria-ao-vivo-admin",
+      "tag": "HUD DE DIAGNÓSTICO",
+      "title": "O Painel de Telemetria ao Vivo na Mesa Técnica",
+      "presenter": {
+        "headline": "Monitore a saúde e latência da rede local em tempo real durante a sessão",
+        "bullets": [
+          "Latência RTT em milissegundos com classificação de cor (Verde <50ms, Amarelo <150ms)",
+          "Taxa de pacotes por segundo e consumo de banda em KB/s",
+          "Badge de Segurança: Verde (Segurança Alta), Amarelo (Média), Alerta (PIN padrão)"
+        ],
+        "notes": "Explique como o operador na Mesa Técnica acompanha a saúde da conexão sem precisar abrir terminais adicionais."
+      },
+      "audience": {
+        "summary": "Métricas de diagnóstico monitoradas pela equipe técnica do evento.",
+        "sections": [
+          {
+            "title": "Indicadores de Telemetria",
+            "type": "table",
+            "headers": ["Métrica", "Faixa Ideal", "Significado"],
+            "rows": [
+              ["Latência RTT", "< 50 ms", "Tempo de ida e volta do sinal síncrono"],
+              ["Taxa de Pacotes", "2 a 20 pkt/s", "Fluxo de mensagens síncronas trocadas"],
+              ["Consumo de Banda", "< 25 KB/s", "Uso ultraleve da rede Wi-Fi local"],
+              ["Status do Hub", "Healthy", "Conectividade estável com os clientes"]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "slug": "operacao-lan-sem-internet",
+      "tag": "OPERAÇÃO 100% OFFLINE",
+      "title": "Operação Autônoma em Rede Local (LAN / Wi-Fi)",
+      "presenter": {
+        "headline": "Apresente com segurança em qualquer lugar, mesmo sem sinal de internet",
+        "bullets": [
+          "O servidor Python opera como Hub local autônomo sem chamadas para a nuvem",
+          "Basta um roteador Wi-Fi simples para conectar centenas de celulares no mesmo ambiente",
+          "Tripla redundância de sincronização: WebSocket primário, Long-Polling e Snapshot HTTP"
+        ],
+        "notes": "Destaque a paz de espírito para eventos em hotéis, auditórios e feiras onde a internet externa costuma cair ou falhar."
+      },
+      "audience": {
+        "summary": "Por que o SlideMeshLive não depende de conexão com a internet externa.",
+        "sections": [
+          {
+            "title": "Topologia Recomendada para Eventos",
+            "type": "list",
+            "items": [
+              "1. Notebook do Palestrante: Conectado ao projetor HDMI e rodando 'python3 server.py'.",
+              "2. Roteador Wi-Fi Local: Emitindo a rede sem fio do evento (ex: 'Palestra-Local').",
+              "3. Celulares do Público: Conectados no mesmo Wi-Fi, escaneiam o QR Code e interagem diretamente com o IP local."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "slug": "resiliencia-reconexao-automatica",
+      "tag": "RESILIÊNCIA & ANTI-ABUSO",
+      "title": "Reconexão Automática & Proteção Anti-Abuso",
+      "presenter": {
+        "headline": "Recuperação instantânea de quedas e blindagem contra flood de votos",
+        "bullets": [
+          "Se o participante bloquear a tela, o motor reconecta e sincroniza em sub-segundo",
+          "SecurityGuard: Cooldown de 25s por envio de dúvidas para evitar spam",
+          "Limite de 3 dúvidas pendentes por dispositivo e garantia de 1 único voto por enquete"
+        ],
+        "notes": "Explique que mesmo se um participante sair do aplicativo ou receber uma ligação, ao reabrir o navegador a sincronização volta imediatamente ao slide atual."
+      },
+      "audience": {
+        "summary": "Mecanismos automáticos de proteção e estabilidade de conexão.",
+        "sections": [
+          {
+            "title": "Proteções Ativas do SecurityGuard",
+            "type": "list",
+            "items": [
+              "Cooldown de Envio: Intervalo mínimo de 25 segundos entre perguntas.",
+              "Fila Máxima: No máximo 3 dúvidas pendentes de aprovação por usuário.",
+              "Voto Único: Prevenção de duplicidade por token de sessão."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "slug": "ajustes-projecao-emergencias",
+      "tag": "TROUBLESHOOTING DE PALCO",
+      "title": "Resolução de Falhas de Projeção & Emergências de Palco",
+      "presenter": {
+        "headline": "Como agir rapidamente em imprevistos técnicos no palco",
+        "bullets": [
+          "Proporção de tela distorcida? O layout é responsivo para 16:9, 16:10 e 4:3",
+          "Teclas de emergência: [F] para tela cheia e [B] para blackout total",
+          "Porta 8080 já ocupada por outro app? Inicie com 'python3 server.py --port 9000'"
+        ],
+        "notes": "Dica prática para oradores: se algo der errado no palco, aperte [B] para apagar a projeção e concentrar os olhares na sua fala enquanto a equipe ajusta."
+      },
+      "audience": {
+        "summary": "Guia de resolução rápida para operadores e técnicos de evento.",
+        "sections": [
+          {
+            "title": "Guia Rápido de Emergências",
+            "type": "table",
+            "headers": ["Sintoma", "Causa Provável", "Solução Imediata"],
+            "rows": [
+              ["Porta ocupada", "Outro serviço na 8080", "Iniciar com 'server.py --port 8888'"],
+              ["Projeção cortada", "Resolução do projetor", "Apertar [F] no telão para ajustar fullscreen"],
+              ["Plateia sem conexão", "Wi-Fi em banda errada", "Conectar no mesmo SSID 2.4/5GHz do notebook"],
+              ["Imprevisto no palco", "Necessidade de pausa", "Pressionar [B] para acionar Blackout"]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "slug": "enquete-troubleshooting-riscos",
+      "tag": "PESQUISA DE RISCOS",
+      "title": "Qual o Maior Receio Técnico que Você Costuma Enfrentar?",
+      "presenter": {
+        "headline": "Vote no smartphone e descubra o que mais tira o sono dos produtores!",
+        "bullets": [
+          "Identifique os pontos mais críticos de falha em eventos ao vivo",
+          "Acompanhe a apuração instantânea dos votos",
+          "Pressione [R] para revelar o resultado no telão"
+        ],
+        "notes": "Convide o auditório a votar na enquete e debata como o SlideMeshLive resolve cada um desses riscos."
+      },
+      "audience": {
+        "summary": "Compartilhe sua experiência técnica em eventos ao vivo.",
+        "sections": [
+          {
+            "title": "Enquete de Riscos",
+            "type": "text",
+            "content": "Selecione o desafio que mais preocupa a sua equipe técnica em eventos presenciais."
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll-riscos-evento",
+          "question": "Qual o maior receio técnico que você costuma enfrentar em eventos ao vivo?",
+          "options": [
+            { "id": "opt-wifi-cai", "text": "📶 Queda ou oscilação repentina do sinal Wi-Fi" },
+            { "id": "opt-projetor-falha", "text": "📽️ Resolução cortada ou falha de sinal no projetor" },
+            { "id": "opt-perguntas-inapropriadas", "text": "💬 Perguntas inadequadas ou spam enviados pelo público" },
+            { "id": "opt-lentidao-sync", "text": "⏳ Lentidão ou travamento na troca de slides" }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "guia-moderacao-e-analytics",
+  "code": "MESA",
+  "title": "Manual Prático: Mesa Técnica — Moderação de Q&A & Gestão de Enquetes",
+  "subtitle": "Operação Invisível de Palco, Ciclo de Perguntas e Relatórios Pós-Evento",
+  "version": "1.0.0",
+  "author": "SlideMeshLive Open Source Community",
+  "description": "Aprenda a operar o console da Mesa Técnica (/admin): gerencie o ciclo de 4 fases de perguntas da plateia, controle a abertura e revelação de enquetes ao vivo e exporte relatórios executivos em CSV/Markdown/JSON.",
+  "theme": {
+    "primaryColor": "#06b6d4",
+    "accentColor": "#3b82f6",
+    "transition": "fade",
+    "transitionDuration": 350
+  },
+  "security": {
+    "mode": "public",
+    "requireAuthForInteraction": false,
+    "description": "Apresentação pública aberta sobre operação da mesa técnica, moderação de perguntas e analytics."
+  },
+  "defaultSession": "SES-MESA",
+  "pacing": {
+    "mode": "lock_future",
+    "allowReviewPast": true
+  },
+  "tags": ["mesa-tecnica", "moderacao", "enquetes", "analytics", "admin"]
+}

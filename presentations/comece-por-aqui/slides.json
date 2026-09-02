@@ -1,0 +1,172 @@
+{
+  "presentationId": "comece-por-aqui",
+  "title": "Comece por Aqui: Mapa do Ecossistema & Guia das Interfaces",
+  "slides": [
+    {
+      "id": 1,
+      "slug": "onboarding-intro",
+      "tag": "BEM-VINDO AO SLIDEMESHLIVE",
+      "title": "A Nova Era das Apresentações em Tempo Real",
+      "presenter": {
+        "headline": "Uma plataforma desacoplada feita para engajar 100% da sua audiência",
+        "bullets": [
+          "Arquitetura moderna: Telão limpo, Celular interativo e Mesa Técnica independente",
+          "Zero dependência de nuvem: opere 100% offline em rede Wi-Fi ou cabo Ethernet local",
+          "Aponte a câmera para o QR Code agora para navegar junto no seu smartphone!"
+        ],
+        "notes": "Dê as boas-vindas ao SlideMeshLive! Peça para todos apontarem a câmera para o QR Code no rodapé para sincronizar seus smartphones em tempo real."
+      },
+      "audience": {
+        "summary": "Bem-vindo ao SlideMeshLive! Você está conectado ao Guia de Entrada Oficial do ecossistema.",
+        "sections": [
+          {
+            "title": "Como Funciona o SlideMeshLive?",
+            "type": "text",
+            "content": "O SlideMeshLive conecta instantaneamente a tela de projeção do palestrante aos celulares da plateia com latência sub-50ms via WebSocket e HTTP local."
+          },
+          {
+            "title": "Recursos Disponíveis no Seu Smartphone",
+            "type": "list",
+            "items": [
+              "Acompanhamento automático do slide atual conforme o orador avança.",
+              "Votação instantânea com 1 toque em enquetes ao vivo.",
+              "Envio de dúvidas diretamente para a moderação da mesa técnica.",
+              "Personalização instantânea de tema claro/escuro e idioma."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "slug": "mapa-das-interfaces",
+      "tag": "ARQUITETURA & TELAS",
+      "title": "O Escopo das 5 Interfaces Web Integradas",
+      "presenter": {
+        "headline": "5 interfaces especializadas projetadas para cada papel no evento",
+        "bullets": [
+          "Portal Inicial (/): Catálogo, status de segurança e ações rápidas",
+          "Telão (/presenter) & Mesa Técnica (/admin): Projeção limpa e controle invisível",
+          "Smartphone (/audience) & Studio (/import.html): Engajamento e criação em 1 clique"
+        ],
+        "notes": "Explique brevemente as 5 interfaces. Destaque que o palestrante pode apertar [P] para abrir o modo Púlpito com notas privadas e cronômetro."
+      },
+      "audience": {
+        "summary": "Conheça o papel de cada uma das 5 telas do SlideMeshLive.",
+        "sections": [
+          {
+            "title": "As 5 Interfaces do Ecossistema",
+            "type": "table",
+            "headers": ["Interface", "Rota", "Papel Principal"],
+            "rows": [
+              ["Portal Inicial", "/", "Catálogo de apresentações, setup e exportação ZIP"],
+              ["Telão do Palco", "/presenter", "Projeção limpa, modo Púlpito [P] e atalhos de palco"],
+              ["Mesa Técnica", "/admin", "Moderação de perguntas, enquetes e diagnósticos de rede"],
+              ["Audiência Mobile", "/audience", "Leitura aprofundada, voto em enquetes e envio de dúvidas"],
+              ["SlideMesh Studio", "/import.html", "Criação, importação (PPTX/DOCX/MD/PDF) e edição visual"]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "slug": "trilha-de-aprendizado",
+      "tag": "GUIA DE NAVEGAÇÃO",
+      "title": "A Trilha dos 7 Manuais Vivos no Catálogo",
+      "presenter": {
+        "headline": "Aprenda a operar cada módulo experimentando apresentações interativas",
+        "bullets": [
+          "Trilha 1 (Onboarding): Mapa de Interfaces e Showcase Geral",
+          "Trilha 2 (Operação): Transições de Palco, Criação no Studio e Mesa Técnica",
+          "Trilha 3 (Infra & Suporte): Segurança RBAC com PIN e Diagnóstico de Rede"
+        ],
+        "notes": "Mostre a visão geral do catálogo de apresentações e oriente o público sobre como navegar pelas outras apresentações disponíveis no repositório."
+      },
+      "audience": {
+        "summary": "Explore os outros 6 manuais práticos disponíveis no SlideMeshLive.",
+        "sections": [
+          {
+            "title": "Manuais Vivos Disponíveis no Catálogo",
+            "type": "list",
+            "items": [
+              "🌟 Showcase Geral (slidemesh-showcase): Demonstração completa de recursos.",
+              "🎨 Guia de Palco (guia-animacoes-e-palco): Transições, Canvas 2D e mídias.",
+              "📦 Guia do Studio (guia-criacao-studio-zip): Criação, importação e exportação ZIP.",
+              "💬 Guia de Moderação (guia-moderacao-e-analytics): Mesa técnica e relatórios CSV.",
+              "🔒 Guia de Segurança (treinamento-interno-pin): PIN 7482, Pacing Lock e RBAC.",
+              "🩺 Guia de Diagnóstico (guia-diagnostico-troubleshooting): Telemetria e resolução de falhas."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "slug": "como-executar-local",
+      "tag": "EXECUÇÃO & REDE LOCAL",
+      "title": "Como Iniciar em 1 Comando e Rodar em Rede Local",
+      "presenter": {
+        "headline": "Inicie o servidor local e conecte dezenas de aparelhos no mesmo Wi-Fi",
+        "bullets": [
+          "Execute no terminal: python3 server.py --port 8080",
+          "Descubra o IP local (ex: http://192.168.1.50:8080) e compartilhe o QR Code",
+          "Totalmente independente de conexão com a internet externa"
+        ],
+        "notes": "Explique a simplicidade de rodar o servidor local em Python sem precisar compilar nada."
+      },
+      "audience": {
+        "summary": "Passo a passo rápido para rodar o SlideMeshLive na sua própria máquina.",
+        "sections": [
+          {
+            "title": "Comandos Rápidos no Terminal",
+            "type": "list",
+            "items": [
+              "1. Clone o repositório: git clone https://github.com/flashbsb/SlideMeshLive.git",
+              "2. Acesse a pasta: cd SlideMeshLive",
+              "3. Inicie o servidor: python3 server.py",
+              "4. Abra no navegador: http://localhost:8080"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "slug": "enquete-perfil-usuario",
+      "tag": "DIAGNÓSTICO INTERATIVO",
+      "title": "Qual o seu Perfil Principal de Uso Hoje?",
+      "presenter": {
+        "headline": "Responda no seu smartphone e veja o gráfico atualizar ao vivo!",
+        "bullets": [
+          "Votação única e instantânea com apuração em tempo real",
+          "O operador na Mesa Técnica pode revelar o gráfico animado com a tecla [R]",
+          "Resultados consolidados automaticamente para relatório pós-sessão"
+        ],
+        "notes": "Convide todos a votar no smartphone! Pressione [V] para abrir votação se estiver na Mesa Técnica ou [R] para revelar os resultados ao vivo."
+      },
+      "audience": {
+        "summary": "Vote na opção que melhor descreve o seu objetivo com o SlideMeshLive.",
+        "sections": [
+          {
+            "title": "Enquete de Perfil",
+            "type": "text",
+            "content": "Selecione uma das alternativas abaixo para registrar seu voto em tempo real."
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll-perfil-start",
+          "question": "Qual o seu perfil de uso principal no SlideMeshLive hoje?",
+          "options": [
+            { "id": "opt-palestrante", "text": "🎤 Palestrante / Orador de Eventos" },
+            { "id": "opt-producao", "text": "🎧 Produtor de Eventos / Mesa Técnica" },
+            { "id": "opt-dev", "text": "💻 Desenvolvedor / Engenheiro de TI" },
+            { "id": "opt-educador", "text": "📚 Instrutor Corporativo / Educador" }
+          ]
+        }
+      }
+    }
+  ]
+}

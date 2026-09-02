@@ -1,0 +1,26 @@
+{
+  "id": "guia-animacoes-e-palco",
+  "code": "PALCO",
+  "title": "Manual Prático: Transições de Telão, Efeitos & Controle de Mídia",
+  "subtitle": "Animações Cinematográficas, Canvas 2D e Mídias HTTP 206",
+  "version": "1.0.0",
+  "author": "SlideMeshLive Open Source Community",
+  "description": "Aprenda na prática a configurar as 4 transições de slide (fade, zoom, slide-horizontal, slide-vertical), disparar efeitos Canvas 2D pelo Admin e controlar mídias pesadas com pré-cache deslizante.",
+  "theme": {
+    "primaryColor": "#ec4899",
+    "accentColor": "#8b5cf6",
+    "transition": "zoom",
+    "transitionDuration": 400
+  },
+  "security": {
+    "mode": "public",
+    "requireAuthForInteraction": false,
+    "description": "Apresentação pública aberta sobre animações, efeitos e controle de palco."
+  },
+  "defaultSession": "SES-PALCO",
+  "pacing": {
+    "mode": "lock_future",
+    "allowReviewPast": true
+  },
+  "tags": ["palco", "transicoes", "canvas2d", "midia", "efeitos"]
+}

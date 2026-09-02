@@ -1,0 +1,155 @@
+{
+  "presentationId": "guia-criacao-studio-zip",
+  "title": "Manual Prático: SlideMesh Studio — Criação, Importação & Pacotes ZIP",
+  "slides": [
+    {
+      "id": 1,
+      "slug": "studio-templates-prontos",
+      "tag": "CRIAÇÃO RÁPIDA",
+      "title": "Criação em 1 Clique com 4 Templates Estruturados",
+      "presenter": {
+        "headline": "Inicie sua apresentação sem perder tempo com páginas em branco",
+        "bullets": [
+          "Template Executivo & Pitch: Foco em métricas, tração e proposta de valor",
+          "Template Aula & Treinamento: Foco em didática, exemplos e quizzes",
+          "Template Demonstração de Produto: Foco em recursos, comparativos e CTA",
+          "Template Em Branco: Total liberdade criativa para começar do zero"
+        ],
+        "notes": "Explique que no Studio (/import.html) o usuário clica no template desejado e já recebe a estrutura inicial pronta com manifesto e slides configurados."
+      },
+      "audience": {
+        "summary": "O SlideMesh Studio acelera a produção com modelos prontos para cada objetivo.",
+        "sections": [
+          {
+            "title": "Como Acessar os Templates",
+            "type": "text",
+            "content": "Abra '/import.html' no navegador e clique em qualquer um dos 4 cards de modelos para pré-carregar um deck completo."
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "slug": "estruturacao-split-screen",
+      "tag": "COMPOSIÇÃO VISUAL",
+      "title": "Composição Visual & Split-Screen Automático",
+      "presenter": {
+        "headline": "Divida o telão em 2 colunas simplesmente associando uma imagem",
+        "bullets": [
+          "Coluna da esquerda: Headline de impacto e bullets essenciais",
+          "Coluna da direita: Imagem, infográfico SVG ou gráfico",
+          "O smartphone da plateia recebe parágrafos completos sem poluir o telão"
+        ],
+        "notes": "Destaque o princípio de design: telão sintético para foco visual e smartphone rico para consulta detalhada."
+      },
+      "audience": {
+        "summary": "O segredo do split-screen automático no SlideMeshLive.",
+        "sections": [
+          {
+            "title": "Como Ativar o Split-Screen",
+            "type": "list",
+            "items": [
+              "No editor do slide, adicione o caminho de uma imagem no campo 'Mídia / Imagem'.",
+              "O layout detecta a presença da mídia e reorganiza os elementos em 2 colunas harmoniosas.",
+              "Caso não haja imagem, o texto ocupa a largura central ideal com tipografia expandida."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "slug": "motor-importacao-multiformato",
+      "tag": "CONVERSÃO UNIVERSAL",
+      "title": "Importação Semântica Multiformato em 1 Clique",
+      "presenter": {
+        "headline": "Arraste seus arquivos existentes e converta em apresentações interativas",
+        "bullets": [
+          "PowerPoint (.pptx): Extrai títulos, tópicos e notas de orador",
+          "Word (.docx): Converte apostilas e relatórios em slides sequenciais",
+          "Markdown (.md) & PDF (.pdf): Mapeia cabeçalhos H1/H2 e divide o conteúdo automaticamente"
+        ],
+        "notes": "Demonstre a versatilidade: o usuário não precisa reescrever apresentações antigas do PowerPoint, basta arrastar o arquivo .pptx."
+      },
+      "audience": {
+        "summary": "Formatos suportados pelo motor de importação do Studio.",
+        "sections": [
+          {
+            "title": "Formatos Aceitos",
+            "type": "table",
+            "headers": ["Formato", "Extensão", "Extração Automática"],
+            "rows": [
+              ["PowerPoint", ".pptx", "Slides, tópicos, bullets e notas de notas do orador"],
+              ["Documento Word", ".docx", "Seções H1/H2 transformadas em slides"],
+              ["Markdown", ".md", "Divisão por cabeçalhos e listas de marcadores"],
+              ["Documento PDF", ".pdf", "Páginas e texto estruturado"],
+              ["Página Web", ".html", "Tags semânticas de artigo e seções"]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "slug": "portabilidade-zip-standalone",
+      "tag": "PORTABILIDADE TOTAL",
+      "title": "Pacotes Portáteis Autocontidos (.slidemesh.zip)",
+      "presenter": {
+        "headline": "Exporte um pacote ZIP com tudo incluso e leve no seu pendrive",
+        "bullets": [
+          "Exportação em 1 clique: Portal, Studio ou CLI (tools/export_presentation.py)",
+          "Contém manifest.json, slides.json, imagens e mídias em uma única pasta compactada",
+          "Importe em qualquer computador rodando SlideMeshLive instantaneamente"
+        ],
+        "notes": "Explique que os pacotes .slidemesh.zip garantem segurança máxima: você tem backup completo de todo o evento em arquivo físico."
+      },
+      "audience": {
+        "summary": "Como exportar e importar apresentações portáteis.",
+        "sections": [
+          {
+            "title": "Comando de Exportação via Terminal",
+            "type": "text",
+            "content": "Execute: 'python3 tools/export_presentation.py --id <nome-do-deck>' para gerar o arquivo .slidemesh.zip autocontido."
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "slug": "enquete-formatos-favoritos",
+      "tag": "PESQUISA DE USO",
+      "title": "Qual Formato Você Mais Costuma Converter?",
+      "presenter": {
+        "headline": "Vote no seu smartphone e descubra a preferência da comunidade!",
+        "bullets": [
+          "O SlideMeshLive suporta todos os formatos mais comuns de escritório",
+          "Acompanhe as respostas da plateia em tempo real",
+          "Pressione [R] para revelar o ranking de preferências"
+        ],
+        "notes": "Peça para todos votarem no smartphone e revele os resultados com [R]."
+      },
+      "audience": {
+        "summary": "Indique o seu formato de arquivo preferido para conversão.",
+        "sections": [
+          {
+            "title": "Enquete de Formatos",
+            "type": "text",
+            "content": "Selecione o formato que você mais utiliza no seu dia a dia profissional."
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll-formatos-studio",
+          "question": "Qual formato de arquivo você mais costuma converter para apresentações?",
+          "options": [
+            { "id": "opt-pptx", "text": "📊 Apresentações PowerPoint (.pptx)" },
+            { "id": "opt-docx", "text": "📄 Documentos Word / Apostilas (.docx)" },
+            { "id": "opt-md", "text": "📝 Anotações em Markdown (.md)" },
+            { "id": "opt-direct", "text": "✨ Criar do zero direto no SlideMesh Studio" }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "presentationId": "guia-animacoes-e-palco",
+  "title": "Manual Prático: Transições de Telão, Efeitos & Controle de Mídia",
+  "slides": [
+    {
+      "id": 1,
+      "slug": "transicoes-visuais",
+      "tag": "TRANSIÇÕES DE SLIDE",
+      "title": "As 4 Transições Nativas de Slide no Telão",
+      "presenter": {
+        "headline": "Efeitos visuais suaves com aceleração por GPU diretamente no navegador",
+        "bullets": [
+          "Configure no manifest.json: 'fade', 'zoom', 'slide-horizontal' ou 'slide-vertical'",
+          "Duração e curvas de animação ajustáveis via CSS custom properties",
+          "Transição sem quebra de layout mesmo com split-screen ativo"
+        ],
+        "notes": "Ao avançar este slide, observe o efeito suave de zoom cinematográfico configurado no manifesto deste deck."
+      },
+      "audience": {
+        "summary": "Como declarar e customizar transições de tela no manifesto da sua apresentação.",
+        "sections": [
+          {
+            "title": "Configuração no manifest.json",
+            "type": "text",
+            "content": "No bloco 'theme', defina a chave 'transition' com um dos 4 valores suportados: 'fade', 'zoom', 'slide-horizontal' ou 'slide-vertical'."
+          },
+          {
+            "title": "Exemplo de Sintaxe JSON",
+            "type": "list",
+            "items": [
+              "\"transition\": \"zoom\"",
+              "\"transitionDuration\": 400",
+              "\"primaryColor\": \"#ec4899\"",
+              "\"accentColor\": \"#8b5cf6\""
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "slug": "efeitos-canvas-2d",
+      "tag": "EFEITOS ESPECIAIS 2D",
+      "title": "Efeitos Visuais de Palco Acelerados em Canvas 2D",
+      "presenter": {
+        "headline": "Chuva de confetes, partículas e celebrações disparadas sob demanda",
+        "bullets": [
+          "Renderização em camada independente (Canvas overlay) a 60 FPS",
+          "Disparo em 1 clique na Mesa Técnica (/admin) ou gatilhos de eventos",
+          "Zero impacto na legibilidade do texto ou no consumo de CPU"
+        ],
+        "notes": "Explique como os efeitos de confetes e celebrações engajam a plateia em momentos de encerramento, anúncios de vitória ou quebras de metas."
+      },
+      "audience": {
+        "summary": "O motor gráfico em Canvas 2D adiciona dinamismo visual à projeção do palco.",
+        "sections": [
+          {
+            "title": "Como Ativar Efeitos Visuais",
+            "type": "list",
+            "items": [
+              "Pelo Admin: Utilize os botões de efeitos de celebração no painel de palco.",
+              "Por Atalhos: Dispare efeitos diretamente do teclado durante a apresentação.",
+              "Pelo Studio: Vincule efeitos automáticos ao término de enquetes decisivas."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "slug": "controle-midia-http206",
+      "tag": "ÁUDIO & VÍDEO INTELIGENTE",
+      "title": "Controle Remoto de Mídia com Pré-Cache Deslizante (HTTP 206)",
+      "presenter": {
+        "headline": "Reproduza vídeos e áudios pesados sem travar a rede local do evento",
+        "bullets": [
+          "Motor MediaCacheEngine: pré-carrega mídias na janela deslizante ±2 slides",
+          "Suporte nativo a HTTP 206 Partial Content (Range Requests)",
+          "Controles de Play, Pause, Reiniciar e Mudo operados da Mesa Técnica"
+        ],
+        "notes": "Destaque que o palestrante não precisa mexer no mouse para dar play em um vídeo: a mesa técnica tem controle total remoto."
+      },
+      "audience": {
+        "summary": "Arquitetura otimizada para streaming local de áudio e vídeo em alta definição.",
+        "sections": [
+          {
+            "title": "Como Funciona a Janela Deslizante ±2",
+            "type": "text",
+            "content": "Para evitar gargalos de banda na rede Wi-Fi, o SlideMeshLive só pré-carrega os vídeos e áudios dos 2 slides anteriores e dos 2 próximos slides em relação ao slide ativo."
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "slug": "atalhos-palco-orador",
+      "tag": "ATALHOS DE PALCO",
+      "title": "Mestria nos Atalhos de Teclado no Telão Principal",
+      "presenter": {
+        "headline": "Comande o telão com apenas uma tecla sem depender do mouse",
+        "bullets": [
+          "[P]: Modo Púlpito com notas secretas de orador e cronômetro",
+          "[Q] / [W]: QR Code gigante de entrada ou mini QR discreto no canto",
+          "[M]: Mural de perguntas aprovadas flutuante na tela",
+          "[B]: Blackout total para redirecionar 100% do foco para a sua fala"
+        ],
+        "notes": "Faça uma demonstração prática! Pressione [B] para apagar o telão por 3 segundos e pressione [B] novamente para restaurar a projeção."
+      },
+      "audience": {
+        "summary": "Guia de bolso com os principais atalhos de teclado para o orador.",
+        "sections": [
+          {
+            "title": "Atalhos Rápidos de Teclado",
+            "type": "table",
+            "headers": ["Tecla", "Ação no Telão"],
+            "rows": [
+              ["P", "Ativa o Modo Púlpito com notas privadas"],
+              ["Q", "Exibe o QR Code Gigante Centralizado"],
+              ["W", "Alterna visibilidade do Mini QR no rodapé"],
+              ["M", "Abre/Fecha o Mural de Perguntas da Plateia"],
+              ["B", "Blackout total (tela preta para foco no orador)"],
+              ["F", "Alterna Modo Tela Cheia (Fullscreen)"]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "slug": "enquete-preferencia-transicao",
+      "tag": "INTERAÇÃO VISUAL",
+      "title": "Qual Transição Você Considera Mais Elegante?",
+      "presenter": {
+        "headline": "Vote no smartphone e veja o gráfico animado no palco!",
+        "bullets": [
+          "Cada transição confere um tom e ritmo específico à apresentação",
+          "Resultados apurados em tempo real diretamente na tela",
+          "Use a tecla [R] para revelar a apuração dos votos"
+        ],
+        "notes": "Convide a plateia a votar e aperte [R] no púlpito ou no admin para mostrar as porcentagens animadas."
+      },
+      "audience": {
+        "summary": "Participe da votação de estilo visual no seu celular.",
+        "sections": [
+          {
+            "title": "Sua Opinião de Design",
+            "type": "text",
+            "content": "Escolha o estilo de transição que você mais gostaria de aplicar nos seus eventos."
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll-transicao-palco",
+          "question": "Qual transição visual você considera mais elegante para seus slides?",
+          "options": [
+            { "id": "opt-fade", "text": "✨ Fade (Dissolvência Suave e Elegante)" },
+            { "id": "opt-zoom", "text": "🎬 Zoom (Aproximação Cinematográfica)" },
+            { "id": "opt-slide-h", "text": "➡️ Slide Horizontal (Deslizamento Clássico)" },
+            { "id": "opt-slide-v", "text": "⬇️ Slide Vertical (Fluxo Contínuo)" }
+          ]
+        }
+      }
+    }
+  ]
+}

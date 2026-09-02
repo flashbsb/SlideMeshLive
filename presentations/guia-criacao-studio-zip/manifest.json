@@ -1,0 +1,26 @@
+{
+  "id": "guia-criacao-studio-zip",
+  "code": "STUDIO",
+  "title": "Manual Prático: SlideMesh Studio — Criação, Importação & Pacotes ZIP",
+  "subtitle": "Como Criar, Importar PPTX/Word/MD/PDF e Exportar Pacotes Portáteis",
+  "version": "1.0.0",
+  "author": "SlideMeshLive Open Source Community",
+  "description": "Guia prático hands-on de criação no Studio: explore os 4 templates prontos, aprenda a ativar o layout split-screen automático, importe arquivos externos e gere pacotes .slidemesh.zip para rodar offline.",
+  "theme": {
+    "primaryColor": "#f59e0b",
+    "accentColor": "#10b981",
+    "transition": "slide-horizontal",
+    "transitionDuration": 350
+  },
+  "security": {
+    "mode": "public",
+    "requireAuthForInteraction": false,
+    "description": "Apresentação pública aberta sobre criação e importação no SlideMesh Studio."
+  },
+  "defaultSession": "SES-STUDIO",
+  "pacing": {
+    "mode": "lock_future",
+    "allowReviewPast": true
+  },
+  "tags": ["studio", "criacao", "importacao", "templates", "zip"]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "guia-diagnostico-troubleshooting",
+  "code": "SUPORTE",
+  "title": "Manual Prático: Diagnóstico de Rede, Monitoramento & Resolução de Falhas",
+  "subtitle": "Telemetria ao Vivo na Mesa Técnica, Operação em LAN e Resolução de Problemas",
+  "version": "1.0.0",
+  "author": "SlideMeshLive Open Source Community",
+  "description": "Guia essencial para técnicos e operadores: monitore latência RTT, taxa de pacotes e banda no HUD da Mesa Técnica, opere 100% offline em roteador Wi-Fi local e resolva problemas de projetor e reconexão.",
+  "theme": {
+    "primaryColor": "#f43f5e",
+    "accentColor": "#0ea5e9",
+    "transition": "fade",
+    "transitionDuration": 350
+  },
+  "security": {
+    "mode": "public",
+    "requireAuthForInteraction": false,
+    "description": "Apresentação pública aberta sobre diagnóstico, monitoramento de rede e resolução de falhas em eventos."
+  },
+  "defaultSession": "SES-SUPORTE",
+  "pacing": {
+    "mode": "lock_future",
+    "allowReviewPast": true
+  },
+  "tags": ["diagnostico", "troubleshooting", "telemetria", "suporte", "rede-local"]
+}

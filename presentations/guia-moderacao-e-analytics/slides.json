@@ -1,0 +1,159 @@
+{
+  "presentationId": "guia-moderacao-e-analytics",
+  "title": "Manual Prático: Mesa Técnica — Moderação de Q&A & Gestão de Enquetes",
+  "slides": [
+    {
+      "id": 1,
+      "slug": "mesa-tecnica-visao-geral",
+      "tag": "CONSOLE DO ADMIN",
+      "title": "O Console de Controle Invisível de Palco (/admin)",
+      "presenter": {
+        "headline": "Comande o evento nos bastidores sem interferir na projeção do telão",
+        "bullets": [
+          "Avanço de slides, cronômetro de palestra e mensagens de aviso para o orador",
+          "Painel independente de moderação de perguntas e controle de enquetes",
+          "Protegido por autenticação de administrador configurável no Setup Wizard"
+        ],
+        "notes": "Explique que a Mesa Técnica (/admin) permite que o produtor do evento auxilie o palestrante sem que a plateia perceba as intervenções de bastidor."
+      },
+      "audience": {
+        "summary": "O console /admin centraliza toda a inteligência e operação do evento ao vivo.",
+        "sections": [
+          {
+            "title": "Setores da Mesa Técnica",
+            "type": "list",
+            "items": [
+              "Navegação de Slides: Miniaturas visuais e avanço síncrono.",
+              "Moderação de Q&A: Fila de perguntas enviadas pelo público.",
+              "Enquetes: Abertura e revelação de resultados.",
+              "Diagnóstico: Monitoramento de latência e saúde de rede."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "slug": "ciclo-moderacao-4-fases",
+      "tag": "MODERAÇÃO DE PERGUNTAS",
+      "title": "O Ciclo de Moderação de Perguntas em 4 Fases",
+      "presenter": {
+        "headline": "Filtre dúvidas inadequadas e destaque as melhores perguntas no telão",
+        "bullets": [
+          "1. Pendentes: O público envia dúvidas pelo smartphone a qualquer momento",
+          "2. Aprovadas: O moderador aprova com 1 clique para liberar no mural",
+          "3. Destaque no Telão [M]: A pergunta surge flutuando em overlay no palco",
+          "4. Arquivadas: Marcação de pergunta respondida para manter a fila limpa"
+        ],
+        "notes": "Abra o mural com a tecla [M] no telão para mostrar como as perguntas aprovadas são exibidas de forma elegante sobre a apresentação."
+      },
+      "audience": {
+        "summary": "Como suas dúvidas são recebidas e moderadas pela equipe do evento.",
+        "sections": [
+          {
+            "title": "O Ciclo de 4 Fases",
+            "type": "table",
+            "headers": ["Fase", "Ação do Moderador", "Visibilidade"],
+            "rows": [
+              ["1. Pendente", "Revisão e triagem", "Apenas moderador"],
+              ["2. Aprovada", "Aprovação em 1 clique", "Moderador e Mural"],
+              ["3. Destaque [M]", "Projeção em overlay no telão", "Todo o auditório"],
+              ["4. Arquivada", "Marcação como respondida", "Histórico / Relatório"]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "slug": "gestao-enquetes-tempo-real",
+      "tag": "ENQUETES AO VIVO",
+      "title": "Gestão de Enquetes & Revelação Animada no Palco",
+      "presenter": {
+        "headline": "Abra votações sob demanda e gere expectativa com revelação surpresa",
+        "bullets": [
+          "O operador clica em 'Abrir Votação' ou tecla [V] para liberar os votos no celular",
+          "Acompanhamento em tempo real da apuração e total de votos únicos",
+          "Clique em 'Revelar Resultados' ou tecla [R] para exibir as barras animadas no palco"
+        ],
+        "notes": "Demonstre a dinâmica: primeiro o público vota sem ver a tendência dos outros, e no momento certo o orador revela o gráfico animado."
+      },
+      "audience": {
+        "summary": "Mecanismo de votação única e apuração instantânea.",
+        "sections": [
+          {
+            "title": "Garantia de Voto Único",
+            "type": "text",
+            "content": "Cada smartphone recebe um identificador anônimo de sessão que garante 1 único voto por pergunta, prevenindo fraudes ou votos duplicados."
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "slug": "analytics-historico-multisessao",
+      "tag": "RELATÓRIOS & ANALYTICS",
+      "title": "Relatórios Pós-Evento & Histórico Multissessão",
+      "presenter": {
+        "headline": "Exporte métricas de engajamento consolidadas em CSV, Markdown e JSON",
+        "bullets": [
+          "Relatório completo de participação, votos por enquete e dúvidas enviadas",
+          "Armazenamento local seguro na pasta sessions_archive/ sem envio para terceiros",
+          "Gere atas de reuniões e relatórios executivos em segundos"
+        ],
+        "notes": "Mostre como o painel de Analytics consolida todo o histórico de interação do evento para prestação de contas e follow-up."
+      },
+      "audience": {
+        "summary": "Métricas registradas automaticamente ao término de cada sessão.",
+        "sections": [
+          {
+            "title": "Formatos de Exportação do Relatório",
+            "type": "list",
+            "items": [
+              "CSV: Ideal para importar em planilhas Excel / Google Sheets ou CRMs.",
+              "Markdown: Perfeito para documentação no GitHub, Notion ou atas de reunião.",
+              "JSON: Estrutura bruta para integrações de backend e dashboards personalizados."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "slug": "enquete-metricas-admin",
+      "tag": "AVALIAÇÃO OPERACIONAL",
+      "title": "Qual Métrica Pós-Evento é Mais Valiosa para Você?",
+      "presenter": {
+        "headline": "Vote no smartphone e descubra a prioridade dos produtores de eventos!",
+        "bullets": [
+          "Métricas quantitativas vs qualitativas de engajamento",
+          "Resultados consolidados em tempo real no telão",
+          "Pressione [R] para revelar as respostas do auditório"
+        ],
+        "notes": "Abra a votação para a plateia e revele com [R] para debater os resultados."
+      },
+      "audience": {
+        "summary": "Opine sobre as métricas mais relevantes para sua produção.",
+        "sections": [
+          {
+            "title": "Enquete de Métricas",
+            "type": "text",
+            "content": "Selecione qual indicador tem maior peso nas suas decisões pós-evento."
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll-metricas-admin",
+          "question": "Qual métrica pós-evento é mais valiosa para a sua equipe de produção?",
+          "options": [
+            { "id": "opt-taxa-voto", "text": "📊 Taxa percentual de engajamento nas enquetes" },
+            { "id": "opt-duvidas-lista", "text": "💬 Relatório completo de dúvidas enviadas pelo público" },
+            { "id": "opt-export-csv", "text": "📈 Registro consolidado em CSV para CRM e follow-up" },
+            { "id": "opt-tempo-slide", "text": "⏱️ Histórico de tempo de permanência por slide" }
+          ]
+        }
+      }
+    }
+  ]
+}

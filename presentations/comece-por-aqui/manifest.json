@@ -1,0 +1,26 @@
+{
+  "id": "comece-por-aqui",
+  "code": "START",
+  "title": "Comece por Aqui: Mapa do Ecossistema & Guia das Interfaces",
+  "subtitle": "O Guia de Entrada Oficial do SlideMeshLive",
+  "version": "1.0.0",
+  "author": "SlideMeshLive Open Source Community",
+  "description": "Apresentação introdutória que mapeia as 5 interfaces web da plataforma (Portal, Telão, Mesa Técnica, Smartphone e Studio), explica a arquitetura desacoplada e guia os próximos passos de aprendizado.",
+  "theme": {
+    "primaryColor": "#38bdf8",
+    "accentColor": "#818cf8",
+    "transition": "fade",
+    "transitionDuration": 350
+  },
+  "security": {
+    "mode": "public",
+    "requireAuthForInteraction": false,
+    "description": "Apresentação pública de onboarding aberta para todos os participantes."
+  },
+  "defaultSession": "SES-START",
+  "pacing": {
+    "mode": "lock_future",
+    "allowReviewPast": true
+  },
+  "tags": ["onboarding", "comece-aqui", "interfaces", "tour-inicial"]
+}
