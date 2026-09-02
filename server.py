@@ -153,10 +153,10 @@ def get_session_analytics_archive(session_id, base_dir=BASE_DIR):
 
 def load_security_config(base_dir=BASE_DIR):
     """
-    Carrega a configuração declarativa de segurança (config/security.json ou security.default.json).
+    Carrega a configuração declarativa de segurança (config/security.json ou security.example.json).
     """
     sec_path = os.path.join(base_dir, "config", "security.json")
-    default_path = os.path.join(base_dir, "config", "security.default.json")
+    example_path = os.path.join(base_dir, "config", "security.example.json")
 
     if os.path.exists(sec_path):
         try:
@@ -165,9 +165,9 @@ def load_security_config(base_dir=BASE_DIR):
         except Exception as e:
             print(f"[Security] Aviso: Erro ao carregar config/security.json: {e}", file=sys.stderr)
 
-    if os.path.exists(default_path):
+    if os.path.exists(example_path):
         try:
-            with open(default_path, "r", encoding="utf-8") as f:
+            with open(example_path, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception:
             pass
