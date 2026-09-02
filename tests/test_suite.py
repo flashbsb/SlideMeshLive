@@ -3310,6 +3310,60 @@ def test_plano17_phase1_manifest_sanitization_and_server_side_pin():
     print("✓ Plano 17 (Fase 1: Sanitização do Manifesto & Verificação 100% Server-Side) 100% HOMOLOGADO.")
 
 
+def test_plano17_phase2_presenter_stage_gatekeeper():
+    """Valida a implementação do Gatekeeper Multi-Auth de Palco no Telão do Apresentador (Plano 17 - Fase 2)."""
+    print(f"\n{'='*70}")
+    print(" 🧪 32. Plano 17: Gatekeeper Multi-Auth de Palco no Telão (/presenter/) (Fase 2)")
+    print(f"{'='*70}")
+
+    # 1. Validação de presenter/index.html
+    presenter_html_path = os.path.join(BASE_DIR, "presenter", "index.html")
+    with open(presenter_html_path, "r", encoding="utf-8") as f:
+        html_content = f.read()
+
+    assert 'id="presenter-auth-modal"' in html_content, "Modal #presenter-auth-modal não encontrado em presenter/index.html"
+    assert 'id="presenter-tab-pin"' in html_content, "Aba de PIN #presenter-tab-pin não encontrada"
+    assert 'id="presenter-tab-local"' in html_content, "Aba Local #presenter-tab-local não encontrada"
+    assert 'id="presenter-tab-google"' in html_content, "Aba Google #presenter-tab-google não encontrada"
+    assert 'id="btn-unlock-presenter-pin"' in html_content, "Botão #btn-unlock-presenter-pin não encontrado"
+    assert 'id="btn-unlock-presenter-user"' in html_content, "Botão #btn-unlock-presenter-user não encontrado"
+    assert 'id="btn-unlock-presenter-google"' in html_content, "Botão #btn-unlock-presenter-google não encontrado"
+    print("  ✓ Telão do Apresentador UI (presenter/index.html): Modal Multi-Auth com 3 abas e controles validados.")
+
+    # 2. Validação de css/presenter.css
+    presenter_css_path = os.path.join(BASE_DIR, "css", "presenter.css")
+    with open(presenter_css_path, "r", encoding="utf-8") as f:
+        css_content = f.read()
+
+    assert ".presenter-body.presenter-locked" in css_content, "Regra .presenter-body.presenter-locked não encontrada em presenter.css"
+    assert "filter: blur(" in css_content, "Efeito de desfoque protetor de palco não encontrado em presenter.css"
+    print("  ✓ Estilos de Proteção de Palco (presenter.css): Desfoque total e bloqueio de cliques validados.")
+
+    # 3. Validação de js/presenter/presenter-app.js
+    presenter_js_path = os.path.join(BASE_DIR, "js", "presenter", "presenter-app.js")
+    with open(presenter_js_path, "r", encoding="utf-8") as f:
+        js_content = f.read()
+
+    assert "checkPresentationProtection" in js_content, "Método checkPresentationProtection não encontrado em presenter-app.js"
+    assert "showPresenterLockScreen" in js_content, "Método showPresenterLockScreen não encontrado em presenter-app.js"
+    assert "unlockWithPIN" in js_content, "Método unlockWithPIN não encontrado em presenter-app.js"
+    assert "unlockWithLocalUser" in js_content, "Método unlockWithLocalUser não encontrado em presenter-app.js"
+    assert "unlockWithGoogle" in js_content, "Método unlockWithGoogle não encontrado em presenter-app.js"
+    assert "switchAuthTab" in js_content, "Método switchAuthTab não encontrado em presenter-app.js"
+    print("  ✓ Controlador de Palco (presenter-app.js): Métodos de checagem, bloqueio e desbloqueio integrados.")
+
+    # 4. Validação de js/core/auth-engine.js
+    auth_js_path = os.path.join(BASE_DIR, "js", "core", "auth-engine.js")
+    with open(auth_js_path, "r", encoding="utf-8") as f:
+        auth_content = f.read()
+
+    assert "isAuthorizedForPresentation" in auth_content, "isAuthorizedForPresentation não encontrado em auth-engine.js"
+    assert "admin_pin_authenticated" in auth_content, "Herança de sessão admin_pin_authenticated não encontrada em auth-engine.js"
+    print("  ✓ Motor de Autenticação (auth-engine.js): Herança transparente de sessão e autorização validadas.")
+
+    print("✓ Plano 17 (Fase 2: Gatekeeper Multi-Auth de Palco no Telão) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -3343,6 +3397,7 @@ if __name__ == "__main__":
         test_plano14_phase4_audience_pin_and_admin_health_badge()
         test_plano16_presentations_auto_discovery_and_catalog_endpoint()
         test_plano17_phase1_manifest_sanitization_and_server_side_pin()
+        test_plano17_phase2_presenter_stage_gatekeeper()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

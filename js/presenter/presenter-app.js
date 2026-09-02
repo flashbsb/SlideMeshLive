@@ -101,7 +101,26 @@ class PresenterApp {
       btnCloseQuestionsDrawer: document.getElementById('btn-close-questions-drawer'),
 
       // Reactions Stream
-      reactionStream: document.getElementById('reaction-stream')
+      reactionStream: document.getElementById('reaction-stream'),
+
+      // Gatekeeper Multi-Auth de Palco (Plano 17 - Fase 2)
+      authModal: document.getElementById('presenter-auth-modal'),
+      authPinTab: document.getElementById('presenter-tab-pin'),
+      authLocalTab: document.getElementById('presenter-tab-local'),
+      authGoogleTab: document.getElementById('presenter-tab-google'),
+      panelPin: document.getElementById('presenter-panel-pin'),
+      panelLocal: document.getElementById('presenter-panel-local'),
+      panelGoogle: document.getElementById('presenter-panel-google'),
+      inputPin: document.getElementById('input-presenter-pin'),
+      pinError: document.getElementById('presenter-pin-error'),
+      btnUnlockPin: document.getElementById('btn-unlock-presenter-pin'),
+      inputUser: document.getElementById('input-presenter-user'),
+      inputPass: document.getElementById('input-presenter-pass'),
+      userError: document.getElementById('presenter-user-error'),
+      btnUnlockUser: document.getElementById('btn-unlock-presenter-user'),
+      btnUnlockGoogle: document.getElementById('btn-unlock-presenter-google'),
+      pinHintBox: document.getElementById('presenter-pin-hint-box'),
+      pinHint: document.getElementById('presenter-pin-hint')
     };
 
     this.init();
@@ -122,6 +141,9 @@ class PresenterApp {
     try {
       await this.engine.loadPresentation(this.presentationId);
       this.dom.title.textContent = this.engine.manifest.title || 'Apresentação';
+
+      // Validação de Acesso e Gatekeeper de Palco (Plano 17 - Fase 2)
+      this.checkPresentationProtection();
 
       if (this.engine.manifest?.pacing?.mode) {
         this.pacingMode = this.engine.manifest.pacing.mode;
@@ -796,6 +818,27 @@ class PresenterApp {
         this.triggerStageFX(fxType);
       });
     });
+
+    // Gatekeeper Multi-Auth de Palco (Plano 17 - Fase 2)
+    if (this.dom.authPinTab) this.dom.authPinTab.addEventListener('click', () => this.switchAuthTab('pin'));
+    if (this.dom.authLocalTab) this.dom.authLocalTab.addEventListener('click', () => this.switchAuthTab('local'));
+    if (this.dom.authGoogleTab) this.dom.authGoogleTab.addEventListener('click', () => this.switchAuthTab('google'));
+
+    if (this.dom.btnUnlockPin) this.dom.btnUnlockPin.addEventListener('click', () => this.unlockWithPIN());
+    if (this.dom.inputPin) {
+      this.dom.inputPin.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') this.unlockWithPIN();
+      });
+    }
+
+    if (this.dom.btnUnlockUser) this.dom.btnUnlockUser.addEventListener('click', () => this.unlockWithLocalUser());
+    if (this.dom.inputPass) {
+      this.dom.inputPass.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') this.unlockWithLocalUser();
+      });
+    }
+
+    if (this.dom.btnUnlockGoogle) this.dom.btnUnlockGoogle.addEventListener('click', () => this.unlockWithGoogle());
   }
 
   triggerStageFX(fxType) {
@@ -917,6 +960,181 @@ class PresenterApp {
         console.warn('[PresenterApp] Erro ao executar ação de mídia:', err);
       }
     });
+  }
+
+  // ==========================================
+  // Gatekeeper Multi-Auth de Palco (Plano 17 - Fase 2)
+  // ==========================================
+  checkPresentationProtection() {
+    const sec = this.engine.manifest?.security;
+    const isProtected = sec && (sec.mode === 'pin' || sec.isProtected || sec.requirePIN);
+    if (!isProtected) {
+      this.hidePresenterLockScreen();
+      return true;
+    }
+
+    const isUnlocked = sessionStorage.getItem(`unlocked_session_${this.sessionId}`) === 'true' ||
+                       sessionStorage.getItem(`pres_pin_${this.presentationId}`) === 'valid' ||
+                       sessionStorage.getItem('admin_pin_authenticated') === 'true';
+
+    if (isUnlocked) {
+      this.hidePresenterLockScreen();
+      return true;
+    }
+
+    this.showPresenterLockScreen();
+    return false;
+  }
+
+  showPresenterLockScreen() {
+    document.body.classList.add('presenter-locked');
+    if (this.dom.authModal) {
+      this.dom.authModal.classList.add('active');
+    }
+    const sec = this.engine.manifest?.security;
+    if (this.dom.pinHint && this.dom.pinHintBox) {
+      if (sec && sec.pinHint) {
+        this.dom.pinHint.textContent = sec.pinHint;
+        this.dom.pinHintBox.style.display = 'block';
+      } else {
+        this.dom.pinHintBox.style.display = 'none';
+      }
+    }
+    if (this.dom.inputPin) {
+      setTimeout(() => this.dom.inputPin.focus(), 100);
+    }
+  }
+
+  hidePresenterLockScreen() {
+    document.body.classList.remove('presenter-locked');
+    if (this.dom.authModal) {
+      this.dom.authModal.classList.remove('active');
+    }
+  }
+
+  switchAuthTab(activeTab) {
+    const tabs = {
+      pin: { tab: this.dom.authPinTab, panel: this.dom.panelPin },
+      local: { tab: this.dom.authLocalTab, panel: this.dom.panelLocal },
+      google: { tab: this.dom.authGoogleTab, panel: this.dom.panelGoogle }
+    };
+
+    Object.keys(tabs).forEach(k => {
+      const isCurrent = (k === activeTab);
+      if (tabs[k].tab) {
+        if (isCurrent) {
+          tabs[k].tab.className = 'btn btn-sm btn-primary';
+          tabs[k].tab.style.background = '';
+          tabs[k].tab.style.color = '';
+        } else {
+          tabs[k].tab.className = 'btn btn-sm';
+          tabs[k].tab.style.background = 'transparent';
+          tabs[k].tab.style.borderColor = 'transparent';
+          tabs[k].tab.style.color = 'var(--text-muted)';
+        }
+      }
+      if (tabs[k].panel) {
+        tabs[k].panel.style.display = isCurrent ? 'block' : 'none';
+      }
+    });
+  }
+
+  async unlockWithPIN() {
+    const entered = (this.dom.inputPin && this.dom.inputPin.value) ? this.dom.inputPin.value.trim() : '';
+    if (!entered) {
+      if (this.dom.pinError) {
+        this.dom.pinError.textContent = '✕ Digite o PIN de acesso.';
+        this.dom.pinError.style.display = 'block';
+      }
+      return;
+    }
+
+    if (this.dom.btnUnlockPin) this.dom.btnUnlockPin.disabled = true;
+
+    try {
+      let isValid = false;
+      if (this.auth && typeof this.auth.verifyAdminPIN === 'function') {
+        isValid = await this.auth.verifyAdminPIN(entered, this.presentationId);
+      }
+
+      if (isValid) {
+        sessionStorage.setItem(`unlocked_session_${this.sessionId}`, 'true');
+        sessionStorage.setItem(`pres_pin_${this.presentationId}`, 'valid');
+        if (this.dom.pinError) this.dom.pinError.style.display = 'none';
+        this.hidePresenterLockScreen();
+        this.updateSlideView();
+        this.renderPulpitSlideSorter();
+      } else {
+        if (this.dom.pinError) {
+          this.dom.pinError.textContent = '✕ PIN incorreto. Tente novamente.';
+          this.dom.pinError.style.display = 'block';
+        }
+        if (this.dom.inputPin) {
+          this.dom.inputPin.focus();
+          this.dom.inputPin.select();
+        }
+      }
+    } catch (e) {
+      if (this.dom.pinError) {
+        this.dom.pinError.textContent = '✕ Erro ao validar PIN. Tente novamente.';
+        this.dom.pinError.style.display = 'block';
+      }
+    } finally {
+      if (this.dom.btnUnlockPin) this.dom.btnUnlockPin.disabled = false;
+    }
+  }
+
+  async unlockWithLocalUser() {
+    const user = (this.dom.inputUser && this.dom.inputUser.value) ? this.dom.inputUser.value.trim() : '';
+    const pass = (this.dom.inputPass && this.dom.inputPass.value) ? this.dom.inputPass.value.trim() : '';
+
+    if (!user || !pass) {
+      if (this.dom.userError) {
+        this.dom.userError.textContent = '✕ Preencha usuário e senha.';
+        this.dom.userError.style.display = 'block';
+      }
+      return;
+    }
+
+    if (this.dom.btnUnlockUser) this.dom.btnUnlockUser.disabled = true;
+
+    try {
+      const loggedUser = await this.auth.signInWithLocalCredentials(user, pass);
+      if (loggedUser) {
+        sessionStorage.setItem(`unlocked_session_${this.sessionId}`, 'true');
+        sessionStorage.setItem(`pres_pin_${this.presentationId}`, 'valid');
+        if (this.dom.userError) this.dom.userError.style.display = 'none';
+        this.hidePresenterLockScreen();
+        this.updateSlideView();
+        this.renderPulpitSlideSorter();
+      }
+    } catch (err) {
+      if (this.dom.userError) {
+        this.dom.userError.textContent = `✕ ${err.message || 'Credenciais inválidas.'}`;
+        this.dom.userError.style.display = 'block';
+      }
+    } finally {
+      if (this.dom.btnUnlockUser) this.dom.btnUnlockUser.disabled = false;
+    }
+  }
+
+  async unlockWithGoogle() {
+    if (this.dom.btnUnlockGoogle) this.dom.btnUnlockGoogle.disabled = true;
+
+    try {
+      const user = await this.auth.signInWithGoogle();
+      if (user) {
+        sessionStorage.setItem(`unlocked_session_${this.sessionId}`, 'true');
+        sessionStorage.setItem(`pres_pin_${this.presentationId}`, 'valid');
+        this.hidePresenterLockScreen();
+        this.updateSlideView();
+        this.renderPulpitSlideSorter();
+      }
+    } catch (err) {
+      alert(`Erro na autenticação Google: ${err.message}`);
+    } finally {
+      if (this.dom.btnUnlockGoogle) this.dom.btnUnlockGoogle.disabled = false;
+    }
   }
 }
 

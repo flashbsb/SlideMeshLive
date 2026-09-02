@@ -380,15 +380,15 @@ export class AuthEngine {
     const sec = manifest.security;
     const mode = sec.mode || 'public';
 
-    if (mode === 'public') {
+    if (mode === 'public' && !sec.isProtected) {
       return { authorized: true };
     }
 
-    if (mode === 'pin') {
-      const savedPin = sessionStorage.getItem(`pres_pin_${manifest.id}`);
-      const entered = sessionPin || savedPin;
-      if (entered && String(entered).trim() === String(sec.pin).trim()) {
-        sessionStorage.setItem(`pres_pin_${manifest.id}`, entered);
+    if (mode === 'pin' || sec.isProtected) {
+      const isSessionUnlocked = sessionStorage.getItem(`unlocked_session_${manifest.defaultSession || ''}`) === 'true';
+      const isPresUnlocked = sessionStorage.getItem(`pres_pin_${manifest.id}`) === 'valid' || sessionStorage.getItem(`pres_pin_${manifest.id}`) === 'true';
+      const isAdmin = sessionStorage.getItem('admin_pin_authenticated') === 'true';
+      if (isSessionUnlocked || isPresUnlocked || isAdmin) {
         return { authorized: true };
       }
       return { authorized: false, reason: 'PIN_REQUIRED', hint: sec.pinHint || 'Digite o PIN da apresentação' };

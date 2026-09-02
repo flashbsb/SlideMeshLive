@@ -14,6 +14,16 @@
   transition: background var(--transition-normal);
 }
 
+/* Modo Palco / Telão Bloqueado (Plano 17 - Fase 2) */
+.presenter-body.presenter-locked .presenter-main,
+.presenter-body.presenter-locked .presenter-header {
+  filter: blur(12px);
+  opacity: 0.2;
+  pointer-events: none;
+  user-select: none;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
 /* Modo Blackout de Palco (Atalho: Tecla B) */
 .presenter-body.blackout-active .slide-canvas,
 .presenter-body.blackout-active .qr-stage-widget,
