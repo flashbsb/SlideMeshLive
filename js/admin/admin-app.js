@@ -121,11 +121,25 @@ class AdminApp {
       inputNewSessionCode: document.getElementById('input-new-session-code'),
       btnConfirmNewSession: document.getElementById('btn-confirm-new-session'),
 
-      // Admin Lock Modal
+      btnLock: document.getElementById('admin-btn-lock'),
+      userLabel: document.getElementById('admin-user-label'),
+
+      // Admin Lock Modal (Multi-Auth Gatekeeper)
       adminLockModal: document.getElementById('admin-lock-modal'),
+      tabAuthPin: document.getElementById('tab-auth-pin'),
+      tabAuthLocal: document.getElementById('tab-auth-local'),
+      tabAuthGoogle: document.getElementById('tab-auth-google'),
+      panelAuthPin: document.getElementById('panel-auth-pin'),
+      panelAuthLocal: document.getElementById('panel-auth-local'),
+      panelAuthGoogle: document.getElementById('panel-auth-google'),
       inputAdminPin: document.getElementById('input-admin-pin'),
       adminPinError: document.getElementById('admin-pin-error'),
       btnUnlockAdmin: document.getElementById('btn-unlock-admin'),
+      inputAdminUser: document.getElementById('input-admin-user'),
+      inputAdminPass: document.getElementById('input-admin-pass'),
+      adminUserError: document.getElementById('admin-user-error'),
+      btnUnlockUser: document.getElementById('btn-unlock-user'),
+      btnUnlockGoogle: document.getElementById('btn-unlock-google'),
 
       // Analytics Dashboard (Plano 09 - Fase 2)
       btnAnalytics: document.getElementById('admin-btn-analytics'),
@@ -181,15 +195,80 @@ class AdminApp {
     this.updateLanguageButton();
     this.updateThemeButton();
     await this.auth.loadSecurityConfig();
-    await this.loadCatalogOptions();
-    this.setupQRCode();
-    this.checkAdminProtection();
+
+    if (!this.auth.isAdminAuthenticated()) {
+      this.showLockScreen();
+    } else {
+      await this.startAdminSession();
+    }
+  }
+
+  showLockScreen() {
+    if (this.dom.adminLockModal) {
+      this.dom.adminLockModal.classList.add('active');
+      this.switchAuthTab('pin');
+      if (this.dom.inputAdminPin) {
+        setTimeout(() => this.dom.inputAdminPin.focus(), 150);
+      }
+    }
+  }
+
+  switchAuthTab(tab) {
+    const tabs = [
+      { id: 'pin', tabBtn: this.dom.tabAuthPin, panel: this.dom.panelAuthPin, focus: this.dom.inputAdminPin },
+      { id: 'local', tabBtn: this.dom.tabAuthLocal, panel: this.dom.panelAuthLocal, focus: this.dom.inputAdminUser },
+      { id: 'google', tabBtn: this.dom.tabAuthGoogle, panel: this.dom.panelAuthGoogle, focus: null }
+    ];
+
+    tabs.forEach(t => {
+      const active = (t.id === tab);
+      if (t.tabBtn) {
+        if (active) {
+          t.tabBtn.classList.add('btn-primary');
+          t.tabBtn.style.background = '';
+          t.tabBtn.style.borderColor = '';
+          t.tabBtn.style.color = '#ffffff';
+        } else {
+          t.tabBtn.classList.remove('btn-primary');
+          t.tabBtn.style.background = 'transparent';
+          t.tabBtn.style.borderColor = 'transparent';
+          t.tabBtn.style.color = 'var(--text-muted)';
+        }
+      }
+      if (t.panel) {
+        t.panel.style.display = active ? 'block' : 'none';
+      }
+      if (active && t.focus) {
+        setTimeout(() => t.focus.focus(), 100);
+      }
+    });
+
+    if (this.dom.adminPinError) this.dom.adminPinError.style.display = 'none';
+    if (this.dom.adminUserError) this.dom.adminUserError.style.display = 'none';
+  }
+
+  async startAdminSession() {
+    this.sessionStarted = true;
+    if (this.dom.adminLockModal) {
+      this.dom.adminLockModal.classList.remove('active');
+    }
+
+    // Atualiza label do usuário no header
+    if (this.dom.userLabel) {
+      const user = this.auth.getCurrentUser();
+      if (user && user.displayName && !user.isAnonymous) {
+        this.dom.userLabel.textContent = `${user.displayName} (Sair)`;
+      } else {
+        this.dom.userLabel.textContent = 'Bloquear';
+      }
+    }
 
     if (this.dom.sessionCode) {
       this.dom.sessionCode.textContent = `SESSÃO: ${this.sessionId}`;
     }
 
     try {
+      await this.loadCatalogOptions();
       await this.engine.loadPresentation(this.presentationId);
       if (this.dom.presSelector) {
         this.dom.presSelector.value = this.presentationId;
@@ -198,6 +277,8 @@ class AdminApp {
       if (this.engine.manifest?.pacing?.mode) {
         this.updatePacingUI(this.engine.manifest.pacing.mode);
       }
+
+      this.setupQRCode();
 
       // Registra a sessão atual no histórico
       this.sessionManager.saveSessionToHistory({
@@ -210,49 +291,138 @@ class AdminApp {
       // Inicializa temporizador de tempo de permanência de slide
       this.sessionManager.startSlideTimer(this.engine.currentSlideIndex);
 
-      // Inscreve-se nas atualizações da sessão
-      this.realtime.subscribeToSession(this.sessionId, (state) => {
-        this.handleSessionUpdate(state);
-      });
+      if (!this.subscribedToRealtime) {
+        this.subscribedToRealtime = true;
 
-      // Polling de presença
-      this.updatePresenceMetrics();
-      setInterval(() => this.updatePresenceMetrics(), 4000);
+        // Inscreve-se nas atualizações da sessão
+        this.realtime.subscribeToSession(this.sessionId, (state) => {
+          this.handleSessionUpdate(state);
+        });
 
-      // Diagnóstico de Ambiente & Capacidade Wi-Fi (Demanda 03 - Fase 2)
-      this.fetchEnvironmentDiagnostics();
-      setInterval(() => this.fetchEnvironmentDiagnostics(), 10000);
+        // Polling de presença
+        this.updatePresenceMetrics();
+        setInterval(() => this.updatePresenceMetrics(), 4000);
 
-      // Escuta unificada de eventos em tempo real
-      this.realtime.onEvent((event) => {
-        if (!event || event.sessionId !== this.sessionId) return;
-        const type = event.type;
+        // Diagnóstico de Ambiente & Capacidade Wi-Fi (Demanda 03 - Fase 2)
+        this.fetchEnvironmentDiagnostics();
+        setInterval(() => this.fetchEnvironmentDiagnostics(), 10000);
 
-        if (type === 'NEW_QUESTION') {
-          this.playNotificationChime();
-          const pendingTab = document.getElementById('admin-tab-pending');
-          if (pendingTab) {
-            pendingTab.classList.add('animate-pulse');
-            setTimeout(() => pendingTab.classList.remove('animate-pulse'), 3000);
+        // Escuta unificada de eventos em tempo real
+        this.realtime.onEvent((event) => {
+          if (!event || event.sessionId !== this.sessionId) return;
+          const type = event.type;
+
+          if (type === 'NEW_QUESTION') {
+            this.playNotificationChime();
+            const pendingTab = document.getElementById('admin-tab-pending');
+            if (pendingTab) {
+              pendingTab.classList.add('animate-pulse');
+              setTimeout(() => pendingTab.classList.remove('animate-pulse'), 3000);
+            }
+            this.renderModerationList();
+          } else if (type === 'QUESTION_STATUS_CHANGE' || type === 'CLEAR_ALL_QUESTIONS') {
+            this.renderModerationList();
+          } else if (type === 'VOTE_CAST' || type === 'VOTE_RESET' || type === 'RESET_POLL' || type === 'RESET_ALL_POLLS') {
+            this.renderPollsList();
+          } else if (type === 'PRESENCE_LEAVE') {
+            this.updatePresenceMetrics();
+          } else if (type === 'QR_HOST_CONFIG_CHANGED') {
+            this.setupQRCode();
           }
-          this.renderModerationList();
-        } else if (type === 'QUESTION_STATUS_CHANGE' || type === 'CLEAR_ALL_QUESTIONS') {
-          this.renderModerationList();
-        } else if (type === 'VOTE_CAST' || type === 'VOTE_RESET' || type === 'RESET_POLL' || type === 'RESET_ALL_POLLS') {
-          this.renderPollsList();
-        } else if (type === 'PRESENCE_LEAVE') {
-          this.updatePresenceMetrics();
-        } else if (type === 'QR_HOST_CONFIG_CHANGED') {
-          this.setupQRCode();
-        }
-      });
+        });
+      }
 
       this.updateView();
       this.renderModerationList();
       this.renderPollsList();
     } catch (err) {
-      alert('Erro ao carregar painel de moderação: ' + err.message);
+      console.error('Erro ao carregar painel de moderação:', err);
     }
+  }
+
+  async unlockAdminWithPin() {
+    const entered = (this.dom.inputAdminPin && this.dom.inputAdminPin.value) ? this.dom.inputAdminPin.value.trim() : '';
+    if (!entered) {
+      if (this.dom.adminPinError) {
+        this.dom.adminPinError.textContent = '✕ Digite o PIN de acesso.';
+        this.dom.adminPinError.style.display = 'block';
+      }
+      return;
+    }
+
+    if (this.dom.btnUnlockAdmin) this.dom.btnUnlockAdmin.disabled = true;
+
+    try {
+      const valid = await this.auth.verifyAdminPIN(entered, this.presentationId);
+      if (valid) {
+        if (this.dom.adminPinError) this.dom.adminPinError.style.display = 'none';
+        if (this.dom.inputAdminPin) this.dom.inputAdminPin.value = '';
+        await this.startAdminSession();
+      } else {
+        if (this.dom.adminPinError) {
+          this.dom.adminPinError.textContent = '✕ PIN incorreto.';
+          this.dom.adminPinError.style.display = 'block';
+        }
+        if (this.dom.inputAdminPin) {
+          this.dom.inputAdminPin.focus();
+          this.dom.inputAdminPin.select();
+        }
+      }
+    } finally {
+      if (this.dom.btnUnlockAdmin) this.dom.btnUnlockAdmin.disabled = false;
+    }
+  }
+
+  async unlockAdminWithLocalUser() {
+    const u = (this.dom.inputAdminUser && this.dom.inputAdminUser.value) ? this.dom.inputAdminUser.value.trim() : '';
+    const p = (this.dom.inputAdminPass && this.dom.inputAdminPass.value) ? this.dom.inputAdminPass.value.trim() : '';
+
+    if (!u || !p) {
+      if (this.dom.adminUserError) {
+        this.dom.adminUserError.textContent = '✕ Informe o usuário e a senha.';
+        this.dom.adminUserError.style.display = 'block';
+      }
+      return;
+    }
+
+    if (this.dom.btnUnlockUser) this.dom.btnUnlockUser.disabled = true;
+
+    try {
+      await this.auth.signInWithLocalCredentials(u, p);
+      if (this.dom.adminUserError) this.dom.adminUserError.style.display = 'none';
+      if (this.dom.inputAdminPass) this.dom.inputAdminPass.value = '';
+      await this.startAdminSession();
+    } catch (err) {
+      if (this.dom.adminUserError) {
+        this.dom.adminUserError.textContent = `✕ ${err.message || 'Usuário ou senha inválidos.'}`;
+        this.dom.adminUserError.style.display = 'block';
+      }
+    } finally {
+      if (this.dom.btnUnlockUser) this.dom.btnUnlockUser.disabled = false;
+    }
+  }
+
+  async unlockAdminWithGoogle() {
+    if (this.dom.btnUnlockGoogle) this.dom.btnUnlockGoogle.disabled = true;
+    try {
+      const user = await this.auth.signInWithGoogle();
+      if (user && this.auth.isAdminAuthenticated()) {
+        await this.startAdminSession();
+      } else {
+        alert('Este e-mail Google não possui permissão de moderador/administrador configurada em config/security.json.');
+      }
+    } catch (err) {
+      alert('Erro na autenticação Google: ' + err.message);
+    } finally {
+      if (this.dom.btnUnlockGoogle) this.dom.btnUnlockGoogle.disabled = false;
+    }
+  }
+
+  lockAdminSession() {
+    this.auth.signOut();
+    sessionStorage.removeItem('admin_pin_authenticated');
+    this.sessionStarted = false;
+    this.showLockScreen();
   }
 
   setupQRCode() {
@@ -280,57 +450,6 @@ class AdminApp {
     }
 
     QREngine.renderQR(this.dom.qrBox, audienceUrl, 100);
-  }
-
-  updateLanguageButton() {
-    if (this.dom.btnToggleLang) {
-      this.dom.btnToggleLang.textContent = i18n.language === 'pt-BR' ? '🇧🇷 PT' : '🇺🇸 EN';
-    }
-  }
-
-  updateThemeButton() {
-    if (this.dom.btnToggleTheme) {
-      const current = THEMES.find(t => t.id === theme.theme) || THEMES[0];
-      this.dom.btnToggleTheme.textContent = `${current.icon} ${i18n.t(current.labelKey)}`;
-    }
-  }
-
-  checkAdminProtection() {
-    if (!this.auth.isAdminAuthenticated()) {
-      if (this.dom.adminLockModal) {
-        this.dom.adminLockModal.classList.add('active');
-        if (this.dom.inputAdminPin) {
-          setTimeout(() => this.dom.inputAdminPin.focus(), 150);
-        }
-      }
-    } else {
-      if (this.dom.adminLockModal) {
-        this.dom.adminLockModal.classList.remove('active');
-      }
-    }
-  }
-
-  unlockAdminWithPin() {
-    const entered = (this.dom.inputAdminPin && this.dom.inputAdminPin.value) ? this.dom.inputAdminPin.value.trim() : '';
-    if (this.auth.verifyAdminPIN(entered)) {
-      if (this.dom.adminLockModal) {
-        this.dom.adminLockModal.classList.remove('active');
-      }
-      if (this.dom.adminPinError) {
-        this.dom.adminPinError.style.display = 'none';
-      }
-      if (this.dom.inputAdminPin) {
-        this.dom.inputAdminPin.value = '';
-      }
-    } else {
-      if (this.dom.adminPinError) {
-        this.dom.adminPinError.style.display = 'block';
-      }
-      if (this.dom.inputAdminPin) {
-        this.dom.inputAdminPin.focus();
-        this.dom.inputAdminPin.select();
-      }
-    }
   }
 
   updatePresenceMetrics() {
@@ -918,6 +1037,22 @@ class AdminApp {
       });
     }
 
+    // Botão de Bloqueio/Logout no Header
+    if (this.dom.btnLock) {
+      this.dom.btnLock.addEventListener('click', () => this.lockAdminSession());
+    }
+
+    // Abas de Autenticação da Mesa Técnica
+    if (this.dom.tabAuthPin) {
+      this.dom.tabAuthPin.addEventListener('click', () => this.switchAuthTab('pin'));
+    }
+    if (this.dom.tabAuthLocal) {
+      this.dom.tabAuthLocal.addEventListener('click', () => this.switchAuthTab('local'));
+    }
+    if (this.dom.tabAuthGoogle) {
+      this.dom.tabAuthGoogle.addEventListener('click', () => this.switchAuthTab('google'));
+    }
+
     // Desbloqueio da Mesa Técnica por PIN
     if (this.dom.btnUnlockAdmin) {
       this.dom.btnUnlockAdmin.addEventListener('click', () => this.unlockAdminWithPin());
@@ -926,6 +1061,28 @@ class AdminApp {
       this.dom.inputAdminPin.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') this.unlockAdminWithPin();
       });
+    }
+
+    // Desbloqueio por Usuário & Senha Local
+    if (this.dom.btnUnlockUser) {
+      this.dom.btnUnlockUser.addEventListener('click', () => this.unlockAdminWithLocalUser());
+    }
+    if (this.dom.inputAdminUser) {
+      this.dom.inputAdminUser.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          if (this.dom.inputAdminPass) this.dom.inputAdminPass.focus();
+        }
+      });
+    }
+    if (this.dom.inputAdminPass) {
+      this.dom.inputAdminPass.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') this.unlockAdminWithLocalUser();
+      });
+    }
+
+    // Desbloqueio por Google Workspace
+    if (this.dom.btnUnlockGoogle) {
+      this.dom.btnUnlockGoogle.addEventListener('click', () => this.unlockAdminWithGoogle());
     }
 
     // Modal de Histórico

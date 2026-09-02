@@ -108,21 +108,21 @@ export class AuthEngine {
   }
 
   /**
-   * Carrega a configuração declarativa de segurança (config/security.json)
+   * Carrega a configuração declarativa pública de segurança via endpoint seguro
    */
   async loadSecurityConfig() {
     try {
-      const basePath = window.location.pathname.includes('/presenter') || 
-                       window.location.pathname.includes('/admin') || 
-                       window.location.pathname.includes('/audience') ? '../' : './';
-      const res = await fetch(`${basePath}config/security.json?t=${Date.now()}`);
+      const res = await fetch('/api/auth/public-config');
       if (res.ok) {
         this.securityConfig = await res.json();
       }
     } catch (e) {
       this.securityConfig = {
-        admin: { pin: "2026", allowedEmails: [], users: [] },
-        offlineAudience: { enabled: true, users: [] }
+        requirePinForAdmin: true,
+        allowedEmails: [],
+        offlineAudienceEnabled: true,
+        offlineAudienceUsers: [],
+        hasAdminUsers: true
       };
     }
   }
@@ -174,27 +174,59 @@ export class AuthEngine {
   }
 
   isEmailAdmin(email) {
-    if (!email || !this.securityConfig || !this.securityConfig.admin) return false;
-    const allowed = this.securityConfig.admin.allowedEmails || [];
+    if (!email || !this.securityConfig) return false;
+    const allowed = this.securityConfig.allowedEmails || (this.securityConfig.admin && this.securityConfig.admin.allowedEmails) || [];
     return allowed.some(a => a.toLowerCase() === email.toLowerCase());
   }
 
-  verifyAdminPIN(pin) {
-    if (!this.securityConfig || !this.securityConfig.admin) return pin === '2026';
-    const correctPin = String(this.securityConfig.admin.pin || '2026');
-    const valid = (String(pin).trim() === correctPin.trim());
-    if (valid) {
-      sessionStorage.setItem('admin_pin_authenticated', 'true');
+  /**
+   * Validação de PIN no Backend Gatekeeper (/api/auth/verify-pin)
+   */
+  async verifyAdminPIN(pin, presentationId = null) {
+    const cleanPin = String(pin || '').trim();
+    if (!cleanPin) return false;
+
+    try {
+      const res = await fetch('/api/auth/verify-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: cleanPin, presentationId: presentationId })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          if (data.role === 'admin') {
+            sessionStorage.setItem('admin_pin_authenticated', 'true');
+          }
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      // Fallback offline estático se o servidor não puder ser contatado
+      const correctPin = String((this.securityConfig && this.securityConfig.admin && this.securityConfig.admin.pin) || '2026');
+      const valid = (cleanPin === correctPin.trim());
+      if (valid) {
+        sessionStorage.setItem('admin_pin_authenticated', 'true');
+      }
+      return valid;
     }
-    return valid;
   }
 
   isAdminAuthenticated() {
+    if (this.securityConfig && this.securityConfig.requirePinForAdmin === false) {
+      return true;
+    }
     if (this.securityConfig && this.securityConfig.admin && this.securityConfig.admin.requirePinForAdmin === false) {
       return true;
     }
     const isPinAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true';
-    const isRoleAdmin = this.currentUser && (this.currentUser.role === 'admin' || this.isEmailAdmin(this.currentUser.email));
+    const isRoleAdmin = this.currentUser && (
+      this.currentUser.role === 'admin' || 
+      this.currentUser.role === 'presenter' || 
+      this.isEmailAdmin(this.currentUser.email)
+    );
     return isPinAuth || isRoleAdmin;
   }
 
@@ -221,56 +253,49 @@ export class AuthEngine {
   }
 
   /**
-   * Realiza login com Usuário e Senha Local (100% Offline)
+   * Realiza login com Usuário e Senha Local via Backend Gatekeeper (/api/auth/login)
    */
   async signInWithLocalCredentials(username, password) {
-    if (!this.securityConfig) await this.loadSecurityConfig();
+    const u = String(username || '').trim();
+    const p = String(password || '').trim();
 
-    const u = String(username).trim();
-    const p = String(password).trim();
+    if (!u || !p) throw new Error('Por favor, preencha o usuário e a senha.');
 
-    // 1. Verifica usuários administradores locais
-    const adminUsers = (this.securityConfig && this.securityConfig.admin && this.securityConfig.admin.users) || [];
-    const adminMatch = adminUsers.find(acc => acc.username.toLowerCase() === u.toLowerCase() && acc.password === p);
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p })
+      });
 
-    if (adminMatch) {
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Usuário ou senha incorretos.');
+      }
+
+      const userRecord = data.user || {};
       const localUser = {
-        uid: 'local_adm_' + adminMatch.username,
-        email: `${adminMatch.username}@local`,
-        displayName: adminMatch.name || adminMatch.username,
-        anonymousAlias: adminMatch.name || adminMatch.username,
+        uid: `local_${userRecord.role || 'user'}_${userRecord.username || u}`,
+        email: `${userRecord.username || u}@local`,
+        displayName: userRecord.name || userRecord.username || u,
+        anonymousAlias: userRecord.name || userRecord.username || u,
         provider: 'local',
-        role: adminMatch.role || 'admin',
+        role: userRecord.role || 'participant',
         photoURL: null,
         isAuthenticated: true,
         isAnonymous: false
       };
+
       this._setCurrentUser(localUser);
-      sessionStorage.setItem('admin_pin_authenticated', 'true');
+
+      if (localUser.role === 'admin' || localUser.role === 'presenter') {
+        sessionStorage.setItem('admin_pin_authenticated', 'true');
+      }
+
       return localUser;
+    } catch (err) {
+      throw err;
     }
-
-    // 2. Verifica usuários da audiência offline
-    const audienceUsers = (this.securityConfig && this.securityConfig.offlineAudience && this.securityConfig.offlineAudience.users) || [];
-    const audienceMatch = audienceUsers.find(acc => acc.username.toLowerCase() === u.toLowerCase() && acc.password === p);
-
-    if (audienceMatch) {
-      const localUser = {
-        uid: 'local_aud_' + audienceMatch.username,
-        email: `${audienceMatch.username}@local`,
-        displayName: audienceMatch.name || audienceMatch.username,
-        anonymousAlias: audienceMatch.name || this._generateAnonymousAlias(audienceMatch.username),
-        provider: 'local',
-        role: 'participant',
-        photoURL: null,
-        isAuthenticated: true,
-        isAnonymous: false
-      };
-      this._setCurrentUser(localUser);
-      return localUser;
-    }
-
-    throw new Error('Usuário ou senha incorretos.');
   }
 
   async signInWithLocalPassword(username, password) {

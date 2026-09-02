@@ -101,6 +101,10 @@
     - Native support for exporting and importing complete presentation packages packaged in a single ZIP file (`.slidemesh.zip` or `.zip`), bundling `manifest.json`, `slides.json`, and all media assets inside `assets/`.
     - High-performance server endpoints (`GET /api/presentations/export?id={slug}` and `POST /api/presentations/import-zip`) with strict hardening against **Zip Slip** (403 rejection for path traversal attempts), **Zip Bomb** (200MB / 500 entry bounds), and dangerous script executable filtering.
     - Seamless conflict resolution (Overwrite vs New Copy), non-destructive preservation of existing catalog entries in `catalog.json`, and full UI integration across Main Portal (`index.html`), SlideMesh Studio (`import.html`), Control Room (`admin/index.html`), and CLI utilities (`tools/export_presentation.py` and `tools/import_presentation.py`).
+16. **Security Architecture, RBAC & Backend Gatekeeper**:
+    - **Credential Protection**: The server blocks direct HTTP requests to `config/security.json` with a strict `403 Forbidden` response.
+    - **Secure Authentication Endpoints**: Public authentication metadata is served via `GET /api/auth/public-config` without exposing passwords or PINs. PIN validation is handled on the backend via `POST /api/auth/verify-pin` and local user logins are authenticated via `POST /api/auth/login`.
+    - **Full Lock Screen in Control Room**: A high-priority translucent security overlay (`z-index: 99999`) prevents rendering slides, speaker notes, and moderation panels before authentication, supporting 3 unlock methods: **🔑 Quick PIN**, **👤 Local User (Admin/Presenter)**, and **🌐 Google Workspace**.
 
 ---
 

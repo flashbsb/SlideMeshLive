@@ -58,6 +58,11 @@
         🌙 Tema
       </button>
 
+      <!-- Botão de Bloqueio/Logout -->
+      <button class="btn btn-sm" id="admin-btn-lock" style="padding: 4px 10px; font-size: 12px; border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;" title="Bloquear Mesa Técnica e Encerrar Sessão Autenticada">
+        🔒 <span id="admin-user-label">Bloquear</span>
+      </button>
+
       <button class="btn btn-sm" id="admin-btn-analytics" style="border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;" title="Ver Dashboard de Analytics e Gráficos de Sessões" data-i18n="admin.btn_analytics">
         📊 Analytics
       </button>
@@ -532,26 +537,78 @@
     </div>
   </div>
 
-  <!-- Modal de Bloqueio por PIN da Mesa Técnica (Segurança Declarativa) -->
-  <div class="modal-overlay" id="admin-lock-modal" style="backdrop-filter: blur(16px);">
-    <div class="modal-container" style="max-width: 400px; text-align: center;">
-      <div style="font-size: 34px; margin-bottom: 8px;">🛡️</div>
-      <h3 style="font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">Mesa Técnica Protegida</h3>
-      <p style="font-size: 12.5px; color: #94a3b8; margin-bottom: 18px;">
-        Digite o PIN do administrador configurado em <code style="color: var(--accent-primary);">config/security.json</code> para liberar o controle.
+  <!-- Modal de Bloqueio da Mesa Técnica (Full Lock Screen com Multi-Auth) -->
+  <div class="modal-overlay" id="admin-lock-modal" style="backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); background: rgba(10, 15, 29, 0.96); z-index: 99999;">
+    <div class="modal-container" style="max-width: 440px; text-align: center; border: 1px solid var(--border-medium); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);">
+      
+      <!-- Cabeçalho do Bloqueio -->
+      <div style="font-size: 38px; margin-bottom: 6px;">🛡️</div>
+      <h3 style="font-size: 19px; font-weight: 800; color: #ffffff; margin-bottom: 4px;" data-i18n="admin.lock_title">
+        Mesa Técnica Protegida
+      </h3>
+      <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 18px;" data-i18n="admin.lock_desc">
+        Identifique-se para acessar os controles de apresentação, notas do orador e moderação.
       </p>
 
-      <div style="margin-bottom: 14px;">
-        <input type="password" id="input-admin-pin" maxlength="8" placeholder="Digite o PIN (Ex: 2026)" style="width: 100%; text-align: center; letter-spacing: 4px; padding: 12px; background: rgba(15,23,42,0.9); border: 1.5px solid var(--accent-primary); border-radius: 8px; color: #ffffff; font-family: var(--font-mono); font-size: 18px; font-weight: 700;">
+      <!-- Abas de Autenticação -->
+      <div style="display: flex; gap: 4px; background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 8px; border: 1px solid var(--border-subtle); margin-bottom: 18px;">
+        <button class="btn btn-sm btn-primary" id="tab-auth-pin" style="flex: 1; font-size: 11.5px; padding: 6px;" type="button">
+          🔑 PIN
+        </button>
+        <button class="btn btn-sm" id="tab-auth-local" style="flex: 1; font-size: 11.5px; padding: 6px; background: transparent; border-color: transparent; color: var(--text-muted);" type="button">
+          👤 Usuário
+        </button>
+        <button class="btn btn-sm" id="tab-auth-google" style="flex: 1; font-size: 11.5px; padding: 6px; background: transparent; border-color: transparent; color: var(--text-muted);" type="button">
+          🌐 Google
+        </button>
       </div>
 
-      <div id="admin-pin-error" style="display: none; color: #fca5a5; font-size: 12px; margin-bottom: 12px;">
-        ✕ PIN incorreto. Verifique o arquivo config/security.json.
+      <!-- PAINEL 1: PIN de Acesso -->
+      <div id="panel-auth-pin" style="display: block;">
+        <div style="margin-bottom: 14px;">
+          <input type="password" id="input-admin-pin" maxlength="12" placeholder="Digite o PIN (Ex: 2026)" style="width: 100%; text-align: center; letter-spacing: 4px; padding: 12px; background: rgba(15,23,42,0.9); border: 1.5px solid var(--accent-primary); border-radius: 8px; color: #ffffff; font-family: var(--font-mono); font-size: 18px; font-weight: 700;">
+        </div>
+        <div id="admin-pin-error" style="display: none; color: #fca5a5; font-size: 12px; margin-bottom: 12px; background: rgba(239, 68, 68, 0.1); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);">
+          ✕ PIN incorreto.
+        </div>
+        <button class="btn btn-primary" id="btn-unlock-admin" style="width: 100%; padding: 11px; font-size: 13.5px; font-weight: 700;">
+          🔓 Desbloquear com PIN
+        </button>
       </div>
 
-      <button class="btn btn-primary" id="btn-unlock-admin" style="width: 100%; padding: 10px; font-size: 13.5px;">
-        🔓 Desbloquear Mesa Técnica
-      </button>
+      <!-- PAINEL 2: Usuário & Senha Local -->
+      <div id="panel-auth-local" style="display: none; text-align: left;">
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 11.5px; font-weight: 600; color: #cbd5e1; display: block; margin-bottom: 4px;">
+            Usuário Administrador ou Palestrante:
+          </label>
+          <input type="text" id="input-admin-user" placeholder="admin ou palestrante" style="width: 100%; padding: 10px 12px; background: rgba(15,23,42,0.9); border: 1px solid var(--border-medium); border-radius: 6px; color: #ffffff; font-size: 13px;">
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="font-size: 11.5px; font-weight: 600; color: #cbd5e1; display: block; margin-bottom: 4px;">
+            Senha de Acesso:
+          </label>
+          <input type="password" id="input-admin-pass" placeholder="••••••••" style="width: 100%; padding: 10px 12px; background: rgba(15,23,42,0.9); border: 1px solid var(--border-medium); border-radius: 6px; color: #ffffff; font-size: 13px;">
+        </div>
+        <div id="admin-user-error" style="display: none; color: #fca5a5; font-size: 12px; margin-bottom: 12px; background: rgba(239, 68, 68, 0.1); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);">
+          ✕ Usuário ou senha incorretos.
+        </div>
+        <button class="btn btn-primary" id="btn-unlock-user" style="width: 100%; padding: 11px; font-size: 13.5px; font-weight: 700;">
+          🔑 Entrar com Credencial Local
+        </button>
+      </div>
+
+      <!-- PAINEL 3: Google Workspace -->
+      <div id="panel-auth-google" style="display: none;">
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
+          Acesso reservado aos e-mails corporativos autorizados no arquivo de segurança do evento.
+        </p>
+        <button class="btn" id="btn-unlock-google" style="width: 100%; padding: 10px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-color: rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.05); color: #ffffff; cursor: pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.04 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
+          <span>Entrar com Google</span>
+        </button>
+      </div>
+
     </div>
   </div>
 

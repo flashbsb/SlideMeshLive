@@ -151,6 +151,40 @@ def get_session_analytics_archive(session_id, base_dir=BASE_DIR):
     except Exception:
         return None
 
+def load_security_config(base_dir=BASE_DIR):
+    """
+    Carrega a configuração declarativa de segurança (config/security.json ou security.default.json).
+    """
+    sec_path = os.path.join(base_dir, "config", "security.json")
+    default_path = os.path.join(base_dir, "config", "security.default.json")
+
+    if os.path.exists(sec_path):
+        try:
+            with open(sec_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"[Security] Aviso: Erro ao carregar config/security.json: {e}", file=sys.stderr)
+
+    if os.path.exists(default_path):
+        try:
+            with open(default_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    return {
+        "admin": {
+            "pin": "2026",
+            "requirePinForAdmin": True,
+            "allowedEmails": [],
+            "users": []
+        },
+        "offlineAudience": {
+            "enabled": True,
+            "users": []
+        }
+    }
+
 def get_server_memory_usage_mb():
     """
     Retorna o consumo de memória residente (RSS) do processo Python em Megabytes.
@@ -970,6 +1004,41 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
 
+        # Proteção e Bloqueio de Acesso a Credenciais (Plano 13 - Fase 3)
+        norm_path = parsed.path.lower().replace('\\', '/')
+        if 'config/security.json' in norm_path or norm_path.endswith('security.json'):
+            self.send_response(403)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                "success": False,
+                "error": "Acesso negado (403 Forbidden): O arquivo config/security.json é confidencial e protegido."
+            }, ensure_ascii=False).encode('utf-8'))
+            return
+
+        # Endpoint Seguro de Metadados Públicos de Autenticação (Plano 13 - Fase 3)
+        if parsed.path == '/api/auth/public-config':
+            sec_cfg = load_security_config(BASE_DIR)
+            public_data = {
+                "success": True,
+                "requirePinForAdmin": sec_cfg.get("admin", {}).get("requirePinForAdmin", True),
+                "allowedEmails": sec_cfg.get("admin", {}).get("allowedEmails", []),
+                "offlineAudienceEnabled": sec_cfg.get("offlineAudience", {}).get("enabled", True),
+                "offlineAudienceUsers": [
+                    {"username": u.get("username"), "name": u.get("name", u.get("username"))}
+                    for u in sec_cfg.get("offlineAudience", {}).get("users", [])
+                ],
+                "hasAdminUsers": len(sec_cfg.get("admin", {}).get("users", [])) > 0
+            }
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Cache-Control', 'no-cache, no-store')
+            self.end_headers()
+            self.wfile.write(json.dumps(public_data, ensure_ascii=False).encode('utf-8'))
+            return
+
         # Endpoint de Streaming SSE em Tempo Real (Server-Sent Events)
         if parsed.path == '/api/events':
             qs = parse_qs(parsed.query)
@@ -1205,6 +1274,115 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
         content_length = int(self.headers.get('Content-Length', 0))
+
+        # Endpoint de Verificação Segura de PIN no Backend (Plano 13 - Fase 3)
+        if parsed.path == '/api/auth/verify-pin':
+            try:
+                raw_body = self.rfile.read(content_length).decode('utf-8')
+                payload = json.loads(raw_body)
+            except Exception:
+                payload = {}
+
+            pin_sent = str(payload.get('pin', '')).strip()
+            pres_id = str(payload.get('presentationId', '')).strip()
+            sec_cfg = load_security_config(BASE_DIR)
+            expected_admin_pin = str(sec_cfg.get("admin", {}).get("pin", "2026")).strip()
+
+            is_valid = False
+            role = "admin"
+
+            if pin_sent and pin_sent == expected_admin_pin:
+                is_valid = True
+                role = "admin"
+            elif pres_id:
+                manifest_path = os.path.join(BASE_DIR, "presentations", pres_id, "manifest.json")
+                if os.path.exists(manifest_path):
+                    try:
+                        with open(manifest_path, "r", encoding="utf-8") as f:
+                            m_data = json.load(f)
+                        pres_pin = str(m_data.get("security", {}).get("pin", "")).strip()
+                        if pres_pin and pin_sent == pres_pin:
+                            is_valid = True
+                            role = "audience"
+                    except Exception:
+                        pass
+
+            if is_valid:
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "success": True,
+                    "role": role,
+                    "message": "PIN verificado com sucesso."
+                }, ensure_ascii=False).encode('utf-8'))
+            else:
+                self.send_response(401)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "success": False,
+                    "error": "PIN incorreto ou não configurado."
+                }, ensure_ascii=False).encode('utf-8'))
+            return
+
+        # Endpoint de Autenticação Segura de Usuário & Senha (Plano 13 - Fase 3)
+        if parsed.path == '/api/auth/login':
+            try:
+                raw_body = self.rfile.read(content_length).decode('utf-8')
+                payload = json.loads(raw_body)
+            except Exception:
+                payload = {}
+
+            username = str(payload.get('username', '')).strip().lower()
+            password = str(payload.get('password', '')).strip()
+            sec_cfg = load_security_config(BASE_DIR)
+
+            matched_user = None
+            # 1. Verifica usuários administradores ou palestrantes
+            for u in sec_cfg.get("admin", {}).get("users", []):
+                if str(u.get("username", "")).strip().lower() == username and str(u.get("password", "")).strip() == password:
+                    matched_user = {
+                        "username": u["username"],
+                        "name": u.get("name", u["username"]),
+                        "role": u.get("role", "admin")
+                    }
+                    break
+
+            # 2. Se não encontrou, verifica usuários offline da audiência
+            if not matched_user and sec_cfg.get("offlineAudience", {}).get("enabled", True):
+                for u in sec_cfg.get("offlineAudience", {}).get("users", []):
+                    if str(u.get("username", "")).strip().lower() == username and str(u.get("password", "")).strip() == password:
+                        matched_user = {
+                            "username": u["username"],
+                            "name": u.get("name", u["username"]),
+                            "role": "audience"
+                        }
+                        break
+
+            if matched_user:
+                token = f"sm_token_{matched_user['username']}_{int(time.time())}"
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "success": True,
+                    "user": matched_user,
+                    "token": token
+                }, ensure_ascii=False).encode('utf-8'))
+            else:
+                self.send_response(401)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "success": False,
+                    "error": "Usuário ou senha incorretos."
+                }, ensure_ascii=False).encode('utf-8'))
+            return
         
         if parsed.path == '/api/sync':
             if content_length > MAX_SYNC_PAYLOAD_BYTES:

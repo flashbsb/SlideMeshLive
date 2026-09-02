@@ -2603,6 +2603,125 @@ def test_plano13_portal_and_admin_modals_ux():
     print("✓ Plano 13 (Fases 1 e 2: Portal Inicial Limpo e Modais da Mesa Técnica Robustos) 100% HOMOLOGADO com sucesso.")
 
 
+def test_plano13_phase3_security_gatekeeper_and_rbac():
+    """Valida o Backend Gatekeeper, Bloqueio 403 de Credenciais e RBAC Full Lock Screen do Plano 13 - Fase 3"""
+    print(f"\n{'='*70}")
+    print(" 🧪 25. Plano 13: Backend Gatekeeper, Proteção de Credenciais & RBAC Lock Screen (Fase 3)")
+    print(f"{'='*70}")
+
+    from http.server import HTTPServer
+    import server
+
+    # 1. Inicia servidor em porta efêmera para testes de endpoints de segurança
+    server.BASE_DIR = BASE_DIR
+    httpd = HTTPServer(('127.0.0.1', 0), server.LiveSyncHTTPRequestHandler)
+    port = httpd.server_port
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    server_thread.start()
+    base_url = f"http://127.0.0.1:{port}"
+
+    try:
+        # A. Bloqueio 403 Forbidden para /config/security.json
+        try:
+            req_sec = urllib.request.Request(f"{base_url}/config/security.json")
+            with urllib.request.urlopen(req_sec, timeout=3) as res:
+                assert False, "O arquivo config/security.json DEVERIA ter sido bloqueado com 403 Forbidden!"
+        except urllib.error.HTTPError as he:
+            assert he.code == 403, f"Status code esperado 403, obtido {he.code}"
+            err_data = json.loads(he.read().decode('utf-8'))
+            assert err_data.get("success") is False
+            assert "403 Forbidden" in err_data.get("error", "")
+            print("  ✓ Backend Hardening: Acesso direto a /config/security.json bloqueado com 403 Forbidden.")
+
+        # B. Endpoint Seguro GET /api/auth/public-config (Sem expor segredos)
+        req_pub = urllib.request.Request(f"{base_url}/api/auth/public-config")
+        with urllib.request.urlopen(req_pub, timeout=3) as res:
+            assert res.status == 200
+            pub_cfg = json.loads(res.read().decode('utf-8'))
+            assert pub_cfg.get("success") is True
+            assert "requirePinForAdmin" in pub_cfg
+            assert "offlineAudienceEnabled" in pub_cfg
+            assert "pin" not in pub_cfg, "Vazamento de PIN detectado em public-config!"
+            assert "password" not in json.dumps(pub_cfg), "Vazamento de senha detectado em public-config!"
+            print("  ✓ Public Auth Config: Metadados públicos retornados com sucesso sem expor senhas ou PINs.")
+
+        # C. Endpoint POST /api/auth/verify-pin (PIN correto e incorreto)
+        # PIN correto
+        body_pin_ok = json.dumps({"pin": "2026"}).encode('utf-8')
+        req_pin_ok = urllib.request.Request(f"{base_url}/api/auth/verify-pin", data=body_pin_ok, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req_pin_ok, timeout=3) as res:
+            assert res.status == 200
+            data_pin_ok = json.loads(res.read().decode('utf-8'))
+            assert data_pin_ok.get("success") is True
+            assert data_pin_ok.get("role") == "admin"
+
+        # PIN incorreto
+        try:
+            body_pin_err = json.dumps({"pin": "pin_invalido_9999"}).encode('utf-8')
+            req_pin_err = urllib.request.Request(f"{base_url}/api/auth/verify-pin", data=body_pin_err, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req_pin_err, timeout=3) as res:
+                assert False, "PIN incorreto deveria ter retornado 401 Unauthorized!"
+        except urllib.error.HTTPError as he:
+            assert he.code == 401
+            data_err = json.loads(he.read().decode('utf-8'))
+            assert data_err.get("success") is False
+        print("  ✓ PIN Gatekeeper: Validação no backend via POST /api/auth/verify-pin com 200/401 validada.")
+
+        # D. Endpoint POST /api/auth/login (Usuário e Senha)
+        # Login correto (admin / slidemesh2026)
+        body_login_ok = json.dumps({"username": "admin", "password": "slidemesh2026"}).encode('utf-8')
+        req_login_ok = urllib.request.Request(f"{base_url}/api/auth/login", data=body_login_ok, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req_login_ok, timeout=3) as res:
+            assert res.status == 200
+            data_login_ok = json.loads(res.read().decode('utf-8'))
+            assert data_login_ok.get("success") is True
+            assert data_login_ok.get("user", {}).get("username") == "admin"
+            assert data_login_ok.get("user", {}).get("role") == "admin"
+            assert "token" in data_login_ok
+
+        # Login com senha incorreta
+        try:
+            body_login_err = json.dumps({"username": "admin", "password": "senha_errada"}).encode('utf-8')
+            req_login_err = urllib.request.Request(f"{base_url}/api/auth/login", data=body_login_err, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req_login_err, timeout=3) as res:
+                assert False, "Credenciais inválidas deveriam ter retornado 401 Unauthorized!"
+        except urllib.error.HTTPError as he:
+            assert he.code == 401
+            data_err = json.loads(he.read().decode('utf-8'))
+            assert data_err.get("success") is False
+        print("  ✓ Login Gatekeeper: Autenticação via POST /api/auth/login com token e RBAC validada.")
+
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+    # 2. Validação da Interface e Multi-Auth Lock Screen (admin/index.html)
+    admin_path = os.path.join(BASE_DIR, "admin", "index.html")
+    with open(admin_path, "r", encoding="utf-8") as f:
+        admin_html = f.read()
+
+    assert 'id="tab-auth-pin"' in admin_html, "Aba #tab-auth-pin ausente"
+    assert 'id="tab-auth-local"' in admin_html, "Aba #tab-auth-local ausente"
+    assert 'id="tab-auth-google"' in admin_html, "Aba #tab-auth-google ausente"
+    assert 'id="panel-auth-pin"' in admin_html, "Painel #panel-auth-pin ausente"
+    assert 'id="panel-auth-local"' in admin_html, "Painel #panel-auth-local ausente"
+    assert 'id="panel-auth-google"' in admin_html, "Painel #panel-auth-google ausente"
+    assert 'id="admin-btn-lock"' in admin_html, "Botão #admin-btn-lock ausente no header"
+    print("  ✓ Full Lock Screen UI: Abas PIN, Usuário Local e Google integradas ao admin/index.html.")
+
+    # 3. Validação do AuthEngine (js/core/auth-engine.js)
+    auth_js_path = os.path.join(BASE_DIR, "js", "core", "auth-engine.js")
+    with open(auth_js_path, "r", encoding="utf-8") as f:
+        auth_js = f.read()
+
+    assert "/api/auth/public-config" in auth_js, "Chamada ao endpoint /api/auth/public-config ausente em auth-engine.js"
+    assert "/api/auth/verify-pin" in auth_js, "Chamada ao endpoint /api/auth/verify-pin ausente em auth-engine.js"
+    assert "/api/auth/login" in auth_js, "Chamada ao endpoint /api/auth/login ausente em auth-engine.js"
+    print("  ✓ AuthEngine Client: Métodos loadSecurityConfig, verifyAdminPIN e signInWithLocalCredentials atualizados.")
+
+    print("✓ Plano 13 (Fase 3: Backend Gatekeeper, Proteção de Credenciais & RBAC Full Lock Screen) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -2629,6 +2748,7 @@ if __name__ == "__main__":
         test_demanda11_media_range_requests()
         test_demanda12_zip_export_import_portability()
         test_plano13_portal_and_admin_modals_ux()
+        test_plano13_phase3_security_gatekeeper_and_rbac()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

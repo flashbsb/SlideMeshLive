@@ -220,6 +220,8 @@ export const TRANSLATIONS = {
     'admin.media_pause': '⏸️ Pause',
     'admin.media_restart': '🔄 Reiniciar',
     'admin.media_mute': '🔇 Mudo / Áudio',
+    'admin.lock_title': 'Mesa Técnica Protegida',
+    'admin.lock_desc': 'Identifique-se para acessar os controles de apresentação, notas do orador e moderação.',
 
     // Modal Host QR Code
     'host_modal.title': '🌐 Configurar Endereço do QR Code',
@@ -512,6 +514,8 @@ export const TRANSLATIONS = {
     'admin.media_pause': '⏸️ Pause',
     'admin.media_restart': '🔄 Restart',
     'admin.media_mute': '🔇 Mute / Audio',
+    'admin.lock_title': 'Protected Admin Panel',
+    'admin.lock_desc': 'Sign in or enter the admin PIN to unlock presentation controls, speaker notes, and moderation.',
 
     // QR Host Modal
     'host_modal.title': '🌐 Configure QR Code Host / IP',

@@ -100,6 +100,10 @@ O **SlideMeshLive** foi concebido com uma arquitetura modular baseada em tecnolo
     - Suporte nativo a exportação e importação de apresentações completas encapsuladas em arquivo ZIP único (`.slidemesh.zip` ou `.zip`), contendo o `manifest.json`, `slides.json` e todos os arquivos de mídia em `assets/`.
     - Endpoints de alta performance no backend (`GET /api/presentations/export?id={slug}` e `POST /api/presentations/import-zip`), com hardening rigoroso contra **Zip Slip** (bloqueio 403 para caminhos relativos maliciosos), **Zip Bomb** (limite de 200MB / 500 entradas) e sanitização de scripts executáveis.
     - Resolução intuitiva de conflitos (Sobrescrever vs Criar Nova Cópia), persistência não-destrutiva de apresentações pré-existentes no `catalog.json` e integração visual no Portal (`index.html`), SlideMesh Studio (`import.html`), Mesa Técnica (`admin/index.html`) e utilitários CLI (`tools/export_presentation.py` e `tools/import_presentation.py`).
+16. **Arquitetura de Segurança, RBAC & Backend Gatekeeper**:
+    - **Proteção de Credenciais**: O arquivo `config/security.json` é protegido pelo servidor contra acesso HTTP direto com resposta estrita `403 Forbidden`.
+    - **Endpoints de Autenticação Segura**: Metadados públicos são entregues via `GET /api/auth/public-config` sem expor senhas ou PINs. A validação de PIN é processada no backend via `POST /api/auth/verify-pin` e o login local é autenticado via `POST /api/auth/login`.
+    - **Full Lock Screen na Mesa Técnica**: Cortina translúcida de segurança de alta prioridade (`z-index: 99999`) que bloqueia a renderização de slides, notas do orador e controles antes da autenticação com suporte a 3 abas: **🔑 PIN Rápido**, **👤 Usuário Local (Admin/Palestrante)** e **🌐 Google Workspace**.
 
 ---
 
