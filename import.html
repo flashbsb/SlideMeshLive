@@ -619,6 +619,37 @@
         </div>
       </div>
 
+      <!-- Painel Dinâmico de Segurança Customizada e Pacing Avançado (Plano 14 - Fase 3) -->
+      <div id="cfg-advanced-security-card" style="display: none; background: rgba(15, 23, 42, 0.75); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 12px 20px; margin-top: -12px; margin-bottom: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: var(--shadow-sm);">
+        
+        <!-- Bloco PIN do Deck -->
+        <div id="cfg-security-pin-block" style="display: none; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div class="form-group" style="margin: 0;">
+            <label class="form-label" style="font-size: 10.5px; color: var(--accent-primary);">🔑 PIN do Deck:</label>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <input type="text" id="cfg-pin-code" maxlength="8" placeholder="Ex: 2026" style="width: 100px; padding: 6px 10px; background: var(--bg-input); border: 1.5px solid var(--border-medium); border-radius: 6px; color: #fff; font-family: var(--font-mono); font-size: 14px; font-weight: 700; text-align: center; letter-spacing: 1px;">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-studio-generate-pin" style="padding: 6px 8px; font-size: 11px; font-weight: 700;" title="Gerar PIN Aleatório Seguro">
+                🎲 Gerar PIN
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin: 0; min-width: 280px; flex: 1;">
+            <label class="form-label" style="font-size: 10.5px;">💡 Dica para a Plateia:</label>
+            <input type="text" id="cfg-pin-hint" placeholder="Ex: Solicite o PIN de 4 dígitos ao orador" style="width: 100%; padding: 6px 10px; background: var(--bg-input); border: 1.5px solid var(--border-medium); border-radius: 6px; color: #fff; font-size: 12px;">
+          </div>
+        </div>
+
+        <!-- Bloco de Pacing (Revisão de Slides Anteriores) -->
+        <div id="cfg-pacing-options-block" style="display: flex; align-items: center; gap: 10px; margin-left: auto;">
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #cbd5e1; cursor: pointer; user-select: none;">
+            <input type="checkbox" id="cfg-pacing-allow-past" checked style="width: 16px; height: 16px; accent-color: var(--accent-primary);">
+            <span>Permitir que participantes revisem slides passados</span>
+          </label>
+        </div>
+
+      </div>
+
       <!-- Editor e Pré-visualizador Grid -->
       <div class="editor-layout">
         <!-- Coluna 1: Lista de Slides com Reordenação e Exclusão -->
@@ -1137,15 +1168,31 @@
 
       document.getElementById('cfg-title').value = currentConvertedData.manifest.title || '';
       document.getElementById('cfg-session').value = currentConvertedData.manifest.defaultSession || '';
-      if (currentConvertedData.manifest.security?.mode) {
-        document.getElementById('cfg-security').value = currentConvertedData.manifest.security.mode;
-      }
-      const pacingMode = currentConvertedData.manifest.pacing?.mode || 'lock_future';
+      
+      const secObj = currentConvertedData.manifest.security || { mode: 'public' };
+      const secSelect = document.getElementById('cfg-security');
+      if (secSelect) secSelect.value = secObj.mode || 'public';
+
+      const pinInput = document.getElementById('cfg-pin-code');
+      if (pinInput) pinInput.value = secObj.pin || '2026';
+
+      const pinHintInput = document.getElementById('cfg-pin-hint');
+      if (pinHintInput) pinHintInput.value = secObj.pinHint || '';
+
+      const pacingObj = currentConvertedData.manifest.pacing || { mode: 'lock_future', allowReviewPast: true };
       const selectPacing = document.getElementById('cfg-pacing');
-      if (selectPacing) selectPacing.value = pacingMode;
+      if (selectPacing) selectPacing.value = pacingObj.mode || 'lock_future';
+
+      const checkAllowPast = document.getElementById('cfg-pacing-allow-past');
+      if (checkAllowPast) {
+        checkAllowPast.checked = pacingObj.allowReviewPast !== false;
+      }
+
       const globalTrans = currentConvertedData.manifest.theme?.transition || 'fade';
       const selectTrans = document.getElementById('cfg-transition');
       if (selectTrans) selectTrans.value = globalTrans;
+
+      updateStudioSecurityUI();
 
       selectedSlideIndex = 0;
       renderSlidesSidebar();
@@ -1154,6 +1201,52 @@
       applyTranslations();
       saveDraftToStorage();
     }
+
+    function updateStudioSecurityUI() {
+      const secMode = document.getElementById('cfg-security')?.value || 'public';
+      const advCard = document.getElementById('cfg-advanced-security-card');
+      const pinBlock = document.getElementById('cfg-security-pin-block');
+      const checkAllowPast = document.getElementById('cfg-pacing-allow-past');
+      const pacingMode = document.getElementById('cfg-pacing')?.value || 'lock_future';
+
+      if (advCard) {
+        advCard.style.display = 'flex';
+      }
+      if (pinBlock) {
+        pinBlock.style.display = (secMode === 'pin') ? 'flex' : 'none';
+      }
+      if (checkAllowPast) {
+        if (pacingMode === 'strict_sync') {
+          checkAllowPast.checked = false;
+          checkAllowPast.disabled = true;
+        } else {
+          checkAllowPast.disabled = false;
+        }
+      }
+    }
+
+    document.getElementById('cfg-security')?.addEventListener('change', () => {
+      updateStudioSecurityUI();
+      saveDraftToStorage();
+    });
+
+    document.getElementById('cfg-pacing')?.addEventListener('change', () => {
+      updateStudioSecurityUI();
+      saveDraftToStorage();
+    });
+
+    document.getElementById('btn-studio-generate-pin')?.addEventListener('click', () => {
+      const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
+      const pinInput = document.getElementById('cfg-pin-code');
+      if (pinInput) {
+        pinInput.value = randomPin;
+        saveDraftToStorage();
+      }
+    });
+
+    document.getElementById('cfg-pin-code')?.addEventListener('input', saveDraftToStorage);
+    document.getElementById('cfg-pin-hint')?.addEventListener('input', saveDraftToStorage);
+    document.getElementById('cfg-pacing-allow-past')?.addEventListener('change', saveDraftToStorage);
 
     async function exportStudioZip() {
       if (!currentConvertedData || !currentConvertedData.manifest) {
@@ -1168,9 +1261,25 @@
         });
         currentConvertedData.manifest.title = document.getElementById('cfg-title')?.value || currentConvertedData.manifest.title;
         currentConvertedData.manifest.defaultSession = document.getElementById('cfg-session')?.value || currentConvertedData.manifest.defaultSession;
-        if (document.getElementById('cfg-security')) {
-          currentConvertedData.manifest.security.mode = document.getElementById('cfg-security').value;
+        
+        const secMode = document.getElementById('cfg-security')?.value || 'public';
+        currentConvertedData.manifest.security = currentConvertedData.manifest.security || {};
+        currentConvertedData.manifest.security.mode = secMode;
+        if (secMode === 'pin') {
+          currentConvertedData.manifest.security.pin = document.getElementById('cfg-pin-code')?.value.trim() || '2026';
+          currentConvertedData.manifest.security.pinHint = document.getElementById('cfg-pin-hint')?.value.trim() || '';
+        } else {
+          delete currentConvertedData.manifest.security.pin;
+          delete currentConvertedData.manifest.security.pinHint;
         }
+
+        const pacingVal = document.getElementById('cfg-pacing')?.value || 'lock_future';
+        const allowPast = pacingVal === 'strict_sync' ? false : (document.getElementById('cfg-pacing-allow-past') ? document.getElementById('cfg-pacing-allow-past').checked : true);
+        currentConvertedData.manifest.pacing = {
+          mode: pacingVal,
+          allowReviewPast: allowPast
+        };
+
         currentConvertedData.manifest.totalSlides = activeSlides.length;
 
         const payload = {
@@ -1908,11 +2017,23 @@
       // Atualiza configurações com valores dos inputs
       currentConvertedData.manifest.title = document.getElementById('cfg-title').value || currentConvertedData.manifest.title;
       currentConvertedData.manifest.defaultSession = document.getElementById('cfg-session').value || currentConvertedData.manifest.defaultSession;
-      currentConvertedData.manifest.security.mode = document.getElementById('cfg-security').value;
+      
+      const secMode = document.getElementById('cfg-security')?.value || 'public';
+      currentConvertedData.manifest.security = currentConvertedData.manifest.security || {};
+      currentConvertedData.manifest.security.mode = secMode;
+      if (secMode === 'pin') {
+        currentConvertedData.manifest.security.pin = document.getElementById('cfg-pin-code')?.value.trim() || '2026';
+        currentConvertedData.manifest.security.pinHint = document.getElementById('cfg-pin-hint')?.value.trim() || '';
+      } else {
+        delete currentConvertedData.manifest.security.pin;
+        delete currentConvertedData.manifest.security.pinHint;
+      }
+
       const pacingVal = document.getElementById('cfg-pacing')?.value || 'lock_future';
+      const allowPast = pacingVal === 'strict_sync' ? false : (document.getElementById('cfg-pacing-allow-past') ? document.getElementById('cfg-pacing-allow-past').checked : true);
       currentConvertedData.manifest.pacing = {
         mode: pacingVal,
-        allowReviewPast: (pacingVal !== 'strict_sync')
+        allowReviewPast: allowPast
       };
       const globalTrans = document.getElementById('cfg-transition')?.value || 'fade';
       currentConvertedData.manifest.theme = currentConvertedData.manifest.theme || {};

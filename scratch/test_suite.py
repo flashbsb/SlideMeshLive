@@ -20,6 +20,7 @@ import threading
 import urllib.request
 import urllib.error
 import base64
+import shutil
 from http.server import HTTPServer
 
 # Adiciona o diretório raiz ao path para importação do server.py
@@ -2938,6 +2939,101 @@ def test_plano14_phase2_admin_security_panel():
         httpd.shutdown()
 
 
+def test_plano14_phase3_studio_security_and_pacing_config():
+    print(f"\n{'='*70}")
+    print(" 🧪 28. Plano 14: Configuração de Segurança e Pacing no SlideMesh Studio (Fase 3)")
+    print(f"{'='*70}")
+
+    # 1. Validação de HTML no SlideMesh Studio (import.html)
+    import_html_path = os.path.join(BASE_DIR, "import.html")
+    with open(import_html_path, "r", encoding="utf-8") as f:
+        import_html = f.read()
+
+    assert 'id="cfg-security"' in import_html, "Select #cfg-security ausente no import.html"
+    assert 'id="cfg-pin-code"' in import_html, "Input #cfg-pin-code ausente no import.html"
+    assert 'id="btn-studio-generate-pin"' in import_html, "Botão #btn-studio-generate-pin ausente no import.html"
+    assert 'id="cfg-pin-hint"' in import_html, "Input #cfg-pin-hint ausente no import.html"
+    assert 'id="cfg-pacing-allow-past"' in import_html, "Checkbox #cfg-pacing-allow-past ausente no import.html"
+    assert 'updateStudioSecurityUI' in import_html, "Função updateStudioSecurityUI ausente no import.html"
+    print("  ✓ SlideMesh Studio UI (import.html): Campos de PIN customizado, Dica e Permissão de Revisão passados validados.")
+
+    # 2. Teste de importação e persistência de manifest com security.pin e pacing.allowReviewPast
+    httpd = server.ThreadingHTTPServer(("127.0.0.1", 0), server.LiveSyncHTTPRequestHandler)
+    httpd.daemon_threads = True
+    port = httpd.server_port
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    server_thread.start()
+    base_url = f"http://127.0.0.1:{port}"
+
+    test_slug = "test-sec-pacing-studio"
+    test_dir = os.path.join(BASE_DIR, "presentations", test_slug)
+
+    try:
+        payload = {
+            "manifest": {
+                "id": test_slug,
+                "title": "Apresentação com Segurança Studio",
+                "defaultSession": "SECSTUDIO2026",
+                "security": {
+                    "mode": "pin",
+                    "pin": "9922",
+                    "pinHint": "Peça ao coordenador"
+                },
+                "pacing": {
+                    "mode": "lock_future",
+                    "allowReviewPast": False
+                }
+            },
+            "slides": [
+                {
+                    "id": 1,
+                    "slug": "slide-1",
+                    "title": "Slide 1 Seguro",
+                    "presenter": { "headline": "Apresentação Segura" }
+                }
+            ],
+            "assets": []
+        }
+
+        req = urllib.request.Request(
+            f"{base_url}/api/presentations/import",
+            data=json.dumps(payload).encode('utf-8'),
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=3) as res:
+            assert res.status == 200
+            res_data = json.loads(res.read().decode('utf-8'))
+            assert res_data.get("success") is True
+
+        manifest_path = os.path.join(test_dir, "manifest.json")
+        assert os.path.exists(manifest_path), "manifest.json não foi gravado"
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            saved_manifest = json.load(f)
+
+        assert saved_manifest.get("security", {}).get("mode") == "pin", "Modo security.mode incorreto"
+        assert saved_manifest.get("security", {}).get("pin") == "9922", "security.pin incorreto"
+        assert saved_manifest.get("security", {}).get("pinHint") == "Peça ao coordenador", "security.pinHint incorreto"
+        assert saved_manifest.get("pacing", {}).get("allowReviewPast") is False, "pacing.allowReviewPast incorreto"
+        print("  ✓ Motor de Importação/Studio: Gravação e persistência de PIN, Dica e allowReviewPast no manifest.json validadas.")
+
+    finally:
+        httpd.shutdown()
+        if os.path.exists(test_dir):
+            shutil.rmtree(test_dir, ignore_errors=True)
+            cat_path = os.path.join(BASE_DIR, "presentations", "catalog.json")
+            if os.path.exists(cat_path):
+                try:
+                    with open(cat_path, "r", encoding="utf-8") as f:
+                        cat = json.load(f)
+                    cat["presentations"] = [p for p in cat.get("presentations", []) if p.get("id") != test_slug]
+                    with open(cat_path, "w", encoding="utf-8") as f:
+                        json.dump(cat, f, indent=2, ensure_ascii=False)
+                except Exception:
+                    pass
+
+    print("✓ Plano 14 (Fase 3: Configuração de Segurança e Ritmo no SlideMesh Studio) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -2967,6 +3063,7 @@ if __name__ == "__main__":
         test_plano13_phase3_security_gatekeeper_and_rbac()
         test_plano14_phase1_security_setup_wizard()
         test_plano14_phase2_admin_security_panel()
+        test_plano14_phase3_studio_security_and_pacing_config()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

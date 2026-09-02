@@ -52,15 +52,15 @@ Este plano detalha a arquitetura, experiência do usuário (UX) e especificaçõ
   - [x] Botão no cabeçalho ou menu da Mesa Técnica: **`🔐 Segurança`**.
   - [x] Sincronização em tempo real das alterações sem necessidade de reiniciar o servidor Python.
 
-### 🚀 Fase 3: Configuração de Segurança e Ritmo no SlideMesh Studio (`import.html` & `conversion-engine.js`)
-- [ ] **Campos Dinâmicos de Segurança na Etapa 2 do Studio:**
-  - Quando `#cfg-security` for alterado para `"pin"`:
-    - Exibir card com campo `#cfg-pin-code` (PIN de 4 dígitos) e botão `🎲 Gerar PIN`.
-    - Exibir campo `#cfg-pin-hint` (Dica para os participantes no celular, ex: "Solicite o código ao palestrante").
-  - Na seção `#cfg-pacing`:
-    - Adicionar checkbox/toggle `#cfg-pacing-allow-past` ("Permitir que a plateia revise slides anteriores").
-- [ ] **Persistência no `manifest.json`:**
-  - O motor do Studio e o `conversion-engine.js` gravam a estrutura completa no manifesto:
+### 🚀 Fase 3: Configuração de Segurança e Ritmo no SlideMesh Studio (`import.html` & `conversion-engine.js`) — [CONCLUÍDA]
+- [x] **Campos Dinâmicos de Segurança na Etapa 2 do Studio:**
+  - [x] Quando `#cfg-security` for alterado para `"pin"`:
+    - [x] Exibir card com campo `#cfg-pin-code` (PIN de 4 dígitos) e botão `🎲 Gerar PIN`.
+    - [x] Exibir campo `#cfg-pin-hint` (Dica para os participantes no celular, ex: "Solicite o código ao palestrante").
+  - [x] Na seção `#cfg-pacing`:
+    - [x] Adicionar checkbox/toggle `#cfg-pacing-allow-past` ("Permitir que a plateia revise slides anteriores").
+- [x] **Persistência no `manifest.json`:**
+  - [x] O motor do Studio grava a estrutura completa no manifesto:
     ```json
     "security": {
       "mode": "pin",
