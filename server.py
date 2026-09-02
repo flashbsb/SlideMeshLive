@@ -520,6 +520,117 @@ def load_state_from_disk(filepath=None):
             return True
     except Exception as e:
         sys.stderr.write(f"[WARN] Falha ao restaurar snapshot em disco ({target_path}): {e}\n")
+
+def sync_and_verify_presentations_catalog(base_dir=BASE_DIR):
+    """
+    Verifica a consistência e integridade de todas as apresentações na pasta presentations/.
+    Auto-descobre novas pastas com manifest.json + slides.json, valida integridade estrutural,
+    sincroniza contagem de slides (totalSlides) e atualiza atomicamente presentations/catalog.json.
+    Retorna a lista de apresentações verificadas e válidas juntamente com o log de auditoria.
+    """
+    presentations_root = os.path.abspath(os.path.join(base_dir, "presentations"))
+    if not os.path.exists(presentations_root):
+        os.makedirs(presentations_root, exist_ok=True)
+
+    catalog_path = os.path.join(presentations_root, "catalog.json")
+    catalog_data = {"version": "1.0.0", "presentations": []}
+    if os.path.exists(catalog_path):
+        try:
+            with open(catalog_path, "r", encoding="utf-8") as f:
+                loaded = json.load(f)
+                if isinstance(loaded, dict) and "presentations" in loaded:
+                    catalog_data = loaded
+        except Exception as e:
+            sys.stderr.write(f"[Catalog] Aviso ao ler catalog.json: {e}\n")
+
+    existing_map = {}
+    for p in catalog_data.get("presentations", []):
+        if isinstance(p, dict) and "id" in p:
+            existing_map[p["id"]] = p
+
+    verified_list = []
+    audit_log = []
+    catalog_modified = False
+
+    try:
+        entries = sorted(os.listdir(presentations_root))
+    except Exception:
+        entries = []
+
+    for item in entries:
+        item_path = os.path.join(presentations_root, item)
+        if not os.path.isdir(item_path) or item.startswith("."):
+            continue
+
+        manifest_file = os.path.join(item_path, "manifest.json")
+        slides_file = os.path.join(item_path, "slides.json")
+
+        if not os.path.exists(manifest_file) or not os.path.exists(slides_file):
+            continue
+
+        try:
+            with open(manifest_file, "r", encoding="utf-8") as mf:
+                manifest = json.load(mf)
+            with open(slides_file, "r", encoding="utf-8") as sf:
+                slides_payload = json.load(sf)
+        except Exception as err:
+            audit_log.append(f"[WARN] Apresentação '{item}' com JSON inválido: {err}")
+            continue
+
+        slides_list = slides_payload.get("slides", []) if isinstance(slides_payload, dict) else []
+        actual_slide_count = len(slides_list)
+        if actual_slide_count == 0:
+            continue
+
+        deck_id = str(manifest.get("id", item)).strip() or item
+        deck_title = str(manifest.get("title", item)).strip() or item
+        sec_obj = manifest.get("security", {})
+        sec_mode = sec_obj.get("mode", "public") if isinstance(sec_obj, dict) else "public"
+        sec_pin = sec_obj.get("pin", "") if isinstance(sec_obj, dict) else ""
+
+        if deck_id in existing_map:
+            entry = existing_map[deck_id]
+            if entry.get("totalSlides") != actual_slide_count:
+                entry["totalSlides"] = actual_slide_count
+                catalog_modified = True
+                audit_log.append(f"[SYNC] '{deck_id}': totalSlides sincronizado para {actual_slide_count}")
+            if not entry.get("title"):
+                entry["title"] = deck_title
+            verified_list.append(entry)
+        else:
+            new_entry = {
+                "id": deck_id,
+                "code": deck_id.upper().replace("-", "_")[:12],
+                "title": deck_title,
+                "subtitle": manifest.get("subtitle", "Apresentação Interativa SlideMesh"),
+                "description": manifest.get("description", "Apresentação autodescoberta e verificada no diretório presentations/."),
+                "defaultSession": manifest.get("defaultSession", f"SES-{deck_id.upper().replace('-', '')[:8]}"),
+                "totalSlides": actual_slide_count,
+                "securityMode": sec_mode,
+                "securityLabel": f"🔒 Protegida por PIN ({sec_pin})" if sec_mode == "pin" and sec_pin else ("🔒 Protegida por PIN" if sec_mode == "pin" else "Aberta"),
+                "badgeClass": "badge" if sec_mode == "pin" else "badge-accent",
+                "tags": [deck_id]
+            }
+            verified_list.append(new_entry)
+            catalog_data.setdefault("presentations", []).append(new_entry)
+            catalog_modified = True
+            audit_log.append(f"[DISCOVER] '{deck_id}': nova apresentação autodescoberta e registrada ({actual_slide_count} slides)")
+
+    if catalog_modified or len(verified_list) != len(catalog_data.get("presentations", [])):
+        catalog_data["presentations"] = verified_list
+        tmp_cat = catalog_path + ".tmp"
+        try:
+            with open(tmp_cat, "w", encoding="utf-8") as f:
+                json.dump(catalog_data, f, ensure_ascii=False, indent=2)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp_cat, catalog_path)
+            audit_log.append(f"[SAVED] presentations/catalog.json atualizado atomicamente com {len(verified_list)} decks.")
+        except Exception as we:
+            sys.stderr.write(f"[Catalog] Erro ao gravar catalog.json: {we}\n")
+
+    return verified_list, audit_log
+
 def import_presentation_files(data):
     """
     Processa a gravação atômica de uma nova apresentação importada:
@@ -1346,6 +1457,24 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps({"success": False, "error": f"Sessão analítica '{session_id}' não encontrada."}).encode('utf-8'))
             return
 
+        # Endpoint de Catálogo Verificado de Apresentações com anti-caching estrito
+        if parsed.path == '/api/presentations/catalog' or parsed.path == '/presentations/catalog.json':
+            presentations, _ = sync_and_verify_presentations_catalog(BASE_DIR)
+            catalog_payload = {
+                "version": "1.0.0",
+                "verifiedAt": int(time.time() * 1000),
+                "count": len(presentations),
+                "presentations": presentations
+            }
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            self.send_header('Pragma', 'no-cache')
+            self.end_headers()
+            self.wfile.write(json.dumps(catalog_payload, ensure_ascii=False, indent=2).encode('utf-8'))
+            return
+
         if parsed.path == '/api/presentations/export':
             qs = parse_qs(parsed.query)
             presentation_id = qs.get('id', [''])[0].strip() or qs.get('presentation', [''])[0].strip()
@@ -2075,6 +2204,9 @@ def main():
     local_ip = get_local_ip()
     setup_needed = is_security_setup_required(args.dir)
 
+    # Verificação de consistência e sincronização de apresentações na inicialização
+    verified_presentations, catalog_audit = sync_and_verify_presentations_catalog(args.dir)
+
     if args.persist:
         PERSIST_ENABLED = True
         BACKUP_FILE = args.backup_file
@@ -2086,29 +2218,36 @@ def main():
     httpd = ThreadingHTTPServer(server_address, LiveSyncHTTPRequestHandler)
     httpd.daemon_threads = True
 
-    print("=" * 72)
+    print("=" * 76)
     print(" 📡 SlideMeshLive — Servidor de Sincronização em Tempo Real (LAN / Wi-Fi)")
-    print("=" * 72)
+    print("=" * 76)
     if setup_needed:
         print(" ⚠️  [Segurança] AVISO: config/security.json não encontrado.")
         print(f"    Modo de Primeiro Uso ATIVO. Configure suas credenciais em:")
         print(f"    👉 http://localhost:{port}/setup.html (ou execute: python3 server.py --setup)")
-        print("-" * 72)
+        print("-" * 76)
+
+    print(f" 📚 Catálogo Verificado ({len(verified_presentations)} apresentações prontas):")
+    for i, p in enumerate(verified_presentations, 1):
+        sec_tag = "🔒 PIN" if p.get("securityMode") == "pin" else "🌐 Aberta"
+        slides_cnt = p.get("totalSlides", 0)
+        ses = p.get("defaultSession", "SES2026")
+        print(f"    {i}. [{p['id']}] ({slides_cnt} slides | {sec_tag} | Sessão: {ses})")
+        print(f"       👉 {p.get('title', p['id'])}")
+    print("-" * 76)
 
     print(f" 💻 Acesso Local no Computador (Navegador):")
     print(f"    Portal Inicial:     http://localhost:{port}/")
+    print(f"    SlideMesh Studio:   http://localhost:{port}/import.html")
     if setup_needed:
         print(f"    Assistente Setup:   http://localhost:{port}/setup.html")
-    print(f"    Telão Apresentador: http://localhost:{port}/presenter/?presentation=slidemesh-showcase")
-    print(f"    Mesa Técnica/Admin: http://localhost:{port}/admin/?presentation=slidemesh-showcase")
     print("")
     print(f" 📱 Acesso de Smartphones pelo Celular (Mesmo Wi-Fi / Rede Local):")
     print(f"    http://{local_ip}:{port}/")
-    print(f"    Link Direto Celular: http://{local_ip}:{port}/audience/?presentation=slidemesh-showcase&session=SHOWCASE2026")
     print(f" 📦 Repositório GitHub:   https://github.com/flashbsb/SlideMeshLive")
     if PERSIST_ENABLED:
         print(f" 🛡️ Persistência em Disco: ATIVA ({BACKUP_FILE})")
-    print("=" * 72)
+    print("=" * 76)
     print(" ⚡ Hub Sequencial (/api/sync) ativo: Celulares e Telão sincronizados!")
     print(" Pressione Ctrl+C para encerrar o servidor.\n")
 

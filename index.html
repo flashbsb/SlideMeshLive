@@ -326,8 +326,11 @@
       } catch (e) {}
 
       try {
-        const res = await fetch('presentations/catalog.json?t=' + Date.now());
-        if (!res.ok) throw new Error('Não foi possível carregar presentations/catalog.json');
+        let res = await fetch('/api/presentations/catalog?t=' + Date.now());
+        if (!res.ok) {
+          res = await fetch('presentations/catalog.json?t=' + Date.now());
+        }
+        if (!res.ok) throw new Error('Não foi possível carregar catálogo de apresentações');
         const data = await res.json();
         allPresentations = data.presentations || [];
         renderCards(allPresentations);
@@ -335,28 +338,88 @@
         console.warn('[Portal] Usando catálogo padrão offline:', err);
         allPresentations = [
           {
+            id: 'comece-por-aqui',
+            code: 'START',
+            title: 'Comece por Aqui: Mapa do Ecossistema & Guia das Interfaces',
+            subtitle: 'O Guia de Entrada Oficial do SlideMeshLive',
+            description: 'Apresentação introdutória que mapeia as 5 interfaces web da plataforma (Portal, Telão, Mesa Técnica, Smartphone e Studio), explica a arquitetura desacoplada e guia os próximos passos de aprendizado.',
+            defaultSession: 'SES-START',
+            totalSlides: 5,
+            securityMode: 'public',
+            securityLabel: '🚀 Onboarding & Visão Geral (Aberta)',
+            badgeClass: 'badge-accent'
+          },
+          {
             id: 'slidemesh-showcase',
-            code: 'SLIDEMESH-DEMO-2026',
+            code: 'SHOWCASE',
             title: 'SlideMeshLive: A Mágica das Apresentações Interativas',
             subtitle: 'Guia Demonstrativo Oficial de Recursos & Experiência em Tempo Real',
-            description: 'Apresentação oficial demonstrativa da plataforma com enquetes interativas ao vivo, moderação de perguntas, atalhos de palco, modo púlpito e sincronização mobile instantânea.',
-            defaultSession: 'SHOWCASE2026',
+            description: 'Apresentação oficial demonstrativa da plataforma com enquetes interativas ao vivo, moderação de perguntas, atalhos de palco, modo púlpito e sincronização mobile instantânea sub-50ms.',
+            defaultSession: 'SES-SHOWCASE',
             totalSlides: 10,
             securityMode: 'public',
-            securityLabel: '⭐ Demonstração Oficial (Aberta)',
+            securityLabel: '⭐ Demonstração Geral (Aberta)',
             badgeClass: 'badge-live'
           },
           {
+            id: 'guia-animacoes-e-palco',
+            code: 'PALCO',
+            title: 'Manual Prático: Transições de Telão, Efeitos & Controle de Mídia',
+            subtitle: 'Animações Cinematográficas, Canvas 2D e Mídias HTTP 206',
+            description: 'Aprenda na prática a configurar as 4 transições de slide (fade, zoom, slide-horizontal, slide-vertical), disparar efeitos Canvas 2D pelo Admin e controlar mídias pesadas com pré-cache deslizante.',
+            defaultSession: 'SES-PALCO',
+            totalSlides: 5,
+            securityMode: 'public',
+            securityLabel: '🎨 Palco & Efeitos (Aberta)',
+            badgeClass: 'badge-accent'
+          },
+          {
+            id: 'guia-criacao-studio-zip',
+            code: 'STUDIO',
+            title: 'Manual Prático: SlideMesh Studio — Criação, Importação & Pacotes ZIP',
+            subtitle: 'Como Criar, Importar PPTX/Word/MD/PDF e Exportar Pacotes Portáteis',
+            description: 'Guia prático hands-on de criação no Studio: explore os 4 templates prontos, aprenda a ativar o layout split-screen automático, importe arquivos externos e gere pacotes .slidemesh.zip para rodar offline.',
+            defaultSession: 'SES-STUDIO',
+            totalSlides: 5,
+            securityMode: 'public',
+            securityLabel: '📦 Criação & Importação (Aberta)',
+            badgeClass: 'badge-accent'
+          },
+          {
+            id: 'guia-moderacao-e-analytics',
+            code: 'MESA',
+            title: 'Manual Prático: Mesa Técnica — Moderação de Q&A & Gestão de Enquetes',
+            subtitle: 'Operação Invisível de Palco, Ciclo de Perguntas e Relatórios Pós-Evento',
+            description: 'Aprenda a operar o console da Mesa Técnica (/admin): gerencie o ciclo de 4 fases de perguntas da plateia, controle a abertura e revelação de enquetes ao vivo e exporte relatórios executivos em CSV/Markdown/JSON.',
+            defaultSession: 'SES-MESA',
+            totalSlides: 5,
+            securityMode: 'public',
+            securityLabel: '💬 Moderação & Analytics (Aberta)',
+            badgeClass: 'badge-accent'
+          },
+          {
             id: 'treinamento-interno-pin',
-            code: 'TREINAMENTO-PIN-7482',
-            title: 'Treinamento Técnico Interno (Protegido por PIN)',
-            subtitle: 'Exemplo de Apresentação com Acesso Restrito',
-            description: 'Apresentação demonstrativa que exige o PIN 7482 para liberar a visualização dos slides e participação no smartphone.',
-            defaultSession: 'TREINAMENTO2026',
-            totalSlides: 1,
+            code: 'SEGURANCA',
+            title: 'Manual Prático: Segurança, PINs de Acesso & Gestão RBAC',
+            subtitle: 'Controle de Acesso por PIN, Pacing Lock e Gerenciamento de Usuários',
+            description: 'Apresentação com acesso protegido por PIN (código 7482) que ensina passo a passo como configurar o Setup Wizard, criar PINs de deck, ativar a trava de ritmo (Pacing Lock) e gerenciar papéis RBAC.',
+            defaultSession: 'SES-SEG7482',
+            totalSlides: 5,
             securityMode: 'pin',
             securityLabel: '🔒 Protegida por PIN (7482)',
             badgeClass: 'badge'
+          },
+          {
+            id: 'guia-diagnostico-troubleshooting',
+            code: 'SUPORTE',
+            title: 'Manual Prático: Diagnóstico de Rede, Monitoramento & Resolução de Falhas',
+            subtitle: 'Telemetria ao Vivo na Mesa Técnica, Operação em LAN e Resolução de Problemas',
+            description: 'Guia essencial para técnicos e operadores: monitore latência RTT, taxa de pacotes e banda no HUD da Mesa Técnica, opere 100% offline em roteador Wi-Fi local e resolva problemas de projetor e reconexão.',
+            defaultSession: 'SES-SUPORTE',
+            totalSlides: 5,
+            securityMode: 'public',
+            securityLabel: '🩺 Diagnóstico & Resolução (Aberta)',
+            badgeClass: 'badge-accent'
           }
         ];
         renderCards(allPresentations);

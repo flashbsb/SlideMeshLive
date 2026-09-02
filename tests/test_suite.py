@@ -3139,6 +3139,99 @@ def test_plano14_phase4_audience_pin_and_admin_health_badge():
     print("✓ Plano 14 (Fase 4: Integração de PIN na Audiência Mobile e Badge de Saúde no Admin) 100% HOMOLOGADO.")
 
 
+def test_plano16_presentations_auto_discovery_and_catalog_endpoint():
+    print_section("30. Plano 16: Autodescoberta de Apresentações & Endpoint Dinâmico de Catálogo")
+    from server import sync_and_verify_presentations_catalog, ThreadingHTTPServer, LiveSyncHTTPRequestHandler
+    
+    # 1. Teste direto da função sync_and_verify_presentations_catalog
+    verified, audit = sync_and_verify_presentations_catalog(BASE_DIR)
+    assert len(verified) >= 7, f"Esperado ao menos 7 apresentações verificadas, retornado {len(verified)}"
+    
+    expected_ids = {
+        "comece-por-aqui", "slidemesh-showcase", "guia-animacoes-e-palco",
+        "guia-criacao-studio-zip", "guia-moderacao-e-analytics",
+        "treinamento-interno-pin", "guia-diagnostico-troubleshooting"
+    }
+    found_ids = {p["id"] for p in verified}
+    assert expected_ids.issubset(found_ids), f"Decks ausentes no catálogo verificado: {expected_ids - found_ids}"
+    print("  ✓ sync_and_verify_presentations_catalog: Todos os 7 decks oficiais validados com sucesso.")
+
+    # 2. Teste de Autodescoberta de nova pasta criada no disco
+    temp_deck_slug = "teste-deck-autodescoberto-temp"
+    temp_deck_dir = os.path.join(BASE_DIR, "presentations", temp_deck_slug)
+    os.makedirs(temp_deck_dir, exist_ok=True)
+    
+    try:
+        manifest_temp = {
+            "id": temp_deck_slug,
+            "title": "Deck Autodescoberto de Teste",
+            "subtitle": "Subtítulo de Teste",
+            "description": "Descrição de teste de autodescoberta",
+            "defaultSession": "SES-TEMPTEST",
+            "theme": {"accentColor": "#f59e0b", "background": "#0b0f19"},
+            "security": {"mode": "public"}
+        }
+        slides_temp = {
+            "presentationId": temp_deck_slug,
+            "title": "Deck Autodescoberto de Teste",
+            "slides": [
+                {"id": 1, "presenter": {"headline": "Slide 1"}, "audience": {"summary": "Summary 1"}},
+                {"id": 2, "presenter": {"headline": "Slide 2"}, "audience": {"summary": "Summary 2"}},
+                {"id": 3, "presenter": {"headline": "Slide 3"}, "audience": {"summary": "Summary 3"}}
+            ]
+        }
+        with open(os.path.join(temp_deck_dir, "manifest.json"), "w", encoding="utf-8") as mf:
+            json.dump(manifest_temp, mf)
+        with open(os.path.join(temp_deck_dir, "slides.json"), "w", encoding="utf-8") as sf:
+            json.dump(slides_temp, sf)
+
+        # Roda verificação e valida se autodescobriu
+        verified_after, audit_after = sync_and_verify_presentations_catalog(BASE_DIR)
+        assert any(p["id"] == temp_deck_slug for p in verified_after), "Novo deck em presentations/ não foi autodescoberto!"
+        temp_entry = next(p for p in verified_after if p["id"] == temp_deck_slug)
+        assert temp_entry["totalSlides"] == 3, f"totalSlides incorreto ({temp_entry['totalSlides']}), esperado 3"
+        print("  ✓ Autodescoberta Dinâmica: Nova apresentação em disco detectada e registrada automaticamente no catalog.json.")
+
+        httpd = ThreadingHTTPServer(('127.0.0.1', 0), LiveSyncHTTPRequestHandler)
+        test_port = httpd.server_port
+        t = threading.Thread(target=httpd.serve_forever, daemon=True)
+        t.start()
+        time.sleep(0.1)
+
+        base_url = f"http://127.0.0.1:{test_port}"
+        
+        # Teste GET /api/presentations/catalog
+        req_cat_api = urllib.request.Request(f"{base_url}/api/presentations/catalog")
+        with urllib.request.urlopen(req_cat_api, timeout=3) as res:
+            assert res.status == 200
+            cache_header = res.headers.get("Cache-Control", "")
+            assert "no-store" in cache_header or "no-cache" in cache_header, f"Cache-Control header incorreto: {cache_header}"
+            data = json.loads(res.read().decode('utf-8'))
+            assert "presentations" in data and len(data["presentations"]) >= 8
+            assert any(p["id"] == temp_deck_slug for p in data["presentations"])
+        print("  ✓ GET /api/presentations/catalog: Catálogo retornado dinamicamente com headers de anti-caching.")
+
+        # Teste GET /presentations/catalog.json
+        req_cat_json = urllib.request.Request(f"{base_url}/presentations/catalog.json")
+        with urllib.request.urlopen(req_cat_json, timeout=3) as res:
+            assert res.status == 200
+            cache_header = res.headers.get("Cache-Control", "")
+            assert "no-store" in cache_header or "no-cache" in cache_header
+            data = json.loads(res.read().decode('utf-8'))
+            assert "presentations" in data
+        print("  ✓ GET /presentations/catalog.json: Interceptação com anti-caching validada com sucesso.")
+
+        httpd.shutdown()
+
+    finally:
+        if os.path.exists(temp_deck_dir):
+            shutil.rmtree(temp_deck_dir, ignore_errors=True)
+        # Limpa do catalog.json
+        sync_and_verify_presentations_catalog(BASE_DIR)
+
+    print("✓ Plano 16 (Autodescoberta de Apresentações, Sincronização & Endpoint Dinâmico de Catálogo) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -3170,6 +3263,7 @@ if __name__ == "__main__":
         test_plano14_phase2_admin_security_panel()
         test_plano14_phase3_studio_security_and_pacing_config()
         test_plano14_phase4_audience_pin_and_admin_health_badge()
+        test_plano16_presentations_auto_discovery_and_catalog_endpoint()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

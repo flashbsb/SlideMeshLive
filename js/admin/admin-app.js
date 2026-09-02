@@ -206,7 +206,10 @@ class AdminApp {
   async loadCatalogOptions() {
     if (!this.dom.presSelector) return;
     try {
-      const res = await fetch('../presentations/catalog.json?t=' + Date.now());
+      let res = await fetch('/api/presentations/catalog?t=' + Date.now());
+      if (!res.ok) {
+        res = await fetch('../presentations/catalog.json?t=' + Date.now());
+      }
       if (res.ok) {
         const data = await res.json();
         const list = data.presentations || [];

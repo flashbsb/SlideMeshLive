@@ -20,24 +20,6 @@
       ]
     },
     {
-      "id": "slidemesh-showcase",
-      "code": "SHOWCASE",
-      "title": "SlideMeshLive: A Mágica das Apresentações Interativas",
-      "subtitle": "Guia Demonstrativo Oficial de Recursos & Experiência em Tempo Real",
-      "description": "Apresentação oficial demonstrativa da plataforma com enquetes interativas ao vivo, moderação de perguntas, atalhos de palco, modo púlpito e sincronização mobile instantânea sub-50ms.",
-      "defaultSession": "SES-SHOWCASE",
-      "totalSlides": 10,
-      "securityMode": "public",
-      "securityLabel": "⭐ Demonstração Geral (Aberta)",
-      "badgeClass": "badge-live",
-      "tags": [
-        "showcase",
-        "demonstracao",
-        "geral",
-        "ao-vivo"
-      ]
-    },
-    {
       "id": "guia-animacoes-e-palco",
       "code": "PALCO",
       "title": "Manual Prático: Transições de Telão, Efeitos & Controle de Mídia",
@@ -76,6 +58,25 @@
       ]
     },
     {
+      "id": "guia-diagnostico-troubleshooting",
+      "code": "SUPORTE",
+      "title": "Manual Prático: Diagnóstico de Rede, Monitoramento & Resolução de Falhas",
+      "subtitle": "Telemetria ao Vivo na Mesa Técnica, Operação em LAN e Resolução de Problemas",
+      "description": "Guia essencial para técnicos e operadores: monitore latência RTT, taxa de pacotes e banda no HUD da Mesa Técnica, opere 100% offline em roteador Wi-Fi local e resolva problemas de projetor e reconexão.",
+      "defaultSession": "SES-SUPORTE",
+      "totalSlides": 5,
+      "securityMode": "public",
+      "securityLabel": "🩺 Diagnóstico & Resolução (Aberta)",
+      "badgeClass": "badge-accent",
+      "tags": [
+        "diagnostico",
+        "troubleshooting",
+        "telemetria",
+        "suporte",
+        "rede-local"
+      ]
+    },
+    {
       "id": "guia-moderacao-e-analytics",
       "code": "MESA",
       "title": "Manual Prático: Mesa Técnica — Moderação de Q&A & Gestão de Enquetes",
@@ -95,6 +96,24 @@
       ]
     },
     {
+      "id": "slidemesh-showcase",
+      "code": "SHOWCASE",
+      "title": "SlideMeshLive: A Mágica das Apresentações Interativas",
+      "subtitle": "Guia Demonstrativo Oficial de Recursos & Experiência em Tempo Real",
+      "description": "Apresentação oficial demonstrativa da plataforma com enquetes interativas ao vivo, moderação de perguntas, atalhos de palco, modo púlpito e sincronização mobile instantânea sub-50ms.",
+      "defaultSession": "SES-SHOWCASE",
+      "totalSlides": 10,
+      "securityMode": "public",
+      "securityLabel": "⭐ Demonstração Geral (Aberta)",
+      "badgeClass": "badge-live",
+      "tags": [
+        "showcase",
+        "demonstracao",
+        "geral",
+        "ao-vivo"
+      ]
+    },
+    {
       "id": "treinamento-interno-pin",
       "code": "SEGURANCA",
       "title": "Manual Prático: Segurança, PINs de Acesso & Gestão RBAC",
@@ -111,25 +130,6 @@
         "rbac",
         "pacing-lock",
         "treinamento"
-      ]
-    },
-    {
-      "id": "guia-diagnostico-troubleshooting",
-      "code": "SUPORTE",
-      "title": "Manual Prático: Diagnóstico de Rede, Monitoramento & Resolução de Falhas",
-      "subtitle": "Telemetria ao Vivo na Mesa Técnica, Operação em LAN e Resolução de Problemas",
-      "description": "Guia essencial para técnicos e operadores: monitore latência RTT, taxa de pacotes e banda no HUD da Mesa Técnica, opere 100% offline em roteador Wi-Fi local e resolva problemas de projetor e reconexão.",
-      "defaultSession": "SES-SUPORTE",
-      "totalSlides": 5,
-      "securityMode": "public",
-      "securityLabel": "🩺 Diagnóstico & Resolução (Aberta)",
-      "badgeClass": "badge-accent",
-      "tags": [
-        "diagnostico",
-        "troubleshooting",
-        "telemetria",
-        "suporte",
-        "rede-local"
       ]
     }
   ]
