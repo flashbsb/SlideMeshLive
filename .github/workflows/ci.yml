@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Test Suite (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run Test Suite
+        run: |
+          python tests/test_suite.py
+
+  security-audit:
+    name: Repository Security & Structure Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate No Leaked Security Secrets
+        run: |
+          python -c "
+          import os, sys
+          # Certifica que config/security.json de produção não está versionado
+          if os.path.exists('config/security.json'):
+              print('ERRO DE SEGURANÇA: config/security.json foi versionado no repositório!')
+              sys.exit(1)
+          # Certifica que os modelos públicos existem
+          assert os.path.isfile('config/security.example.json'), 'config/security.example.json ausente!'
+          print('✓ Auditoria de segurança de credenciais concluída com sucesso.')
+          "
+
+      - name: Validate JSON Syntax
+        run: |
+          python -c "
+          import json, glob
+          files = glob.glob('**/*.json', recursive=True)
+          for f in files:
+              if 'node_modules' in f or '.vscode' in f or 'database.rules.json' in f: continue
+              with open(f, 'r', encoding='utf-8') as fp:
+                  json.load(fp)
+          print('✓ Todos os arquivos JSON do repositório possuem sintaxe válida.')
+          "
