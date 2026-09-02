@@ -122,7 +122,7 @@
       "defaultSession": "SES-SEG7482",
       "totalSlides": 5,
       "securityMode": "pin",
-      "securityLabel": "🔒 Protegida por PIN (7482)",
+      "securityLabel": "🔒 Protegida por PIN",
       "badgeClass": "badge",
       "tags": [
         "seguranca",

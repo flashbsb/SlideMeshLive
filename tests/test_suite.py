@@ -3232,6 +3232,84 @@ def test_plano16_presentations_auto_discovery_and_catalog_endpoint():
     print("✓ Plano 16 (Autodescoberta de Apresentações, Sincronização & Endpoint Dinâmico de Catálogo) 100% HOMOLOGADO.")
 
 
+def test_plano17_phase1_manifest_sanitization_and_server_side_pin():
+    """
+    Testa a homologação da Fase 1 do Plano 17:
+    - Zero Client-Side Secret Leak no manifest.json servido via HTTP
+    - Ausência de PINs expostos nas labels do catálogo
+    - Verificação de PIN 100% Server-Side via /api/auth/verify-pin
+    - Remoção de fallback de comparação de texto claro no cliente
+    """
+    print(f"\n{'='*70}")
+    print(" 🧪 31. Plano 17: Sanitização do Manifesto & Verificação 100% Server-Side (Fase 1)")
+    print(f"{'='*70}")
+
+    httpd = server.ThreadingHTTPServer(('127.0.0.1', 0), server.LiveSyncHTTPRequestHandler)
+    test_port = httpd.server_port
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    time.sleep(0.1)
+
+    base_url = f"http://127.0.0.1:{test_port}"
+
+    try:
+        # 1. Teste de Sanitização de manifest.json servido via HTTP
+        req_manifest = urllib.request.Request(f"{base_url}/presentations/treinamento-interno-pin/manifest.json")
+        with urllib.request.urlopen(req_manifest, timeout=3) as res:
+            assert res.status == 200
+            cache_header = res.headers.get("Cache-Control", "")
+            assert "no-store" in cache_header or "no-cache" in cache_header, "Anti-caching ausente no manifest.json"
+            manifest_payload = json.loads(res.read().decode('utf-8'))
+            sec = manifest_payload.get("security", {})
+            assert sec.get("mode") == "pin", "security.mode incorreto"
+            assert "pin" not in sec, f"Vazamento crítico de segredo: 'pin' foi exposto no manifest público: {sec}"
+            assert sec.get("isProtected") is True, "Flag isProtected não definida no manifest sanitizado"
+        print("  ✓ Zero Secret Leak: 'pin' redigido e removido com sucesso de /presentations/.../manifest.json.")
+
+        # 2. Teste de Catálogo Sanitizado (sem PIN nas labels)
+        req_catalog = urllib.request.Request(f"{base_url}/api/presentations/catalog")
+        with urllib.request.urlopen(req_catalog, timeout=3) as res:
+            assert res.status == 200
+            cat_payload = json.loads(res.read().decode('utf-8'))
+            deck_pin = next((p for p in cat_payload.get("presentations", []) if p["id"] == "treinamento-interno-pin"), None)
+            assert deck_pin is not None, "treinamento-interno-pin ausente no catálogo"
+            assert deck_pin.get("securityLabel") == "🔒 Protegida por PIN", f"Label expõe dados indevidos: {deck_pin.get('securityLabel')}"
+            assert "7482" not in deck_pin.get("securityLabel", ""), "Código PIN vazado na securityLabel do catálogo!"
+        print("  ✓ Catálogo Dinâmico (/api/presentations/catalog): 'securityLabel' 100% sanitizada sem expor PINs.")
+
+        # 3. Teste de Verificação Server-Side Correta (PIN 7482)
+        valid_payload = json.dumps({"pin": "7482", "presentationId": "treinamento-interno-pin"}).encode('utf-8')
+        req_verify_valid = urllib.request.Request(f"{base_url}/api/auth/verify-pin", data=valid_payload, headers={'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req_verify_valid, timeout=3) as res:
+            assert res.status == 200
+            v_data = json.loads(res.read().decode('utf-8'))
+            assert v_data.get("authorized") is True
+            assert v_data.get("role") == "audience"
+        print("  ✓ POST /api/auth/verify-pin: PIN do deck '7482' validado exclusivamente no backend com 200 OK.")
+
+        # 4. Teste de Verificação Server-Side com PIN Inválido (PIN 0000)
+        invalid_payload = json.dumps({"pin": "0000", "presentationId": "treinamento-interno-pin"}).encode('utf-8')
+        req_verify_invalid = urllib.request.Request(f"{base_url}/api/auth/verify-pin", data=invalid_payload, headers={'Content-Type': 'application/json'})
+        try:
+            with urllib.request.urlopen(req_verify_invalid, timeout=3) as res:
+                assert False, f"Esperado 401 Unauthorized mas retornou {res.status}"
+        except urllib.error.HTTPError as he:
+            assert he.code == 401, f"Código inesperado: {he.code}"
+        print("  ✓ POST /api/auth/verify-pin: Rejeição estrita de PIN inválido com 401 Unauthorized validada.")
+
+        # 5. Validação de ausência de comparação insegura de segredo em audience-app.js
+        audience_js_path = os.path.join(BASE_DIR, "js", "audience", "audience-app.js")
+        with open(audience_js_path, "r", encoding="utf-8") as f:
+            audience_content = f.read()
+        assert "entered === required" not in audience_content, "Comparação local de PIN em texto claro ainda presente em audience-app.js!"
+        print("  ✓ Cliente Mobile (audience-app.js): Código refatorado para validação 100% delegada ao backend.")
+
+    finally:
+        httpd.shutdown()
+
+    print("✓ Plano 17 (Fase 1: Sanitização do Manifesto & Verificação 100% Server-Side) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -3264,6 +3342,7 @@ if __name__ == "__main__":
         test_plano14_phase3_studio_security_and_pacing_config()
         test_plano14_phase4_audience_pin_and_admin_health_badge()
         test_plano16_presentations_auto_discovery_and_catalog_endpoint()
+        test_plano17_phase1_manifest_sanitization_and_server_side_pin()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

@@ -607,7 +607,7 @@ def sync_and_verify_presentations_catalog(base_dir=BASE_DIR):
                 "defaultSession": manifest.get("defaultSession", f"SES-{deck_id.upper().replace('-', '')[:8]}"),
                 "totalSlides": actual_slide_count,
                 "securityMode": sec_mode,
-                "securityLabel": f"🔒 Protegida por PIN ({sec_pin})" if sec_mode == "pin" and sec_pin else ("🔒 Protegida por PIN" if sec_mode == "pin" else "Aberta"),
+                "securityLabel": "🔒 Protegida por PIN" if sec_mode == "pin" else "Aberta",
                 "badgeClass": "badge" if sec_mode == "pin" else "badge-accent",
                 "tags": [deck_id]
             }
@@ -1510,6 +1510,35 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"success": False, "error": str(err)}).encode('utf-8'))
                 return
+
+        # Sanitização e Redação de Segredos em manifest.json (Plano 17 - Fase 1)
+        if norm_path.startswith('/presentations/') and norm_path.endswith('/manifest.json') and not norm_path.endswith('catalog.json'):
+            filepath = self.translate_path(parsed.path)
+            if os.path.isfile(filepath):
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as mf:
+                        manifest_data = json.load(mf)
+                    
+                    if isinstance(manifest_data.get("security"), dict):
+                        clean_manifest = json.loads(json.dumps(manifest_data))
+                        sec = clean_manifest["security"]
+                        if "pin" in sec:
+                            del sec["pin"]
+                            sec["isProtected"] = True
+                        manifest_data = clean_manifest
+                    
+                    payload_bytes = json.dumps(manifest_data, ensure_ascii=False, indent=2).encode('utf-8')
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+                    self.send_header('Pragma', 'no-cache')
+                    self.send_header('Content-Length', str(len(payload_bytes)))
+                    self.end_headers()
+                    self.wfile.write(payload_bytes)
+                    return
+                except Exception as me:
+                    sys.stderr.write(f"[Security] Erro ao sanitizar manifest.json: {me}\n")
 
         # Suporte a HTTP 206 Range Requests para arquivos de mídia (Plano 11 - Fase 1)
         filepath = self.translate_path(parsed.path)

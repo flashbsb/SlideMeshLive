@@ -226,15 +226,9 @@ class AudienceApp {
         isValid = await this.auth.verifyAdminPIN(entered, this.presentationId);
       }
 
-      if (!isValid && this.engine.manifest && this.engine.manifest.security) {
-        const required = String(this.engine.manifest.security.pin || '').trim();
-        if (required && entered === required) {
-          isValid = true;
-        }
-      }
-
       if (isValid) {
         sessionStorage.setItem(`unlocked_session_${this.sessionId}`, 'true');
+        sessionStorage.setItem(`pres_pin_${this.presentationId}`, 'valid');
         if (this.dom.sessionPinError) this.dom.sessionPinError.style.display = 'none';
         if (this.dom.sessionPinModal) this.dom.sessionPinModal.classList.remove('active');
       } else {
