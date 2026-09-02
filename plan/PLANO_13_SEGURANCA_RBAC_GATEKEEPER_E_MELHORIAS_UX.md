@@ -30,46 +30,47 @@ Este plano estabelece as diretrizes de arquitetura, segurança e experiência do
 
 ## 3. Fases de Implementação
 
-### 🚀 Fase 1: Limpeza e Consolidação da Tela Inicial (`index.html`)
-- [ ] Remover o badge `v1.0.0` do cabeçalho de `index.html`.
-- [ ] Remover o botão duplicado `#btn-header-import-zip` e o modal `#modal-import-zip`.
-- [ ] Destacar o botão de acesso ao **SlideMesh Studio** (`import.html`) como ponto único de criação e importação universal.
-- [ ] Ajustar textos e traduções no dicionário `js/core/i18n-engine.js`.
+### 🚀 Fase 1: Limpeza e Consolidação da Tela Inicial (`index.html`) — [CONCLUÍDA]
+- [x] Remover o badge `v1.0.0` do cabeçalho de `index.html`.
+- [x] Remover o botão duplicado `#btn-header-import-zip` e o modal `#modal-import-zip`.
+- [x] Destacar o botão de acesso ao **SlideMesh Studio** (`import.html`) como ponto único de criação e importação universal.
+- [x] Ajustar textos e traduções no dicionário `js/core/i18n-engine.js`.
 
-### 🚀 Fase 2: Robustez dos Modais da Mesa Técnica (`admin/index.html` e `admin-app.js`)
-- [ ] Validar e garantir a abertura instantânea de `#history-modal` ao clicar em `#admin-btn-history`.
-- [ ] Validar e garantir a abertura instantânea de `#admin-analytics-modal` ao clicar em `#admin-btn-analytics`.
-- [ ] Adicionar atalhos de abertura rápida nos cards de métricas e relatórios.
+### 🚀 Fase 2: Robustez dos Modais da Mesa Técnica (`admin/index.html` e `admin-app.js`) — [CONCLUÍDA]
+- [x] Validar e garantir a abertura instantânea de `#history-modal` ao clicar em `#admin-btn-history`.
+- [x] Validar e garantir a abertura instantânea de `#admin-analytics-modal` ao clicar em `#admin-btn-analytics`.
+- [x] Adicionar atalhos de abertura rápida nos cards de métricas e relatórios.
 
-### 🚀 Fase 3: Backend Gatekeeper e Proteção de Credenciais (`server.py` e `auth-engine.js`)
-- [ ] **Hardening do `server.py`:**
-  - Bloquear acesso HTTP direto ao arquivo `config/security.json` com `403 Forbidden`.
-  - Criar endpoint `POST /api/auth/verify-pin` para validação segura de PIN no servidor sem expor o PIN ao cliente.
-  - Criar endpoint `POST /api/auth/login` para validação segura de usuário e senha locais.
-  - Criar endpoint `GET /api/auth/public-config` que retorna apenas flags públicas de segurança (sem senhas ou PINs).
-- [ ] **Full Lock Screen na Mesa Técnica (`admin/index.html`):**
-  - Implementar cortina opaca que impede a visualização de qualquer controle, slide ou nota confidencial antes da autenticação.
-  - Oferecer abas de desbloqueio: **🔑 PIN Rápido** | **👤 Usuário & Senha (Admin/Palestrante)** | **🌐 Google Workspace**.
-- [ ] **Evolução do `AuthEngine` ([`js/core/auth-engine.js`](file:///home/flashbsb/projetos/SlideMeshLive/js/core/auth-engine.js)):**
-  - Integrar com os novos endpoints do backend, mantendo fallback gracioso para modo offline/estático.
+### 🚀 Fase 3: Backend Gatekeeper e Proteção de Credenciais (`server.py` e `auth-engine.js`) — [CONCLUÍDA]
+- [x] **Hardening do `server.py`:**
+  - [x] Bloquear acesso HTTP direto ao arquivo `config/security.json` com `403 Forbidden`.
+  - [x] Criar endpoint `POST /api/auth/verify-pin` para validação segura de PIN no servidor sem expor o PIN ao cliente.
+  - [x] Criar endpoint `POST /api/auth/login` para validação segura de usuário e senha locais.
+  - [x] Criar endpoint `GET /api/auth/public-config` que retorna apenas flags públicas de segurança (sem senhas ou PINs).
+- [x] **Full Lock Screen na Mesa Técnica (`admin/index.html`):**
+  - [x] Implementar cortina opaca que impede a visualização de qualquer controle, slide ou nota confidencial antes da autenticação.
+  - [x] Oferecer abas de desbloqueio: **🔑 PIN Rápido** | **👤 Usuário & Senha (Admin/Palestrante)** | **🌐 Google Workspace**.
+- [x] **Evolução do `AuthEngine` ([`js/core/auth-engine.js`](file:///home/flashbsb/projetos/SlideMeshLive/js/core/auth-engine.js)):**
+  - [x] Integrar com os novos endpoints do backend, mantendo fallback gracioso para modo offline/estático.
 
-### 🚀 Fase 4: Testes Automatizados e Homologação
-- [ ] Adicionar testes na suíte `scratch/test_suite.py`:
-  - Teste de bloqueio HTTP 403 para `GET /config/security.json`.
-  - Teste de autenticação via `POST /api/auth/verify-pin` e `POST /api/auth/login`.
-  - Teste de entrega de metadados públicos via `GET /api/auth/public-config`.
-  - Teste de acionamento de Histórico e Analytics.
-- [ ] Atualizar a documentação oficial (`README.md` e `README.pt-BR.md`).
+### 🚀 Fase 4: Testes Automatizados e Homologação — [CONCLUÍDA]
+- [x] Adicionar testes na suíte `scratch/test_suite.py`:
+  - [x] Teste de bloqueio HTTP 403 para `GET /config/security.json`.
+  - [x] Teste de autenticação via `POST /api/auth/verify-pin` e `POST /api/auth/login`.
+  - [x] Teste de entrega de metadados públicos via `GET /api/auth/public-config`.
+  - [x] Teste de acionamento de Histórico e Analytics.
+- [x] Atualizar a documentação oficial (`README.md` e `README.pt-BR.md`) com o **Princípio 16 (Arquitetura de Segurança, RBAC & Backend Gatekeeper)**.
 
 ---
 
 ## 4. Matriz de Rastreabilidade
 
-| Requisito | Componente | Arquivos Envolvidos |
-|---|---|---|
-| Limpeza de Versão e Importação Única | Portal Inicial | `index.html`, `js/core/i18n-engine.js` |
-| Modais de Histórico e Analytics | Mesa Técnica | `admin/index.html`, `js/admin/admin-app.js` |
-| Bloqueio de Acesso a Credenciais | Backend HTTP | `server.py` |
-| Endpoints Seguros de Autenticação | Backend API | `server.py` |
-| Full Lock Screen e Multi-Auth | Frontend Admin | `admin/index.html`, `css/admin.css`, `js/admin/admin-app.js` |
-| Suíte de Testes e Homologação | Testes | `scratch/test_suite.py` |
+| Requisito | Componente | Arquivos Envolvidos | Status |
+|---|---|---|---|
+| Limpeza de Versão e Importação Única | Portal Inicial | `index.html`, `js/core/i18n-engine.js` | Concluído (Commit `148e086`) |
+| Modais de Histórico e Analytics | Mesa Técnica | `admin/index.html`, `js/admin/admin-app.js` | Concluído (Commit `214a30d`) |
+| Bloqueio de Acesso a Credenciais (403) | Backend HTTP | `server.py` | Concluído (Commit `4bcca7f`) |
+| Endpoints Seguros de Autenticação | Backend API | `server.py`, `js/core/auth-engine.js` | Concluído (Commit `4bcca7f`) |
+| Full Lock Screen e Multi-Auth | Frontend Admin | `admin/index.html`, `js/admin/admin-app.js` | Concluído (Commit `4bcca7f`) |
+| Suíte de Testes e Homologação | Testes & Docs | `scratch/test_suite.py`, `README.md`, `README.pt-BR.md` | Concluído (Commit `4bcca7f`) |
+
