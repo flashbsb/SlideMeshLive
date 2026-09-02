@@ -1,21 +1,26 @@
 {
   "id": "treinamento-interno-pin",
-  "title": "Treinamento Técnico Interno (Protegido por PIN)",
-  "subtitle": "Exemplo de Apresentação com Acesso Restrito",
+  "code": "SEGURANCA",
+  "title": "Manual Prático: Segurança, PINs de Acesso & Gestão RBAC",
+  "subtitle": "Controle de Acesso por PIN, Pacing Lock e Gerenciamento de Usuários",
   "version": "1.0.0",
-  "author": "Coordenação de Treinamento",
-  "description": "Apresentação demonstrativa que exige PIN do evento para liberar a visualização dos slides no smartphone.",
+  "author": "SlideMeshLive Open Source Community",
+  "description": "Apresentação com acesso protegido por PIN (código 7482) que ensina passo a passo como configurar o Setup Wizard, criar PINs de deck, ativar a trava de ritmo (Pacing Lock) e gerenciar papéis RBAC.",
   "theme": {
     "primaryColor": "#10b981",
-    "accentColor": "#6366f1"
+    "accentColor": "#6366f1",
+    "transition": "slide-horizontal",
+    "transitionDuration": 350
   },
   "security": {
     "mode": "pin",
     "pin": "7482",
-    "pinHint": "Digite o código de 4 dígitos informado pelo palestrante (PIN: 7482)"
+    "pinHint": "Digite o código de demonstração 7482 para desbloquear este guia no smartphone"
   },
+  "defaultSession": "SES-SEG7482",
   "pacing": {
     "mode": "lock_future",
     "allowReviewPast": true
-  }
+  },
+  "tags": ["seguranca", "pin", "rbac", "pacing-lock", "treinamento"]
 }

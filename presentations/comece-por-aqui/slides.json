@@ -14,7 +14,14 @@
           "Zero dependência de nuvem: opere 100% offline em rede Wi-Fi ou cabo Ethernet local",
           "Aponte a câmera para o QR Code agora para navegar junto no seu smartphone!"
         ],
-        "notes": "Dê as boas-vindas ao SlideMeshLive! Peça para todos apontarem a câmera para o QR Code no rodapé para sincronizar seus smartphones em tempo real."
+        "media": {
+          "type": "svg",
+          "src": "/presentations/comece-por-aqui/assets/ecosystem-map.svg",
+          "alt": "Mapa da Arquitetura Desacoplada",
+          "maxHeight": "240px",
+          "caption": "Telão Limpo + Celular Interativo + Mesa Técnica Síncrona"
+        },
+        "notes": "Dê as boas-vindas ao SlideMeshLive! Peça para todos apontarem a câmera para o QR Code no rodapé para sincronizar seus smartphones em tempo real ou aperte [Q] para abrir o QR gigante central."
       },
       "audience": {
         "summary": "Bem-vindo ao SlideMeshLive! Você está conectado ao Guia de Entrada Oficial do ecossistema.",
@@ -23,6 +30,13 @@
             "title": "Como Funciona o SlideMeshLive?",
             "type": "text",
             "content": "O SlideMeshLive conecta instantaneamente a tela de projeção do palestrante aos celulares da plateia com latência sub-50ms via WebSocket e HTTP local."
+          },
+          {
+            "title": "Arquitetura do Sistema",
+            "type": "image",
+            "src": "/presentations/comece-por-aqui/assets/ecosystem-map.svg",
+            "alt": "Diagrama da Arquitetura",
+            "caption": "Conexão síncrona local entre Telão, Celular e Mesa Técnica."
           },
           {
             "title": "Recursos Disponíveis no Seu Smartphone",
@@ -49,13 +63,27 @@
           "Telão (/presenter) & Mesa Técnica (/admin): Projeção limpa e controle invisível",
           "Smartphone (/audience) & Studio (/import.html): Engajamento e criação em 1 clique"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/comece-por-aqui/assets/interfaces-overview.svg",
+          "alt": "As 5 Interfaces Web do SlideMeshLive",
+          "maxHeight": "240px",
+          "caption": "Portal, Telão, Mesa Técnica, Audiência e Studio"
+        },
         "notes": "Explique brevemente as 5 interfaces. Destaque que o palestrante pode apertar [P] para abrir o modo Púlpito com notas privadas e cronômetro."
       },
       "audience": {
         "summary": "Conheça o papel de cada uma das 5 telas do SlideMeshLive.",
         "sections": [
           {
-            "title": "As 5 Interfaces do Ecossistema",
+            "title": "Visão Geral das 5 Telas",
+            "type": "image",
+            "src": "/presentations/comece-por-aqui/assets/interfaces-overview.svg",
+            "alt": "Infográfico das 5 Interfaces",
+            "caption": "Interfaces dedicadas para palestrante, público, operador e criador."
+          },
+          {
+            "title": "Tabela de Rotas e Papéis",
             "type": "table",
             "headers": ["Interface", "Rota", "Papel Principal"],
             "rows": [

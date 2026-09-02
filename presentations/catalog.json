@@ -101,7 +101,7 @@
       "subtitle": "Controle de Acesso por PIN, Pacing Lock e Gerenciamento de Usuários",
       "description": "Apresentação com acesso protegido por PIN (código 7482) que ensina passo a passo como configurar o Setup Wizard, criar PINs de deck, ativar a trava de ritmo (Pacing Lock) e gerenciar papéis RBAC.",
       "defaultSession": "SES-SEG7482",
-      "totalSlides": 1,
+      "totalSlides": 5,
       "securityMode": "pin",
       "securityLabel": "🔒 Protegida por PIN (7482)",
       "badgeClass": "badge",

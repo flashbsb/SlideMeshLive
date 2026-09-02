@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%" style="background: linear-gradient(135deg, #0a1219 0%, #0f172a 100%); border-radius: 14px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
+  <defs>
+    <linearGradient id="rbacAdminGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#b91c1c"/>
+    </linearGradient>
+    <linearGradient id="rbacPresGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="rbacAudGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Title Header -->
+  <text x="460" y="34" text-anchor="middle" fill="#94a3b8" font-size="13" font-weight="800" letter-spacing="2.5">MATRIZ DE PRIVILÉGIOS E PAPÉIS RBAC (ROLE-BASED ACCESS CONTROL)</text>
+
+  <!-- Role 1: Administrator -->
+  <g transform="translate(35, 60)">
+    <rect width="260" height="295" rx="12" fill="#1e293b" stroke="#ef4444" stroke-width="2"/>
+    <rect width="260" height="44" rx="12" fill="url(#rbacAdminGrad)" fill-opacity="0.3"/>
+    <text x="130" y="28" text-anchor="middle" fill="#f87171" font-size="13" font-weight="800">👑 ADMINISTRADOR (ADMIN)</text>
+    
+    <text x="20" y="78" fill="#e2e8f0" font-size="12" font-weight="700">Acesso Total &amp; Gestão</text>
+    <text x="20" y="100" fill="#94a3b8" font-size="11">✓ Alterar PIN da Mesa Técnica</text>
+    <text x="20" y="122" fill="#94a3b8" font-size="11">✓ Criar / Excluir Palestrantes</text>
+    <text x="20" y="144" fill="#94a3b8" font-size="11">✓ Moderação de Q&amp;A e Enquetes</text>
+    <text x="20" y="166" fill="#94a3b8" font-size="11">✓ Importar / Exportar Decks (.zip)</text>
+    <text x="20" y="188" fill="#94a3b8" font-size="11">✓ Acesso ao Painel de Segurança</text>
+
+    <g transform="translate(20, 235)">
+      <rect width="220" height="36" rx="6" fill="#450a0a" stroke="#ef4444"/>
+      <text x="110" y="23" text-anchor="middle" fill="#fca5a5" font-size="11" font-weight="700">Controle Operacional Pleno</text>
+    </g>
+  </g>
+
+  <!-- Role 2: Presenter -->
+  <g transform="translate(330, 60)">
+    <rect width="260" height="295" rx="12" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+    <rect width="260" height="44" rx="12" fill="url(#rbacPresGrad)" fill-opacity="0.3"/>
+    <text x="130" y="28" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="800">🎤 PALESTRANTE (PRESENTER)</text>
+
+    <text x="20" y="78" fill="#e2e8f0" font-size="12" font-weight="700">Comando de Palco</text>
+    <text x="20" y="100" fill="#94a3b8" font-size="11">✓ Avançar / Retroceder Slides</text>
+    <text x="20" y="122" fill="#94a3b8" font-size="11">✓ Modo Púlpito com Notas [P]</text>
+    <text x="20" y="144" fill="#94a3b8" font-size="11">✓ Atalhos de Palco ([Q], [M], [B])</text>
+    <text x="20" y="166" fill="#94a3b8" font-size="11">✓ Disparo de Efeitos Visuais</text>
+    <text x="20" y="188" fill="#64748b" font-size="11">✗ Sem acesso à gestão de PINs</text>
+
+    <g transform="translate(20, 235)">
+      <rect width="220" height="36" rx="6" fill="#172554" stroke="#3b82f6"/>
+      <text x="110" y="23" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="700">Foco em Performance</text>
+    </g>
+  </g>
+
+  <!-- Role 3: Audience -->
+  <g transform="translate(625, 60)">
+    <rect width="260" height="295" rx="12" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+    <rect width="260" height="44" rx="12" fill="url(#rbacAudGrad)" fill-opacity="0.3"/>
+    <text x="130" y="28" text-anchor="middle" fill="#34d399" font-size="13" font-weight="800">📱 PARTICIPANTE (AUDIENCE)</text>
+
+    <text x="20" y="78" fill="#e2e8f0" font-size="12" font-weight="700">Interação com Segurança</text>
+    <text x="20" y="100" fill="#94a3b8" font-size="11">✓ Sincronização sob demanda</text>
+    <text x="20" y="122" fill="#94a3b8" font-size="11">✓ Voto único em enquetes ativas</text>
+    <text x="20" y="144" fill="#94a3b8" font-size="11">✓ Envio de dúvidas com cooldown</text>
+    <text x="20" y="166" fill="#64748b" font-size="11">✗ Bloqueio de avanço prévio</text>
+    <text x="20" y="188" fill="#64748b" font-size="11">✗ Sem controle de projeção</text>
+
+    <g transform="translate(20, 235)">
+      <rect width="220" height="36" rx="6" fill="#064e3b" stroke="#10b981"/>
+      <text x="110" y="23" text-anchor="middle" fill="#a7f3d0" font-size="11" font-weight="700">Interatividade Blindada</text>
+    </g>
+  </g>
+</svg>

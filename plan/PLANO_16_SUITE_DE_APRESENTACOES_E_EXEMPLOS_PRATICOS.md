@@ -206,8 +206,8 @@ O **SlideMeshLive** é uma plataforma moderna para apresentações em tempo real
 - [x] Atualizar [`presentations/catalog.json`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/catalog.json) registrando os 7 guias organizados pelas 3 trilhas com metadados completos, badges de segurança, contagem de slides e sessões padrão. *(Concluído com 100% de conformidade)*
 
 ### 🚀 Fase 2: Construção do Guia Onboarding (`comece-por-aqui`) e Expansão de Segurança (`treinamento-interno-pin`)
-- [ ] Criar diretório [`presentations/comece-por-aqui/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/comece-por-aqui/) com `manifest.json`, `slides.json` (5 slides) e assets SVG de mapa do ecossistema.
-- [ ] Expandir [`presentations/treinamento-interno-pin/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/treinamento-interno-pin/) de 1 para 5 slides completos com fluxo de PIN, RBAC, matriz de papéis e quiz.
+- [x] Criar diretório [`presentations/comece-por-aqui/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/comece-por-aqui/) com `manifest.json`, `slides.json` (5 slides) e assets SVG de mapa do ecossistema. *(Concluído)*
+- [x] Expandir [`presentations/treinamento-interno-pin/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/treinamento-interno-pin/) de 1 para 5 slides completos com fluxo de PIN, RBAC, matriz de papéis e quiz. *(Concluído)*
 
 ### 🚀 Fase 3: Construção do Guia de Animações & Palco (`guia-animacoes-e-palco`) e Guia do Studio (`guia-criacao-studio-zip`)
 - [ ] Criar diretório [`presentations/guia-animacoes-e-palco/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-animacoes-e-palco/) com `manifest.json`, `slides.json` (5 slides), assets SVG de transições e pré-cache de mídia.

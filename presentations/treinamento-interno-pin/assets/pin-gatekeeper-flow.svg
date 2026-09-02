@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%" style="background: linear-gradient(135deg, #070a12 0%, #0d1527 100%); border-radius: 14px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
+  <defs>
+    <linearGradient id="secPinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <filter id="glowGreen" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes pinPulseFlow {
+      0%, 100% { stroke: #10b981; filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.4)); }
+      50% { stroke: #34d399; filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.8)); }
+    }
+    .anim-pin-glow { animation: pinPulseFlow 2.5s infinite ease-in-out; }
+  </style>
+
+  <!-- Title -->
+  <text x="460" y="30" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="800" letter-spacing="2.5">FLUXO DE AUTENTICAÇÃO E GATEKEEPER DE PIN (7482)</text>
+
+  <!-- Step 1: User Scans QR -->
+  <g transform="translate(30, 48)">
+    <rect width="260" height="330" rx="14" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <rect width="260" height="42" rx="14" fill="#334155" fill-opacity="0.4"/>
+    <text x="130" y="26" text-anchor="middle" fill="#cbd5e1" font-size="12" font-weight="800">1. SCAN DO QR CODE</text>
+    
+    <g transform="translate(18, 62)">
+      <circle cx="8" cy="8" r="4" fill="#94a3b8"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Acesso pelo Smartphone</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="10">O participante aponta a câmera</text>
+    </g>
+
+    <g transform="translate(18, 112)">
+      <circle cx="8" cy="8" r="4" fill="#94a3b8"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Detecção de Segurança</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="10">O app identifica 'mode: pin'</text>
+    </g>
+
+    <g transform="translate(18, 162)">
+      <circle cx="8" cy="8" r="4" fill="#94a3b8"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Modal de Bloqueio</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="10">Exibe campo de 4 dígitos com dica</text>
+    </g>
+
+    <g transform="translate(16, 230)">
+      <rect width="228" height="78" rx="8" fill="#1e293b" stroke="#475569"/>
+      <text x="114" y="32" text-anchor="middle" fill="#cbd5e1" font-size="11" font-weight="700">Aguardando Digitação...</text>
+      <text x="114" y="54" text-anchor="middle" fill="#94a3b8" font-size="10">Entrada do PIN 7482</text>
+    </g>
+  </g>
+
+  <!-- Flow Connector 1 -->
+  <g transform="translate(290, 200)">
+    <line x1="0" y1="0" x2="50" y2="0" stroke="#10b981" stroke-width="2.5" stroke-dasharray="4,4"/>
+  </g>
+
+  <!-- Step 2: Backend Gatekeeper -->
+  <g class="anim-pin-glow" transform="translate(340, 48)">
+    <rect width="240" height="330" rx="14" fill="#090d16" stroke="#10b981" stroke-width="2" filter="url(#glowGreen)"/>
+    <rect width="240" height="42" rx="14" fill="#064e3b" fill-opacity="0.4"/>
+    <text x="120" y="26" text-anchor="middle" fill="#34d399" font-size="12.5" font-weight="900">🔒 GATEKEEPER BACKEND</text>
+    
+    <g transform="translate(20, 56)">
+      <rect width="200" height="22" rx="4" fill="#064e3b" fill-opacity="0.4"/>
+      <text x="100" y="15" text-anchor="middle" fill="#34d399" font-size="10" font-weight="700">POST /api/auth/verify-pin</text>
+    </g>
+
+    <g transform="translate(20, 88)">
+      <rect width="200" height="40" rx="6" fill="#1e293b" stroke="#10b981" stroke-width="1.5"/>
+      <text x="100" y="26" text-anchor="middle" fill="#34d399" font-size="15" font-weight="900" letter-spacing="6">PIN: 7482</text>
+    </g>
+
+    <g transform="translate(20, 140)">
+      <text x="100" y="14" text-anchor="middle" fill="#f1f5f9" font-size="11" font-weight="700">Validação Criptográfica</text>
+      <text x="100" y="30" text-anchor="middle" fill="#94a3b8" font-size="10">Hash seguro sem expor senhas</text>
+    </g>
+
+    <g transform="translate(16, 210)">
+      <rect width="208" height="98" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/>
+      <text x="104" y="26" text-anchor="middle" fill="#34d399" font-size="11" font-weight="900">STATUS: 200 OK</text>
+      <text x="104" y="48" text-anchor="middle" fill="#a7f3d0" font-size="10">Token de Sessão Emitido</text>
+      <text x="104" y="70" text-anchor="middle" fill="#cbd5e1" font-size="9.5">Autenticação Concluída</text>
+    </g>
+  </g>
+
+  <!-- Flow Connector 2 -->
+  <g transform="translate(580, 200)">
+    <line x1="0" y1="0" x2="50" y2="0" stroke="#10b981" stroke-width="2.5" stroke-dasharray="4,4"/>
+  </g>
+
+  <!-- Step 3: Audience Unlocked -->
+  <g transform="translate(630, 48)">
+    <rect width="260" height="330" rx="14" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="260" height="42" rx="14" fill="#064e3b" fill-opacity="0.3"/>
+    <text x="130" y="26" text-anchor="middle" fill="#34d399" font-size="12" font-weight="800">3. DESBLOQUEIO TOTAL</text>
+
+    <g transform="translate(18, 62)">
+      <circle cx="8" cy="8" r="4" fill="#10b981"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Slides Liberados</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="10">Sincronia ativa em tempo real</text>
+    </g>
+
+    <g transform="translate(18, 112)">
+      <circle cx="8" cy="8" r="4" fill="#10b981"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Pacing Lock Ativo</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="10">Bloqueio de avanço prévio de tela</text>
+    </g>
+
+    <g transform="translate(18, 162)">
+      <circle cx="8" cy="8" r="4" fill="#10b981"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Quizzes &amp; Enquetes</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="10">Participação auditável na sessão</text>
+    </g>
+
+    <g transform="translate(16, 230)">
+      <rect width="228" height="78" rx="8" fill="#064e3b" stroke="#10b981"/>
+      <text x="114" y="32" text-anchor="middle" fill="#34d399" font-size="11.5" font-weight="800">✓ ACESSO CONCEDIDO</text>
+      <text x="114" y="54" text-anchor="middle" fill="#a7f3d0" font-size="10">Participação Ativa no Evento</text>
+    </g>
+  </g>
+</svg>

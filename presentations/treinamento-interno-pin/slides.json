@@ -1,37 +1,177 @@
 {
+  "presentationId": "treinamento-interno-pin",
+  "title": "Manual Prático: Segurança, PINs de Acesso & Gestão RBAC",
   "slides": [
     {
       "id": 1,
-      "tag": "SEGURANÇA INTERNA",
-      "title": "Acesso Restrito ao Conteúdo",
+      "slug": "seguranca-acesso-pin",
+      "tag": "ACESSO RESTRITO",
+      "title": "Acesso Restrito na Prática: Desbloqueio por PIN (7482)",
       "presenter": {
-        "headline": "Apresentação Privada com PIN",
+        "headline": "Você acabou de desbloquear este guia digitando o PIN 7482 no seu celular!",
         "bullets": [
-          "Conteúdo restrito visível no celular apenas após digitar o PIN 7482",
-          "Mesa Técnica protegida pelo PIN 2026 configurado em config/security.json",
-          "Suporte a contas locais offline sem necessidade de conexão com a nuvem"
+          "O Gatekeeper backend valida o PIN via /api/auth/verify-pin antes de liberar os slides",
+          "Dica personalizada exibida na tela de bloqueio do smartphone (ex: 'PIN: 7482')",
+          "Ideal para workshops corporativos, provas técnicas e reuniões estratégicas"
         ],
-        "notes": "Informar ao auditório que o código de acesso para o celular é 7482."
+        "media": {
+          "type": "svg",
+          "src": "/presentations/treinamento-interno-pin/assets/pin-gatekeeper-flow.svg",
+          "alt": "Fluxo de Validação de PIN no Smartphone",
+          "maxHeight": "240px",
+          "caption": "Scan QR ➔ Gatekeeper Backend ➔ Liberação Instantânea"
+        },
+        "notes": "Parabenize o público por ter digitado o código 7482 no celular para desbloquear a visualização sincronizada."
       },
       "audience": {
-        "headline": "Bem-vindo ao Treinamento Restrito",
+        "summary": "Você desbloqueou com sucesso este módulo restrito digitando o PIN 7482.",
         "sections": [
           {
-            "title": "Acesso Seguro Validado",
+            "title": "Como Funciona a Proteção por PIN?",
             "type": "text",
-            "content": "Você digitou o PIN correto e agora possui acesso exclusivo aos materiais e enquetes desta sessão."
+            "content": "Quando uma apresentação possui 'security.mode: pin', nenhum conteúdo dos slides é renderizado no smartphone até que o código correto seja validado pelo servidor."
+          },
+          {
+            "title": "Diagrama de Segurança",
+            "type": "image",
+            "src": "/presentations/treinamento-interno-pin/assets/pin-gatekeeper-flow.svg",
+            "alt": "Fluxo de PIN Gatekeeper",
+            "caption": "Validação segura de 4 dígitos sem trafegar senhas em texto puro."
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "slug": "setup-wizard-primeiro-uso",
+      "tag": "SETUP INICIAL",
+      "title": "Assistente de Primeiro Uso & Configuração de Segurança",
+      "presenter": {
+        "headline": "Defina o PIN mestre do evento e credenciais em menos de 2 minutos",
+        "bullets": [
+          "Detecta ausência de config/security.json e abre o Setup Wizard (/setup.html)",
+          "Gere PINs aleatórios com 1 clique ou execute no terminal: python3 server.py --setup",
+          "Credenciais criptografadas localmente com hash seguro sem expor senhas"
+        ],
+        "notes": "Explique que em ambientes de produção ninguém deve usar arquivos de exemplo padrão, criando sempre chaves fortes no setup inicial."
+      },
+      "audience": {
+        "summary": "O Setup Wizard automatiza a inicialização de segurança da plataforma.",
+        "sections": [
+          {
+            "title": "Como Executar o Setup Inicial",
+            "type": "list",
+            "items": [
+              "Via Web: Acesse '/setup.html' no navegador ao iniciar o servidor pela primeira vez.",
+              "Via Terminal: Execute 'python3 server.py --setup' para wizard interativo no shell.",
+              "Persistência: As chaves são gravadas em 'config/security.json' (ignorado pelo git)."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "slug": "painel-seguranca-mesa-tecnica",
+      "tag": "RBAC NO ADMIN",
+      "title": "Painel de Gestão de Segurança & Papéis RBAC",
+      "presenter": {
+        "headline": "Controle quem pode apresentar, moderar e participar do seu evento",
+        "bullets": [
+          "Abra o modal 🔐 Segurança na Mesa Técnica (/admin) para gerenciar credenciais",
+          "Crie contas para palestrantes convidados com login local ou Google Workspace",
+          "Alterne o PIN da mesa técnica a qualquer momento sem reiniciar o servidor"
+        ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/treinamento-interno-pin/assets/rbac-matrix.svg",
+          "alt": "Matriz de Papéis RBAC",
+          "maxHeight": "240px",
+          "caption": "Administrador ➔ Palestrante ➔ Audiência"
+        },
+        "notes": "Demonstre na Mesa Técnica onde fica o botão [🔐 Segurança] e como ele permite gerenciar usuários em tempo real."
+      },
+      "audience": {
+        "summary": "Matriz de privilégios e permissões por perfil de usuário.",
+        "sections": [
+          {
+            "title": "Matriz RBAC (Role-Based Access Control)",
+            "type": "image",
+            "src": "/presentations/treinamento-interno-pin/assets/rbac-matrix.svg",
+            "alt": "Tabela de Privilégios",
+            "caption": "Divisão estrita de privilégios para evitar intervenções não autorizadas."
+          },
+          {
+            "title": "Resumo dos Papéis",
+            "type": "table",
+            "headers": ["Papel", "Acesso", "Privilégios"],
+            "rows": [
+              ["Admin", "Mesa Técnica /admin", "Moderação, Gestão de Segurança, Enquetes, ZIP"],
+              ["Presenter", "Telão /presenter", "Avanço de slides, modo Púlpito [P], atalhos"],
+              ["Audience", "Smartphone /audience", "Acompanhamento, voto único, envio de dúvidas"]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "slug": "pacing-lock-controle-ritmo",
+      "tag": "TRAVA DE RITMO",
+      "title": "Trava de Ritmo da Plateia (Audience Pacing Lock)",
+      "presenter": {
+        "headline": "Impeça que o público avance os slides antes da hora e perca o foco",
+        "bullets": [
+          "Modo 'lock_future': O participante não consegue pular para slides futuros",
+          "Controle 'allowReviewPast: true': Permite reler slides anteriores a qualquer momento",
+          "Configurável por apresentação no manifest.json ou diretamente no Studio"
+        ],
+        "notes": "Explique a importância pedagógica do Pacing Lock para manter toda a sala no mesmo ritmo sem distrações."
+      },
+      "audience": {
+        "summary": "Como o Pacing Lock mantém a turma sincronizada.",
+        "sections": [
+          {
+            "title": "Configuração no manifest.json",
+            "type": "text",
+            "content": "No bloco 'pacing', defina 'mode: \"lock_future\"' para travar slides futuros e 'allowReviewPast: true' para permitir consulta do histórico."
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "slug": "quiz-seguranca-pratica",
+      "tag": "QUIZ TÉCNICO",
+      "title": "Quiz Técnico: Qual Política de Segurança Adotar?",
+      "presenter": {
+        "headline": "Avalie os conhecimentos de segurança com apuração ao vivo!",
+        "bullets": [
+          "Pergunta de múltipla escolha com apuração instantânea",
+          "A plateia responde com 1 toque no celular",
+          "Pressione [R] para revelar o ranking de respostas"
+        ],
+        "notes": "Abra a votação com [V] e peça para todos responderem no celular. Em seguida, aperte [R] para debater a resposta correta."
+      },
+      "audience": {
+        "summary": "Responda à questão técnica sobre boas práticas de segurança.",
+        "sections": [
+          {
+            "title": "Quiz de Segurança",
+            "type": "text",
+            "content": "Selecione a alternativa mais recomendada para apresentações corporativas com dados confidenciais."
           }
         ]
       },
       "interaction": {
         "poll": {
-          "id": "poll_treinamento_1",
-          "question": "Qual modalidade de segurança você considera mais prática para seus eventos?",
+          "id": "poll-seguranca-quiz",
+          "question": "Qual política de segurança você deve adotar para uma apresentação com dados estratégicos?",
           "options": [
-            { "id": "A", "text": "Acesso 100% Público (Aberto)" },
-            { "id": "B", "text": "PIN de 4 dígitos informado no palco" },
-            { "id": "C", "text": "Usuário e Senha Locais (Offline)" },
-            { "id": "D", "text": "Google Workspace corporativo (@empresa.com.br)" }
+            { "id": "opt-pin-palco", "text": "🔒 Proteção por PIN de 4 dígitos informado no palco" },
+            { "id": "opt-rbac-mesa", "text": "🛡️ PIN no celular + Mesa Técnica autenticada com RBAC" },
+            { "id": "opt-pacing-lock", "text": "⏱️ Pacing Lock (lock_future) para travar spoilers" },
+            { "id": "opt-todas-corretas", "text": "⭐ Todas as alternativas combinadas para segurança máxima" }
           ]
         }
       }

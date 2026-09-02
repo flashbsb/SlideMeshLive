@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%" style="background: linear-gradient(135deg, #070a12 0%, #0d1527 100%); border-radius: 14px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="hubGradClean" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <linearGradient id="cardLeftGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#0369a1" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="cardRightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="cardCenterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0.4"/>
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="hubGlowEffect" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes pulseLeftToCenter {
+      0% { transform: translateX(0); opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translateX(42px); opacity: 0; }
+    }
+    @keyframes pulseCenterToRight {
+      0% { transform: translateX(0); opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translateX(42px); opacity: 0; }
+    }
+    @keyframes hubBadgePulse {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.3)); }
+      50% { filter: drop-shadow(0 0 16px rgba(129, 140, 248, 0.7)); }
+    }
+    .anim-pulse-lc { animation: pulseLeftToCenter 1.6s infinite ease-in-out; }
+    .anim-pulse-cr { animation: pulseCenterToRight 1.6s infinite ease-in-out 0.8s; }
+    .anim-hub-glow { animation: hubBadgePulse 2.8s infinite ease-in-out; }
+  </style>
+
+  <!-- Section Title -->
+  <text x="460" y="30" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="800" letter-spacing="2.5">MAPA DA ARQUITETURA DESACOPLADA DO SLIDEMESHLIVE</text>
+
+  <!-- ==================== LEFT CARD: TELÃO DO PALCO ==================== -->
+  <g transform="translate(30, 48)">
+    <rect width="260" height="330" rx="14" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect width="260" height="42" rx="14" fill="url(#cardLeftGrad)"/>
+    <path d="M 0 42 L 260 42" stroke="#0284c7" stroke-opacity="0.4" stroke-width="1"/>
+    
+    <!-- Header -->
+    <text x="130" y="26" text-anchor="middle" fill="#38bdf8" font-size="12.5" font-weight="800">🖥️ TELÃO DO PALCO (/presenter)</text>
+
+    <!-- Item 1 -->
+    <g transform="translate(18, 62)">
+      <circle cx="8" cy="8" r="4" fill="#38bdf8"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Projeção Limpa &amp; Sintética</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="10">Bullets diretos e split-screen com mídia</text>
+    </g>
+
+    <!-- Item 2 -->
+    <g transform="translate(18, 112)">
+      <circle cx="8" cy="8" r="4" fill="#38bdf8"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Modo Púlpito [P]</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="10">Notas de orador privadas e cronômetro</text>
+    </g>
+
+    <!-- Item 3 -->
+    <g transform="translate(18, 162)">
+      <circle cx="8" cy="8" r="4" fill="#38bdf8"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Atalhos Rápidos de Palco</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="10">QR [Q], Mural [M] e Blackout [B]</text>
+    </g>
+
+    <!-- Bottom Badge -->
+    <g transform="translate(16, 230)">
+      <rect width="228" height="78" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="114" y="26" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="800">SAÍDA DE VÍDEO DO PALCO</text>
+      <text x="114" y="46" text-anchor="middle" fill="#cbd5e1" font-size="10">Conexão HDMI / TV / Projetor</text>
+      <text x="114" y="62" text-anchor="middle" fill="#64748b" font-size="9.5">Renderização local a 60 FPS</text>
+    </g>
+  </g>
+
+  <!-- ==================== CONNECTOR: LEFT TO CENTER ==================== -->
+  <g transform="translate(290, 200)">
+    <line x1="0" y1="0" x2="48" y2="0" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="4,4"/>
+    <circle cx="4" cy="0" r="4.5" fill="#38bdf8" class="anim-pulse-lc"/>
+  </g>
+
+  <!-- ==================== CENTER CARD: PYTHON SERVER HUB ==================== -->
+  <g transform="translate(340, 48)">
+    <rect width="240" height="330" rx="14" fill="#090d16" stroke="url(#hubGradClean)" stroke-width="2" class="anim-hub-glow"/>
+    <rect width="240" height="42" rx="14" fill="url(#cardCenterGrad)"/>
+    <path d="M 0 42 L 240 42" stroke="#38bdf8" stroke-opacity="0.3" stroke-width="1"/>
+
+    <!-- Header -->
+    <text x="120" y="26" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="900">⚡ HUB PYTHON LOCAL</text>
+
+    <!-- Subtitle Badge -->
+    <g transform="translate(20, 56)">
+      <rect width="200" height="22" rx="4" fill="#0284c7" fill-opacity="0.25"/>
+      <text x="100" y="15" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="800">LATÊNCIA &lt; 50ms (LAN)</text>
+    </g>
+
+    <!-- Protocol 1 -->
+    <g transform="translate(20, 90)">
+      <rect width="200" height="28" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1"/>
+      <text x="100" y="18" text-anchor="middle" fill="#e0f2fe" font-size="10.5" font-weight="700">1. WebSocket Primário</text>
+    </g>
+
+    <!-- Protocol 2 -->
+    <g transform="translate(20, 126)">
+      <rect width="200" height="28" rx="6" fill="#1e293b" stroke="#818cf8" stroke-width="1"/>
+      <text x="100" y="18" text-anchor="middle" fill="#e0e7ff" font-size="10.5" font-weight="700">2. HTTP Long-Polling</text>
+    </g>
+
+    <!-- Protocol 3 -->
+    <g transform="translate(20, 162)">
+      <rect width="200" height="28" rx="6" fill="#1e293b" stroke="#a855f7" stroke-width="1"/>
+      <text x="100" y="18" text-anchor="middle" fill="#f3e8ff" font-size="10.5" font-weight="700">3. Snapshot State Engine</text>
+    </g>
+
+    <!-- Server Info Box -->
+    <g transform="translate(16, 210)">
+      <rect width="208" height="98" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1.5"/>
+      <text x="104" y="24" text-anchor="middle" fill="#34d399" font-size="10.5" font-weight="800">🟢 100% OFFLINE EM LAN</text>
+      <text x="104" y="44" text-anchor="middle" fill="#94a3b8" font-size="10">Zero dependência de nuvem</text>
+      <text x="104" y="62" text-anchor="middle" fill="#cbd5e1" font-size="10">python3 server.py --port 8080</text>
+      <text x="104" y="80" text-anchor="middle" fill="#64748b" font-size="9.5">Suporta +500 participantes</text>
+    </g>
+  </g>
+
+  <!-- ==================== CONNECTOR: CENTER TO RIGHT ==================== -->
+  <g transform="translate(580, 200)">
+    <line x1="0" y1="0" x2="48" y2="0" stroke="#818cf8" stroke-width="2.5" stroke-dasharray="4,4"/>
+    <circle cx="4" cy="0" r="4.5" fill="#818cf8" class="anim-pulse-cr"/>
+  </g>
+
+  <!-- ==================== RIGHT CARD: AUDIÊNCIA MOBILE ==================== -->
+  <g transform="translate(630, 48)">
+    <rect width="260" height="330" rx="14" fill="#0f172a" stroke="#818cf8" stroke-width="1.5"/>
+    <rect width="260" height="42" rx="14" fill="url(#cardRightGrad)"/>
+    <path d="M 0 42 L 260 42" stroke="#4f46e5" stroke-opacity="0.4" stroke-width="1"/>
+
+    <!-- Header -->
+    <text x="130" y="26" text-anchor="middle" fill="#a5b4fc" font-size="12.5" font-weight="800">📱 AUDIÊNCIA (/audience)</text>
+
+    <!-- Item 1 -->
+    <g transform="translate(18, 62)">
+      <circle cx="8" cy="8" r="4" fill="#818cf8"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Entrada Instantânea via QR</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="10">Sem cadastro ou apps instalados</text>
+    </g>
+
+    <!-- Item 2 -->
+    <g transform="translate(18, 112)">
+      <circle cx="8" cy="8" r="4" fill="#818cf8"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Voto Único em Enquetes</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="10">Feedback háptico vibratório no toque</text>
+    </g>
+
+    <!-- Item 3 -->
+    <g transform="translate(18, 162)">
+      <circle cx="8" cy="8" r="4" fill="#818cf8"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Envio de Dúvidas (Q&amp;A)</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="10">Fila moderada com anti-spam ativo</text>
+    </g>
+
+    <!-- Bottom Badge -->
+    <g transform="translate(16, 230)">
+      <rect width="228" height="78" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="114" y="26" text-anchor="middle" fill="#a5b4fc" font-size="11" font-weight="800">EXPERIÊNCIA WEB MOBILE</text>
+      <text x="114" y="46" text-anchor="middle" fill="#cbd5e1" font-size="10">iOS Safari, Chrome, Edge &amp; Firefox</text>
+      <text x="114" y="62" text-anchor="middle" fill="#34d399" font-size="9.5">100% Responsivo e leve (&lt;100KB)</text>
+    </g>
+  </g>
+</svg>
