@@ -38,13 +38,12 @@ Antes de tornar o repositório público ou publicá-lo oficialmente no GitHub, �
   - [x] Node/Web: `node_modules/`, `dist/`, `build/`, `*.log`.
   - [x] SO & IDEs: `.DS_Store`, `Thumbs.db`, `Desktop.ini`, `.idea/`, `.vscode/*`.
 
-### 🚀 Fase 2: Estruturação do Diretório Oficial de Testes (`tests/`)
-- [ ] **Migração da Suíte de Testes:**
-  - Mover `scratch/test_suite.py` para `tests/test_suite.py`.
-  - Manter compatibilidade com scripts legados se necessário.
-  - Atualizar comando no `package.json` (`"test": "python3 tests/test_suite.py"`).
-- [ ] **Limpeza de Índices no Git:**
-  - Executar `git rm` para remover referências antigas de arquivos deletados (`slidemesh-showcase-copia/` e `sessions_archive/_________ETC_TEST_MALICIOUS_analytics.json`).
+### 🚀 Fase 2: Estruturação do Diretório Oficial de Testes (`tests/`) — [CONCLUÍDA]
+- [x] **Migração da Suíte de Testes:**
+  - [x] Mover `scratch/test_suite.py` para `tests/test_suite.py` e criar wrapper de compatibilidade em `scratch/test_suite.py`.
+  - [x] Atualizar script de testes no `package.json` (`"test": "python3 tests/test_suite.py"`).
+- [x] **Limpeza de Índices no Git:**
+  - [x] Remover referências antigas de arquivos deletados com `git rm` (`slidemesh-showcase-copia/` e `sessions_archive/_________ETC_TEST_MALICIOUS_analytics.json`).
 
 ### 🚀 Fase 3: Padronização de Governança Open-Source (Arquivos de Raiz)
 - [ ] **Licenciamento (`LICENSE`):**
