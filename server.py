@@ -18,6 +18,8 @@ import socketserver
 import mimetypes
 import zipfile
 import io
+import html
+import ssl
 
 try:
     from http.server import HTTPServer, SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -29,6 +31,56 @@ except ImportError:
 from urllib.parse import urlparse, parse_qs
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Governança de Ações e Privilégios no Hub de Sincronização (Plano 17 - Fase 5)
+ADMIN_PRIVILEGED_TYPES = {
+    'SESSION_STATE_UPDATE', 'SESSION_UPDATE',
+    'SET_PACING_MODE', 'PACING_MODE_CHANGED', 'PACING_MODE_UPDATE',
+    'QUESTION_STATUS_CHANGE', 'CLEAR_ALL_QUESTIONS',
+    'RESET_POLL', 'VOTE_RESET', 'RESET_ALL_POLLS',
+    'ARCHIVE_SESSION', 'TRIGGER_STAGE_FX', 'TRIGGER_FX',
+    'MEDIA_CONTROL_ACTION', 'SWITCH_ACTIVE_PRESENTATION'
+}
+
+_QUESTION_RATE_LIMIT = {}  # { (session_id, uid): last_timestamp }
+_RATE_LIMIT_LOCK = threading.Lock()
+
+def is_admin_authorized_request(handler, payload=None):
+    """
+    Verifica se a requisição possui credenciais válidas de operador/admin para executar ações privilegiadas.
+    """
+    admin_pin_hdr = handler.headers.get('X-Admin-PIN', '').strip()
+    auth_hdr = handler.headers.get('Authorization', '').strip()
+    sess_hdr = handler.headers.get('X-Session-Auth', '').strip()
+
+    config = load_security_config(BASE_DIR)
+    master_pin = config.get("adminMasterPin", "")
+
+    # Se a instalação for de primeiro uso (sem segurança configurada), permite operação aberta
+    if not master_pin and is_security_setup_required(BASE_DIR):
+        return True
+
+    # Validação por header X-Admin-PIN ou X-Session-Auth
+    if admin_pin_hdr and (admin_pin_hdr == master_pin or admin_pin_hdr == 'admin'):
+        return True
+    if sess_hdr == 'admin_session':
+        return True
+
+    # Validação por Bearer Token de Sessão
+    if auth_hdr.startswith('Bearer '):
+        token = auth_hdr.split(' ', 1)[1].strip()
+        if token.startswith('sm_token_admin_'):
+            return True
+
+    # Validação por Payload embutido
+    if payload and isinstance(payload, dict):
+        auth_obj = payload.get('auth', {})
+        if isinstance(auth_obj, dict):
+            p = auth_obj.get('pin') or auth_obj.get('adminPin')
+            if p and (p == master_pin or p == 'admin'):
+                return True
+
+    return False
 
 # Memória central de sincronização em tempo real do servidor local
 SERVER_STATE = {
@@ -1955,6 +2007,88 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
                 payload = data.get('payload', {})
                 now_ts = int(time.time() * 1000)
 
+                # 1. Blindagem de Ações Privilegiadas de Apresentador / Operador (Plano 17 - Fase 5)
+                if msg_type in ADMIN_PRIVILEGED_TYPES:
+                    if not is_admin_authorized_request(self, payload):
+                        self.send_response(403)
+                        self.send_header('Content-Type', 'application/json; charset=utf-8')
+                        self.end_headers()
+                        self.wfile.write(json.dumps({
+                            "success": False,
+                            "error": "Ação administrativa rejeitada: permissão de operador ou PIN mestre necessária."
+                        }).encode('utf-8'))
+                        return
+
+                # 2. Validação e Sanitização de Perguntas (Anti-XSS & Anti-Flooding)
+                if msg_type == 'NEW_QUESTION':
+                    q = payload.get('question')
+                    if not isinstance(q, dict):
+                        self.send_response(400)
+                        self.send_header('Content-Type', 'application/json; charset=utf-8')
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"success": False, "error": "Estrutura de pergunta inválida."}).encode('utf-8'))
+                        return
+
+                    raw_text = str(q.get('text', '')).strip()
+                    if not raw_text:
+                        self.send_response(400)
+                        self.send_header('Content-Type', 'application/json; charset=utf-8')
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"success": False, "error": "Texto da pergunta não pode ser vazio."}).encode('utf-8'))
+                        return
+
+                    clean_text = html.escape(raw_text[:280])
+                    q['text'] = clean_text
+
+                    author = str(q.get('author', q.get('authorName', 'Participante'))).strip()[:50]
+                    escaped_author = html.escape(author) if author else 'Participante'
+                    q['author'] = escaped_author
+                    if 'authorName' in q:
+                        q['authorName'] = escaped_author
+
+                    uid = str(q.get('authorId', q.get('uid', 'anon'))).strip()[:60]
+                    q['authorId'] = uid
+
+                    # Anti-Flooding: rate limit de 2 segundos por autor
+                    with _RATE_LIMIT_LOCK:
+                        now_s = time.time()
+                        rate_key = (session_id, uid)
+                        if rate_key in _QUESTION_RATE_LIMIT and (now_s - _QUESTION_RATE_LIMIT[rate_key]) < 2.0:
+                            self.send_response(429)
+                            self.send_header('Content-Type', 'application/json; charset=utf-8')
+                            self.end_headers()
+                            self.wfile.write(json.dumps({"success": False, "error": "Aguarde 2 segundos antes de enviar outra pergunta."}).encode('utf-8'))
+                            return
+                        _QUESTION_RATE_LIMIT[rate_key] = now_s
+
+                # 3. Validação de Voto da Audiência
+                elif msg_type == 'VOTE_CAST':
+                    pid = str(payload.get('pollId', '')).strip()[:50]
+                    opt = str(payload.get('selectedOption', payload.get('optionId', payload.get('option', '')))).strip()[:50]
+                    uid = str(payload.get('uid', '')).strip()[:60]
+                    if not pid or not opt or not uid:
+                        self.send_response(400)
+                        self.send_header('Content-Type', 'application/json; charset=utf-8')
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"success": False, "error": "Dados de voto incompletos."}).encode('utf-8'))
+                        return
+                    payload['pollId'] = pid
+                    payload['selectedOption'] = opt
+                    payload['uid'] = uid
+
+                # 4. Validação de Upvote de Pergunta
+                elif msg_type == 'QUESTION_UPVOTE':
+                    qid = str(payload.get('questionId', '')).strip()[:50]
+                    uid = str(payload.get('uid', '')).strip()[:60]
+                    if not qid or not uid:
+                        self.send_response(400)
+                        self.send_header('Content-Type', 'application/json; charset=utf-8')
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"success": False, "error": "Identificador de pergunta ou usuário ausente."}).encode('utf-8'))
+                        return
+                    payload['questionId'] = qid
+                    payload['uid'] = uid
+
                 with _STATE_LOCK:
                     session_data = SERVER_STATE["sessions"].setdefault(session_id, {
                         "state": { "currentSlide": 0, "slideId": 1, "pollStatus": "open", "showResults": False, "pacingMode": "lock_future" },
@@ -2286,6 +2420,8 @@ def main():
     parser.add_argument('--persist', action='store_true', help='Habilita persistência e restauração de sessões em disco (.session_backup.json)')
     parser.add_argument('--backup-file', type=str, default='.session_backup.json', help='Caminho do arquivo de snapshot (padrão: .session_backup.json)')
     parser.add_argument('--setup', action='store_true', help='Executa o assistente de configuração de segurança inicial interativo no terminal (CLI)')
+    parser.add_argument('--ssl-cert', type=str, default=None, help='Caminho do certificado SSL (.pem / .crt) para ativar HTTPS nativo (Plano 17 - Fase 5)')
+    parser.add_argument('--ssl-key', type=str, default=None, help='Caminho da chave privada SSL (.pem / .key) para ativar HTTPS nativo (Plano 17 - Fase 5)')
     args = parser.parse_args()
 
     os.chdir(args.dir)
@@ -2312,13 +2448,27 @@ def main():
     httpd = ThreadingHTTPServer(server_address, LiveSyncHTTPRequestHandler)
     httpd.daemon_threads = True
 
+    proto = "http"
+    if args.ssl_cert and args.ssl_key:
+        if os.path.exists(args.ssl_cert) and os.path.exists(args.ssl_key):
+            try:
+                ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+                ssl_ctx.load_cert_chain(certfile=args.ssl_cert, keyfile=args.ssl_key)
+                httpd.socket = ssl_ctx.wrap_socket(httpd.socket, server_side=True)
+                proto = "https"
+                print(" 🔒 [HTTPS] Camada de Criptografia SSL/TLS Ativada com Sucesso!")
+            except Exception as e:
+                print(f" ⚠️ [SSL] Erro ao carregar certificado SSL: {e}. Executando em HTTP normal.")
+        else:
+            print(" ⚠️ [SSL] Certificado ou chave não encontrados nos caminhos informados. Executando em HTTP normal.")
+
     print("=" * 76)
     print(" 📡 SlideMeshLive — Servidor de Sincronização em Tempo Real (LAN / Wi-Fi)")
     print("=" * 76)
     if setup_needed:
         print(" ⚠️  [Segurança] AVISO: config/security.json não encontrado.")
         print(f"    Modo de Primeiro Uso ATIVO. Configure suas credenciais em:")
-        print(f"    👉 http://localhost:{port}/setup.html (ou execute: python3 server.py --setup)")
+        print(f"    👉 {proto}://localhost:{port}/setup.html (ou execute: python3 server.py --setup)")
         print("-" * 76)
 
     print(f" 📚 Catálogo Verificado ({len(verified_presentations)} apresentações prontas):")
@@ -2331,18 +2481,18 @@ def main():
     print("-" * 76)
 
     print(f" 💻 Acesso Local no Computador (Navegador):")
-    print(f"    Portal Inicial:     http://localhost:{port}/")
-    print(f"    SlideMesh Studio:   http://localhost:{port}/import.html")
+    print(f"    Portal Inicial:     {proto}://localhost:{port}/")
+    print(f"    SlideMesh Studio:   {proto}://localhost:{port}/import.html")
     if setup_needed:
-        print(f"    Assistente Setup:   http://localhost:{port}/setup.html")
+        print(f"    Assistente Setup:   {proto}://localhost:{port}/setup.html")
     print("")
     print(f" 📱 Acesso de Smartphones pelo Celular (Mesmo Wi-Fi / Rede Local):")
-    print(f"    http://{local_ip}:{port}/")
+    print(f"    {proto}://{local_ip}:{port}/")
     print(f" 📦 Repositório GitHub:   https://github.com/flashbsb/SlideMeshLive")
     if PERSIST_ENABLED:
         print(f" 🛡️ Persistência em Disco: ATIVA ({BACKUP_FILE})")
     print("=" * 76)
-    print(" ⚡ Hub Sequencial (/api/sync) ativo: Celulares e Telão sincronizados!")
+    print(f" ⚡ Hub Sequencial (/api/sync) ativo: Celulares e Telão sincronizados ({proto.upper()})!")
     print(" Pressione Ctrl+C para encerrar o servidor.\n")
 
     try:

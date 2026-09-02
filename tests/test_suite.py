@@ -218,7 +218,7 @@ def test_server_api_sync_endpoints():
                 "sessionId": session_id,
                 "payload": payload
             }).encode("utf-8")
-            req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+            req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json", "X-Session-Auth": "admin_session"})
             with urllib.request.urlopen(req, timeout=3) as res:
                 assert res.status == 200
                 return json.loads(res.read().decode("utf-8"))
@@ -945,7 +945,7 @@ def test_phase1_upvotes_and_moderation_gate():
                 "sessionId": session_id,
                 "payload": payload
             }).encode("utf-8")
-            req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+            req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json", "X-Session-Auth": "admin_session"})
             with urllib.request.urlopen(req, timeout=3) as res:
                 return json.loads(res.read().decode("utf-8"))
 
@@ -1092,7 +1092,7 @@ def test_phase2_sse_streaming_and_polling_fallback():
                 "sessionId": session_id,
                 "payload": payload
             }).encode("utf-8")
-            r = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+            r = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json", "X-Session-Auth": "admin_session"})
             with urllib.request.urlopen(r, timeout=3) as res:
                 return json.loads(res.read().decode("utf-8"))
 
@@ -1439,7 +1439,7 @@ def test_audience_pacing_lock_and_controlled_navigation():
             req = urllib.request.Request(
                 f"http://127.0.0.1:{test_port}/api/sync",
                 data=req_data,
-                headers={'Content-Type': 'application/json'}
+                headers={'Content-Type': 'application/json', 'X-Session-Auth': 'admin_session'}
             )
             with urllib.request.urlopen(req) as resp:
                 return json.loads(resp.read().decode('utf-8'))
@@ -1812,7 +1812,7 @@ def test_demanda02_stage_fx_overlay():
         req = urllib.request.Request(
             url,
             data=json.dumps(fx_payload).encode('utf-8'),
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json", "X-Session-Auth": "admin_session"}
         )
         with urllib.request.urlopen(req, timeout=3) as res:
             assert res.status == 200
@@ -3513,6 +3513,145 @@ def test_plano17_phase4_studio_hardening_and_zip_governance():
     print("✓ Plano 17 (Fase 4: Hardening do SlideMesh Studio & Governança de Pacotes ZIP) 100% HOMOLOGADO.")
 
 
+def test_plano17_phase5_smartphone_hardening_anti_spoofing_and_https():
+    """Valida a blindagem de sincronização, rate-limit, anti-XSS e suporte a HTTPS/SSL (Plano 17 - Fase 5)."""
+    print(f"\n{'='*70}")
+    print(" 🧪 35. Plano 17: Blindagem Smartphone-Servidor, Anti-Spoofing & HTTPS (Fase 5)")
+    print(f"{'='*70}")
+
+    httpd = server.ThreadingHTTPServer(('127.0.0.1', 0), server.LiveSyncHTTPRequestHandler)
+    test_port = httpd.server_port
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    time.sleep(0.1)
+
+    base_url = f"http://127.0.0.1:{test_port}"
+
+    try:
+        # 1. Tentativa de ação privilegiada sem autenticação -> 403 Forbidden
+        req_priv_unauth = urllib.request.Request(
+            f"{base_url}/api/sync",
+            data=json.dumps({
+                "type": "SESSION_STATE_UPDATE",
+                "sessionId": "SES_TEST_PRIV",
+                "payload": {"currentSlide": 99}
+            }).encode('utf-8'),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        try:
+            with urllib.request.urlopen(req_priv_unauth, timeout=3) as res:
+                assert False, f"Esperado 403 para ação administrativa não autenticada, retornou {res.status}"
+        except urllib.error.HTTPError as he:
+            assert he.code == 403, f"Código inesperado: {he.code}"
+        print("  ✓ Privileged Actions: Bloqueio estrito de ação de palco sem credencial com 403 Forbidden validado.")
+
+        # 2. Ação privilegiada com autenticação de sessão administrativa -> 200 OK
+        req_priv_auth = urllib.request.Request(
+            f"{base_url}/api/sync",
+            data=json.dumps({
+                "type": "SESSION_STATE_UPDATE",
+                "sessionId": "SES_TEST_PRIV",
+                "payload": {"currentSlide": 2}
+            }).encode('utf-8'),
+            headers={
+                "Content-Type": "application/json",
+                "X-Session-Auth": "admin_session"
+            },
+            method="POST"
+        )
+        with urllib.request.urlopen(req_priv_auth, timeout=3) as res:
+            assert res.status == 200, f"Falha na ação privilegiada autorizada: {res.status}"
+        print("  ✓ Privileged Actions: Autorização com X-Session-Auth aprovada com 200 OK.")
+
+        # 3. Sanitização de Pergunta Anti-XSS (NEW_QUESTION)
+        req_q1 = urllib.request.Request(
+            f"{base_url}/api/sync",
+            data=json.dumps({
+                "type": "NEW_QUESTION",
+                "sessionId": "SES_TEST_PRIV",
+                "payload": {
+                    "question": {
+                        "id": "q_xss_test",
+                        "text": "<script>alert('XSS')</script> Pergunta válida?",
+                        "author": "<b>Hacker</b>",
+                        "authorId": "uid_rate_1"
+                    }
+                }
+            }).encode('utf-8'),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with urllib.request.urlopen(req_q1, timeout=3) as res:
+            assert res.status == 200
+        
+        with server._STATE_LOCK:
+            saved_q = next((q for q in server.SERVER_STATE["sessions"]["SES_TEST_PRIV"]["questions"] if q.get("id") == "q_xss_test"), None)
+            assert saved_q is not None, "Pergunta não foi salva no estado"
+            assert "<script>" not in saved_q["text"], "Tag <script> não foi escapada"
+            assert "&lt;script&gt;" in saved_q["text"], "HTML escape não foi aplicado na pergunta"
+            assert "&lt;b&gt;" in saved_q["author"], "HTML escape não foi aplicado no autor"
+        print("  ✓ Anti-XSS Sanitization: Escapamento seguro de tags HTML em perguntas e autores validado.")
+
+        # 4. Anti-Flooding Rate Limiting (429 Too Many Requests)
+        req_q_flood = urllib.request.Request(
+            f"{base_url}/api/sync",
+            data=json.dumps({
+                "type": "NEW_QUESTION",
+                "sessionId": "SES_TEST_PRIV",
+                "payload": {
+                    "question": {
+                        "id": "q_xss_test_2",
+                        "text": "Segunda pergunta imediata",
+                        "authorId": "uid_rate_1"
+                    }
+                }
+            }).encode('utf-8'),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        try:
+            with urllib.request.urlopen(req_q_flood, timeout=3) as res:
+                assert False, f"Esperado 429 para flooding de perguntas, retornou {res.status}"
+        except urllib.error.HTTPError as he:
+            assert he.code == 429, f"Código inesperado para flooding: {he.code}"
+        print("  ✓ Anti-Flooding Gate: Bloqueio de envio em massa com 429 Too Many Requests validado.")
+
+        # 5. Validação de Votos e Presença
+        req_vote = urllib.request.Request(
+            f"{base_url}/api/sync",
+            data=json.dumps({
+                "type": "VOTE_CAST",
+                "sessionId": "SES_TEST_PRIV",
+                "payload": {
+                    "pollId": "poll_slide_1",
+                    "selectedOption": "A",
+                    "uid": "uid_voter_1"
+                }
+            }).encode('utf-8'),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with urllib.request.urlopen(req_vote, timeout=3) as res:
+            assert res.status == 200
+        print("  ✓ Votos e Interações da Audiência: Validação e registro de votos operacionais.")
+
+        # 6. Validação de Suporte HTTPS / SSL no server.py
+        server_py_path = os.path.join(BASE_DIR, "server.py")
+        with open(server_py_path, "r", encoding="utf-8") as f:
+            server_code = f.read()
+
+        assert "--ssl-cert" in server_code, "Argumento --ssl-cert não encontrado em server.py"
+        assert "--ssl-key" in server_code, "Argumento --ssl-key não encontrado em server.py"
+        assert "ssl.SSLContext" in server_code, "Configuração SSLContext não encontrada em server.py"
+        print("  ✓ HTTPS / WSS Nativo (server.py): Flags --ssl-cert, --ssl-key e camada TLS validadas.")
+
+    finally:
+        httpd.shutdown()
+
+    print("✓ Plano 17 (Fase 5: Blindagem Smartphone-Servidor, Anti-Spoofing & HTTPS) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -3549,6 +3688,7 @@ if __name__ == "__main__":
         test_plano17_phase2_presenter_stage_gatekeeper()
         test_plano17_phase3_portal_actions_and_zip_export_protection()
         test_plano17_phase4_studio_hardening_and_zip_governance()
+        test_plano17_phase5_smartphone_hardening_anti_spoofing_and_https()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

@@ -343,9 +343,17 @@ export class RealtimeEngine {
     const baseUrl = origin.startsWith('http') ? origin : 'http://127.0.0.1:8000';
 
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        if (sessionStorage.getItem('admin_pin_authenticated') === 'true') {
+          headers['X-Admin-PIN'] = sessionStorage.getItem('admin_master_pin_code') || 'admin';
+          headers['X-Session-Auth'] = 'admin_session';
+        }
+      }
+
       const res = await fetch(`${baseUrl}/api/sync`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: headers,
         body: JSON.stringify({
           type: type,
           sessionId: normSessionId,
