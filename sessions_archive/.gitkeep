@@ -1,0 +1,2 @@
+# Diretório de persistência de históricos e relatórios analíticos de sessões (sessions_archive/)
+# Os arquivos {sessionId}_analytics.json gerados em tempo de execução são ignorados pelo .gitignore.

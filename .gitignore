@@ -1,6 +1,6 @@
 # ==============================================================================
-# .gitignore — Plataforma de Apresentação HTML Interativa
-# Proteção de credenciais, arquivos sensíveis e temporários para o GitHub
+# .gitignore — SlideMeshLive (Plataforma de Apresentação HTML Interativa)
+# Proteção estrita de credenciais, dados analíticos e temporários para o GitHub
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
@@ -10,6 +10,12 @@
 config/security.json
 config/security.local.json
 config/admin-keys.json
+config/*.tmp
+config/.*.tmp
+
+# Preserva explicitamente o modelo de referência público
+!config/security.example.json
+!config/security.default.json
 
 # Arquivos de ambiente e variáveis locais
 .env
@@ -34,22 +40,46 @@ js/config.local.js
 config.local.js
 
 # ------------------------------------------------------------------------------
-# 2. ARQUIVOS DE EXPORTAÇÃO E DADOS ANALÍTICOS LOCAIS
+# 2. DADOS ANALÍTICOS, HISTÓRICOS E EXPORTAÇÕES LOCAIS
 # ------------------------------------------------------------------------------
-# Relatórios exportados pelo Painel do Moderador
+# Históricos analíticos gerados no servidor em tempo de execução
+sessions_archive/*.json
+!sessions_archive/.gitkeep
+
+# Relatórios e pacotes exportados pelo moderador ou participantes
 export_*.json
 apresentacao_export_*.json
 relatorio_*.json
+relatorio_*.csv
+*.slidemesh.zip
+backup_*.zip
+
+# Bancos de dados locais
 *.sqlite
+*.sqlite3
 *.db
 
 # ------------------------------------------------------------------------------
-# 3. LOGS, CACHES E ARQUIVOS TEMPORÁRIOS
+# 3. CACHES E AMBIENTES PYTHON
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+venv/
+.venv/
+env/
+ENV/
+
+# ------------------------------------------------------------------------------
+# 4. LOGS, RASCUNHOS E ARQUIVOS TEMPORÁRIOS
 # ------------------------------------------------------------------------------
 scratch/
-__pycache__/
-*.pyc
-*.pyo
 logs/
 *.log
 npm-debug.log*
@@ -66,7 +96,7 @@ tmp/
 *~
 
 # ------------------------------------------------------------------------------
-# 4. DEPENDÊNCIAS E BUILDS
+# 5. DEPENDÊNCIAS E BUILDS
 # ------------------------------------------------------------------------------
 node_modules/
 dist/
@@ -75,7 +105,7 @@ out/
 .package/
 
 # ------------------------------------------------------------------------------
-# 5. ARQUIVOS DE SISTEMA OPERACIONAL
+# 6. ARQUIVOS DE SISTEMA OPERACIONAL
 # ------------------------------------------------------------------------------
 # macOS
 .DS_Store
@@ -99,7 +129,7 @@ $RECYCLE.BIN/
 .fuse_hidden*
 
 # ------------------------------------------------------------------------------
-# 6. IDES, EDITORES E AMBIENTES DE DESENVOLVIMENTO
+# 7. IDES, EDITORES E AMBIENTES DE DESENVOLVIMENTO
 # ------------------------------------------------------------------------------
 .vscode/*
 !.vscode/settings.json
