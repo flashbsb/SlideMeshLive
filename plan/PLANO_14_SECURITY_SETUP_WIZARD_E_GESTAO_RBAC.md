@@ -80,14 +80,14 @@ Este plano detalha a arquitetura, experiência do usuário (UX) e especificaçõ
 - [x] **Badge de Alerta na Mesa Técnica (`admin/index.html` e `admin-app.js`):**
   - [x] Indicador visual no card de saúde / diagnóstico: `🛡️ Seg. Alta` (PIN customizado + RBAC) ou `⚠️ PIN Padrão` (Setup Pendente).
 
-### 🚀 Fase 5: Testes Automatizados, Homologação e Documentação
-- [ ] Adicionar testes na suíte `scratch/test_suite.py`:
-  - Teste de fluxo de Primeiro Uso (`POST /api/auth/setup`).
-  - Teste dos endpoints autenticados `GET /api/security/config` e `POST /api/security/config`.
-  - Teste de criação, edição e exclusão de usuários administradores e palestrantes.
-  - Teste de salvamento e leitura de apresentações com PIN específico e Pacing customizado no Studio.
-  - Teste de validação de PIN de apresentação na visão da audiência.
-- [ ] Atualização dos manuais [`README.pt-BR.md`](README.pt-BR.md) e [`README.md`](README.md).
+### 🚀 Fase 5: Testes Automatizados, Homologação e Documentação — [CONCLUÍDA]
+- [x] Adicionar testes na suíte `scratch/test_suite.py`:
+  - [x] Teste de fluxo de Primeiro Uso (`POST /api/auth/setup` & CLI `--setup`).
+  - [x] Teste dos endpoints autenticados `GET /api/security/config` e `POST /api/security/config`.
+  - [x] Teste de criação, edição e exclusão de usuários administradores e palestrantes.
+  - [x] Teste de salvamento e leitura de apresentações com PIN específico e Pacing customizado no Studio.
+  - [x] Teste de validação de PIN de apresentação na visão da audiência com Gatekeeper e badge de saúde.
+- [x] Atualização dos manuais [`README.pt-BR.md`](README.pt-BR.md) e [`README.md`](README.md).
 
 ---
 

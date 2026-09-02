@@ -100,10 +100,12 @@ O **SlideMeshLive** foi concebido com uma arquitetura modular baseada em tecnolo
     - Suporte nativo a exportação e importação de apresentações completas encapsuladas em arquivo ZIP único (`.slidemesh.zip` ou `.zip`), contendo o `manifest.json`, `slides.json` e todos os arquivos de mídia em `assets/`.
     - Endpoints de alta performance no backend (`GET /api/presentations/export?id={slug}` e `POST /api/presentations/import-zip`), com hardening rigoroso contra **Zip Slip** (bloqueio 403 para caminhos relativos maliciosos), **Zip Bomb** (limite de 200MB / 500 entradas) e sanitização de scripts executáveis.
     - Resolução intuitiva de conflitos (Sobrescrever vs Criar Nova Cópia), persistência não-destrutiva de apresentações pré-existentes no `catalog.json` e integração visual no Portal (`index.html`), SlideMesh Studio (`import.html`), Mesa Técnica (`admin/index.html`) e utilitários CLI (`tools/export_presentation.py` e `tools/import_presentation.py`).
-16. **Arquitetura de Segurança, RBAC & Backend Gatekeeper**:
-    - **Proteção de Credenciais**: O arquivo `config/security.json` é protegido pelo servidor contra acesso HTTP direto com resposta estrita `403 Forbidden`.
-    - **Endpoints de Autenticação Segura**: Metadados públicos são entregues via `GET /api/auth/public-config` sem expor senhas ou PINs. A validação de PIN é processada no backend via `POST /api/auth/verify-pin` e o login local é autenticado via `POST /api/auth/login`.
-    - **Full Lock Screen na Mesa Técnica**: Cortina translúcida de segurança de alta prioridade (`z-index: 99999`) que bloqueia a renderização de slides, notas do orador e controles antes da autenticação com suporte a 3 abas: **🔑 PIN Rápido**, **👤 Usuário Local (Admin/Palestrante)** e **🌐 Google Workspace**.
+16. **Arquitetura de Segurança, RBAC, Setup Wizard & Governança em Tempo Real**:
+    - **Proteção de Credenciais & Gatekeeper**: O arquivo `config/security.json` é protegido pelo servidor contra acesso HTTP direto (`403 Forbidden`). Metadados públicos seguros são expostos via `GET /api/auth/public-config`.
+    - **Assistente de Primeiro Uso (Setup Wizard Web & CLI)**: Quando o sistema é iniciado sem credenciais configuradas, o usuário é orientado via `setup.html` (com stepper em 3 passos, gerador de PIN e medidor de força de senha) ou via CLI interativo `python3 server.py --setup` para provisionar a infraestrutura de segurança com gravação atômica (`POST /api/auth/setup`).
+    - **Painel de Gestão de Segurança & RBAC na Mesa Técnica**: Modal de controle completo acessível pelo botão **`🔐 Segurança`** no Admin com 4 abas interativas (**🔑 PIN & Políticas**, **👥 Usuários Locais & Oradores**, **📱 Audiência Offline** e **🌐 Whitelist Google Workspace**) e sincronização instantânea em tempo de execução via `POST /api/security/config` sem reiniciar o servidor Python.
+    - **Segurança por Apresentação no SlideMesh Studio (`import.html`)**: Permite ao criador definir PIN de 4 a 8 dígitos por deck, cadastrar dica contextual para o smartphone e controlar o ritmo da plateia (`allowReviewPast`).
+    - **Experiência da Plateia Mobile & Badge de Saúde**: Bloqueio transparente por PIN na audiência (`audience/index.html`) com validação via `POST /api/auth/verify-pin` (fallback offline) e badge de saúde visual no Admin (`🟢 Seg. Alta`, `🟡 Seg. Média`, `⚠️ PIN Padrão`).
 
 ---
 
@@ -113,10 +115,15 @@ O **SlideMeshLive** foi concebido com uma arquitetura modular baseada em tecnolo
 SlideMeshLive/
 ├── index.html                               # Portal Inicial / Catálogo de Apresentações
 ├── import.html                              # SlideMesh Studio (Criação, Importação e Edição)
+├── setup.html                               # Assistente de Primeiro Uso (First-Run Security Setup)
 ├── docs.html                                # Visualizador Dinâmico de Documentação Markdown
 ├── server.py                                # Servidor Local em Python com Hub HTTP Sequencial
 ├── README.md                                # Documentação Oficial (Inglês)
 ├── README.pt-BR.md                          # Documentação Oficial (Português)
+│
+├── config/                                  # Configurações de Segurança & RBAC
+│   ├── security.json                        # Configuração Ativa de Produção (Protegida)
+│   └── security.example.json                # Template Modelo de Referência
 │
 ├── css/                                     # Design System Modular
 │   ├── base.css                             # Tokens HSL, tipografia Inter/Mono, 4 temas visuais

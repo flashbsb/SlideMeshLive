@@ -101,10 +101,12 @@
     - Native support for exporting and importing complete presentation packages packaged in a single ZIP file (`.slidemesh.zip` or `.zip`), bundling `manifest.json`, `slides.json`, and all media assets inside `assets/`.
     - High-performance server endpoints (`GET /api/presentations/export?id={slug}` and `POST /api/presentations/import-zip`) with strict hardening against **Zip Slip** (403 rejection for path traversal attempts), **Zip Bomb** (200MB / 500 entry bounds), and dangerous script executable filtering.
     - Seamless conflict resolution (Overwrite vs New Copy), non-destructive preservation of existing catalog entries in `catalog.json`, and full UI integration across Main Portal (`index.html`), SlideMesh Studio (`import.html`), Control Room (`admin/index.html`), and CLI utilities (`tools/export_presentation.py` and `tools/import_presentation.py`).
-16. **Security Architecture, RBAC & Backend Gatekeeper**:
-    - **Credential Protection**: The server blocks direct HTTP requests to `config/security.json` with a strict `403 Forbidden` response.
-    - **Secure Authentication Endpoints**: Public authentication metadata is served via `GET /api/auth/public-config` without exposing passwords or PINs. PIN validation is handled on the backend via `POST /api/auth/verify-pin` and local user logins are authenticated via `POST /api/auth/login`.
-    - **Full Lock Screen in Control Room**: A high-priority translucent security overlay (`z-index: 99999`) prevents rendering slides, speaker notes, and moderation panels before authentication, supporting 3 unlock methods: **🔑 Quick PIN**, **👤 Local User (Admin/Presenter)**, and **🌐 Google Workspace**.
+16. **Security Architecture, RBAC, Setup Wizard & Realtime Governance**:
+    - **Credential Protection & Gatekeeper**: The server blocks direct HTTP requests to `config/security.json` with a strict `403 Forbidden` response. Public security metadata is served via `GET /api/auth/public-config`.
+    - **First-Run Security Setup Wizard (Web & CLI)**: When launched without existing credentials, users are guided via `setup.html` (featuring a 3-step stepper, PIN generator, and password strength meter) or via interactive CLI `python3 server.py --setup` to provision security infrastructure with atomic writes (`POST /api/auth/setup`).
+    - **Control Room Security & RBAC Management Panel**: Comprehensive management modal accessible via **`🔐 Security`** button in the Admin header with 4 interactive tabs (**🔑 Master PIN & Policies**, **👥 Local Users & Speakers**, **📱 Offline Audience**, and **🌐 Google Workspace Whitelist**) and instant runtime sync via `POST /api/security/config` without restarting Python.
+    - **Per-Presentation Security in SlideMesh Studio (`import.html`)**: Presenters can define custom 4-to-8 digit PINs per deck, configure audience mobile hints, and customize pacing review permissions (`allowReviewPast`).
+    - **Mobile Audience Lock Screen & Security Health Badge**: Seamless PIN unlock on mobile (`audience/index.html`) with backend verification via `POST /api/auth/verify-pin` (offline fallback) and visual health status badges in the Control Room (`🟢 High Security`, `🟡 Medium Security`, `⚠️ Default PIN`).
 
 ---
 
@@ -114,10 +116,15 @@
 SlideMeshLive/
 ├── index.html                               # Main Portal / Presentation Catalog
 ├── import.html                              # SlideMesh Studio (Creation, Import & Editing)
+├── setup.html                               # First-Run Security Setup Wizard
 ├── docs.html                                # Dynamic Markdown Documentation Viewer
 ├── server.py                                # Local Python Server with Sequential HTTP Hub
 ├── README.md                                # Official Documentation (English)
 ├── README.pt-BR.md                          # Official Documentation (Portuguese)
+│
+├── config/                                  # Security & RBAC Configurations
+│   ├── security.json                        # Active Production Configuration (Protected)
+│   └── security.example.json                # Reference Template Model
 │
 ├── css/                                     # Modular Design System
 │   ├── base.css                             # HSL Design Tokens, Inter/Mono fonts, 4 visual themes
