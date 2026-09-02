@@ -63,6 +63,11 @@
         🔒 <span id="admin-user-label">Bloquear</span>
       </button>
 
+      <!-- Botão de Gestão de Segurança (Plano 14 - Fase 2) -->
+      <button class="btn btn-sm" id="admin-btn-security" style="border-color: rgba(56, 189, 248, 0.5); color: #38bdf8; background: rgba(56, 189, 248, 0.08); font-weight: 700;" title="Abrir Gestão de Segurança, PIN e Usuários" data-i18n="admin.btn_security">
+        🔐 Segurança
+      </button>
+
       <button class="btn btn-sm" id="admin-btn-analytics" style="border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;" title="Ver Dashboard de Analytics e Gráficos de Sessões" data-i18n="admin.btn_analytics">
         📊 Analytics
       </button>
@@ -534,6 +539,185 @@
       <button class="btn btn-primary" id="btn-confirm-new-session" style="width: 100%; font-size: 13px; padding: 10px;">
         Criar e Iniciar Nova Sessão
       </button>
+    </div>
+  </div>
+
+  <!-- Modal de Gestão de Segurança & Controle de Acesso (Plano 14 - Fase 2) -->
+  <div class="modal-overlay" id="admin-security-settings-modal">
+    <div class="modal-container" style="max-width: 780px; width: 95%;">
+      <button class="modal-close-btn" id="btn-close-security-modal">&times;</button>
+      
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+        <span style="font-size: 22px;">🔐</span>
+        <h3 style="font-size: 19px; font-weight: 800; color: #ffffff;" data-i18n="admin.security_modal_title">
+          Gestão de Segurança & Controle de Acesso
+        </h3>
+      </div>
+      <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 18px;">
+        Configure o PIN mestre, gerencie usuários administradores e palestrantes, configure a audiência offline e a whitelist Google.
+      </p>
+
+      <!-- Abas de Segurança -->
+      <div style="display: flex; gap: 6px; background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 8px; border: 1px solid var(--border-subtle); margin-bottom: 18px; flex-wrap: wrap;">
+        <button class="btn btn-sm btn-primary" id="sec-tab-pin-btn" style="flex: 1; font-size: 11.5px; padding: 6px 12px;" type="button">
+          🔑 PIN & Políticas
+        </button>
+        <button class="btn btn-sm" id="sec-tab-users-btn" style="flex: 1; font-size: 11.5px; padding: 6px 12px; background: transparent; border-color: transparent; color: var(--text-muted);" type="button">
+          👥 Usuários & Oradores
+        </button>
+        <button class="btn btn-sm" id="sec-tab-audience-btn" style="flex: 1; font-size: 11.5px; padding: 6px 12px; background: transparent; border-color: transparent; color: var(--text-muted);" type="button">
+          📱 Audiência Offline
+        </button>
+        <button class="btn btn-sm" id="sec-tab-google-btn" style="flex: 1; font-size: 11.5px; padding: 6px 12px; background: transparent; border-color: transparent; color: var(--text-muted);" type="button">
+          🌐 Google Workspace
+        </button>
+      </div>
+
+      <!-- PAINEL 1: PIN & Políticas -->
+      <div id="sec-panel-pin" style="display: block;">
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 18px; margin-bottom: 16px;">
+          <label style="font-size: 13px; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 8px;">
+            PIN Mestre da Mesa Técnica (4 a 8 dígitos):
+          </label>
+          <div style="display: flex; gap: 10px; align-items: center; max-width: 360px;">
+            <input type="text" id="sec-input-pin" maxlength="8" style="flex: 1; padding: 10px 14px; background: rgba(9, 13, 22, 0.9); border: 1.5px solid var(--border-medium); border-radius: 6px; color: #ffffff; font-family: var(--font-mono); font-size: 18px; font-weight: 700; text-align: center; letter-spacing: 2px;">
+            <button type="button" class="btn btn-secondary btn-sm" id="sec-btn-generate-pin" style="padding: 10px 12px; font-weight: 700; white-space: nowrap;">
+              🎲 Gerar PIN
+            </button>
+          </div>
+          <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 8px;">
+            Este código numérico é utilizado para autenticação rápida em palcos e no desbloqueio da Mesa Técnica.
+          </p>
+        </div>
+
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 14px 18px;">
+          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 13px; color: #cbd5e1;">
+            <input type="checkbox" id="sec-check-require-pin" checked style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+            <span><strong>Exigir autenticação para acessar a Mesa Técnica</strong> (Impede visualização aberta de notas de orador e moderação)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- PAINEL 2: Usuários Administradores & Palestrantes -->
+      <div id="sec-panel-users" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span style="font-size: 12.5px; font-weight: 700; color: #cbd5e1;">Contas Administrativas e de Palestrantes Cadastradas:</span>
+          <button type="button" class="btn btn-sm btn-primary" id="sec-btn-show-add-user" style="font-size: 11.5px; padding: 4px 10px;">
+            + Novo Usuário
+          </button>
+        </div>
+
+        <!-- Formulário de Adicionar / Editar Usuário -->
+        <div id="sec-user-form-card" style="display: none; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 14px; margin-bottom: 14px;">
+          <div style="font-size: 12px; font-weight: 800; color: var(--accent-primary); margin-bottom: 10px;" id="sec-user-form-title">
+            👤 Adicionar Novo Usuário Local
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 10px;">
+            <div>
+              <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 3px;">Nome de Exibição:</label>
+              <input type="text" id="sec-form-user-name" placeholder="Ex: Dr. Palestrante" style="width: 100%; padding: 8px 10px; background: rgba(9, 13, 22, 0.9); border: 1px solid var(--border-subtle); border-radius: 6px; color: #fff; font-size: 12.5px;">
+            </div>
+            <div>
+              <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 3px;">Username:</label>
+              <input type="text" id="sec-form-user-username" placeholder="palestrante" style="width: 100%; padding: 8px 10px; background: rgba(9, 13, 22, 0.9); border: 1px solid var(--border-subtle); border-radius: 6px; color: #fff; font-size: 12.5px;">
+            </div>
+            <div>
+              <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 3px;">Papel (Role):</label>
+              <select id="sec-form-user-role" style="width: 100%; padding: 8px 10px; background: rgba(9, 13, 22, 0.9); border: 1px solid var(--border-subtle); border-radius: 6px; color: #fff; font-size: 12.5px;">
+                <option value="admin">🛡️ Administrador (Mesa Técnica)</option>
+                <option value="presenter">🎤 Palestrante (Apresentador)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 3px;">Senha:</label>
+              <input type="password" id="sec-form-user-password" placeholder="Nova senha" style="width: 100%; padding: 8px 10px; background: rgba(9, 13, 22, 0.9); border: 1px solid var(--border-subtle); border-radius: 6px; color: #fff; font-size: 12.5px;">
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn btn-sm btn-secondary" id="sec-btn-cancel-user-form" style="font-size: 11.5px; padding: 4px 10px;">Cancelar</button>
+            <button type="button" class="btn btn-sm btn-primary" id="sec-btn-save-user-form" style="font-size: 11.5px; padding: 4px 12px; font-weight: 700;">Salvar Usuário</button>
+          </div>
+        </div>
+
+        <!-- Tabela de Usuários Admin -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; overflow: hidden; max-height: 220px; overflow-y: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;">
+            <thead>
+              <tr style="background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 11px; text-transform: uppercase;">
+                <th style="padding: 10px 14px;">Usuário</th>
+                <th style="padding: 10px 14px;">Nome</th>
+                <th style="padding: 10px 14px;">Papel</th>
+                <th style="padding: 10px 14px; text-align: right;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="sec-admin-users-tbody">
+              <!-- Renderizado dinamicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAINEL 3: Audiência Offline -->
+      <div id="sec-panel-audience" style="display: none;">
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 14px 18px; margin-bottom: 16px;">
+          <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+            <div>
+              <strong style="font-size: 13.5px; display: block; color: #cbd5e1;">Ativar Modo Audiência Offline</strong>
+              <span style="font-size: 11.5px; color: var(--text-muted);">Permite que participantes em rede local Wi-Fi utilizem contas locais ou anônimas</span>
+            </div>
+            <input type="checkbox" id="sec-check-audience-enabled" checked style="width: 20px; height: 20px; accent-color: #10b981;">
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 12px; font-weight: 700; color: #cbd5e1;">Participantes Cadastrados com Crachá / Senha:</span>
+          <button type="button" class="btn btn-sm btn-primary" id="sec-btn-add-audience-user" style="font-size: 11px; padding: 3px 8px;">
+            + Participante
+          </button>
+        </div>
+
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; overflow: hidden; max-height: 200px; overflow-y: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+            <thead>
+              <tr style="background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 10.5px; text-transform: uppercase;">
+                <th style="padding: 8px 12px;">Login</th>
+                <th style="padding: 8px 12px;">Nome</th>
+                <th style="padding: 8px 12px;">Senha</th>
+                <th style="padding: 8px 12px; text-align: right;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="sec-audience-users-tbody">
+              <!-- Renderizado dinamicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAINEL 4: Google Workspace -->
+      <div id="sec-panel-google" style="display: none;">
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+          <label style="font-size: 12.5px; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 6px;">
+            E-mails ou Domínios Corporativos Autorizados (Whitelist):
+          </label>
+          <textarea id="sec-input-allowed-emails" rows="4" placeholder="admin@suaempresa.com.br, palestrante@suaempresa.com.br, @suaempresa.com.br" style="width: 100%; padding: 10px 12px; background: rgba(9, 13, 22, 0.9); border: 1.5px solid var(--border-medium); border-radius: 6px; color: #ffffff; font-family: var(--font-mono); font-size: 12.5px; box-sizing: border-box;"></textarea>
+          <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.5;">
+            Insira os e-mails específicos ou sufixos de domínio autorizados a desbloquear a Mesa Técnica via Google Sign-In. Separe por vírgula ou linha.
+          </p>
+        </div>
+      </div>
+
+      <!-- Mensagens de Feedback & Rodapé -->
+      <div id="sec-feedback-msg" style="display: none; padding: 10px 14px; border-radius: 6px; font-size: 12px; margin-top: 14px;"></div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: 16px; flex-wrap: wrap; gap: 8px;">
+        <button type="button" class="btn btn-sm btn-secondary" id="btn-close-security-modal-footer" style="font-size: 12px;">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-sm btn-primary" id="btn-save-security-settings" style="font-size: 12.5px; font-weight: 800; padding: 7px 18px;">
+          💾 Salvar Configurações de Segurança
+        </button>
+      </div>
+
     </div>
   </div>
 

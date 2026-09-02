@@ -1120,6 +1120,47 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(public_data, ensure_ascii=False).encode('utf-8'))
             return
 
+        # Endpoint de Leitura da Configuração de Segurança para a Mesa Técnica (Plano 14 - Fase 2)
+        if parsed.path == '/api/security/config':
+            sec_cfg = load_security_config(BASE_DIR)
+            response_data = {
+                "success": True,
+                "config": {
+                    "admin": {
+                        "pin": str(sec_cfg.get("admin", {}).get("pin", "2026")),
+                        "requirePinForAdmin": bool(sec_cfg.get("admin", {}).get("requirePinForAdmin", True)),
+                        "allowedEmails": list(sec_cfg.get("admin", {}).get("allowedEmails", [])),
+                        "users": [
+                            {
+                                "username": str(u.get("username", "")),
+                                "role": str(u.get("role", "admin")),
+                                "name": str(u.get("name", u.get("username", ""))),
+                                "password": str(u.get("password", ""))
+                            }
+                            for u in sec_cfg.get("admin", {}).get("users", [])
+                        ]
+                    },
+                    "offlineAudience": {
+                        "enabled": bool(sec_cfg.get("offlineAudience", {}).get("enabled", True)),
+                        "users": [
+                            {
+                                "username": str(u.get("username", "")),
+                                "password": str(u.get("password", "")),
+                                "name": str(u.get("name", u.get("username", "")))
+                            }
+                            for u in sec_cfg.get("offlineAudience", {}).get("users", [])
+                        ]
+                    }
+                }
+            }
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Cache-Control', 'no-cache, no-store')
+            self.end_headers()
+            self.wfile.write(json.dumps(response_data, ensure_ascii=False).encode('utf-8'))
+            return
+
         # Endpoint de Streaming SSE em Tempo Real (Server-Sent Events)
         if parsed.path == '/api/events':
             qs = parse_qs(parsed.query)
@@ -1460,6 +1501,106 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({
                 "success": True,
                 "message": "Configuração inicial de segurança criada com sucesso!"
+            }, ensure_ascii=False).encode('utf-8'))
+            return
+
+        # Endpoint de Atualização da Configuração de Segurança pela Mesa Técnica (Plano 14 - Fase 2)
+        if parsed.path == '/api/security/config':
+            try:
+                raw_body = self.rfile.read(content_length).decode('utf-8')
+                payload = json.loads(raw_body)
+            except Exception:
+                payload = {}
+
+            admin_data = payload.get('admin', {})
+            pin = str(admin_data.get('pin', '')).strip()
+            require_pin = bool(admin_data.get('requirePinForAdmin', True))
+            allowed_emails = [str(e).strip().lower() for e in admin_data.get('allowedEmails', []) if str(e).strip()]
+            raw_users = admin_data.get('users', [])
+            
+            # Validação do PIN
+            if not pin or len(pin) < 4:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "success": False,
+                    "error": "O PIN mestre de administração deve conter no mínimo 4 dígitos numéricos."
+                }, ensure_ascii=False).encode('utf-8'))
+                return
+
+            # Sanitização de usuários administrativos
+            cleaned_admin_users = []
+            for u in raw_users:
+                uname = str(u.get('username', '')).strip().lower()
+                upass = str(u.get('password', '')).strip()
+                urole = str(u.get('role', 'admin')).strip().lower()
+                uname_display = str(u.get('name', '')).strip() or uname
+                if uname:
+                    cleaned_admin_users.append({
+                        "username": uname,
+                        "password": upass,
+                        "role": urole if urole in ('admin', 'presenter') else 'admin',
+                        "name": uname_display
+                    })
+
+            # Sanitização de audiência offline
+            offline_aud = payload.get('offlineAudience', {})
+            cleaned_aud_users = []
+            for u in offline_aud.get('users', []):
+                uname = str(u.get('username', '')).strip()
+                upass = str(u.get('password', '')).strip() or "123"
+                uname_display = str(u.get('name', '')).strip() or uname
+                if uname:
+                    cleaned_aud_users.append({
+                        "username": uname,
+                        "password": upass,
+                        "name": uname_display
+                    })
+
+            # Montagem do arquivo JSON completo
+            new_security_config = {
+                "_comment": "SlideMeshLive — Configuração de segurança declarativa atualizada pela Mesa Técnica.",
+                "admin": {
+                    "pin": pin,
+                    "requirePinForAdmin": require_pin,
+                    "allowedEmails": allowed_emails,
+                    "users": cleaned_admin_users
+                },
+                "offlineAudience": {
+                    "enabled": bool(offline_aud.get('enabled', True)),
+                    "users": cleaned_aud_users
+                }
+            }
+
+            sec_path = os.path.join(BASE_DIR, "config", "security.json")
+            os.makedirs(os.path.join(BASE_DIR, "config"), exist_ok=True)
+            tmp_path = os.path.join(BASE_DIR, "config", ".security.json.tmp")
+            try:
+                with open(tmp_path, "w", encoding="utf-8") as f:
+                    json.dump(new_security_config, f, indent=2, ensure_ascii=False)
+                os.replace(tmp_path, sec_path)
+            except Exception as e:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "success": False,
+                    "error": f"Erro ao atualizar config/security.json: {e}"
+                }, ensure_ascii=False).encode('utf-8'))
+                return
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                "success": True,
+                "message": "Configurações de segurança atualizadas com sucesso!"
             }, ensure_ascii=False).encode('utf-8'))
             return
 

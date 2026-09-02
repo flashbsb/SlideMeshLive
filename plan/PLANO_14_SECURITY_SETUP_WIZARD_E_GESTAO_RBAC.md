@@ -39,18 +39,18 @@ Este plano detalha a arquitetura, experiência do usuário (UX) e especificaçõ
   - [x] Passo 3: Configuração de modo de audiência e login corporativo (opcional).
   - [x] Feedback visual de conclusão com redirecionamento para a Mesa Técnica já autenticado.
 
-### 🚀 Fase 2: Painel de Gestão de Segurança na Mesa Técnica (`admin/index.html` e `admin-app.js`)
-- [ ] **Modal de Segurança (`#admin-security-settings-modal`):**
-  - **Aba 1 (🔑 PIN & Políticas):** Alterar PIN da Mesa Técnica, alternar exigência de PIN para admin, gerador de PIN.
-  - **Aba 2 (👥 Administradores & Palestrantes):** Tabela de usuários locais com badges de papel (`admin` / `presenter`), formulário modal para criar novo usuário, trocar senha e excluir contas.
-  - **Aba 3 (📱 Audiência Offline):** Toggle para ativar/desativar audiência offline, lista de participantes autorizados com nome e senha simplificada, botão para adicionar participante.
-  - **Aba 4 (🌐 Google Workspace):** Lista de e-mails/domínios corporativos permitidos na whitelist.
-- [ ] **Endpoints Autenticados no Backend (`server.py`):**
-  - `GET /api/security/config`: Retorna a configuração de segurança completa (requer sessão de admin ativa).
-  - `POST /api/security/config`: Gravação atômica em `config/security.json` com validação de payload, sanitização e descarte de senhas em branco.
-- [ ] **Integração no Frontend (`admin-app.js`):**
-  - Botão no cabeçalho ou menu da Mesa Técnica: **`🔐 Segurança`**.
-  - Sincronização em tempo real das alterações sem necessidade de reiniciar o servidor Python.
+### 🚀 Fase 2: Painel de Gestão de Segurança na Mesa Técnica (`admin/index.html` e `admin-app.js`) — [CONCLUÍDA]
+- [x] **Modal de Segurança (`#admin-security-settings-modal`):**
+  - [x] **Aba 1 (🔑 PIN & Políticas):** Alterar PIN da Mesa Técnica, alternar exigência de PIN para admin, gerador de PIN.
+  - [x] **Aba 2 (👥 Administradores & Palestrantes):** Tabela de usuários locais com badges de papel (`admin` / `presenter`), formulário modal para criar novo usuário, trocar senha e excluir contas.
+  - [x] **Aba 3 (📱 Audiência Offline):** Toggle para ativar/desativar audiência offline, lista de participantes autorizados com nome e senha simplificada, botão para adicionar participante.
+  - [x] **Aba 4 (🌐 Google Workspace):** Lista de e-mails/domínios corporativos permitidos na whitelist.
+- [x] **Endpoints Autenticados no Backend (`server.py`):**
+  - [x] `GET /api/security/config`: Retorna a configuração de segurança completa (requer sessão de admin ativa).
+  - [x] `POST /api/security/config`: Gravação atômica em `config/security.json` com validação de payload, sanitização e descarte de senhas em branco.
+- [x] **Integração no Frontend (`admin-app.js`):**
+  - [x] Botão no cabeçalho ou menu da Mesa Técnica: **`🔐 Segurança`**.
+  - [x] Sincronização em tempo real das alterações sem necessidade de reiniciar o servidor Python.
 
 ### 🚀 Fase 3: Configuração de Segurança e Ritmo no SlideMesh Studio (`import.html` & `conversion-engine.js`)
 - [ ] **Campos Dinâmicos de Segurança na Etapa 2 do Studio:**

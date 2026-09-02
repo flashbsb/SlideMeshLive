@@ -2801,6 +2801,143 @@ def test_plano14_phase1_security_setup_wizard():
     print("✓ Plano 14 (Fase 1: First-Run Security Setup Wizard Web & CLI) 100% HOMOLOGADO.")
 
 
+def test_plano14_phase2_admin_security_panel():
+    print(f"\n{'='*70}")
+    print(" 🧪 27. Plano 14: Painel de Gestão de Segurança na Mesa Técnica (Fase 2)")
+    print(f"{'='*70}")
+
+    httpd = server.ThreadingHTTPServer(("127.0.0.1", 0), server.LiveSyncHTTPRequestHandler)
+    httpd.daemon_threads = True
+    port = httpd.server_port
+    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    server_thread.start()
+    base_url = f"http://127.0.0.1:{port}"
+
+    sec_json_path = os.path.join(BASE_DIR, "config", "security.json")
+    sec_backup = None
+    if os.path.exists(sec_json_path):
+        with open(sec_json_path, "r", encoding="utf-8") as f:
+            sec_backup = f.read()
+
+    try:
+        # 1. Teste GET /api/security/config
+        get_req = urllib.request.Request(f"{base_url}/api/security/config")
+        with urllib.request.urlopen(get_req, timeout=3) as res:
+            assert res.status == 200, f"GET /api/security/config retornou HTTP {res.status}"
+            data = json.loads(res.read().decode('utf-8'))
+            assert data.get("success") is True, "Campo success ausente"
+            cfg = data.get("config", {})
+            assert "admin" in cfg, "Campo admin ausente na config"
+            assert "offlineAudience" in cfg, "Campo offlineAudience ausente na config"
+            assert "pin" in cfg["admin"], "Campo pin ausente no admin"
+            assert isinstance(cfg["admin"].get("users"), list), "admin.users deve ser uma lista"
+            print("  ✓ GET /api/security/config: Estrutura completa de segurança retornada com sucesso.")
+
+        # 2. Teste POST /api/security/config com validação de PIN inválido (< 4 dígitos)
+        bad_payload = {
+            "admin": { "pin": "12", "users": [] },
+            "offlineAudience": { "enabled": True, "users": [] }
+        }
+        bad_req = urllib.request.Request(
+            f"{base_url}/api/security/config",
+            data=json.dumps(bad_payload).encode('utf-8'),
+            headers={"Content-Type": "application/json"}
+        )
+        try:
+            urllib.request.urlopen(bad_req, timeout=3)
+            assert False, "Deveria ter rejeitado PIN com menos de 4 dígitos com 400"
+        except urllib.error.HTTPError as e:
+            assert e.code == 400, f"Deveria retornar 400, retornou {e.code}"
+            err_res = json.loads(e.read().decode('utf-8'))
+            assert "mínimo 4 dígitos" in err_res.get("error", "")
+            print("  ✓ POST /api/security/config: Rejeição de PIN inválido (< 4 dígitos) com 400 validada.")
+
+        # 3. Teste POST /api/security/config com atualização válida
+        test_update_payload = {
+            "admin": {
+                "pin": "7788",
+                "requirePinForAdmin": True,
+                "allowedEmails": ["diretoria@empresa.com.br"],
+                "users": [
+                    {
+                        "username": "admin_p14",
+                        "password": "hashed_or_plain_pass",
+                        "role": "admin",
+                        "name": "Super Admin P14"
+                    },
+                    {
+                        "username": "speaker_p14",
+                        "password": "speaker_pass",
+                        "role": "presenter",
+                        "name": "Orador P14"
+                    }
+                ]
+            },
+            "offlineAudience": {
+                "enabled": True,
+                "users": [
+                    { "username": "cracha01", "password": "123", "name": "Convidado VIP" }
+                ]
+            }
+        }
+        save_req = urllib.request.Request(
+            f"{base_url}/api/security/config",
+            data=json.dumps(test_update_payload).encode('utf-8'),
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(save_req, timeout=3) as res:
+            assert res.status == 200
+            save_data = json.loads(res.read().decode('utf-8'))
+            assert save_data.get("success") is True
+            print("  ✓ POST /api/security/config: Gravação atômica da nova configuração de segurança validada.")
+
+        # 4. Verificar se a nova configuração persiste e é lida via GET
+        with urllib.request.urlopen(get_req, timeout=3) as res:
+            updated_data = json.loads(res.read().decode('utf-8'))
+            updated_cfg = updated_data.get("config", {})
+            assert updated_cfg["admin"]["pin"] == "7788", "PIN atualizado não persistiu"
+            user_names = [u["username"] for u in updated_cfg["admin"]["users"]]
+            assert "admin_p14" in user_names, "Novo usuário admin_p14 ausente"
+            assert "speaker_p14" in user_names, "Novo orador speaker_p14 ausente"
+            print("  ✓ Persistência & Leitura: PIN '7788' e usuários atualizados confirmados via GET.")
+
+        # 5. Validação de UI no HTML da Mesa Técnica (admin/index.html)
+        admin_html_path = os.path.join(BASE_DIR, "admin", "index.html")
+        with open(admin_html_path, "r", encoding="utf-8") as f:
+            admin_html = f.read()
+        assert 'id="admin-btn-security"' in admin_html, "Botão #admin-btn-security ausente em admin/index.html"
+        assert 'id="admin-security-settings-modal"' in admin_html, "Modal #admin-security-settings-modal ausente em admin/index.html"
+        assert 'id="sec-tab-pin-btn"' in admin_html, "Aba PIN ausente no modal"
+        assert 'id="sec-tab-users-btn"' in admin_html, "Aba Usuários ausente no modal"
+        assert 'id="sec-tab-audience-btn"' in admin_html, "Aba Audiência ausente no modal"
+        assert 'id="sec-tab-google-btn"' in admin_html, "Aba Google ausente no modal"
+        print("  ✓ Mesa Técnica HTML (admin/index.html): Botão 🔐 Segurança e Modal com 4 abas validados.")
+
+        # 6. Validação do Controlador JS (js/admin/admin-app.js)
+        admin_js_path = os.path.join(BASE_DIR, "js", "admin", "admin-app.js")
+        with open(admin_js_path, "r", encoding="utf-8") as f:
+            admin_js = f.read()
+        assert 'openSecuritySettingsModal' in admin_js, "Método openSecuritySettingsModal ausente em admin-app.js"
+        assert 'switchSecurityTab' in admin_js, "Método switchSecurityTab ausente em admin-app.js"
+        assert 'saveSecuritySettings' in admin_js, "Método saveSecuritySettings ausente em admin-app.js"
+        print("  ✓ Controlador Mesa Técnica (admin-app.js): Métodos de gestão de segurança integrados.")
+
+        # 7. Validação de i18n em pt-BR e en-US
+        i18n_path = os.path.join(BASE_DIR, "js", "core", "i18n-engine.js")
+        with open(i18n_path, "r", encoding="utf-8") as f:
+            i18n_content = f.read()
+        assert "'admin.btn_security': '🔐 Segurança'" in i18n_content, "Chave admin.btn_security ausente em pt-BR"
+        assert "'admin.btn_security': '🔐 Security'" in i18n_content, "Chave admin.btn_security ausente em en-US"
+        print("  ✓ Internacionalização (i18n): Chaves de segurança em pt-BR e en-US validadas.")
+
+        print("✓ Plano 14 (Fase 2: Painel de Gestão de Segurança & RBAC na Mesa Técnica) 100% HOMOLOGADO.")
+    finally:
+        if sec_backup is not None and os.path.exists(sec_json_path):
+            with open(sec_json_path, "w", encoding="utf-8") as f:
+                f.write(sec_backup)
+        httpd.shutdown()
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -2829,6 +2966,7 @@ if __name__ == "__main__":
         test_plano13_portal_and_admin_modals_ux()
         test_plano13_phase3_security_gatekeeper_and_rbac()
         test_plano14_phase1_security_setup_wizard()
+        test_plano14_phase2_admin_security_panel()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

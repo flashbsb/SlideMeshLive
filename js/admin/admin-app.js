@@ -159,8 +159,44 @@ class AdminApp {
       analyticsKpiVotes: document.getElementById('analytics-kpi-votes'),
       analyticsKpiQuestions: document.getElementById('analytics-kpi-questions'),
       analyticsPollsContainer: document.getElementById('analytics-polls-container'),
-      analyticsQuestionsContainer: document.getElementById('analytics-questions-container')
+      analyticsQuestionsContainer: document.getElementById('analytics-questions-container'),
+
+      // Gestão de Segurança & RBAC (Plano 14 - Fase 2)
+      btnSecurity: document.getElementById('admin-btn-security'),
+      securityModal: document.getElementById('admin-security-settings-modal'),
+      btnCloseSecurityModal: document.getElementById('btn-close-security-modal'),
+      btnCloseSecurityModalFooter: document.getElementById('btn-close-security-modal-footer'),
+      btnSaveSecuritySettings: document.getElementById('btn-save-security-settings'),
+      secTabPinBtn: document.getElementById('sec-tab-pin-btn'),
+      secTabUsersBtn: document.getElementById('sec-tab-users-btn'),
+      secTabAudienceBtn: document.getElementById('sec-tab-audience-btn'),
+      secTabGoogleBtn: document.getElementById('sec-tab-google-btn'),
+      secPanelPin: document.getElementById('sec-panel-pin'),
+      secPanelUsers: document.getElementById('sec-panel-users'),
+      secPanelAudience: document.getElementById('sec-panel-audience'),
+      secPanelGoogle: document.getElementById('sec-panel-google'),
+      secInputPin: document.getElementById('sec-input-pin'),
+      secBtnGeneratePin: document.getElementById('sec-btn-generate-pin'),
+      secCheckRequirePin: document.getElementById('sec-check-require-pin'),
+      secAdminUsersTbody: document.getElementById('sec-admin-users-tbody'),
+      secBtnShowAddUser: document.getElementById('sec-btn-show-add-user'),
+      secUserFormCard: document.getElementById('sec-user-form-card'),
+      secUserFormTitle: document.getElementById('sec-user-form-title'),
+      secFormUserName: document.getElementById('sec-form-user-name'),
+      secFormUserUsername: document.getElementById('sec-form-user-username'),
+      secFormUserRole: document.getElementById('sec-form-user-role'),
+      secFormUserPassword: document.getElementById('sec-form-user-password'),
+      secBtnCancelUserForm: document.getElementById('sec-btn-cancel-user-form'),
+      secBtnSaveUserForm: document.getElementById('sec-btn-save-user-form'),
+      secCheckAudienceEnabled: document.getElementById('sec-check-audience-enabled'),
+      secBtnAddAudienceUser: document.getElementById('sec-btn-add-audience-user'),
+      secAudienceUsersTbody: document.getElementById('sec-audience-users-tbody'),
+      secInputAllowedEmails: document.getElementById('sec-input-allowed-emails'),
+      secFeedbackMsg: document.getElementById('sec-feedback-msg')
     };
+
+    this.cachedSecurityConfig = null;
+    this.editingAdminUserIndex = null;
 
     this.init();
   }
@@ -1091,6 +1127,58 @@ class AdminApp {
       this.dom.btnUnlockGoogle.addEventListener('click', () => this.unlockAdminWithGoogle());
     }
 
+    // Modal de Gestão de Segurança & RBAC (Plano 14 - Fase 2)
+    if (this.dom.btnSecurity) {
+      this.dom.btnSecurity.addEventListener('click', () => this.openSecuritySettingsModal());
+    }
+    if (this.dom.btnCloseSecurityModal) {
+      this.dom.btnCloseSecurityModal.addEventListener('click', () => this.closeSecuritySettingsModal());
+    }
+    if (this.dom.btnCloseSecurityModalFooter) {
+      this.dom.btnCloseSecurityModalFooter.addEventListener('click', () => this.closeSecuritySettingsModal());
+    }
+    if (this.dom.securityModal) {
+      this.dom.securityModal.addEventListener('click', (e) => {
+        if (e.target === this.dom.securityModal) this.closeSecuritySettingsModal();
+      });
+    }
+    if (this.dom.secTabPinBtn) {
+      this.dom.secTabPinBtn.addEventListener('click', () => this.switchSecurityTab('pin'));
+    }
+    if (this.dom.secTabUsersBtn) {
+      this.dom.secTabUsersBtn.addEventListener('click', () => this.switchSecurityTab('users'));
+    }
+    if (this.dom.secTabAudienceBtn) {
+      this.dom.secTabAudienceBtn.addEventListener('click', () => this.switchSecurityTab('audience'));
+    }
+    if (this.dom.secTabGoogleBtn) {
+      this.dom.secTabGoogleBtn.addEventListener('click', () => this.switchSecurityTab('google'));
+    }
+    if (this.dom.secBtnGeneratePin) {
+      this.dom.secBtnGeneratePin.addEventListener('click', () => {
+        const pin = Math.floor(1000 + Math.random() * 9000).toString();
+        if (this.dom.secInputPin) this.dom.secInputPin.value = pin;
+      });
+    }
+    if (this.dom.secBtnShowAddUser) {
+      this.dom.secBtnShowAddUser.addEventListener('click', () => this.showAddAdminUserForm());
+    }
+    if (this.dom.secBtnCancelUserForm) {
+      this.dom.secBtnCancelUserForm.addEventListener('click', () => {
+        if (this.dom.secUserFormCard) this.dom.secUserFormCard.style.display = 'none';
+        this.editingAdminUserIndex = null;
+      });
+    }
+    if (this.dom.secBtnSaveUserForm) {
+      this.dom.secBtnSaveUserForm.addEventListener('click', () => this.saveAdminUserFromForm());
+    }
+    if (this.dom.secBtnAddAudienceUser) {
+      this.dom.secBtnAddAudienceUser.addEventListener('click', () => this.promptAddAudienceUser());
+    }
+    if (this.dom.btnSaveSecuritySettings) {
+      this.dom.btnSaveSecuritySettings.addEventListener('click', () => this.saveSecuritySettings());
+    }
+
     // Modal de Histórico
     if (this.dom.btnHistory) {
       this.dom.btnHistory.addEventListener('click', () => this.openHistoryModal());
@@ -1815,6 +1903,369 @@ class AdminApp {
     if (!data) return;
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8;' });
     this._downloadFile(blob, `analytics_${data.sessionId || 'session'}.json`);
+  }
+
+  // ==========================================
+  // Gestão de Segurança & RBAC (Plano 14 - Fase 2)
+  // ==========================================
+  async openSecuritySettingsModal() {
+    if (!this.dom.securityModal) return;
+    this.dom.securityModal.style.display = 'flex';
+    this.switchSecurityTab('pin');
+    if (this.dom.secFeedbackMsg) {
+      this.dom.secFeedbackMsg.style.display = 'none';
+    }
+    if (this.dom.secUserFormCard) {
+      this.dom.secUserFormCard.style.display = 'none';
+    }
+
+    try {
+      const res = await fetch('/api/security/config?t=' + Date.now());
+      if (res.ok) {
+        const data = await res.json();
+        this.cachedSecurityConfig = data.config || {};
+        this.populateSecurityModalUI(this.cachedSecurityConfig);
+      } else {
+        this.showSecurityFeedback('Não foi possível carregar as configurações do servidor.', false);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar /api/security/config:', err);
+      this.showSecurityFeedback('Erro de conexão ao carregar configurações de segurança.', false);
+    }
+  }
+
+  closeSecuritySettingsModal() {
+    if (this.dom.securityModal) {
+      this.dom.securityModal.style.display = 'none';
+    }
+  }
+
+  switchSecurityTab(tab) {
+    const tabs = ['pin', 'users', 'audience', 'google'];
+    tabs.forEach(t => {
+      const btn = this.dom[`secTab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`];
+      const panel = this.dom[`secPanel${t.charAt(0).toUpperCase() + t.slice(1)}`];
+      if (btn && panel) {
+        if (t === tab) {
+          btn.className = 'btn btn-sm btn-primary';
+          btn.style.background = '';
+          btn.style.borderColor = '';
+          btn.style.color = '';
+          panel.style.display = 'block';
+        } else {
+          btn.className = 'btn btn-sm';
+          btn.style.background = 'transparent';
+          btn.style.borderColor = 'transparent';
+          btn.style.color = 'var(--text-muted)';
+          panel.style.display = 'none';
+        }
+      }
+    });
+  }
+
+  populateSecurityModalUI(cfg) {
+    if (!cfg) return;
+    const admin = cfg.admin || {};
+    const audience = cfg.offlineAudience || {};
+
+    if (this.dom.secInputPin) {
+      this.dom.secInputPin.value = admin.pin || '2026';
+    }
+    if (this.dom.secCheckRequirePin) {
+      this.dom.secCheckRequirePin.checked = admin.requirePinForAdmin !== false;
+    }
+    if (this.dom.secCheckAudienceEnabled) {
+      this.dom.secCheckAudienceEnabled.checked = audience.enabled !== false;
+    }
+    if (this.dom.secInputAllowedEmails) {
+      this.dom.secInputAllowedEmails.value = (admin.allowedEmails || []).join(', ');
+    }
+
+    this.renderSecurityAdminUsers();
+    this.renderSecurityAudienceUsers();
+  }
+
+  renderSecurityAdminUsers() {
+    if (!this.dom.secAdminUsersTbody) return;
+    const users = (this.cachedSecurityConfig && this.cachedSecurityConfig.admin && this.cachedSecurityConfig.admin.users) || [];
+    
+    if (users.length === 0) {
+      this.dom.secAdminUsersTbody.innerHTML = `
+        <tr>
+          <td colspan="4" style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 12px;">
+            Nenhum usuário administrativo cadastrado.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    this.dom.secAdminUsersTbody.innerHTML = users.map((u, idx) => {
+      const isPresenter = u.role === 'presenter';
+      const roleBadge = isPresenter
+        ? `<span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 10.5px; padding: 2px 8px;">🎤 Palestrante</span>`
+        : `<span class="badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; font-size: 10.5px; padding: 2px 8px;">🛡️ Administrador</span>`;
+
+      return `
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+          <td style="padding: 10px 14px; font-weight: 700; color: #ffffff; font-family: var(--font-mono);">${this.escapeHtml(u.username)}</td>
+          <td style="padding: 10px 14px; color: #cbd5e1;">${this.escapeHtml(u.name || u.username)}</td>
+          <td style="padding: 10px 14px;">${roleBadge}</td>
+          <td style="padding: 10px 14px; text-align: right;">
+            <button type="button" class="btn btn-sm" onclick="window.adminApp.showAddAdminUserForm(${idx})" style="padding: 3px 8px; font-size: 11px; margin-right: 4px; border-color: var(--border-subtle);" title="Editar Conta">
+              ✏️
+            </button>
+            <button type="button" class="btn btn-sm" onclick="window.adminApp.deleteAdminUser(${idx})" style="padding: 3px 8px; font-size: 11px; color: #fca5a5; border-color: rgba(239,68,68,0.3);" title="Excluir Usuário">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  showAddAdminUserForm(editIndex = null) {
+    this.editingAdminUserIndex = editIndex;
+    if (!this.dom.secUserFormCard) return;
+
+    if (editIndex !== null && this.cachedSecurityConfig && this.cachedSecurityConfig.admin && this.cachedSecurityConfig.admin.users[editIndex]) {
+      const u = this.cachedSecurityConfig.admin.users[editIndex];
+      if (this.dom.secUserFormTitle) this.dom.secUserFormTitle.textContent = `✏️ Editar Usuário: ${u.username}`;
+      if (this.dom.secFormUserName) this.dom.secFormUserName.value = u.name || '';
+      if (this.dom.secFormUserUsername) {
+        this.dom.secFormUserUsername.value = u.username || '';
+        this.dom.secFormUserUsername.disabled = true;
+      }
+      if (this.dom.secFormUserRole) this.dom.secFormUserRole.value = u.role || 'admin';
+      if (this.dom.secFormUserPassword) {
+        this.dom.secFormUserPassword.value = '';
+        this.dom.secFormUserPassword.placeholder = 'Deixe em branco para manter a senha atual';
+      }
+    } else {
+      if (this.dom.secUserFormTitle) this.dom.secUserFormTitle.textContent = '👤 Adicionar Novo Usuário Local';
+      if (this.dom.secFormUserName) this.dom.secFormUserName.value = '';
+      if (this.dom.secFormUserUsername) {
+        this.dom.secFormUserUsername.value = '';
+        this.dom.secFormUserUsername.disabled = false;
+      }
+      if (this.dom.secFormUserRole) this.dom.secFormUserRole.value = 'admin';
+      if (this.dom.secFormUserPassword) {
+        this.dom.secFormUserPassword.value = '';
+        this.dom.secFormUserPassword.placeholder = 'Senha de acesso';
+      }
+    }
+
+    this.dom.secUserFormCard.style.display = 'block';
+  }
+
+  saveAdminUserFromForm() {
+    if (!this.cachedSecurityConfig) {
+      this.cachedSecurityConfig = { admin: { users: [] }, offlineAudience: { users: [] } };
+    }
+    if (!this.cachedSecurityConfig.admin) this.cachedSecurityConfig.admin = {};
+    if (!this.cachedSecurityConfig.admin.users) this.cachedSecurityConfig.admin.users = [];
+
+    const username = (this.dom.secFormUserUsername && this.dom.secFormUserUsername.value) ? this.dom.secFormUserUsername.value.trim().toLowerCase() : '';
+    const name = (this.dom.secFormUserName && this.dom.secFormUserName.value) ? this.dom.secFormUserName.value.trim() : '';
+    const role = (this.dom.secFormUserRole && this.dom.secFormUserRole.value) ? this.dom.secFormUserRole.value : 'admin';
+    const pass = (this.dom.secFormUserPassword && this.dom.secFormUserPassword.value) ? this.dom.secFormUserPassword.value.trim() : '';
+
+    if (!username) {
+      alert('Por favor, informe o username de login.');
+      return;
+    }
+
+    if (this.editingAdminUserIndex !== null) {
+      const target = this.cachedSecurityConfig.admin.users[this.editingAdminUserIndex];
+      if (target) {
+        target.name = name || username;
+        target.role = role;
+        if (pass) target.password = pass;
+      }
+    } else {
+      if (!pass) {
+        alert('Por favor, informe uma senha para o novo usuário.');
+        return;
+      }
+      const exists = this.cachedSecurityConfig.admin.users.some(u => u.username.toLowerCase() === username);
+      if (exists) {
+        alert(`O usuário "${username}" já está cadastrado.`);
+        return;
+      }
+      this.cachedSecurityConfig.admin.users.push({
+        username,
+        name: name || username,
+        role,
+        password: pass
+      });
+    }
+
+    if (this.dom.secUserFormCard) this.dom.secUserFormCard.style.display = 'none';
+    this.editingAdminUserIndex = null;
+    this.renderSecurityAdminUsers();
+  }
+
+  deleteAdminUser(index) {
+    if (!this.cachedSecurityConfig || !this.cachedSecurityConfig.admin || !this.cachedSecurityConfig.admin.users) return;
+    const u = this.cachedSecurityConfig.admin.users[index];
+    if (!u) return;
+
+    if (this.cachedSecurityConfig.admin.users.length <= 1) {
+      alert('Você não pode excluir o único usuário administrativo do sistema.');
+      return;
+    }
+
+    if (confirm(`Tem certeza que deseja excluir a conta "${u.username}" (${u.name || ''})?`)) {
+      this.cachedSecurityConfig.admin.users.splice(index, 1);
+      this.renderSecurityAdminUsers();
+    }
+  }
+
+  renderSecurityAudienceUsers() {
+    if (!this.dom.secAudienceUsersTbody) return;
+    const users = (this.cachedSecurityConfig && this.cachedSecurityConfig.offlineAudience && this.cachedSecurityConfig.offlineAudience.users) || [];
+
+    if (users.length === 0) {
+      this.dom.secAudienceUsersTbody.innerHTML = `
+        <tr>
+          <td colspan="4" style="padding: 14px; text-align: center; color: var(--text-muted); font-size: 11.5px;">
+            Nenhum participante com senha individual cadastrado.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    this.dom.secAudienceUsersTbody.innerHTML = users.map((u, idx) => `
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <td style="padding: 8px 12px; font-weight: 700; color: #ffffff; font-family: var(--font-mono);">${this.escapeHtml(u.username)}</td>
+        <td style="padding: 8px 12px; color: #cbd5e1;">${this.escapeHtml(u.name || u.username)}</td>
+        <td style="padding: 8px 12px; font-family: var(--font-mono); color: #94a3b8;">${this.escapeHtml(u.password || '123')}</td>
+        <td style="padding: 8px 12px; text-align: right;">
+          <button type="button" class="btn btn-sm" onclick="window.adminApp.deleteAudienceUser(${idx})" style="padding: 2px 6px; font-size: 10px; color: #fca5a5; border-color: rgba(239,68,68,0.3);" title="Excluir">
+            🗑️
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  promptAddAudienceUser() {
+    const username = prompt('Login / Crachá do Participante (ex: cracha01 ou usuario@empresa):');
+    if (!username || !username.trim()) return;
+    const cleanUser = username.trim();
+
+    const name = prompt('Nome de Exibição do Participante (opcional):', cleanUser) || cleanUser;
+    const password = prompt('Senha de Acesso (padrão: 123):', '123') || '123';
+
+    if (!this.cachedSecurityConfig) {
+      this.cachedSecurityConfig = { admin: { users: [] }, offlineAudience: { users: [] } };
+    }
+    if (!this.cachedSecurityConfig.offlineAudience) this.cachedSecurityConfig.offlineAudience = {};
+    if (!this.cachedSecurityConfig.offlineAudience.users) this.cachedSecurityConfig.offlineAudience.users = [];
+
+    const exists = this.cachedSecurityConfig.offlineAudience.users.some(u => u.username.toLowerCase() === cleanUser.toLowerCase());
+    if (exists) {
+      alert(`O participante "${cleanUser}" já está na lista.`);
+      return;
+    }
+
+    this.cachedSecurityConfig.offlineAudience.users.push({
+      username: cleanUser,
+      name: name.trim(),
+      password: password.trim()
+    });
+
+    this.renderSecurityAudienceUsers();
+  }
+
+  deleteAudienceUser(index) {
+    if (!this.cachedSecurityConfig || !this.cachedSecurityConfig.offlineAudience || !this.cachedSecurityConfig.offlineAudience.users) return;
+    const u = this.cachedSecurityConfig.offlineAudience.users[index];
+    if (!u) return;
+    if (confirm(`Remover participante "${u.username}" da audiência offline?`)) {
+      this.cachedSecurityConfig.offlineAudience.users.splice(index, 1);
+      this.renderSecurityAudienceUsers();
+    }
+  }
+
+  async saveSecuritySettings() {
+    if (!this.cachedSecurityConfig) {
+      this.cachedSecurityConfig = { admin: { users: [] }, offlineAudience: { users: [] } };
+    }
+
+    const pin = (this.dom.secInputPin && this.dom.secInputPin.value) ? this.dom.secInputPin.value.trim() : '';
+    if (!pin || pin.length < 4) {
+      this.showSecurityFeedback('O PIN mestre deve conter pelo menos 4 dígitos numéricos.', false);
+      return;
+    }
+
+    const requirePin = this.dom.secCheckRequirePin ? this.dom.secCheckRequirePin.checked : true;
+    const audienceEnabled = this.dom.secCheckAudienceEnabled ? this.dom.secCheckAudienceEnabled.checked : true;
+    const rawEmails = (this.dom.secInputAllowedEmails && this.dom.secInputAllowedEmails.value) ? this.dom.secInputAllowedEmails.value : '';
+    const allowedEmails = rawEmails.split(/[\n,]+/).map(e => e.trim().toLowerCase()).filter(Boolean);
+
+    const payload = {
+      admin: {
+        pin,
+        requirePinForAdmin: requirePin,
+        allowedEmails,
+        users: (this.cachedSecurityConfig.admin && this.cachedSecurityConfig.admin.users) || []
+      },
+      offlineAudience: {
+        enabled: audienceEnabled,
+        users: (this.cachedSecurityConfig.offlineAudience && this.cachedSecurityConfig.offlineAudience.users) || []
+      }
+    };
+
+    if (this.dom.btnSaveSecuritySettings) {
+      this.dom.btnSaveSecuritySettings.disabled = true;
+      this.dom.btnSaveSecuritySettings.textContent = '⏳ Salvando...';
+    }
+
+    try {
+      const res = await fetch('/api/security/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        this.showSecurityFeedback('✓ Configurações de segurança atualizadas com sucesso!', true);
+        if (this.auth && typeof this.auth.loadSecurityConfig === 'function') {
+          await this.auth.loadSecurityConfig();
+        }
+        setTimeout(() => {
+          this.closeSecuritySettingsModal();
+        }, 1500);
+      } else {
+        this.showSecurityFeedback(`Erro ao salvar: ${data.error || 'Falha no servidor.'}`, false);
+      }
+    } catch (err) {
+      console.error('Erro ao salvar /api/security/config:', err);
+      this.showSecurityFeedback('Erro de conexão ao salvar configurações.', false);
+    } finally {
+      if (this.dom.btnSaveSecuritySettings) {
+        this.dom.btnSaveSecuritySettings.disabled = false;
+        this.dom.btnSaveSecuritySettings.textContent = '💾 Salvar Configurações de Segurança';
+      }
+    }
+  }
+
+  showSecurityFeedback(msg, isSuccess) {
+    if (!this.dom.secFeedbackMsg) return;
+    this.dom.secFeedbackMsg.style.display = 'block';
+    this.dom.secFeedbackMsg.textContent = msg;
+    if (isSuccess) {
+      this.dom.secFeedbackMsg.style.background = 'rgba(16, 185, 129, 0.15)';
+      this.dom.secFeedbackMsg.style.border = '1px solid rgba(16, 185, 129, 0.4)';
+      this.dom.secFeedbackMsg.style.color = '#6ee7b7';
+    } else {
+      this.dom.secFeedbackMsg.style.background = 'rgba(239, 68, 68, 0.15)';
+      this.dom.secFeedbackMsg.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+      this.dom.secFeedbackMsg.style.color = '#fca5a5';
+    }
   }
 }
 
