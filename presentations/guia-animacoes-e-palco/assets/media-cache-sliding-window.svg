@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%" style="background: linear-gradient(135deg, #070a12 0%, #0e1222 100%); border-radius: 14px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
+  <defs>
+    <linearGradient id="activeMediaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="cachedMediaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <filter id="activeGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes pulseActiveMedia {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.4)); }
+      50% { filter: drop-shadow(0 0 16px rgba(236, 72, 153, 0.9)); }
+    }
+    .anim-active-glow { animation: pulseActiveMedia 2.5s infinite ease-in-out; }
+  </style>
+
+  <!-- Title Header -->
+  <text x="460" y="30" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="800" letter-spacing="2.5">JANELA DESLIZANTE DE PRÉ-CACHE DE MÍDIA (±2 SLIDES)</text>
+
+  <!-- Sliding Window Scope Frame -->
+  <g transform="translate(190, 52)">
+    <rect width="540" height="205" rx="14" fill="#1e293b" fill-opacity="0.3" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6,4"/>
+    <text x="270" y="-8" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="800">⚡ JANELA DE PRÉ-CACHE ATIVO (BUFFER EM MEMÓRIA RAM)</text>
+  </g>
+
+  <!-- Slide N-3 (Unbuffered) -->
+  <g transform="translate(30, 68)">
+    <rect width="135" height="175" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <rect width="135" height="30" rx="10" fill="#1e293b"/>
+    <text x="67" y="20" text-anchor="middle" fill="#64748b" font-size="11" font-weight="700">Slide N-3</text>
+    <text x="67" y="85" text-anchor="middle" fill="#475569" font-size="22">💤</text>
+    <text x="67" y="125" text-anchor="middle" fill="#64748b" font-size="10">Não Carregado</text>
+    <text x="67" y="145" text-anchor="middle" fill="#475569" font-size="9">(Sem consumo)</text>
+  </g>
+
+  <!-- Slide N-2 (Cached) -->
+  <g transform="translate(205, 68)">
+    <rect width="115" height="175" rx="10" fill="#0f172a" stroke="#0284c7" stroke-width="1.5"/>
+    <rect width="115" height="30" rx="10" fill="url(#cachedMediaGrad)" fill-opacity="0.3"/>
+    <text x="57" y="20" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="800">Slide N-2</text>
+    <text x="57" y="80" text-anchor="middle" fill="#38bdf8" font-size="20">📦</text>
+    <text x="57" y="115" text-anchor="middle" fill="#e0f2fe" font-size="10" font-weight="700">Em Cache</text>
+    <text x="57" y="135" text-anchor="middle" fill="#94a3b8" font-size="9">HTTP 206 OK</text>
+    <rect x="12" y="148" width="91" height="16" rx="3" fill="#0369a1"/>
+    <text x="57" y="160" text-anchor="middle" fill="#ffffff" font-size="8.5" font-weight="800">PRONTO</text>
+  </g>
+
+  <!-- Slide N-1 (Cached) -->
+  <g transform="translate(335, 68)">
+    <rect width="115" height="175" rx="10" fill="#0f172a" stroke="#0284c7" stroke-width="1.5"/>
+    <rect width="115" height="30" rx="10" fill="url(#cachedMediaGrad)" fill-opacity="0.3"/>
+    <text x="57" y="20" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="800">Slide N-1</text>
+    <text x="57" y="80" text-anchor="middle" fill="#38bdf8" font-size="20">📦</text>
+    <text x="57" y="115" text-anchor="middle" fill="#e0f2fe" font-size="10" font-weight="700">Em Cache</text>
+    <text x="57" y="135" text-anchor="middle" fill="#94a3b8" font-size="9">HTTP 206 OK</text>
+    <rect x="12" y="148" width="91" height="16" rx="3" fill="#0369a1"/>
+    <text x="57" y="160" text-anchor="middle" fill="#ffffff" font-size="8.5" font-weight="800">PRONTO</text>
+  </g>
+
+  <!-- Slide N (ACTIVE - Current Projection) -->
+  <g class="anim-active-glow" transform="translate(465, 58)">
+    <rect width="130" height="195" rx="12" fill="#090d16" stroke="#ec4899" stroke-width="2.5" filter="url(#activeGlow)"/>
+    <rect width="130" height="34" rx="12" fill="url(#activeMediaGrad)" fill-opacity="0.4"/>
+    <text x="65" y="22" text-anchor="middle" fill="#f472b6" font-size="12" font-weight="900">⭐ SLIDE N</text>
+    <text x="65" y="80" text-anchor="middle" fill="#f472b6" font-size="24">▶️</text>
+    <text x="65" y="115" text-anchor="middle" fill="#fdf2f8" font-size="11" font-weight="800">EM REPRODUÇÃO</text>
+    <text x="65" y="135" text-anchor="middle" fill="#f472b6" font-size="9.5">Vídeo HD 1080p</text>
+    <rect x="12" y="152" width="106" height="24" rx="4" fill="#be185d"/>
+    <text x="65" y="168" text-anchor="middle" fill="#ffffff" font-size="9.5" font-weight="900">AO VIVO NO PALCO</text>
+  </g>
+
+  <!-- Slide N+1 (Cached) -->
+  <g transform="translate(610, 68)">
+    <rect width="115" height="175" rx="10" fill="#0f172a" stroke="#0284c7" stroke-width="1.5"/>
+    <rect width="115" height="30" rx="10" fill="url(#cachedMediaGrad)" fill-opacity="0.3"/>
+    <text x="57" y="20" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="800">Slide N+1</text>
+    <text x="57" y="80" text-anchor="middle" fill="#38bdf8" font-size="20">⏳</text>
+    <text x="57" y="115" text-anchor="middle" fill="#e0f2fe" font-size="10" font-weight="700">Pré-Cache</text>
+    <text x="57" y="135" text-anchor="middle" fill="#94a3b8" font-size="9">HTTP 206 OK</text>
+    <rect x="12" y="148" width="91" height="16" rx="3" fill="#0369a1"/>
+    <text x="57" y="160" text-anchor="middle" fill="#ffffff" font-size="8.5" font-weight="800">PRONTO</text>
+  </g>
+
+  <!-- Slide N+2 (Unbuffered) -->
+  <g transform="translate(755, 68)">
+    <rect width="135" height="175" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <rect width="135" height="30" rx="10" fill="#1e293b"/>
+    <text x="67" y="20" text-anchor="middle" fill="#64748b" font-size="11" font-weight="700">Slide N+2</text>
+    <text x="67" y="85" text-anchor="middle" fill="#475569" font-size="22">💤</text>
+    <text x="67" y="125" text-anchor="middle" fill="#64748b" font-size="10">Aguardando Fila</text>
+    <text x="67" y="145" text-anchor="middle" fill="#475569" font-size="9">(Sem sobrecarga)</text>
+  </g>
+
+  <!-- Bottom Details Bar -->
+  <g transform="translate(30, 280)">
+    <rect width="860" height="95" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1.5"/>
+    
+    <g transform="translate(25, 20)">
+      <circle cx="8" cy="8" r="4" fill="#38bdf8"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Economia de Banda na LAN</text>
+      <text x="20" y="32" fill="#94a3b8" font-size="10">Vídeos pesados só baixam quando os slides vizinhos se aproximam.</text>
+      <text x="20" y="50" fill="#64748b" font-size="9.5">Range Requests (HTTP 206) permitem seek instantâneo.</text>
+    </g>
+
+    <g transform="translate(470, 20)">
+      <circle cx="8" cy="8" r="4" fill="#ec4899"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11.5" font-weight="700">Controle Remoto pela Mesa Técnica (/admin)</text>
+      <text x="20" y="32" fill="#94a3b8" font-size="10">Botões de Play, Pause, Reiniciar e Mudo transmitidos em &lt;50ms.</text>
+      <text x="20" y="50" fill="#34d399" font-size="9.5">O palestrante não precisa tocar no mouse durante a exibição.</text>
+    </g>
+  </g>
+</svg>

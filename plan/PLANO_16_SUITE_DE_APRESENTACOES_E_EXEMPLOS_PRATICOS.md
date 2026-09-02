@@ -210,8 +210,8 @@ O **SlideMeshLive** é uma plataforma moderna para apresentações em tempo real
 - [x] Expandir [`presentations/treinamento-interno-pin/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/treinamento-interno-pin/) de 1 para 5 slides completos com fluxo de PIN, RBAC, matriz de papéis e quiz. *(Concluído)*
 
 ### 🚀 Fase 3: Construção do Guia de Animações & Palco (`guia-animacoes-e-palco`) e Guia do Studio (`guia-criacao-studio-zip`)
-- [ ] Criar diretório [`presentations/guia-animacoes-e-palco/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-animacoes-e-palco/) com `manifest.json`, `slides.json` (5 slides), assets SVG de transições e pré-cache de mídia.
-- [ ] Criar diretório [`presentations/guia-criacao-studio-zip/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-criacao-studio-zip/) com `manifest.json`, `slides.json` (5 slides), assets SVG de templates e pipeline de importação.
+- [x] Criar diretório [`presentations/guia-animacoes-e-palco/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-animacoes-e-palco/) com `manifest.json`, `slides.json` (5 slides), assets SVG de transições e pré-cache de mídia. *(Concluído)*
+- [x] Criar diretório [`presentations/guia-criacao-studio-zip/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-criacao-studio-zip/) com `manifest.json`, `slides.json` (5 slides), assets SVG de templates e pipeline de importação. *(Concluído)*
 
 ### 🚀 Fase 4: Construção do Guia de Moderação (`guia-moderacao-e-analytics`) e Guia de Diagnóstico & Troubleshooting (`guia-diagnostico-troubleshooting`)
 - [ ] Criar diretório [`presentations/guia-moderacao-e-analytics/`](file:///home/flashbsb/projetos/SlideMeshLive/presentations/guia-moderacao-e-analytics/) com `manifest.json`, `slides.json` (5 slides) e assets SVG do ciclo de moderação de Q&A e relatórios.

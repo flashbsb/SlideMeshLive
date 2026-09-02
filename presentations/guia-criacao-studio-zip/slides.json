@@ -15,6 +15,13 @@
           "Template Demonstração de Produto: Foco em recursos, comparativos e CTA",
           "Template Em Branco: Total liberdade criativa para começar do zero"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/guia-criacao-studio-zip/assets/studio-templates-overview.svg",
+          "alt": "Os 4 Templates Prontos do Studio",
+          "maxHeight": "240px",
+          "caption": "Pitch, Aula, Produto e Em Branco"
+        },
         "notes": "Explique que no Studio (/import.html) o usuário clica no template desejado e já recebe a estrutura inicial pronta com manifesto e slides configurados."
       },
       "audience": {
@@ -24,6 +31,13 @@
             "title": "Como Acessar os Templates",
             "type": "text",
             "content": "Abra '/import.html' no navegador e clique em qualquer um dos 4 cards de modelos para pré-carregar um deck completo."
+          },
+          {
+            "title": "Templates Disponíveis",
+            "type": "image",
+            "src": "/presentations/guia-criacao-studio-zip/assets/studio-templates-overview.svg",
+            "alt": "Modelos Prontos",
+            "caption": "Selecione o modelo e comece a editar em segundos."
           }
         ]
       }
@@ -69,11 +83,25 @@
           "Word (.docx): Converte apostilas e relatórios em slides sequenciais",
           "Markdown (.md) & PDF (.pdf): Mapeia cabeçalhos H1/H2 e divide o conteúdo automaticamente"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/guia-criacao-studio-zip/assets/import-pipeline.svg",
+          "alt": "Pipeline de Importação Multiformato",
+          "maxHeight": "240px",
+          "caption": "PPTX / DOCX / MD / PDF ➔ JSON ➔ .slidemesh.zip"
+        },
         "notes": "Demonstre a versatilidade: o usuário não precisa reescrever apresentações antigas do PowerPoint, basta arrastar o arquivo .pptx."
       },
       "audience": {
         "summary": "Formatos suportados pelo motor de importação do Studio.",
         "sections": [
+          {
+            "title": "Fluxo de Importação",
+            "type": "image",
+            "src": "/presentations/guia-criacao-studio-zip/assets/import-pipeline.svg",
+            "alt": "Pipeline de Conversão",
+            "caption": "Extração semântica com divisão automática de slides e notas."
+          },
           {
             "title": "Formatos Aceitos",
             "type": "table",

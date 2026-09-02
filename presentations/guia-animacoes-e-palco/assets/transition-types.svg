@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%" style="background: linear-gradient(135deg, #070a12 0%, #0d1127 100%); border-radius: 14px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
+  <defs>
+    <linearGradient id="tFadeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="tZoomGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </linearGradient>
+    <linearGradient id="tSlideHGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+    <linearGradient id="tSlideVGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+
+  <style>
+    @keyframes zoomCardDemo {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    @keyframes fadeCardDemo {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+    @keyframes slideHDemo {
+      0%, 100% { transform: translateX(-8px); }
+      50% { transform: translateX(8px); }
+    }
+    @keyframes slideVDemo {
+      0%, 100% { transform: translateY(-8px); }
+      50% { transform: translateY(8px); }
+    }
+    .anim-zoom-box { animation: zoomCardDemo 2.4s infinite ease-in-out; transform-origin: 95px 65px; }
+    .anim-fade-box { animation: fadeCardDemo 2.4s infinite ease-in-out; }
+    .anim-slideh-box { animation: slideHDemo 2.4s infinite ease-in-out; }
+    .anim-slidev-box { animation: slideVDemo 2.4s infinite ease-in-out; }
+  </style>
+
+  <!-- Title Header -->
+  <text x="460" y="30" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="800" letter-spacing="2.5">AS 4 TRANSIÇÕES NATIVAS DE SLIDE NO TELÃO</text>
+
+  <!-- Card 1: Fade -->
+  <g transform="translate(30, 48)">
+    <rect width="195" height="330" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect width="195" height="40" rx="12" fill="url(#tFadeGrad)" fill-opacity="0.3"/>
+    <text x="97" y="25" text-anchor="middle" fill="#38bdf8" font-size="11.5" font-weight="800">1. FADE (DISSOLVÊNCIA)</text>
+    
+    <!-- Visual Demo Box -->
+    <g transform="translate(15, 54)">
+      <rect width="165" height="85" rx="8" fill="#1e293b" stroke="#334155"/>
+      <g class="anim-fade-box" transform="translate(25, 18)">
+        <rect width="115" height="48" rx="6" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
+        <text x="57" y="28" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="800">Slide A ➔ B</text>
+      </g>
+    </g>
+
+    <!-- Details -->
+    <text x="16" y="160" fill="#f1f5f9" font-size="11" font-weight="700">Propriedade Manifest:</text>
+    <text x="16" y="180" fill="#38bdf8" font-size="10.5" font-family="monospace">"transition": "fade"</text>
+    
+    <text x="16" y="210" fill="#cbd5e1" font-size="10">• Suave e elegante</text>
+    <text x="16" y="228" fill="#cbd5e1" font-size="10">• Duração: 350-400ms</text>
+    <text x="16" y="246" fill="#cbd5e1" font-size="10">• Zero distração visual</text>
+
+    <g transform="translate(15, 270)">
+      <rect width="165" height="34" rx="6" fill="#1e293b" stroke="#0284c7"/>
+      <text x="82" y="21" text-anchor="middle" fill="#38bdf8" font-size="9.5" font-weight="700">Padrão Corporativo</text>
+    </g>
+  </g>
+
+  <!-- Card 2: Zoom -->
+  <g transform="translate(245, 48)">
+    <rect width="195" height="330" rx="12" fill="#0f172a" stroke="#ec4899" stroke-width="1.5"/>
+    <rect width="195" height="40" rx="12" fill="url(#tZoomGrad)" fill-opacity="0.3"/>
+    <text x="97" y="25" text-anchor="middle" fill="#f472b6" font-size="11.5" font-weight="800">2. ZOOM (CINEMÁTICO)</text>
+    
+    <!-- Visual Demo Box -->
+    <g transform="translate(15, 54)">
+      <rect width="165" height="85" rx="8" fill="#1e293b" stroke="#334155"/>
+      <g class="anim-zoom-box" transform="translate(25, 18)">
+        <rect width="115" height="48" rx="6" fill="#db2777" stroke="#ec4899" stroke-width="1.5"/>
+        <text x="57" y="28" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="800">🔍 Escala</text>
+      </g>
+    </g>
+
+    <!-- Details -->
+    <text x="16" y="160" fill="#f1f5f9" font-size="11" font-weight="700">Propriedade Manifest:</text>
+    <text x="16" y="180" fill="#f472b6" font-size="10.5" font-family="monospace">"transition": "zoom"</text>
+    
+    <text x="16" y="210" fill="#cbd5e1" font-size="10">• Efeito de profundidade</text>
+    <text x="16" y="228" fill="#cbd5e1" font-size="10">• Curva cubic-bezier</text>
+    <text x="16" y="246" fill="#cbd5e1" font-size="10">• Ideal para Keynotes</text>
+
+    <g transform="translate(15, 270)">
+      <rect width="165" height="34" rx="6" fill="#1e293b" stroke="#db2777"/>
+      <text x="82" y="21" text-anchor="middle" fill="#f472b6" font-size="9.5" font-weight="700">Alto Impacto Visual</text>
+    </g>
+  </g>
+
+  <!-- Card 3: Slide Horizontal -->
+  <g transform="translate(460, 48)">
+    <rect width="195" height="330" rx="12" fill="#0f172a" stroke="#8b5cf6" stroke-width="1.5"/>
+    <rect width="195" height="40" rx="12" fill="url(#tSlideHGrad)" fill-opacity="0.3"/>
+    <text x="97" y="25" text-anchor="middle" fill="#a78bfa" font-size="11.5" font-weight="800">3. SLIDE HORIZONTAL</text>
+    
+    <!-- Visual Demo Box -->
+    <g transform="translate(15, 54)">
+      <rect width="165" height="85" rx="8" fill="#1e293b" stroke="#334155"/>
+      <g class="anim-slideh-box" transform="translate(25, 18)">
+        <rect width="115" height="48" rx="6" fill="#6d28d9" stroke="#8b5cf6" stroke-width="1.5"/>
+        <text x="57" y="28" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="800">↔️ Deslize</text>
+      </g>
+    </g>
+
+    <!-- Details -->
+    <text x="16" y="160" fill="#f1f5f9" font-size="11" font-weight="700">Propriedade Manifest:</text>
+    <text x="16" y="180" fill="#a78bfa" font-size="10" font-family="monospace">"slide-horizontal"</text>
+    
+    <text x="16" y="210" fill="#cbd5e1" font-size="10">• Deslizamento lateral</text>
+    <text x="16" y="228" fill="#cbd5e1" font-size="10">• Sensação de timeline</text>
+    <text x="16" y="246" fill="#cbd5e1" font-size="10">• Perfeito para Aulas</text>
+
+    <g transform="translate(15, 270)">
+      <rect width="165" height="34" rx="6" fill="#1e293b" stroke="#6d28d9"/>
+      <text x="82" y="21" text-anchor="middle" fill="#a78bfa" font-size="9.5" font-weight="700">Narrativa Linear</text>
+    </g>
+  </g>
+
+  <!-- Card 4: Slide Vertical -->
+  <g transform="translate(675, 48)">
+    <rect width="215" height="330" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="215" height="40" rx="12" fill="url(#tSlideVGrad)" fill-opacity="0.3"/>
+    <text x="107" y="25" text-anchor="middle" fill="#34d399" font-size="11.5" font-weight="800">4. SLIDE VERTICAL</text>
+    
+    <!-- Visual Demo Box -->
+    <g transform="translate(20, 54)">
+      <rect width="175" height="85" rx="8" fill="#1e293b" stroke="#334155"/>
+      <g class="anim-slidev-box" transform="translate(30, 18)">
+        <rect width="115" height="48" rx="6" fill="#059669" stroke="#10b981" stroke-width="1.5"/>
+        <text x="57" y="28" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="800">↕️ Vertical</text>
+      </g>
+    </g>
+
+    <!-- Details -->
+    <text x="20" y="160" fill="#f1f5f9" font-size="11" font-weight="700">Propriedade Manifest:</text>
+    <text x="20" y="180" fill="#34d399" font-size="10" font-family="monospace">"slide-vertical"</text>
+    
+    <text x="20" y="210" fill="#cbd5e1" font-size="10">• Fluxo de rolagem vertical</text>
+    <text x="20" y="228" fill="#cbd5e1" font-size="10">• Estilo feed contínuo</text>
+    <text x="20" y="246" fill="#cbd5e1" font-size="10">• Ideal para Demonstrações</text>
+
+    <g transform="translate(20, 270)">
+      <rect width="175" height="34" rx="6" fill="#1e293b" stroke="#059669"/>
+      <text x="87" y="21" text-anchor="middle" fill="#34d399" font-size="9.5" font-weight="700">Fluxo Dinâmico</text>
+    </g>
+  </g>
+</svg>

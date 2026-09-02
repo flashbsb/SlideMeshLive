@@ -14,6 +14,13 @@
           "Duração e curvas de animação ajustáveis via CSS custom properties",
           "Transição sem quebra de layout mesmo com split-screen ativo"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/guia-animacoes-e-palco/assets/transition-types.svg",
+          "alt": "As 4 Transições Nativas de Tela",
+          "maxHeight": "240px",
+          "caption": "Fade, Zoom, Slide Horizontal e Slide Vertical"
+        },
         "notes": "Ao avançar este slide, observe o efeito suave de zoom cinematográfico configurado no manifesto deste deck."
       },
       "audience": {
@@ -23,6 +30,13 @@
             "title": "Configuração no manifest.json",
             "type": "text",
             "content": "No bloco 'theme', defina a chave 'transition' com um dos 4 valores suportados: 'fade', 'zoom', 'slide-horizontal' ou 'slide-vertical'."
+          },
+          {
+            "title": "Diagrama de Transições",
+            "type": "image",
+            "src": "/presentations/guia-animacoes-e-palco/assets/transition-types.svg",
+            "alt": "Tipos de Transição",
+            "caption": "Aceleração gráfica via GPU para máxima fluidez a 60 FPS."
           },
           {
             "title": "Exemplo de Sintaxe JSON",
@@ -78,6 +92,13 @@
           "Suporte nativo a HTTP 206 Partial Content (Range Requests)",
           "Controles de Play, Pause, Reiniciar e Mudo operados da Mesa Técnica"
         ],
+        "media": {
+          "type": "svg",
+          "src": "/presentations/guia-animacoes-e-palco/assets/media-cache-sliding-window.svg",
+          "alt": "Janela Deslizante de Pré-Cache",
+          "maxHeight": "240px",
+          "caption": "Janela ±2 slides em buffer RAM local"
+        },
         "notes": "Destaque que o palestrante não precisa mexer no mouse para dar play em um vídeo: a mesa técnica tem controle total remoto."
       },
       "audience": {
@@ -85,8 +106,19 @@
         "sections": [
           {
             "title": "Como Funciona a Janela Deslizante ±2",
-            "type": "text",
-            "content": "Para evitar gargalos de banda na rede Wi-Fi, o SlideMeshLive só pré-carrega os vídeos e áudios dos 2 slides anteriores e dos 2 próximos slides em relação ao slide ativo."
+            "type": "image",
+            "src": "/presentations/guia-animacoes-e-palco/assets/media-cache-sliding-window.svg",
+            "alt": "Diagrama de Pré-Cache",
+            "caption": "Gerenciamento inteligente de memória e economia de banda na rede local."
+          },
+          {
+            "title": "Benefícios Técnicos",
+            "type": "list",
+            "items": [
+              "Vídeos em alta definição (1080p/4K) prontos antes de você avançar o slide.",
+              "Range Requests (HTTP 206) permitem avanço e retrocesso instantâneo.",
+              "Operação remota completa pela Mesa Técnica (/admin) sem tocar no mouse."
+            ]
           }
         ]
       }

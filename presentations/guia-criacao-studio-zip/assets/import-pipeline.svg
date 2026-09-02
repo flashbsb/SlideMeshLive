@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%" style="background: linear-gradient(135deg, #070a12 0%, #0d1424 100%); border-radius: 14px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
+  <defs>
+    <linearGradient id="parserGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <filter id="parserGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes arrowFlowImport {
+      0% { transform: translateX(0); opacity: 0; }
+      30% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translateX(45px); opacity: 0; }
+    }
+    @keyframes parserPulse {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.3)); }
+      50% { filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.7)); }
+    }
+    .anim-flow-arrow { animation: arrowFlowImport 1.6s infinite ease-in-out; }
+    .anim-parser-box { animation: parserPulse 2.6s infinite ease-in-out; }
+  </style>
+
+  <!-- Title Header -->
+  <text x="460" y="30" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="800" letter-spacing="2.5">PIPELINE DE IMPORTAÇÃO UNIVERSAL &amp; PACOTES .SLIDEMESH.ZIP</text>
+
+  <!-- Step 1: Input Files Drag & Drop -->
+  <g transform="translate(30, 48)">
+    <rect width="250" height="330" rx="14" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="250" height="42" rx="14" fill="#d97706" fill-opacity="0.3"/>
+    <text x="125" y="26" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="800">1. ARQUIVOS DE ENTRADA</text>
+    
+    <!-- File badges -->
+    <g transform="translate(18, 56)">
+      <rect width="214" height="32" rx="6" fill="#1e293b" stroke="#f59e0b"/>
+      <text x="107" y="20" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="700">📊 PowerPoint (.pptx)</text>
+    </g>
+
+    <g transform="translate(18, 96)">
+      <rect width="214" height="32" rx="6" fill="#1e293b" stroke="#3b82f6"/>
+      <text x="107" y="20" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="700">📄 Word / Apostilas (.docx)</text>
+    </g>
+
+    <g transform="translate(18, 136)">
+      <rect width="214" height="32" rx="6" fill="#1e293b" stroke="#a855f7"/>
+      <text x="107" y="20" text-anchor="middle" fill="#d8b4fe" font-size="11" font-weight="700">📝 Markdown (.md)</text>
+    </g>
+
+    <g transform="translate(18, 176)">
+      <rect width="214" height="32" rx="6" fill="#1e293b" stroke="#ef4444"/>
+      <text x="107" y="20" text-anchor="middle" fill="#fca5a5" font-size="11" font-weight="700">📑 Documentos PDF (.pdf)</text>
+    </g>
+
+    <g transform="translate(16, 230)">
+      <rect width="218" height="78" rx="8" fill="#1e293b" stroke="#334155"/>
+      <text x="109" y="32" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="800">DRAG &amp; DROP NO STUDIO</text>
+      <text x="109" y="52" text-anchor="middle" fill="#cbd5e1" font-size="10">Arraste para /import.html</text>
+      <text x="109" y="68" text-anchor="middle" fill="#94a3b8" font-size="9.5">Processamento 100% no cliente</text>
+    </g>
+  </g>
+
+  <!-- Flow Connector 1 -->
+  <g transform="translate(280, 200)">
+    <line x1="0" y1="0" x2="55" y2="0" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="4,4"/>
+    <circle cx="4" cy="0" r="4.5" fill="#f59e0b" class="anim-flow-arrow"/>
+  </g>
+
+  <!-- Step 2: ConversionEngine Parser -->
+  <g class="anim-parser-box" transform="translate(335, 48)">
+    <rect width="250" height="330" rx="14" fill="#090d16" stroke="url(#parserGrad)" stroke-width="2" filter="url(#parserGlow)"/>
+    <rect width="250" height="42" rx="14" fill="#064e3b" fill-opacity="0.3"/>
+    <text x="125" y="26" text-anchor="middle" fill="#34d399" font-size="12" font-weight="900">2. MOTOR SEMÂNTICO</text>
+
+    <!-- Parse Details -->
+    <g transform="translate(18, 62)">
+      <circle cx="8" cy="8" r="4" fill="#34d399"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11" font-weight="700">Extração de Títulos H1/H2</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="9.5">Mapeamento automático de slides</text>
+    </g>
+
+    <g transform="translate(18, 108)">
+      <circle cx="8" cy="8" r="4" fill="#34d399"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11" font-weight="700">Separação de Bullets e Notas</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="9.5">Telão sintético + notas no púlpito</text>
+    </g>
+
+    <g transform="translate(18, 154)">
+      <circle cx="8" cy="8" r="4" fill="#34d399"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11" font-weight="700">Extração de Mídias e Imagens</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="9.5">Ativação automática de split-screen</text>
+    </g>
+
+    <g transform="translate(16, 215)">
+      <rect width="218" height="95" rx="8" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+      <text x="109" y="26" text-anchor="middle" fill="#34d399" font-size="11" font-weight="900">ESTRUTURA JSON GERADA</text>
+      <text x="109" y="48" text-anchor="middle" fill="#cbd5e1" font-size="10">• manifest.json (Temas/PIN)</text>
+      <text x="109" y="66" text-anchor="middle" fill="#cbd5e1" font-size="10">• slides.json (Telão/Celular)</text>
+      <text x="109" y="84" text-anchor="middle" fill="#a7f3d0" font-size="9.5">Conversão concluída em &lt;1s</text>
+    </g>
+  </g>
+
+  <!-- Flow Connector 2 -->
+  <g transform="translate(585, 200)">
+    <line x1="0" y1="0" x2="55" y2="0" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="4,4"/>
+    <circle cx="4" cy="0" r="4.5" fill="#38bdf8" class="anim-flow-arrow"/>
+  </g>
+
+  <!-- Step 3: Standalone Output Package -->
+  <g transform="translate(640, 48)">
+    <rect width="250" height="330" rx="14" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect width="250" height="42" rx="14" fill="#0284c7" fill-opacity="0.3"/>
+    <text x="125" y="26" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="800">3. PACOTE PORTÁTIL</text>
+
+    <!-- Package contents -->
+    <g transform="translate(18, 56)">
+      <rect width="214" height="44" rx="6" fill="#1e293b" stroke="#38bdf8"/>
+      <text x="107" y="20" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="800">📦 .slidemesh.zip</text>
+      <text x="107" y="36" text-anchor="middle" fill="#94a3b8" font-size="9.5">Arquivo Autocontido Único</text>
+    </g>
+
+    <g transform="translate(18, 114)">
+      <circle cx="8" cy="8" r="4" fill="#38bdf8"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11" font-weight="700">Leve no seu Pendrive</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="9.5">Roda em qualquer máquina</text>
+    </g>
+
+    <g transform="translate(18, 160)">
+      <circle cx="8" cy="8" r="4" fill="#38bdf8"/>
+      <text x="20" y="12" fill="#f1f5f9" font-size="11" font-weight="700">Exportação via CLI</text>
+      <text x="20" y="28" fill="#94a3b8" font-size="9.5">tools/export_presentation.py</text>
+    </g>
+
+    <g transform="translate(16, 230)">
+      <rect width="218" height="78" rx="8" fill="#0369a1" stroke="#38bdf8"/>
+      <text x="109" y="32" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="800">PORTABILIDADE TOTAL</text>
+      <text x="109" y="52" text-anchor="middle" fill="#e0f2fe" font-size="10">Backup Físico do Evento</text>
+      <text x="109" y="68" text-anchor="middle" fill="#bae6fd" font-size="9.5">Importação em 1 clique no Portal</text>
+    </g>
+  </g>
+</svg>

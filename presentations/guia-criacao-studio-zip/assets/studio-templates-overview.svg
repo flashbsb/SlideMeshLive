@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%" style="background: linear-gradient(135deg, #070a12 0%, #0d1424 100%); border-radius: 14px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
+  <defs>
+    <linearGradient id="tplPitchGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="tplAulaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="tplProdGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="tplBlankGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Title Header -->
+  <text x="460" y="30" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="800" letter-spacing="2.5">OS 4 TEMPLATES ESTRUTURADOS DO SLIDEMESH STUDIO (/import.html)</text>
+
+  <!-- Template 1: Executivo & Pitch -->
+  <g transform="translate(30, 48)">
+    <rect width="195" height="330" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect width="195" height="40" rx="12" fill="url(#tplPitchGrad)" fill-opacity="0.3"/>
+    <text x="97" y="25" text-anchor="middle" fill="#38bdf8" font-size="11.5" font-weight="800">💼 EXECUTIVO &amp; PITCH</text>
+    
+    <g transform="translate(15, 54)">
+      <rect width="165" height="48" rx="6" fill="#1e293b" stroke="#334155"/>
+      <text x="82" y="22" text-anchor="middle" fill="#f1f5f9" font-size="10.5" font-weight="700">6 Slides Estruturados</text>
+      <text x="82" y="38" text-anchor="middle" fill="#38bdf8" font-size="9.5">Captação &amp; Vendas</text>
+    </g>
+
+    <text x="16" y="125" fill="#e2e8f0" font-size="10.5" font-weight="700">Foco do Modelo:</text>
+    <text x="16" y="145" fill="#cbd5e1" font-size="10">• Tese de Mercado</text>
+    <text x="16" y="165" fill="#cbd5e1" font-size="10">• Unit Economics &amp; MRR</text>
+    <text x="16" y="185" fill="#cbd5e1" font-size="10">• Gráficos de Tração</text>
+    <text x="16" y="205" fill="#cbd5e1" font-size="10">• Enquete com Investidor</text>
+
+    <g transform="translate(15, 260)">
+      <rect width="165" height="44" rx="6" fill="#1e293b" stroke="#0284c7"/>
+      <text x="82" y="22" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="800">1-Clique para Criar</text>
+      <text x="82" y="36" text-anchor="middle" fill="#94a3b8" font-size="9">Ideal para Startups/VC</text>
+    </g>
+  </g>
+
+  <!-- Template 2: Aula & Treinamento -->
+  <g transform="translate(245, 48)">
+    <rect width="195" height="330" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="195" height="40" rx="12" fill="url(#tplAulaGrad)" fill-opacity="0.3"/>
+    <text x="97" y="25" text-anchor="middle" fill="#34d399" font-size="11.5" font-weight="800">📚 AULA &amp; TREINAMENTO</text>
+    
+    <g transform="translate(15, 54)">
+      <rect width="165" height="48" rx="6" fill="#1e293b" stroke="#334155"/>
+      <text x="82" y="22" text-anchor="middle" fill="#f1f5f9" font-size="10.5" font-weight="700">5 Slides Didáticos</text>
+      <text x="82" y="38" text-anchor="middle" fill="#34d399" font-size="9.5">Workshops &amp; Cursos</text>
+    </g>
+
+    <text x="16" y="125" fill="#e2e8f0" font-size="10.5" font-weight="700">Foco do Modelo:</text>
+    <text x="16" y="145" fill="#cbd5e1" font-size="10">• Conceito Teórico</text>
+    <text x="16" y="165" fill="#cbd5e1" font-size="10">• Exemplo Prático</text>
+    <text x="16" y="185" fill="#cbd5e1" font-size="10">• Quiz Interativo</text>
+    <text x="16" y="205" fill="#cbd5e1" font-size="10">• Pacing Lock Ativo</text>
+
+    <g transform="translate(15, 260)">
+      <rect width="165" height="44" rx="6" fill="#1e293b" stroke="#059669"/>
+      <text x="82" y="22" text-anchor="middle" fill="#34d399" font-size="10" font-weight="800">1-Clique para Criar</text>
+      <text x="82" y="36" text-anchor="middle" fill="#94a3b8" font-size="9">Didática &amp; Avaliação</text>
+    </g>
+  </g>
+
+  <!-- Template 3: Demonstração de Produto -->
+  <g transform="translate(460, 48)">
+    <rect width="195" height="330" rx="12" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="195" height="40" rx="12" fill="url(#tplProdGrad)" fill-opacity="0.3"/>
+    <text x="97" y="25" text-anchor="middle" fill="#fbbf24" font-size="11.5" font-weight="800">🚀 DEMO DE PRODUTO</text>
+    
+    <g transform="translate(15, 54)">
+      <rect width="165" height="48" rx="6" fill="#1e293b" stroke="#334155"/>
+      <text x="82" y="22" text-anchor="middle" fill="#f1f5f9" font-size="10.5" font-weight="700">5 Slides de Lançamento</text>
+      <text x="82" y="38" text-anchor="middle" fill="#fbbf24" font-size="9.5">Showcase Comercial</text>
+    </g>
+
+    <text x="16" y="125" fill="#e2e8f0" font-size="10.5" font-weight="700">Foco do Modelo:</text>
+    <text x="16" y="145" fill="#cbd5e1" font-size="10">• O Problema do Cliente</text>
+    <text x="16" y="165" fill="#cbd5e1" font-size="10">• Demonstração em Vídeo</text>
+    <text x="16" y="185" fill="#cbd5e1" font-size="10">• Tabela Comparativa</text>
+    <text x="16" y="205" fill="#cbd5e1" font-size="10">• Call to Action (CTA)</text>
+
+    <g transform="translate(15, 260)">
+      <rect width="165" height="44" rx="6" fill="#1e293b" stroke="#d97706"/>
+      <text x="82" y="22" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="800">1-Clique para Criar</text>
+      <text x="82" y="36" text-anchor="middle" fill="#94a3b8" font-size="9">Conversão &amp; Vendas</text>
+    </g>
+  </g>
+
+  <!-- Template 4: Em Branco -->
+  <g transform="translate(675, 48)">
+    <rect width="215" height="330" rx="12" fill="#0f172a" stroke="#ec4899" stroke-width="1.5"/>
+    <rect width="215" height="40" rx="12" fill="url(#tplBlankGrad)" fill-opacity="0.3"/>
+    <text x="107" y="25" text-anchor="middle" fill="#f472b6" font-size="11.5" font-weight="800">✨ DO ZERO (EM BRANCO)</text>
+    
+    <g transform="translate(20, 54)">
+      <rect width="175" height="48" rx="6" fill="#1e293b" stroke="#334155"/>
+      <text x="87" y="22" text-anchor="middle" fill="#f1f5f9" font-size="10.5" font-weight="700">Total Liberdade</text>
+      <text x="87" y="38" text-anchor="middle" fill="#f472b6" font-size="9.5">Tela Limpa</text>
+    </g>
+
+    <text x="20" y="125" fill="#e2e8f0" font-size="10.5" font-weight="700">Foco do Modelo:</text>
+    <text x="20" y="145" fill="#cbd5e1" font-size="10">• Adicione quantos slides quiser</text>
+    <text x="20" y="165" fill="#cbd5e1" font-size="10">• Escolha cores e transição</text>
+    <text x="20" y="185" fill="#cbd5e1" font-size="10">• Configure PIN e Pacing</text>
+    <text x="20" y="205" fill="#cbd5e1" font-size="10">• Exporte em .slidemesh.zip</text>
+
+    <g transform="translate(20, 260)">
+      <rect width="175" height="44" rx="6" fill="#1e293b" stroke="#db2777"/>
+      <text x="87" y="22" text-anchor="middle" fill="#f472b6" font-size="10" font-weight="800">Criar Apresentação</text>
+      <text x="87" y="36" text-anchor="middle" fill="#94a3b8" font-size="9">Design Personalizado</text>
+    </g>
+  </g>
+</svg>
