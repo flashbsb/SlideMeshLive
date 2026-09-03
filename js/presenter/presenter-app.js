@@ -697,6 +697,7 @@ class PresenterApp {
     // Navegação via Teclado e Atalhos
     document.addEventListener('keydown', async (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (document.body.classList.contains('presenter-locked')) return;
 
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
         e.preventDefault();
