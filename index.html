@@ -338,14 +338,15 @@
       window.location.href = 'import.html?mode=zip';
     }
 
-    // Modal de Acesso a Deck Protegido no Portal (Plano 17 - Fase 3)
+    // Modal de Acesso a Deck Protegido no Portal (Plano 17 - Fase 3 / Plano 20 - Fase 2)
     function handleProtectedDeckAction(presId, actionType, targetUrl, deckTitle, pinHint) {
       const isUnlocked = sessionStorage.getItem('pres_pin_' + presId) === 'valid' ||
-                         sessionStorage.getItem('admin_pin_authenticated') === 'true';
+                         sessionStorage.getItem('admin_pin_authenticated') === 'true' ||
+                         localStorage.getItem('slidemesh_admin_auth') === 'true';
 
       if (isUnlocked) {
         if (actionType === 'zip') {
-          const savedCode = sessionStorage.getItem('pres_pin_code_' + presId) || '';
+          const savedCode = sessionStorage.getItem('pres_pin_code_' + presId) || localStorage.getItem('admin_master_pin_code') || '';
           const url = `/api/presentations/export?id=${encodeURIComponent(presId)}` + (savedCode ? `&pin=${encodeURIComponent(savedCode)}` : '');
           window.location.href = url;
         } else if (targetUrl) {
@@ -406,6 +407,13 @@
         if (res.ok && data.success) {
           sessionStorage.setItem('pres_pin_' + pendingDeckAction.presId, 'valid');
           sessionStorage.setItem('pres_pin_code_' + pendingDeckAction.presId, entered);
+          if (data.role === 'admin') {
+            sessionStorage.setItem('admin_pin_authenticated', 'true');
+            localStorage.setItem('slidemesh_admin_auth', 'true');
+            localStorage.setItem('slidemesh_admin_auth_time', String(Date.now()));
+            sessionStorage.setItem('admin_master_pin_code', String(entered));
+            localStorage.setItem('admin_master_pin_code', String(entered));
+          }
           document.getElementById('portal-deck-auth-modal')?.classList.remove('active');
           
           const act = pendingDeckAction;
@@ -425,11 +433,16 @@
       }
     }
 
-    // Modal Global de Intranet / Evento Fechado (Plano 17 - Fase 3)
+    // Modal Global de Intranet / Evento Fechado (Plano 17 - Fase 3 / Plano 20 - Fase 2)
     function checkGlobalIntranetLock(authData) {
       const requireAuth = Boolean(authData && (authData.requireAuthForCatalog === true || authData.multiAuth?.scopes?.portal === true));
-      const isAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true';
+      const isAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true' ||
+                     localStorage.getItem('slidemesh_admin_auth') === 'true';
       const modal = document.getElementById('portal-global-lock-modal');
+
+      if (isAuth && sessionStorage.getItem('admin_pin_authenticated') !== 'true') {
+        sessionStorage.setItem('admin_pin_authenticated', 'true');
+      }
 
       updatePortalAuthButton();
 
@@ -446,13 +459,18 @@
     }
 
     function updatePortalAuthButton() {
-      const isAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true';
+      const isAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true' ||
+                     localStorage.getItem('slidemesh_admin_auth') === 'true';
       const btn = document.getElementById('btn-portal-logout');
       if (btn) btn.style.display = isAuth ? 'inline-flex' : 'none';
     }
 
     function logoutPortal() {
       sessionStorage.removeItem('admin_pin_authenticated');
+      sessionStorage.removeItem('admin_master_pin_code');
+      localStorage.removeItem('slidemesh_admin_auth');
+      localStorage.removeItem('slidemesh_admin_auth_time');
+      localStorage.removeItem('admin_master_pin_code');
       sessionStorage.clear();
       localStorage.removeItem('apres_auth_user');
       window.location.reload();
@@ -502,8 +520,13 @@
         const data = await res.json();
         if (res.ok && data.success) {
           sessionStorage.setItem('admin_pin_authenticated', 'true');
+          localStorage.setItem('slidemesh_admin_auth', 'true');
+          localStorage.setItem('slidemesh_admin_auth_time', String(Date.now()));
+          sessionStorage.setItem('admin_master_pin_code', String(entered));
+          localStorage.setItem('admin_master_pin_code', String(entered));
           document.body.classList.remove('portal-locked');
           document.getElementById('portal-global-lock-modal')?.classList.remove('active');
+          updatePortalAuthButton();
         } else {
           if (err) { err.textContent = '✕ PIN incorreto.'; err.style.display = 'block'; }
         }
@@ -529,8 +552,11 @@
         const data = await res.json();
         if (res.ok && data.success) {
           sessionStorage.setItem('admin_pin_authenticated', 'true');
+          localStorage.setItem('slidemesh_admin_auth', 'true');
+          localStorage.setItem('slidemesh_admin_auth_time', String(Date.now()));
           document.body.classList.remove('portal-locked');
           document.getElementById('portal-global-lock-modal')?.classList.remove('active');
+          updatePortalAuthButton();
         } else {
           if (err) { err.textContent = `✕ ${data.error || 'Credenciais inválidas.'}`; err.style.display = 'block'; }
         }
@@ -541,8 +567,11 @@
 
     function unlockPortalGlobalGoogle() {
       sessionStorage.setItem('admin_pin_authenticated', 'true');
+      localStorage.setItem('slidemesh_admin_auth', 'true');
+      localStorage.setItem('slidemesh_admin_auth_time', String(Date.now()));
       document.body.classList.remove('portal-locked');
       document.getElementById('portal-global-lock-modal')?.classList.remove('active');
+      updatePortalAuthButton();
     }
 
     function renderCards(presentations) {
@@ -642,7 +671,8 @@
       document.querySelectorAll('.btn-deck-action[data-protected="true"]').forEach(el => {
         el.addEventListener('click', (e) => {
           const isUnlocked = sessionStorage.getItem('pres_pin_' + el.dataset.id) === 'valid' ||
-                             sessionStorage.getItem('admin_pin_authenticated') === 'true';
+                             sessionStorage.getItem('admin_pin_authenticated') === 'true' ||
+                             localStorage.getItem('slidemesh_admin_auth') === 'true';
           if (!isUnlocked) {
             e.preventDefault();
             handleProtectedDeckAction(

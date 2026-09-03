@@ -208,6 +208,24 @@ export class AuthEngine {
     return allowed.some(a => a.toLowerCase() === email.toLowerCase());
   }
 
+  setAdminAuthenticated(isAuthenticated, masterPin = null) {
+    if (isAuthenticated) {
+      sessionStorage.setItem('admin_pin_authenticated', 'true');
+      localStorage.setItem('slidemesh_admin_auth', 'true');
+      localStorage.setItem('slidemesh_admin_auth_time', String(Date.now()));
+      if (masterPin) {
+        sessionStorage.setItem('admin_master_pin_code', String(masterPin));
+        localStorage.setItem('admin_master_pin_code', String(masterPin));
+      }
+    } else {
+      sessionStorage.removeItem('admin_pin_authenticated');
+      sessionStorage.removeItem('admin_master_pin_code');
+      localStorage.removeItem('slidemesh_admin_auth');
+      localStorage.removeItem('slidemesh_admin_auth_time');
+      localStorage.removeItem('admin_master_pin_code');
+    }
+  }
+
   /**
    * Validação de PIN no Backend Gatekeeper (/api/auth/verify-pin)
    */
@@ -226,7 +244,7 @@ export class AuthEngine {
         const data = await res.json();
         if (data.success) {
           if (data.role === 'admin') {
-            sessionStorage.setItem('admin_pin_authenticated', 'true');
+            this.setAdminAuthenticated(true, cleanPin);
           }
           return true;
         }
@@ -237,7 +255,7 @@ export class AuthEngine {
       const correctPin = String((this.securityConfig && this.securityConfig.admin && this.securityConfig.admin.pin) || '2026');
       const valid = (cleanPin === correctPin.trim());
       if (valid) {
-        sessionStorage.setItem('admin_pin_authenticated', 'true');
+        this.setAdminAuthenticated(true, cleanPin);
       }
       return valid;
     }
@@ -253,8 +271,14 @@ export class AuthEngine {
     if (requirePin === false) {
       return true;
     }
-    const isPinAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true';
-    return isPinAuth;
+    const isSessionAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true';
+    const isLocalAuth = localStorage.getItem('slidemesh_admin_auth') === 'true';
+    
+    // Se estiver autenticado no localStorage (SSO cross-tab), sincroniza de volta para o sessionStorage
+    if (isLocalAuth && !isSessionAuth) {
+      sessionStorage.setItem('admin_pin_authenticated', 'true');
+    }
+    return isSessionAuth || isLocalAuth;
   }
 
   /**
@@ -316,7 +340,7 @@ export class AuthEngine {
       this._setCurrentUser(localUser);
 
       if (localUser.role === 'admin' || localUser.role === 'presenter') {
-        sessionStorage.setItem('admin_pin_authenticated', 'true');
+        this.setAdminAuthenticated(true);
       }
 
       return localUser;
@@ -387,7 +411,8 @@ export class AuthEngine {
     if (mode === 'pin' || sec.isProtected) {
       const isSessionUnlocked = sessionStorage.getItem(`unlocked_session_${manifest.defaultSession || ''}`) === 'true';
       const isPresUnlocked = sessionStorage.getItem(`pres_pin_${manifest.id}`) === 'valid' || sessionStorage.getItem(`pres_pin_${manifest.id}`) === 'true';
-      const isAdmin = sessionStorage.getItem('admin_pin_authenticated') === 'true';
+      const isAdmin = sessionStorage.getItem('admin_pin_authenticated') === 'true' ||
+                      localStorage.getItem('slidemesh_admin_auth') === 'true';
       if (isSessionUnlocked || isPresUnlocked || isAdmin) {
         return { authorized: true };
       }
@@ -403,7 +428,7 @@ export class AuthEngine {
         await this.firebaseAuthFns.signOut(this.auth);
       } catch (e) {}
     }
-    sessionStorage.removeItem('admin_pin_authenticated');
+    this.setAdminAuthenticated(false);
     this._setCurrentUser(null);
   }
 
