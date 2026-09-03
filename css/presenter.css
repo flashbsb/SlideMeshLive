@@ -1206,3 +1206,73 @@
   gap: 12px;
   flex-wrap: wrap;
 }
+
+/* ==========================================================================
+   COMPONENTES MULTIMÍDIA RICOS: VÍDEO EM LOOP & ÁUDIO PLAYER (FASE 2)
+   ========================================================================== */
+
+.slide-video-bg-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.slide-video-bg-layer video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.38;
+  filter: brightness(0.65) contrast(1.1);
+}
+
+.slide-video-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(11, 15, 25, 0.45) 0%, rgba(11, 15, 25, 0.88) 100%);
+}
+
+.slide-audio-player-box {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(56, 189, 248, 0.5);
+  border-radius: 18px;
+  padding: 20px 24px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 640px;
+}
+
+.slide-audio-wave-anim {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.slide-audio-wave-anim span {
+  width: 4px;
+  height: 100%;
+  background: #38bdf8;
+  border-radius: 2px;
+  animation: audioWave 1.2s ease-in-out infinite alternate;
+}
+
+.slide-audio-wave-anim span:nth-child(2) { animation-delay: 0.2s; height: 70%; }
+.slide-audio-wave-anim span:nth-child(3) { animation-delay: 0.4s; height: 90%; }
+.slide-audio-wave-anim span:nth-child(4) { animation-delay: 0.1s; height: 50%; }
+.slide-audio-wave-anim span:nth-child(5) { animation-delay: 0.5s; height: 80%; }
+
+@keyframes audioWave {
+  0% { height: 20%; opacity: 0.5; }
+  100% { height: 100%; opacity: 1; }
+}

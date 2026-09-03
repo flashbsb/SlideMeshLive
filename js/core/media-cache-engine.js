@@ -63,11 +63,27 @@ export class MediaCacheEngine {
     if (slide.media && typeof slide.media === 'string' && this.isMediaUrl(slide.media)) {
       urls.add(this.resolveMediaUrl(slide.media));
     }
+    if (slide.presenter && slide.presenter.media && typeof slide.presenter.media.src === 'string' && this.isMediaUrl(slide.presenter.media.src)) {
+      urls.add(this.resolveMediaUrl(slide.presenter.media.src));
+    }
     if (slide.video && typeof slide.video === 'string' && this.isMediaUrl(slide.video)) {
       urls.add(this.resolveMediaUrl(slide.video));
     }
+    if (slide.videoBackground && typeof slide.videoBackground === 'string' && this.isMediaUrl(slide.videoBackground)) {
+      urls.add(this.resolveMediaUrl(slide.videoBackground));
+    }
+    if (slide.videoLoop && typeof slide.videoLoop === 'string' && this.isMediaUrl(slide.videoLoop)) {
+      urls.add(this.resolveMediaUrl(slide.videoLoop));
+    }
     if (slide.audio && typeof slide.audio === 'string' && this.isMediaUrl(slide.audio)) {
       urls.add(this.resolveMediaUrl(slide.audio));
+    }
+    if (slide.audience && Array.isArray(slide.audience.sections)) {
+      slide.audience.sections.forEach(sec => {
+        if (sec && sec.src && typeof sec.src === 'string' && this.isMediaUrl(sec.src)) {
+          urls.add(this.resolveMediaUrl(sec.src));
+        }
+      });
     }
 
     // 2. Extração de tags <video>, <audio>, <source> no HTML do slide

@@ -277,25 +277,39 @@ export class PresentationEngine {
       `;
     }
 
-    // Roteamento por Layout Semântico
-    if (layout === 'bento') {
-      return this.renderBentoSlideHtml(s, transClass, pollHtml, fontClass);
-    } else if (layout === 'metric') {
-      return this.renderMetricSlideHtml(s, transClass, pollHtml, fontClass);
-    } else if (layout === 'quote') {
-      return this.renderQuoteSlideHtml(s, transClass, pollHtml, fontClass);
-    } else if (layout === 'code') {
-      return this.renderCodeSlideHtml(s, transClass, pollHtml, fontClass);
-    } else if (layout === 'columns') {
-      return this.renderColumnsSlideHtml(s, transClass, pollHtml, fontClass);
-    } else if (layout === 'timeline') {
-      return this.renderTimelineSlideHtml(s, transClass, pollHtml, fontClass);
-    } else if (layout === 'hero') {
-      return this.renderHeroSlideHtml(s, transClass, pollHtml, fontClass);
+    // Vídeo de Fundo em Loop (Fase 2)
+    const videoBgSrc = s.videoBackground || s.videoLoop || (s.media && s.media.type === 'video-bg' ? s.media.src : null) || (presenter && presenter.videoBackground);
+    let videoBgHtml = '';
+    if (videoBgSrc) {
+      videoBgHtml = `
+        <div class="slide-video-bg-layer animate-fade-in">
+          <video src="${videoBgSrc}" autoplay muted loop playsinline></video>
+          <div class="slide-video-bg-overlay"></div>
+        </div>
+      `;
     }
 
-    // Layout Padrão (Split ou Centralizado)
-    return this.renderStandardSlideHtml(s, transClass, pollHtml, fontClass, transition);
+    let innerHtml = '';
+    // Roteamento por Layout Semântico
+    if (layout === 'bento') {
+      innerHtml = this.renderBentoSlideHtml(s, transClass, pollHtml, fontClass);
+    } else if (layout === 'metric') {
+      innerHtml = this.renderMetricSlideHtml(s, transClass, pollHtml, fontClass);
+    } else if (layout === 'quote') {
+      innerHtml = this.renderQuoteSlideHtml(s, transClass, pollHtml, fontClass);
+    } else if (layout === 'code') {
+      innerHtml = this.renderCodeSlideHtml(s, transClass, pollHtml, fontClass);
+    } else if (layout === 'columns') {
+      innerHtml = this.renderColumnsSlideHtml(s, transClass, pollHtml, fontClass);
+    } else if (layout === 'timeline') {
+      innerHtml = this.renderTimelineSlideHtml(s, transClass, pollHtml, fontClass);
+    } else if (layout === 'hero') {
+      innerHtml = this.renderHeroSlideHtml(s, transClass, pollHtml, fontClass);
+    } else {
+      innerHtml = this.renderStandardSlideHtml(s, transClass, pollHtml, fontClass, transition);
+    }
+
+    return `${videoBgHtml}${innerHtml}`;
   }
 
   renderBentoSlideHtml(s, transClass, pollHtml, fontClass) {
@@ -553,6 +567,18 @@ export class PresentationEngine {
             ${media.caption ? `<div class="slide-media-caption">${media.caption}</div>` : ''}
           </div>
         `;
+      } else if (media.type === 'audio' || media.type === 'sound') {
+        mediaHtml = `
+          <div class="slide-audio-player-box animate-fade-in">
+            <div class="slide-audio-wave-anim">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 14.5px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">🎧 ${media.title || media.caption || 'Demonstração de Áudio'}</div>
+              <audio src="${media.src || s.audio}" controls style="width: 100%; height: 36px;"></audio>
+            </div>
+          </div>
+        `;
       } else if (media.type === 'html' || media.type === 'interactive' || media.type === 'media') {
         mediaHtml = `<div class="slide-media-box animate-fade-in">${media.content || media.html || ''}</div>`;
       }
@@ -617,6 +643,14 @@ export class PresentationEngine {
           contentHtml = `
             <div style="text-align: center; margin: 10px 0;">
               <video src="${sec.src}" ${sec.autoplay ? 'autoplay muted loop playsinline' : 'controls'} style="max-width: 100%; max-height: ${sec.maxHeight || '260px'}; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);"></video>
+              ${sec.caption ? `<p style="font-size: 11px; color: var(--text-secondary); margin-top: 6px;">${sec.caption}</p>` : ''}
+            </div>
+          `;
+        } else if (sec.type === 'audio') {
+          contentHtml = `
+            <div style="margin: 10px 0;">
+              <div style="font-size: 13.5px; font-weight: 600; color: #ffffff; margin-bottom: 6px;">🎧 ${sec.title || 'Áudio do Slide'}</div>
+              <audio src="${sec.src}" controls style="width: 100%; height: 38px;"></audio>
               ${sec.caption ? `<p style="font-size: 11px; color: var(--text-secondary); margin-top: 6px;">${sec.caption}</p>` : ''}
             </div>
           `;
