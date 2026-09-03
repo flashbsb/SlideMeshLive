@@ -128,6 +128,60 @@ export class PresentationEngine {
     }
   }
 
+  escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  /**
+   * Detecta dinamicamente o layout semântico do slide
+   */
+  detectSlideLayout(slide) {
+    if (!slide) return 'standard';
+    const s = slide;
+    const p = s.presenter || {};
+    if (s.layout) return s.layout;
+    if (p.layout) return p.layout;
+    if (s.bento || p.bento) return 'bento';
+    if (s.metric || p.metric) return 'metric';
+    if (s.quote || p.quote) return 'quote';
+    if (s.code || p.code) return 'code';
+    if (s.columns || p.columns) return 'columns';
+    if (s.timeline || p.timeline) return 'timeline';
+    if (s.hero || p.hero) return 'hero';
+    if (p.media || s.media) return 'split';
+    return 'standard';
+  }
+
+  getFontClass(slide = null) {
+    const s = slide || this.currentSlide || {};
+    const font = s.fontFamily || s.font || this.manifest?.theme?.fontFamily || 'Inter';
+    const clean = String(font).toLowerCase();
+    if (clean.includes('outfit') || clean.includes('display')) return 'font-outfit';
+    if (clean.includes('playfair') || clean.includes('serif')) return 'font-playfair';
+    if (clean.includes('fira') || clean.includes('code') || clean.includes('mono')) return 'font-code';
+    if (clean.includes('montserrat')) return 'font-montserrat';
+    return 'font-inter';
+  }
+
+  getBackgroundClass(slide = null) {
+    const s = slide || this.currentSlide || {};
+    const bg = s.background || this.manifest?.theme?.background || '';
+    if (typeof bg === 'string') {
+      if (bg.includes('aurora')) return 'slide-bg-aurora';
+      if (bg.includes('sunset')) return 'slide-bg-sunset';
+      if (bg.includes('cyber')) return 'slide-bg-cyber';
+      if (bg.includes('editorial')) return 'slide-bg-editorial';
+      if (bg.includes('mesh')) return 'slide-bg-mesh';
+    }
+    return '';
+  }
+
   /**
    * Renderiza o slide atual para a visão do Apresentador
    */
@@ -135,7 +189,29 @@ export class PresentationEngine {
     const slide = this.currentSlide;
     if (!slide || !containerElement) return;
 
-    const transition = (options && options.transition) || (slide.presenter && slide.presenter.transition) || slide.transition || (this.manifest?.theme?.transition) || 'fade';
+    // Aplica classe de fundo no container se houver
+    const bgClass = this.getBackgroundClass(slide);
+    containerElement.className = `slide-canvas ${bgClass}`.trim();
+
+    containerElement.innerHTML = this.renderSlideHtml(slide, options, pollRenderData);
+
+    if (notesElement) {
+      notesElement.innerHTML = `
+        <div class="speaker-notes-title">Notas do Orador:</div>
+        <p>${(slide.presenter && slide.presenter.notes) || slide.speakerNotes || 'Nenhuma nota específica para este slide.'}</p>
+      `;
+    }
+  }
+
+  /**
+   * Helper unificado para retornar a string HTML do slide do apresentador
+   */
+  renderSlideHtml(slide = null, options = {}, pollRenderData = null) {
+    const s = slide || this.currentSlide;
+    if (!s) return '';
+
+    const presenter = s.presenter || {};
+    const transition = (options && options.transition) || presenter.transition || s.transition || (this.manifest?.theme?.transition) || 'fade';
     const direction = (options && options.direction) || 'next';
 
     let transClass = 'stage-trans-fade';
@@ -149,19 +225,13 @@ export class PresentationEngine {
       transClass = 'stage-trans-stagger';
     }
 
-    const isStagger = (transition === 'stagger');
+    const fontClass = this.getFontClass(s);
+    const layout = this.detectSlideLayout(s);
 
-    const bulletsHtml = (slide.presenter.bullets || [])
-      .map((b, idx) => `
-        <li class="slide-bullet-item ${isStagger ? 'stage-stagger-bullet' : 'animate-fade-in'}" ${isStagger ? `style="animation-delay: ${(idx + 1) * 80 + 40}ms;"` : ''}>
-          <span class="bullet-icon"></span>
-          <span>${b}</span>
-        </li>
-      `).join('');
-
-    let presenterPollHtml = '';
-    if (slide.interaction && slide.interaction.poll) {
-      const poll = slide.interaction.poll;
+    // Renderização de Enquete (se houver)
+    let pollHtml = '';
+    if (s.interaction && s.interaction.poll) {
+      const poll = s.interaction.poll;
       const pollStatus = (pollRenderData && pollRenderData.pollStatus) || 'open';
       const showResults = !!(pollRenderData && pollRenderData.showResults);
       const results = (pollRenderData && pollRenderData.results) || null;
@@ -169,7 +239,6 @@ export class PresentationEngine {
 
       let pollBodyHtml = '';
       if (showResults && results) {
-        // Exibe gráficos de barras no telão
         pollBodyHtml = results.options.map(opt => `
           <div style="margin-bottom: 12px;" class="animate-fade-in">
             <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px;">
@@ -182,7 +251,6 @@ export class PresentationEngine {
           </div>
         `).join('');
       } else {
-        // Exibe opções normais com status de votação aberta
         pollBodyHtml = (poll.options || []).map(opt => `
           <div style="background: rgba(15,23,42,0.7); border: 1.5px solid var(--border-medium); padding: 12px 18px; border-radius: var(--radius-md); display: flex; align-items: center; gap: 12px;">
             <span class="badge badge-accent" style="font-size: 13px; font-weight: 800; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; padding: 0;">${opt.id}</span>
@@ -191,7 +259,7 @@ export class PresentationEngine {
         `).join('');
       }
 
-      presenterPollHtml = `
+      pollHtml = `
         <div class="presenter-poll-box animate-fade-in" style="margin-top: 24px; background: rgba(15,23,42,0.85); border: 2px solid var(--accent-primary); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <span class="badge ${pollStatus === 'open' ? 'badge-live' : 'badge-accent'}" style="font-size: 11px;">
@@ -209,90 +277,255 @@ export class PresentationEngine {
       `;
     }
 
-    let mediaHtml = '';
-    const media = slide.presenter && slide.presenter.media;
-    if (media) {
-      if (media.type === 'image' || media.type === 'svg') {
-        mediaHtml = `
-          <div class="slide-media-box animate-fade-in">
-            <img src="${media.src}" alt="${media.alt || ''}" />
-            ${media.caption ? `<div class="slide-media-caption">${media.caption}</div>` : ''}
-          </div>
-        `;
-      } else if (media.type === 'video') {
-        mediaHtml = `
-          <div class="slide-media-box animate-fade-in">
-            <video src="${media.src}" ${media.autoplay ? 'autoplay muted loop playsinline' : 'controls'}></video>
-            ${media.caption ? `<div class="slide-media-caption">${media.caption}</div>` : ''}
-          </div>
-        `;
-      } else if (media.type === 'html' || media.type === 'interactive' || media.type === 'media') {
-        mediaHtml = `<div class="slide-media-box animate-fade-in">${media.content || media.html || ''}</div>`;
-      }
+    // Roteamento por Layout Semântico
+    if (layout === 'bento') {
+      return this.renderBentoSlideHtml(s, transClass, pollHtml, fontClass);
+    } else if (layout === 'metric') {
+      return this.renderMetricSlideHtml(s, transClass, pollHtml, fontClass);
+    } else if (layout === 'quote') {
+      return this.renderQuoteSlideHtml(s, transClass, pollHtml, fontClass);
+    } else if (layout === 'code') {
+      return this.renderCodeSlideHtml(s, transClass, pollHtml, fontClass);
+    } else if (layout === 'columns') {
+      return this.renderColumnsSlideHtml(s, transClass, pollHtml, fontClass);
+    } else if (layout === 'timeline') {
+      return this.renderTimelineSlideHtml(s, transClass, pollHtml, fontClass);
+    } else if (layout === 'hero') {
+      return this.renderHeroSlideHtml(s, transClass, pollHtml, fontClass);
     }
 
-    if (media) {
-      containerElement.innerHTML = `
-        <div class="slide-content-wrapper slide-layout-split ${transClass}">
-          <div class="slide-tag">${slide.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
-          <div class="slide-split-grid">
-            <div class="slide-text-col">
-              <h1 class="slide-headline">${slide.presenter.headline || slide.title}</h1>
-              <ul class="slide-bullets">
-                ${bulletsHtml}
-              </ul>
-              ${presenterPollHtml}
-            </div>
-            <div class="slide-media-col">
-              ${mediaHtml}
-            </div>
-          </div>
-        </div>
-      `;
-    } else {
-      containerElement.innerHTML = `
-        <div class="slide-content-wrapper ${transClass}">
-          <div class="slide-tag">${slide.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
-          <h1 class="slide-headline">${slide.presenter.headline || slide.title}</h1>
-          <ul class="slide-bullets">
-            ${bulletsHtml}
-          </ul>
-          ${presenterPollHtml}
-        </div>
-      `;
-    }
-
-    if (notesElement) {
-      notesElement.innerHTML = `
-        <div class="speaker-notes-title">Notas do Orador:</div>
-        <p>${(slide.presenter && slide.presenter.notes) || slide.speakerNotes || 'Nenhuma nota específica para este slide.'}</p>
-      `;
-    }
+    // Layout Padrão (Split ou Centralizado)
+    return this.renderStandardSlideHtml(s, transClass, pollHtml, fontClass, transition);
   }
 
-  /**
-   * Helper para retornar a string HTML do slide do apresentador (com suporte a enquetes e mídia)
-   */
-  renderSlideHtml(slide = null, options = {}) {
-    const s = slide || this.currentSlide;
-    if (!s) return '';
+  renderBentoSlideHtml(s, transClass, pollHtml, fontClass) {
+    const p = s.presenter || {};
+    const bentoData = s.bento || p.bento || {};
+    const cards = bentoData.cards || [];
+    const headline = p.headline || s.headline || s.title || '';
+    const tag = s.tag || `SLIDE ${this.currentSlideIndex + 1}`;
+
+    const cardsHtml = cards.map((c, idx) => {
+      const colSpan = c.cols || c.span || (idx === 0 ? 8 : 4);
+      const isHighlight = c.highlight ? 'bento-card-highlight' : '';
+      const iconHtml = c.icon ? `<div class="bento-icon-wrapper">${c.icon}</div>` : '';
+      const statHtml = c.stat ? `<div class="bento-stat-num font-outfit">${c.stat}</div>` : '';
+      const titleHtml = c.title ? `<div class="bento-card-title">${c.title}</div>` : '';
+      const descHtml = c.desc || c.description ? `<div class="bento-card-desc">${c.desc || c.description}</div>` : '';
+
+      return `
+        <div class="bento-card bento-col-${colSpan} ${isHighlight} animate-fade-in" style="animation-delay: ${(idx + 1) * 80}ms;">
+          <div>
+            ${iconHtml}
+            ${statHtml}
+            ${titleHtml}
+            ${descHtml}
+          </div>
+          ${c.badge ? `<div style="margin-top: 12px;"><span class="badge ${c.badgeClass || 'badge-accent'}" style="font-size: 11px;">${c.badge}</span></div>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="slide-content-wrapper slide-layout-bento ${transClass} ${fontClass}">
+        <div class="slide-tag">${tag}</div>
+        <h1 class="slide-headline">${headline}</h1>
+        <div class="bento-grid">
+          ${cardsHtml}
+        </div>
+        ${pollHtml}
+      </div>
+    `;
+  }
+
+  renderMetricSlideHtml(s, transClass, pollHtml, fontClass) {
+    const p = s.presenter || {};
+    const metricData = s.metric || p.metric || {};
+    const headline = p.headline || s.headline || s.title || '';
+    const tag = s.tag || `SLIDE ${this.currentSlideIndex + 1}`;
+    const value = metricData.value || '100%';
+    const delta = metricData.delta || metricData.growth || null;
+    const label = metricData.label || metricData.subtitle || headline;
+    const pillars = metricData.pillars || metricData.details || [];
+
+    const pillarsHtml = pillars.map(pl => `
+      <div class="metric-pillar-card">
+        <div style="font-size: 17px; font-weight: 800; color: var(--accent-primary); margin-bottom: 4px;">${pl.stat || pl.icon || '✦'} ${pl.title || ''}</div>
+        <div style="font-size: 13.5px; color: #94a3b8; line-height: 1.4;">${pl.desc || pl.description || ''}</div>
+      </div>
+    `).join('');
+
+    return `
+      <div class="slide-content-wrapper slide-layout-metric ${transClass} ${fontClass}">
+        <div class="slide-tag">${tag}</div>
+        <div class="metric-hero-box animate-fade-in">
+          <div class="metric-display font-outfit">${value}</div>
+          ${delta ? `<div class="metric-delta-badge">🚀 ${delta}</div>` : ''}
+          <div class="metric-subtitle">${label}</div>
+          ${pillars.length > 0 ? `<div class="metric-pillars-grid">${pillarsHtml}</div>` : ''}
+        </div>
+        ${pollHtml}
+      </div>
+    `;
+  }
+
+  renderQuoteSlideHtml(s, transClass, pollHtml, fontClass) {
+    const p = s.presenter || {};
+    const quoteData = s.quote || p.quote || {};
+    const tag = s.tag || `SLIDE ${this.currentSlideIndex + 1}`;
+    const text = quoteData.text || p.headline || s.headline || s.title || '';
+    const author = quoteData.author || quoteData.speaker || 'Liderança';
+    const role = quoteData.role || quoteData.title || '';
+    const avatar = quoteData.avatar || quoteData.photo || null;
+
+    return `
+      <div class="slide-content-wrapper slide-layout-quote ${transClass} ${fontClass}">
+        <div class="slide-tag">${tag}</div>
+        <div class="quote-box animate-fade-in">
+          <div class="quote-giant-mark font-playfair">“</div>
+          <div class="quote-statement font-playfair">${text}</div>
+          <div class="quote-author-card">
+            ${avatar ? `<img src="${avatar}" alt="${author}" class="quote-avatar" />` : `<div class="quote-avatar" style="background: rgba(56,189,248,0.2); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #38bdf8;">👤</div>`}
+            <div class="quote-author-info">
+              <div class="quote-author-name">${author}</div>
+              ${role ? `<div class="quote-author-role">${role}</div>` : ''}
+            </div>
+          </div>
+        </div>
+        ${pollHtml}
+      </div>
+    `;
+  }
+
+  renderCodeSlideHtml(s, transClass, pollHtml, fontClass) {
+    const p = s.presenter || {};
+    const codeData = s.code || p.code || {};
+    const headline = p.headline || s.headline || s.title || '';
+    const tag = s.tag || `SLIDE ${this.currentSlideIndex + 1}`;
+    const bullets = p.bullets || s.bullets || [];
+    const filename = codeData.filename || codeData.title || 'server.py';
+    const rawCode = codeData.snippet || codeData.content || '// SlideMeshLive Engine';
+
+    const bulletsHtml = bullets.map((b, idx) => `
+      <li class="slide-bullet-item animate-fade-in" style="animation-delay: ${(idx + 1) * 80}ms;">
+        <span class="bullet-icon"></span>
+        <span>${b}</span>
+      </li>
+    `).join('');
+
+    return `
+      <div class="slide-content-wrapper slide-layout-code ${transClass} ${fontClass}">
+        <div class="slide-tag">${tag}</div>
+        <div class="terminal-grid">
+          <div class="slide-text-col">
+            <h1 class="slide-headline">${headline}</h1>
+            <ul class="slide-bullets">${bulletsHtml}</ul>
+            ${pollHtml}
+          </div>
+          <div class="terminal-window animate-fade-in">
+            <div class="terminal-titlebar">
+              <div class="terminal-dots">
+                <span class="terminal-dot dot-red"></span>
+                <span class="terminal-dot dot-yellow"></span>
+                <span class="terminal-dot dot-green"></span>
+              </div>
+              <div class="terminal-title">${filename}</div>
+              <div></div>
+            </div>
+            <pre class="terminal-code-body font-code"><code>${this.escapeHtml(rawCode)}</code></pre>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderColumnsSlideHtml(s, transClass, pollHtml, fontClass) {
+    const p = s.presenter || {};
+    const colData = s.columns || p.columns || {};
+    const items = colData.items || colData.columns || [];
+    const headline = p.headline || s.headline || s.title || '';
+    const tag = s.tag || `SLIDE ${this.currentSlideIndex + 1}`;
+
+    const colsHtml = items.map((col, idx) => {
+      const bullets = (col.bullets || col.items || []).map(b => `
+        <li><span>🔹</span><span>${b}</span></li>
+      `).join('');
+
+      return `
+        <div class="column-card animate-fade-in" style="animation-delay: ${(idx + 1) * 90}ms;">
+          <div class="column-header-icon">${col.icon || '🚀'}</div>
+          <div class="column-card-title">${col.title}</div>
+          <ul class="column-card-bullets">${bullets}</ul>
+          ${col.desc ? `<p style="font-size: 13px; color: #94a3b8; margin-top: 12px;">${col.desc}</p>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="slide-content-wrapper slide-layout-columns ${transClass} ${fontClass}">
+        <div class="slide-tag">${tag}</div>
+        <h1 class="slide-headline">${headline}</h1>
+        <div class="columns-3-grid">
+          ${colsHtml}
+        </div>
+        ${pollHtml}
+      </div>
+    `;
+  }
+
+  renderTimelineSlideHtml(s, transClass, pollHtml, fontClass) {
+    const p = s.presenter || {};
+    const timelineData = s.timeline || p.timeline || {};
+    const steps = timelineData.steps || timelineData.milestones || [];
+    const headline = p.headline || s.headline || s.title || '';
+    const tag = s.tag || `SLIDE ${this.currentSlideIndex + 1}`;
+
+    const stepsHtml = steps.map((step, idx) => `
+      <div class="timeline-step-card animate-fade-in" style="animation-delay: ${(idx + 1) * 90}ms;">
+        <div class="timeline-step-badge">${step.step || (idx + 1)}</div>
+        <div class="timeline-step-title">${step.title}</div>
+        <div class="timeline-step-desc">${step.desc || step.description || ''}</div>
+      </div>
+    `).join('');
+
+    return `
+      <div class="slide-content-wrapper slide-layout-timeline ${transClass} ${fontClass}">
+        <div class="slide-tag">${tag}</div>
+        <h1 class="slide-headline">${headline}</h1>
+        <div class="timeline-horizontal-track">
+          ${stepsHtml}
+        </div>
+        ${pollHtml}
+      </div>
+    `;
+  }
+
+  renderHeroSlideHtml(s, transClass, pollHtml, fontClass) {
+    const p = s.presenter || {};
+    const heroData = s.hero || p.hero || {};
+    const grandTitle = heroData.title || p.headline || s.headline || s.title || '';
+    const subtitle = heroData.subtitle || heroData.desc || (p.bullets && p.bullets[0]) || '';
+    const tag = s.tag || `SLIDE ${this.currentSlideIndex + 1}`;
+    const badges = heroData.badges || [];
+
+    const badgesHtml = badges.map(b => `
+      <span class="badge ${b.class || 'badge-accent'}" style="font-size: 13px; padding: 6px 14px;">${b.text || b}</span>
+    `).join('');
+
+    return `
+      <div class="slide-content-wrapper slide-layout-hero ${transClass} ${fontClass}">
+        <div class="slide-tag">${tag}</div>
+        <div class="hero-grand-title font-outfit">${grandTitle}</div>
+        <div class="hero-subtitle">${subtitle}</div>
+        ${badges.length > 0 ? `<div class="hero-badges-row">${badgesHtml}</div>` : ''}
+        ${pollHtml}
+      </div>
+    `;
+  }
+
+  renderStandardSlideHtml(s, transClass, pollHtml, fontClass, transition) {
     const presenter = s.presenter || {};
     const bullets = presenter.bullets || s.bullets || [];
-
-    const transition = (options && options.transition) || presenter.transition || s.transition || (this.manifest?.theme?.transition) || 'fade';
-    const direction = (options && options.direction) || 'next';
-
-    let transClass = 'stage-trans-fade';
-    if (transition === 'slide') {
-      transClass = (direction === 'prev') ? 'stage-trans-slide-prev' : 'stage-trans-slide-next';
-    } else if (transition === 'zoom') {
-      transClass = 'stage-trans-zoom';
-    } else if (transition === 'dissolve') {
-      transClass = 'stage-trans-dissolve';
-    } else if (transition === 'stagger') {
-      transClass = 'stage-trans-stagger';
-    }
-
     const isStagger = (transition === 'stagger');
 
     const bulletsHtml = bullets
@@ -325,33 +558,9 @@ export class PresentationEngine {
       }
     }
 
-    let pollHtml = '';
-    if (s.interaction && s.interaction.poll) {
-      const poll = s.interaction.poll;
-      const optionsHtml = (poll.options || []).map(opt => `
-        <div style="background: rgba(15,23,42,0.7); border: 1.5px solid var(--border-medium); padding: 12px 18px; border-radius: var(--radius-md); display: flex; align-items: center; gap: 12px;">
-          <span class="badge badge-accent" style="font-size: 13px; font-weight: 800; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; padding: 0;">${opt.id}</span>
-          <span style="font-size: 15px; font-weight: 600; color: #ffffff;">${opt.text}</span>
-        </div>
-      `).join('');
-
-      pollHtml = `
-        <div class="presenter-poll-box animate-fade-in" style="margin-top: 24px; background: rgba(15,23,42,0.85); border: 2px solid var(--accent-primary); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span class="badge badge-live" style="font-size: 11px;">📊 VOTAÇÃO AO VIVO NO CELULAR</span>
-            <span style="font-size: 12px; color: var(--accent-primary); font-family: var(--font-mono);">Aponte a câmera para votar</span>
-          </div>
-          <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 16px;">${poll.question}</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
-            ${optionsHtml}
-          </div>
-        </div>
-      `;
-    }
-
     if (media) {
       return `
-        <div class="slide-content-wrapper slide-layout-split ${transClass}">
+        <div class="slide-content-wrapper slide-layout-split ${transClass} ${fontClass}">
           <div class="slide-tag">${s.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
           <div class="slide-split-grid">
             <div class="slide-text-col">
@@ -369,7 +578,7 @@ export class PresentationEngine {
       `;
     } else {
       return `
-        <div class="slide-content-wrapper ${transClass}">
+        <div class="slide-content-wrapper ${transClass} ${fontClass}">
           <div class="slide-tag">${s.tag || 'SLIDE ' + (this.currentSlideIndex + 1)}</div>
           <h1 class="slide-headline">${presenter.headline || s.headline || s.title}</h1>
           <ul class="slide-bullets">
@@ -388,10 +597,12 @@ export class PresentationEngine {
     const slide = this.currentSlide;
     if (!slide || !containerElement) return;
 
-    // Seções de aprofundamento (tabelas, textos, listas, imagens, vídeos)
+    // Seções de aprofundamento (tabelas, textos, listas, imagens, vídeos, layouts ricos)
     let sectionsHtml = '';
-    if (slide.audience.sections && slide.audience.sections.length > 0) {
-      sectionsHtml = slide.audience.sections.map(sec => {
+    const audienceSections = (slide.audience && slide.audience.sections) || [];
+
+    if (audienceSections.length > 0) {
+      sectionsHtml = audienceSections.map(sec => {
         let contentHtml = '';
         if (sec.type === 'text') {
           contentHtml = `<p class="detail-card-content">${sec.content}</p>`;
@@ -436,6 +647,59 @@ export class PresentationEngine {
           </div>
         `;
       }).join('');
+    } else {
+      // Fallback semântico para layouts ricos quando seções personalizadas não foram declaradas
+      if (slide.bento && slide.bento.cards) {
+        sectionsHtml = slide.bento.cards.map(c => `
+          <div class="detail-card animate-fade-in">
+            <h3 class="detail-card-title">${c.icon ? c.icon + ' ' : ''}${c.title || 'Destaque'}</h3>
+            ${c.stat ? `<div style="font-size: 24px; font-weight: 800; color: #38bdf8; margin: 4px 0 8px;">${c.stat}</div>` : ''}
+            <p class="detail-card-content">${c.desc || c.description || ''}</p>
+          </div>
+        `).join('');
+      } else if (slide.columns && slide.columns.items) {
+        sectionsHtml = slide.columns.items.map(col => `
+          <div class="detail-card animate-fade-in">
+            <h3 class="detail-card-title">${col.icon ? col.icon + ' ' : ''}${col.title}</h3>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #cbd5e1; margin-top: 6px;">
+              ${(col.bullets || col.items || []).map(b => `<li>🔹 ${b}</li>`).join('')}
+            </ul>
+          </div>
+        `).join('');
+      } else if (slide.code) {
+        sectionsHtml = `
+          <div class="detail-card animate-fade-in">
+            <h3 class="detail-card-title">💻 ${slide.code.filename || 'Código do Slide'}</h3>
+            <pre style="background: #090d16; padding: 12px; border-radius: 8px; font-size: 12px; overflow-x: auto; color: #38bdf8; margin: 8px 0;"><code>${this.escapeHtml(slide.code.snippet || slide.code.content || '')}</code></pre>
+          </div>
+        `;
+      } else if (slide.metric) {
+        sectionsHtml = `
+          <div class="detail-card animate-fade-in" style="text-align: center;">
+            <div style="font-size: 40px; font-weight: 900; color: #38bdf8; margin-bottom: 6px;">${slide.metric.value || ''}</div>
+            ${slide.metric.delta ? `<span class="badge badge-success" style="margin-bottom: 8px;">🚀 ${slide.metric.delta}</span>` : ''}
+            <p class="detail-card-content">${slide.metric.label || slide.metric.subtitle || ''}</p>
+          </div>
+        `;
+      } else if (slide.quote) {
+        sectionsHtml = `
+          <div class="detail-card animate-fade-in">
+            <p style="font-style: italic; font-size: 15px; color: #ffffff; margin-bottom: 8px;">“${slide.quote.text || ''}”</p>
+            <strong style="color: var(--accent-primary); font-size: 13px;">— ${slide.quote.author || ''}</strong>
+            ${slide.quote.role ? `<span style="color: #94a3b8; font-size: 12px;"> (${slide.quote.role})</span>` : ''}
+          </div>
+        `;
+      } else if (slide.timeline && slide.timeline.steps) {
+        sectionsHtml = slide.timeline.steps.map(st => `
+          <div class="detail-card animate-fade-in">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <span class="badge badge-accent" style="width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; padding: 0;">${st.step || '✦'}</span>
+              <strong style="color: #ffffff; font-size: 14px;">${st.title}</strong>
+            </div>
+            <p class="detail-card-content">${st.desc || st.description || ''}</p>
+          </div>
+        `).join('');
+      }
     }
 
     // Interação / Enquete (se houver no slide)
