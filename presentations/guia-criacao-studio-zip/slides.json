@@ -194,38 +194,18 @@
       "slug": "portabilidade-zip-standalone",
       "tag": "PORTABILIDADE TOTAL",
       "title": "Pacotes Portáteis Autocontidos (.slidemesh.zip)",
-      "layout": "columns",
+      "layout": "metric",
       "font": "outfit",
       "background": "mesh",
-      "columns": {
-        "items": [
-          {
-            "icon": "📦",
-            "title": "1. 100% Autocontido",
-            "bullets": [
-              "Manifesto e slides JSON",
-              "Todas as imagens locais",
-              "Mídias de áudio e vídeo inclusas"
-            ]
-          },
-          {
-            "icon": "⚡",
-            "title": "2. Zero Dependência",
-            "bullets": [
-              "Funciona sem conexão à internet",
-              "Compatível com pendrive e LAN",
-              "Importação e execução em 1 clique"
-            ]
-          },
-          {
-            "icon": "🔒",
-            "title": "3. Backup Seguro",
-            "bullets": [
-              "Exportação via Portal e Studio",
-              "CLI tools/export_presentation.py",
-              "Preservação do histórico e PIN"
-            ]
-          }
+      "metric": {
+        "value": "100%",
+        "label": "Portabilidade de Apresentações com Zero Dependência Externa",
+        "subtitle": "Exporte um pacote .slidemesh.zip e execute em qualquer computador sem precisar de conexão com a internet.",
+        "delta": "Offline Standalone",
+        "pillars": [
+          { "label": "Formatos", "value": "6 Tipos" },
+          { "label": "Templates", "value": "6 Ricos" },
+          { "label": "Exportação", "value": "1 Clique" }
         ]
       },
       "presenter": {
@@ -253,20 +233,9 @@
       "slug": "enquete-formatos-favoritos",
       "tag": "PESQUISA DE USO",
       "title": "Qual Formato Você Mais Costuma Converter?",
-      "layout": "metric",
+      "layout": "standard",
       "font": "outfit",
       "background": "mesh",
-      "metric": {
-        "value": "100%",
-        "label": "Portabilidade de Apresentações com Zero Dependência Externa",
-        "subtitle": "Exporte um pacote .slidemesh.zip e execute em qualquer computador sem precisar de conexão com a internet.",
-        "delta": "Offline Standalone",
-        "pillars": [
-          { "label": "Formatos", "value": "6 Tipos" },
-          { "label": "Templates", "value": "6 Ricos" },
-          { "label": "Exportação", "value": "1 Clique" }
-        ]
-      },
       "presenter": {
         "headline": "Vote no seu smartphone e descubra a preferência da comunidade!",
         "bullets": [

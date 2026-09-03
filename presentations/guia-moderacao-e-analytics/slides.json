@@ -184,39 +184,18 @@
       "slug": "analytics-historico-multisessao",
       "tag": "RELATÓRIOS & ANALYTICS",
       "title": "Relatórios Pós-Evento & Histórico Multissessão",
-      "layout": "bento",
+      "layout": "metric",
       "font": "montserrat",
       "background": "editorial",
-      "bento": {
-        "cards": [
-          {
-            "icon": "📊",
-            "title": "Planilha CSV",
-            "stat": "sessions.csv",
-            "desc": "Dados consolidados de presença, votos e perguntas formatados para Excel e Google Sheets.",
-            "cols": 6
-          },
-          {
-            "icon": "📑",
-            "title": "Ata em Markdown",
-            "stat": "relatorio.md",
-            "desc": "Relatório executivo estruturado com tabelas e gráficos em texto limpo para GitHub e Notion.",
-            "cols": 6
-          },
-          {
-            "icon": "💾",
-            "title": "Snapshot JSON",
-            "stat": "state.json",
-            "desc": "Dump completo do estado da sessão para auditoria e integrações de backend.",
-            "cols": 6
-          },
-          {
-            "icon": "🔒",
-            "title": "Armazenamento Local",
-            "stat": "100% Privado",
-            "desc": "Arquivado com segurança na pasta sessions_archive/ sem envio para servidores externos.",
-            "cols": 6
-          }
+      "metric": {
+        "value": "+450",
+        "label": "Perguntas Moderadas com Zero Interrupção do Palco",
+        "subtitle": "A Mesa Técnica permite que a produção atue como copiloto invisível do palestrante.",
+        "delta": "100% Controlado",
+        "pillars": [
+          { "label": "Aprovação", "value": "< 2s" },
+          { "label": "Exportação", "value": "3 Formatos" },
+          { "label": "Privacidade", "value": "Local" }
         ]
       },
       "presenter": {
@@ -248,20 +227,9 @@
       "slug": "enquete-metricas-admin",
       "tag": "AVALIAÇÃO OPERACIONAL",
       "title": "Qual Métrica Pós-Evento é Mais Valiosa para Você?",
-      "layout": "metric",
+      "layout": "standard",
       "font": "montserrat",
       "background": "editorial",
-      "metric": {
-        "value": "+450",
-        "label": "Perguntas Moderadas com Zero Interrupção do Palco",
-        "subtitle": "A Mesa Técnica permite que a produção atue como copiloto invisível do palestrante.",
-        "delta": "100% Controlado",
-        "pillars": [
-          { "label": "Aprovação", "value": "< 2s" },
-          { "label": "Exportação", "value": "3 Formatos" },
-          { "label": "Privacidade", "value": "Local" }
-        ]
-      },
       "presenter": {
         "headline": "Vote no smartphone e descubra a prioridade dos produtores de eventos!",
         "bullets": [

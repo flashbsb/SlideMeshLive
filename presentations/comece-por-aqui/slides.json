@@ -240,16 +240,9 @@
       "slug": "enquete-perfil-usuario",
       "tag": "DIAGNÓSTICO INTERATIVO",
       "title": "Qual o seu Perfil Principal de Uso Hoje?",
-      "layout": "timeline",
+      "layout": "standard",
       "font": "outfit",
       "background": "cyber",
-      "timeline": {
-        "steps": [
-          { "step": "Passo 1", "title": "Conectar Audiência", "desc": "Aponte a câmera para o QR Code." },
-          { "step": "Passo 2", "title": "Votar na Enquete", "desc": "Selecione seu perfil no smartphone." },
-          { "step": "Passo 3", "title": "Ver Apuração ao Vivo", "desc": "Resultados projetados no telão com tecla [R]." }
-        ]
-      },
       "presenter": {
         "headline": "Responda no seu smartphone e veja o gráfico atualizar ao vivo!",
         "bullets": [

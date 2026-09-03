@@ -236,41 +236,51 @@ export class PresentationEngine {
       const showResults = !!(pollRenderData && pollRenderData.showResults);
       const results = (pollRenderData && pollRenderData.results) || null;
       const totalVotes = results ? results.totalVotes : 0;
+      const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
       let pollBodyHtml = '';
       if (showResults && results) {
-        pollBodyHtml = results.options.map(opt => `
-          <div style="margin-bottom: 12px;" class="animate-fade-in">
-            <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px;">
-              <span style="color: #ffffff; font-weight: 600;">${opt.id}. ${opt.text}</span>
-              <strong style="color: var(--accent-primary); font-family: var(--font-mono); font-size: 15px;">${opt.percentage}% (${opt.votes})</strong>
+        pollBodyHtml = results.options.map((opt, idx) => {
+          const letter = optionLetters[idx] || (idx + 1);
+          return `
+          <div style="margin-bottom: 14px;" class="animate-fade-in">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 15px; margin-bottom: 6px;">
+              <span style="color: #ffffff; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span class="badge badge-accent" style="font-size: 12px; font-weight: 800; min-width: 24px; height: 24px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px;">${letter}</span>
+                <span>${opt.text}</span>
+              </span>
+              <strong style="color: var(--accent-primary); font-family: var(--font-mono); font-size: 16px;">${opt.percentage}% (${opt.votes})</strong>
             </div>
-            <div class="progress-bar-bg" style="height: 12px;">
-              <div class="progress-bar-fill" style="width: ${opt.percentage}%;"></div>
+            <div class="progress-bar-bg" style="height: 12px; border-radius: 6px; overflow: hidden; background: rgba(255,255,255,0.08);">
+              <div class="progress-bar-fill" style="width: ${opt.percentage}%; height: 100%; border-radius: 6px; background: var(--accent-primary); box-shadow: 0 0 10px var(--accent-glow);"></div>
             </div>
           </div>
-        `).join('');
+        `;
+        }).join('');
       } else {
-        pollBodyHtml = (poll.options || []).map(opt => `
-          <div style="background: rgba(15,23,42,0.7); border: 1.5px solid var(--border-medium); padding: 12px 18px; border-radius: var(--radius-md); display: flex; align-items: center; gap: 12px;">
-            <span class="badge badge-accent" style="font-size: 13px; font-weight: 800; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; padding: 0;">${opt.id}</span>
-            <span style="font-size: 15px; font-weight: 600; color: #ffffff;">${opt.text}</span>
+        pollBodyHtml = (poll.options || []).map((opt, idx) => {
+          const letter = optionLetters[idx] || (idx + 1);
+          return `
+          <div class="poll-option-card animate-fade-in" style="background: rgba(15,23,42,0.85); border: 1.5px solid rgba(255,255,255,0.12); padding: 14px 18px; border-radius: var(--radius-md); display: flex; align-items: center; gap: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.3);">
+            <span class="badge badge-accent" style="font-size: 14px; font-weight: 900; min-width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; padding: 0 8px; border-radius: 6px; flex-shrink: 0;">${letter}</span>
+            <span style="font-size: 15.5px; font-weight: 600; color: #ffffff; line-height: 1.4;">${opt.text}</span>
           </div>
-        `).join('');
+        `;
+        }).join('');
       }
 
       pollHtml = `
-        <div class="presenter-poll-box animate-fade-in" style="margin-top: 24px; background: rgba(15,23,42,0.85); border: 2px solid var(--accent-primary); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span class="badge ${pollStatus === 'open' ? 'badge-live' : 'badge-accent'}" style="font-size: 11px;">
+        <div class="presenter-poll-box animate-fade-in" style="margin-top: 24px; background: rgba(15,23,42,0.88); border: 2px solid var(--accent-primary); border-radius: var(--radius-lg); padding: 24px; box-shadow: 0 12px 35px rgba(0,0,0,0.55); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
+            <span class="badge ${pollStatus === 'open' ? 'badge-live' : 'badge-accent'}" style="font-size: 11px; padding: 5px 12px;">
               ${pollStatus === 'open' ? '📊 VOTAÇÃO AO VIVO NO CELULAR' : '🔒 VOTAÇÃO ENCERRADA'}
             </span>
-            <span style="font-size: 12px; color: var(--accent-primary); font-family: var(--font-mono);">
+            <span style="font-size: 13px; font-weight: 700; color: var(--accent-primary); font-family: var(--font-mono);">
               ${showResults ? `Total: ${totalVotes} votos` : 'Aponte a câmera para votar'}
             </span>
           </div>
-          <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 16px;">${poll.question}</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+          <h3 style="font-size: 19px; font-weight: 800; color: #ffffff; margin-bottom: 18px; line-height: 1.35;">${poll.question}</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px;">
             ${pollBodyHtml}
           </div>
         </div>
@@ -362,12 +372,20 @@ export class PresentationEngine {
     const label = metricData.label || metricData.subtitle || headline;
     const pillars = metricData.pillars || metricData.details || [];
 
-    const pillarsHtml = pillars.map(pl => `
-      <div class="metric-pillar-card">
-        <div style="font-size: 17px; font-weight: 800; color: var(--accent-primary); margin-bottom: 4px;">${pl.stat || pl.icon || '✦'} ${pl.title || ''}</div>
-        <div style="font-size: 13.5px; color: #94a3b8; line-height: 1.4;">${pl.desc || pl.description || ''}</div>
-      </div>
-    `).join('');
+    const pillarsHtml = pillars.map((pl, idx) => {
+      const val = pl.value || pl.stat || pl.number || '';
+      const lbl = pl.label || pl.title || pl.name || '';
+      const desc = pl.desc || pl.description || '';
+      const icon = pl.icon || '';
+
+      return `
+        <div class="metric-pillar-card animate-fade-in" style="animation-delay: ${(idx + 1) * 90}ms;">
+          <div class="metric-pillar-label">${lbl || desc || 'Indicador'}</div>
+          <div class="metric-pillar-value font-outfit">${icon ? `${icon} ` : ''}${val || (pl.stat ? pl.stat : '✦')}</div>
+          ${desc && lbl ? `<div class="metric-pillar-desc">${desc}</div>` : ''}
+        </div>
+      `;
+    }).join('');
 
     return `
       <div class="slide-content-wrapper slide-layout-metric ${transClass} ${fontClass}">
@@ -497,7 +515,7 @@ export class PresentationEngine {
     const stepsHtml = steps.map((step, idx) => `
       <div class="timeline-step-card animate-fade-in" style="animation-delay: ${(idx + 1) * 90}ms;">
         <div class="timeline-step-badge">${step.step || (idx + 1)}</div>
-        <div class="timeline-step-title">${step.title}</div>
+        <div class="timeline-step-title font-outfit">${step.title}</div>
         <div class="timeline-step-desc">${step.desc || step.description || ''}</div>
       </div>
     `).join('');

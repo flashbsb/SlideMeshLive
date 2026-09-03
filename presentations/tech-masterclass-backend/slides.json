@@ -178,20 +178,9 @@
       "slug": "quiz-tech",
       "tag": "QUIZ DE FIXAÇÃO",
       "title": "Qual Estratégia Reduz Mais a Latência em Redes Wi-Fi?",
-      "layout": "metric",
+      "layout": "standard",
       "font": "code",
       "background": "aurora",
-      "metric": {
-        "value": "Sub-2ms",
-        "label": "Tempo Médio de Resposta em Redes Locais Wi-Fi",
-        "subtitle": "Responda ao quiz no smartphone e debata as alternativas com a turma ao vivo.",
-        "delta": "Quiz Técnico",
-        "pillars": [
-          { "label": "Tempo Limite", "value": "45s" },
-          { "label": "Participantes", "value": "100%" },
-          { "label": "Apuração", "value": "Ao Vivo" }
-        ]
-      },
       "presenter": {
         "headline": "Teste de fixação técnica para avaliar o aprendizado da turma",
         "bullets": [

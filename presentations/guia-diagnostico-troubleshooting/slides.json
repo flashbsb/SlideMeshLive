@@ -159,38 +159,18 @@
       "slug": "ajustes-projecao-emergencias",
       "tag": "TROUBLESHOOTING DE PALCO",
       "title": "Resolução de Falhas de Projeção & Emergências de Palco",
-      "layout": "columns",
+      "layout": "metric",
       "font": "code",
       "background": "aurora",
-      "columns": {
-        "items": [
-          {
-            "icon": "🔌",
-            "title": "Porta Ocupada",
-            "bullets": [
-              "Inicie com --port 8888",
-              "Verifique portas em uso no SO",
-              "Zero conflito com outros apps"
-            ]
-          },
-          {
-            "icon": "📽️",
-            "title": "Projeção Cortada",
-            "bullets": [
-              "Aperte tecla [F] (Fullscreen)",
-              "Layout responsivo 16:9 / 4:3",
-              "Auto-ajuste de escala gráfica"
-            ]
-          },
-          {
-            "icon": "📶",
-            "title": "Queda de Wi-Fi",
-            "bullets": [
-              "Reconexão em sub-segundo",
-              "Fallback para snapshot HTTP",
-              "Garantia de integridade total"
-            ]
-          }
+      "metric": {
+        "value": "< 20ms",
+        "label": "Latência Média de Resposta em Rede Local (LAN)",
+        "subtitle": "Taxa de transmissão otimizada com zero perda de pacotes e tolerância total a oscilações de sinal.",
+        "delta": "Zero Quedas",
+        "pillars": [
+          { "label": "Disponibilidade", "value": "99.99%" },
+          { "label": "Reconexão", "value": "< 500ms" },
+          { "label": "Banda", "value": "< 25 KB/s" }
         ]
       },
       "presenter": {
@@ -224,20 +204,9 @@
       "slug": "enquete-troubleshooting-riscos",
       "tag": "PESQUISA DE RISCOS",
       "title": "Qual o Maior Receio Técnico que Você Costuma Enfrentar?",
-      "layout": "metric",
+      "layout": "standard",
       "font": "code",
       "background": "aurora",
-      "metric": {
-        "value": "< 20ms",
-        "label": "Latência Média de Resposta em Rede Local (LAN)",
-        "subtitle": "Taxa de transmissão otimizada com zero perda de pacotes e tolerância total a oscilações de sinal.",
-        "delta": "Zero Quedas",
-        "pillars": [
-          { "label": "Disponibilidade", "value": "99.99%" },
-          { "label": "Reconexão", "value": "< 500ms" },
-          { "label": "Banda", "value": "< 25 KB/s" }
-        ]
-      },
       "presenter": {
         "headline": "Vote no smartphone e descubra o que mais tira o sono dos produtores!",
         "bullets": [

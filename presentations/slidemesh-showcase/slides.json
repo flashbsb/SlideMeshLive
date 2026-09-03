@@ -478,20 +478,9 @@
       "slug": "enquete-avaliacao-final",
       "tag": "AVALIAÇÃO & ENCERRAMENTO",
       "title": "O Veredito: Você Adotaria o SlideMeshLive em Suas Apresentações?",
-      "layout": "metric",
+      "layout": "standard",
       "font": "outfit",
       "background": "cyber",
-      "metric": {
-        "value": "98.4%",
-        "label": "Taxa Média de Engajamento e Participação Ativa",
-        "subtitle": "Métricas consolidadas em mais de 120 eventos corporativos, workshops e aulas magnas.",
-        "delta": "+4.2x vs Tradicional",
-        "pillars": [
-          { "label": "Perguntas", "value": "3.5x Mais" },
-          { "label": "Votos em Enquetes", "value": "94%" },
-          { "label": "Aprovação Geral", "value": "4.9 / 5.0" }
-        ]
-      },
       "presenter": {
         "headline": "Chegamos ao final da nossa demonstração interativa!",
         "bullets": [

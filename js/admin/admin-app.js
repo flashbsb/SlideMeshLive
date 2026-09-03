@@ -940,19 +940,24 @@ class AdminApp {
 
     this.dom.pollsContainer.innerHTML = polls.map(item => {
       const res = this.interaction.computePollResults(this.sessionId, item.poll);
-      const isCurrent = item.isCurrentSlide;
-      
-      const barsHtml = res.options.map(opt => `
+      const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+      const barsHtml = res.options.map((opt, idx) => {
+        const letter = optionLetters[idx] || (idx + 1);
+        return `
         <div style="margin-bottom: 8px;">
           <div style="display: flex; justify-content: space-between; font-size: 11.5px; margin-bottom: 3px;">
-            <span style="color: var(--text-secondary);">${opt.id}. ${opt.text}</span>
+            <span style="color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
+              <strong style="color: var(--accent-primary); font-family: var(--font-mono);">${letter}.</strong>
+              <span>${opt.text}</span>
+            </span>
             <span style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-primary);">${opt.percentage}% (${opt.votes})</span>
           </div>
           <div class="poll-progress-track" style="height: 6px;">
             <div class="poll-progress-fill" style="width: ${opt.percentage}%;"></div>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
 
       return `
         <div class="card" style="padding: 14px; background: ${isCurrent ? 'var(--bg-tertiary)' : 'var(--bg-secondary)'}; border: ${isCurrent ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-subtle)'};">

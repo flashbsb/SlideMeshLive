@@ -188,20 +188,9 @@
       "slug": "deliberacao-conselho",
       "tag": "VOTAÇÃO ESTRATÉGICA",
       "title": "Deliberação do Conselho: Alocação de Recursos 2026",
-      "layout": "metric",
+      "layout": "standard",
       "font": "montserrat",
       "background": "editorial",
-      "metric": {
-        "value": "R$ 25.0M",
-        "label": "Orçamento Disponível para Alocação Estratégica",
-        "subtitle": "Os membros do conselho votam pelo smartphone para definir as prioridades do próximo ciclo.",
-        "delta": "Votação Secreta",
-        "pillars": [
-          { "label": "Conselheiros", "value": "100% Presentes" },
-          { "label": "Quórum", "value": "Total" },
-          { "label": "Voto Único", "value": "Auditado" }
-        ]
-      },
       "presenter": {
         "headline": "Votação interativa com os membros do Conselho de Administração",
         "bullets": [

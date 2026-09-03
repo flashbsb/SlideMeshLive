@@ -258,20 +258,9 @@
       "slug": "enquete-preferencia-transicao",
       "tag": "INTERAÇÃO VISUAL",
       "title": "Qual Transição Você Considera Mais Elegante?",
-      "layout": "metric",
+      "layout": "standard",
       "font": "outfit",
       "background": "sunset",
-      "metric": {
-        "value": "60 FPS",
-        "label": "Taxa de Atualização com Aceleração por GPU",
-        "subtitle": "Transições cinematográficas e efeitos Canvas 2D sem perda de quadros ou consumo excessivo de CPU.",
-        "delta": "Zero Jitter",
-        "pillars": [
-          { "label": "Transições", "value": "4 Estilos" },
-          { "label": "Engine", "value": "Canvas 2D" },
-          { "label": "Streaming", "value": "HTTP 206" }
-        ]
-      },
       "presenter": {
         "headline": "Vote no smartphone e veja o gráfico animado no palco!",
         "bullets": [

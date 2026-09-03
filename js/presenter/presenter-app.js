@@ -417,17 +417,24 @@ class PresenterApp {
       this.dom.canvas.appendChild(overlay);
     }
 
-    const barsHtml = results.options.map(opt => `
-      <div class="poll-bar-stage-row">
-        <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 4px;">
-          <span>${opt.id}. ${opt.text}</span>
-          <span style="font-family: var(--font-mono); color: var(--accent-primary); font-weight: 700;">${opt.percentage}% (${opt.votes})</span>
+    const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    const barsHtml = results.options.map((opt, idx) => {
+      const letter = optionLetters[idx] || (idx + 1);
+      return `
+      <div class="poll-bar-stage-row" style="margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 600; margin-bottom: 6px;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span class="badge badge-accent" style="font-size: 12px; font-weight: 800; min-width: 24px; height: 24px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px;">${letter}</span>
+            <span>${opt.text}</span>
+          </span>
+          <span style="font-family: var(--font-mono); color: var(--accent-primary); font-weight: 700; font-size: 16px;">${opt.percentage}% (${opt.votes})</span>
         </div>
-        <div class="poll-progress-track" style="height: 12px; border-radius: 6px;">
-          <div class="poll-progress-fill" style="width: ${opt.percentage}%;"></div>
+        <div class="poll-progress-track" style="height: 12px; border-radius: 6px; background: rgba(255,255,255,0.08); overflow: hidden;">
+          <div class="poll-progress-fill" style="width: ${opt.percentage}%; height: 100%; border-radius: 6px; background: var(--accent-primary); box-shadow: 0 0 10px var(--accent-glow);"></div>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
 
     overlay.innerHTML = `
       <div style="background: var(--bg-secondary); border: 2px solid var(--border-medium); border-radius: var(--radius-lg); padding: 24px 32px; width: 100%; max-width: 680px; box-shadow: var(--shadow-lg);">

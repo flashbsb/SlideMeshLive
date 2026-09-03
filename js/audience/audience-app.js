@@ -515,19 +515,20 @@ class AudienceApp {
     const userVote = this.interaction.getUserVote(this.sessionId, poll.id);
     const hasVoted = !!userVote;
     const isClosed = (this.pollState.pollStatus === 'closed');
-    const results = this.interaction.computePollResults(this.sessionId, poll);
-
+    const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
     let optionsHtml = '';
 
-    poll.options.forEach(opt => {
+    poll.options.forEach((opt, idx) => {
       const isSelected = (userVote === opt.id);
       const optStats = results.options.find(o => o.id === opt.id) || { percentage: 0, votes: 0 };
+      const letter = optionLetters[idx] || (idx + 1);
 
       optionsHtml += `
         <button class="poll-option-btn ${isSelected ? 'selected' : ''}" data-poll-id="${poll.id}" data-option-id="${opt.id}" ${isClosed ? 'disabled' : ''}>
           <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; z-index: 2;">
-            <span style="font-weight: 600; font-size: 13.5px; color: ${isSelected ? '#ffffff' : 'var(--text-primary)'}; text-align: left;">
-              ${opt.id}. ${opt.text}
+            <span style="font-weight: 600; font-size: 13.5px; color: ${isSelected ? '#ffffff' : 'var(--text-primary)'}; text-align: left; display: flex; align-items: center; gap: 8px;">
+              <span class="badge ${isSelected ? 'badge-accent' : ''}" style="font-size: 11px; font-weight: 800; min-width: 22px; height: 22px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15);">${letter}</span>
+              <span>${opt.text}</span>
             </span>
             ${(hasVoted || this.pollState.showResults) ? `
               <span style="font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--accent-primary); margin-left: 8px;">

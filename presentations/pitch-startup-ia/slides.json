@@ -10,7 +10,6 @@
       "layout": "hero",
       "font": "outfit",
       "background": "cyber",
-      "videoBackground": "assets/bg-loop.mp4",
       "hero": {
         "title": "NeuralMesh AI: O Cérebro das Decisões em Tempo Real",
         "subtitle": "Infraestrutura de inteligência artificial descentralizada que conecta fluxos de telemetria com latência sub-milissegundo.",
@@ -219,20 +218,9 @@
       "slug": "enquete-due-diligence",
       "tag": "INTERAÇÃO COM INVESTIDORES",
       "title": "Qual Área Você Considera com Maior Potencial de Retorno?",
-      "layout": "metric",
+      "layout": "standard",
       "font": "outfit",
       "background": "cyber",
-      "metric": {
-        "value": "$4.0M",
-        "label": "Tamanho da Rodada Seed em Aberto",
-        "subtitle": "Valuation e termsheet disponíveis para investidores qualificados.",
-        "delta": "70% Alocado",
-        "pillars": [
-          { "label": "Ticket Mínimo", "value": "$250k" },
-          { "label": "Alocação Atual", "value": "$2.8M" },
-          { "label": "Fechamento", "value": "Q1 2026" }
-        ]
-      },
       "presenter": {
         "headline": "Convidamos os investidores a votar e agendar uma sessão de Due Diligence",
         "bullets": [

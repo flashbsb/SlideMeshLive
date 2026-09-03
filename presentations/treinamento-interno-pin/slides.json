@@ -214,20 +214,9 @@
       "slug": "quiz-seguranca-pratica",
       "tag": "QUIZ TÉCNICO",
       "title": "Quiz Técnico: Qual Política de Segurança Adotar?",
-      "layout": "metric",
+      "layout": "standard",
       "font": "montserrat",
       "background": "dark",
-      "metric": {
-        "value": "100%",
-        "label": "Conformidade e Proteção de Dados em Sessões Corporativas",
-        "subtitle": "Zero vazamento de segredos com sanitização server-side de manifestos e tokens seguros.",
-        "delta": "Zero Secret Leak",
-        "pillars": [
-          { "label": "Validação", "value": "Server-Side" },
-          { "label": "Criptografia", "value": "SHA-256" },
-          { "label": "Controle", "value": "Pacing Lock" }
-        ]
-      },
       "presenter": {
         "headline": "Avalie os conhecimentos de segurança com apuração ao vivo!",
         "bullets": [
