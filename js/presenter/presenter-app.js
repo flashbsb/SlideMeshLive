@@ -455,6 +455,7 @@ class PresenterApp {
 
   handleRemoteSessionUpdate(state) {
     if (!state) return;
+    if (document.body.classList.contains('presenter-locked')) return;
 
     if (typeof state.currentSlide === 'number' && state.currentSlide !== this.engine.currentSlideIndex) {
       this.engine.goToSlide(state.currentSlide);
@@ -1004,6 +1005,8 @@ class PresenterApp {
 
   showPresenterLockScreen() {
     document.body.classList.add('presenter-locked');
+    if (this.dom.qrCenterModal) this.dom.qrCenterModal.style.display = 'none';
+    if (this.dom.questionsDrawer) this.dom.questionsDrawer.style.display = 'none';
     if (this.dom.authModal) {
       this.dom.authModal.classList.add('active');
     }

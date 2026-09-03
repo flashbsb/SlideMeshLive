@@ -1217,6 +1217,20 @@ class AdminApp {
       this.dom.btnUnlockGoogle.addEventListener('click', () => this.unlockAdminWithGoogle());
     }
 
+    // Tecla Escape para fechar modais de apoio sem comprometer o Lock Modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (this.dom.adminLockModal && this.dom.adminLockModal.classList.contains('active')) {
+          return; // Nunca fecha o modal de autenticação por Escape
+        }
+        if (typeof this.closeSecuritySettingsModal === 'function') this.closeSecuritySettingsModal();
+        if (typeof this.closeAnalyticsModal === 'function') this.closeAnalyticsModal();
+        if (typeof this.closeHistoryModal === 'function') this.closeHistoryModal();
+        if (typeof this.closeHostConfigModal === 'function') this.closeHostConfigModal();
+        if (typeof this.closeNewSessionModal === 'function') this.closeNewSessionModal();
+      }
+    });
+
     // Modal de Gestão de Segurança & RBAC (Plano 14 - Fase 2)
     if (this.dom.btnSecurity) {
       this.dom.btnSecurity.addEventListener('click', () => this.openSecuritySettingsModal());

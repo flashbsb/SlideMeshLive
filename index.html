@@ -678,6 +678,16 @@
         if (e.key === 'Enter') unlockPortalGlobalUser();
       });
 
+      // Tecla Escape para modais secundários do Portal
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          if (document.body.classList.contains('portal-locked')) return;
+          pendingDeckAction = null;
+          document.getElementById('portal-deck-auth-modal')?.classList.remove('active');
+          document.getElementById('import-zip-modal')?.classList.remove('active');
+        }
+      });
+
       // Verifica metadados de autenticação pública e modo intranet
       try {
         const authRes = await fetch('/api/auth/public-config');
