@@ -182,7 +182,54 @@
             <!-- Lista de Alertas de Slides Pesados / Riscos de Banda -->
             <div id="admin-diag-heavy-alerts" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 4px; padding: 6px; font-size: 10px; color: #fca5a5;">
               <!-- Alertas dinâmicos -->
+        <!-- Painel de Transições & Ritmo de Telão (Plano 21 - Fase 3) -->
+        <div id="admin-stage-trans-card" style="background: rgba(15, 23, 42, 0.4); padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11px; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 4px;" data-i18n="admin.stage_trans_title">
+              🎬 Transições & Ritmo do Palco
+            </span>
+            <span class="badge" id="admin-trans-speed-badge" style="font-size: 9.5px; background: rgba(56,189,248,0.15); color: #38bdf8;">🎯 Seguir Deck</span>
+          </div>
+
+          <!-- Seletor de Modo Mestre de Ritmo -->
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 10px; font-weight: 600; color: var(--text-secondary);" data-i18n="admin.trans_mode_label">Ritmo das Transições:</label>
+            <select id="admin-select-trans-mode" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-medium); border-radius: 6px; padding: 5px 8px; font-size: 11px; font-family: var(--font-sans); width: 100%; cursor: pointer;">
+              <option value="deck_author" data-i18n="admin.trans_mode_deck">🎯 Seguir Autoria do Deck (Padrão)</option>
+              <option value="fast" data-i18n="admin.trans_mode_fast">⚡ Forçar Modo Rápido (350ms)</option>
+              <option value="smooth" data-i18n="admin.trans_mode_smooth">✨ Forçar Modo Suave (600ms)</option>
+              <option value="cinema" data-i18n="admin.trans_mode_cinema">🎬 Forçar Cinematográfico (950ms)</option>
+              <option value="epic" data-i18n="admin.trans_mode_epic">🌌 Forçar Modo Épico (1400ms)</option>
+              <option value="custom" data-i18n="admin.trans_mode_custom">🎛️ Ajuste Manual (Slider)</option>
+            </select>
+          </div>
+
+          <!-- Box do Slider Contínuo (Visível em modo custom) -->
+          <div id="admin-trans-slider-box" style="display: none; background: rgba(0,0,0,0.25); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-subtle); flex-direction: column; gap: 4px;">
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted);">
+              <span>200ms</span>
+              <span id="admin-trans-slider-val" style="color: var(--accent-primary); font-weight: 700;">600ms</span>
+              <span>2000ms</span>
             </div>
+            <input type="range" id="admin-slider-trans-speed" min="200" max="2000" step="50" value="600" style="width: 100%; cursor: pointer; accent-color: var(--accent-primary);">
+          </div>
+
+          <!-- Seletor de Efeito Override Global e Botão Testar -->
+          <div style="display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: flex-end;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <label style="font-size: 10px; font-weight: 600; color: var(--text-secondary);" data-i18n="admin.trans_effect_label">Efeito de Transição:</label>
+              <select id="admin-select-trans-effect" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-medium); border-radius: 6px; padding: 5px 6px; font-size: 11px; font-family: var(--font-sans); width: 100%; cursor: pointer;">
+                <option value="deck_author" data-i18n="admin.trans_effect_deck">🌐 Seguir Efeito do Slide/Deck</option>
+                <option value="fade" data-i18n="admin.trans_fade">✨ Fade Suave</option>
+                <option value="slide" data-i18n="admin.trans_slide">↔️ Slide 3D</option>
+                <option value="zoom" data-i18n="admin.trans_zoom">🔍 Zoom Dinâmico</option>
+                <option value="dissolve" data-i18n="admin.trans_dissolve">🌫️ Dissolve Cinematográfico</option>
+                <option value="stagger" data-i18n="admin.trans_stagger">📶 Cascata (Stagger)</option>
+              </select>
+            </div>
+            <button class="btn btn-sm" id="admin-btn-test-trans" style="font-size: 11px; padding: 5px 8px; height: 30px; border-color: rgba(56,189,248,0.4); color: #38bdf8; background: rgba(56,189,248,0.08);" title="Pré-visualizar transição no telão sem mudar de slide" data-i18n="admin.btn_test_trans">
+              👁️ Testar
+            </button>
           </div>
         </div>
 

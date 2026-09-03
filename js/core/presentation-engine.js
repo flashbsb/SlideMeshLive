@@ -204,14 +204,82 @@ export class PresentationEngine {
   }
 
   /**
+   * Resolução em cascata de transição e duração (Plano 21 - Fase 1)
+   * Hierarquia de 4 níveis:
+   * 1. Admin Master Override (se ativo e != 'deck_author')
+   * 2. Configuração Individual do Slide (slide.presenter.transitionDuration / slide.presenter.transition)
+   * 3. Configuração do Tema Global do Deck (manifest.theme.transitionDuration / manifest.theme.transition)
+   * 4. Padrão Nativo do Sistema (600ms / 'fade')
+   */
+  resolveSlideTransition(slide = null, stageSettings = null) {
+    const s = slide || this.currentSlide || {};
+    const presenter = s.presenter || {};
+    const theme = this.manifest?.theme || {};
+
+    // 1. Duração (Duration em ms)
+    let duration = 600; // Padrão nativo suave
+    let isOverride = false;
+
+    // Presets de velocidade mapeados
+    const speedPresets = {
+      fast: 350,
+      smooth: 600,
+      cinema: 950,
+      epic: 1400
+    };
+
+    if (stageSettings && stageSettings.transitionMode && stageSettings.transitionMode !== 'deck_author') {
+      const mode = stageSettings.transitionMode;
+      if (speedPresets[mode]) {
+        duration = speedPresets[mode];
+        isOverride = true;
+      } else if (mode === 'custom' && Number(stageSettings.customDuration)) {
+        duration = Math.max(150, Math.min(3000, Number(stageSettings.customDuration)));
+        isOverride = true;
+      }
+    } else if (stageSettings && Number(stageSettings.transitionDurationOverride)) {
+      duration = Math.max(150, Math.min(3000, Number(stageSettings.transitionDurationOverride)));
+      isOverride = true;
+    }
+
+    if (!isOverride) {
+      // 2. Individual do Slide
+      const slideDur = Number(presenter.transitionDuration || s.transitionDuration);
+      if (slideDur && !isNaN(slideDur)) {
+        duration = slideDur;
+      } else {
+        // 3. Tema Global do Deck
+        const themeDur = Number(theme.transitionDuration);
+        if (themeDur && !isNaN(themeDur)) {
+          duration = themeDur;
+        }
+      }
+    }
+
+    // 2. Efeito de Transição (Effect)
+    let effect = 'fade';
+    if (stageSettings && stageSettings.transitionEffect && stageSettings.transitionEffect !== 'deck_author') {
+      effect = stageSettings.transitionEffect;
+    } else {
+      effect = (stageSettings && stageSettings.transition) || presenter.transition || s.transition || theme.transition || 'fade';
+    }
+
+    return {
+      transition: effect,
+      duration: duration,
+      isOverride: isOverride
+    };
+  }
+
+  /**
    * Helper unificado para retornar a string HTML do slide do apresentador
    */
   renderSlideHtml(slide = null, options = {}, pollRenderData = null) {
     const s = slide || this.currentSlide;
     if (!s) return '';
 
-    const presenter = s.presenter || {};
-    const transition = (options && options.transition) || presenter.transition || s.transition || (this.manifest?.theme?.transition) || 'fade';
+    const resolved = this.resolveSlideTransition(s, options.stageSettings || options.adminOverride || options);
+    const transition = options.transition || resolved.transition;
     const direction = (options && options.direction) || 'next';
 
     let transClass = 'stage-trans-fade';

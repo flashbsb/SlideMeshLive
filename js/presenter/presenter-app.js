@@ -32,6 +32,17 @@ class PresenterApp {
     this.sessionId = PresentationEngine.getSessionIdFromURL() || QREngine.generateSessionCode();
     this.viewMode = new URLSearchParams(window.location.search).get('view') || 'stage';
 
+    // Stage Transitions & Settings (Plano 21 - Fase 4)
+    this.stageSettings = {
+      transitionMode: 'deck_author',
+      customDuration: 600,
+      transitionEffect: 'deck_author'
+    };
+    try {
+      const stored = localStorage.getItem('slidemesh_stage_settings');
+      if (stored) this.stageSettings = { ...this.stageSettings, ...JSON.parse(stored) };
+    } catch (e) {}
+
     this.pollState = {
       activePollId: null,
       pollStatus: 'open',
@@ -201,6 +212,18 @@ class PresenterApp {
           const action = payload.action;
           const options = payload.options || {};
           this.handleMediaControlAction(action, options);
+        } else if (type === 'STAGE_CONFIG_UPDATE') {
+          const newSettings = payload.stageSettings || payload;
+          this.stageSettings = { ...this.stageSettings, ...newSettings };
+          try {
+            localStorage.setItem('slidemesh_stage_settings', JSON.stringify(this.stageSettings));
+          } catch(e) {}
+          const resolved = this.engine.resolveSlideTransition(this.engine.currentSlide, this.stageSettings);
+          document.documentElement.style.setProperty('--stage-trans-duration', `${resolved.duration}ms`);
+        } else if (type === 'STAGE_TRANSITION_TEST') {
+          const testSettings = payload.stageSettings || payload;
+          this.stageSettings = { ...this.stageSettings, ...testSettings };
+          this.testCurrentSlideTransition();
         }
       });
 
@@ -285,10 +308,14 @@ class PresenterApp {
       this.mediaCache.onSlideChange(this.engine.currentSlideIndex, this.engine.totalSlides);
     }
 
-    // Renderiza o Slide HTML com animações e direção de transição
+    // Resolução de transição em cascata e injeção no telão (Plano 21 - Fase 1/4)
+    const resolvedTrans = this.engine.resolveSlideTransition(slide, this.stageSettings);
+    document.documentElement.style.setProperty('--stage-trans-duration', `${resolvedTrans.duration}ms`);
+
+    // Renderiza o Slide HTML com animações, direção e resolução de palco
     if (this.dom.canvas && slide) {
-      this.dom.canvas.innerHTML = this.engine.renderSlideHtml(slide, { direction });
-      this.applySlideAnimations(slide);
+      this.dom.canvas.innerHTML = this.engine.renderSlideHtml(slide, { direction, stageSettings: this.stageSettings });
+      this.applySlideAnimations(slide, resolvedTrans);
     }
 
     // Notas do Orador no Púlpito
@@ -637,24 +664,40 @@ class PresenterApp {
     setTimeout(() => el.remove(), 2500);
   }
 
-  applySlideAnimations(slide = null) {
+  applySlideAnimations(slide = null, resolved = null) {
     const s = slide || this.engine.currentSlide;
-    const transition = (s && s.presenter && s.presenter.transition) || (s && s.transition) || (this.engine.manifest?.theme?.transition) || 'fade';
+    const resolvedTrans = resolved || this.engine.resolveSlideTransition(s, this.stageSettings);
+    const duration = resolvedTrans.duration || 600;
+    const transition = resolvedTrans.effect || 'fade';
     
-    // Injeção de delay escalonado para bullets no modo stagger
+    // Injeção de delay escalonado para bullets no modo stagger proporcional à velocidade real
     if (transition === 'stagger') {
       const bullets = this.dom.canvas.querySelectorAll('.slide-bullet-item');
+      const staggerStep = Math.max(30, Math.round(duration * 0.15));
       bullets.forEach((b, i) => {
         b.classList.add('stage-stagger-bullet');
-        b.style.animationDelay = `${(i + 1) * 80 + 40}ms`;
+        b.style.animationDelay = `${(i + 1) * staggerStep + 40}ms`;
       });
     }
 
     const cards = this.dom.canvas.querySelectorAll('.card, .stat-box, .comparison-col');
+    const cardStep = Math.max(0.04, Number((duration / 8000).toFixed(3)));
     cards.forEach((c, i) => {
-      c.style.animationDelay = `${(i + 1) * 0.08}s`;
+      c.style.animationDelay = `${(i + 1) * cardStep}s`;
       c.classList.add('animate-fade-in');
     });
+  }
+
+  testCurrentSlideTransition() {
+    const slide = this.engine.currentSlide;
+    if (!slide || !this.dom.canvas) return;
+
+    const resolvedTrans = this.engine.resolveSlideTransition(slide, this.stageSettings);
+    document.documentElement.style.setProperty('--stage-trans-duration', `${resolvedTrans.duration}ms`);
+
+    // Força re-render com animação de entrada imediata
+    this.dom.canvas.innerHTML = this.engine.renderSlideHtml(slide, { direction: 'next', stageSettings: this.stageSettings });
+    this.applySlideAnimations(slide, resolvedTrans);
   }
 
   toggleFullscreen() {

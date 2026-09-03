@@ -6,6 +6,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@400;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400;1,600;1,700&display=swap');
 
 :root {
+  --stage-trans-duration: 600ms;
   --font-display: 'Outfit', -apple-system, sans-serif;
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-code: 'Fira Code', ui-monospace, monospace;
@@ -160,7 +161,7 @@
   width: 100%;
   max-width: 1360px;
   will-change: transform, opacity;
-  animation-duration: var(--stage-trans-duration, 380ms);
+  animation-duration: var(--stage-trans-duration, 600ms);
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   animation-fill-mode: both;
 }

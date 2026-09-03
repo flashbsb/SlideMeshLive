@@ -130,7 +130,7 @@ export class ConversionEngine {
           accentColor: '#38bdf8',
           background: '#0b0f19',
           transition: 'fade',
-          transitionDuration: 380
+          transitionDuration: 600
         },
         security: {
           mode: 'public'
@@ -784,7 +784,7 @@ export class ConversionEngine {
       securityMode: 'public',
       securityLabel: 'Pública',
       badgeClass: 'badge-accent',
-      theme: { accentColor: '#38bdf8', background: '#0b0f19', font: 'outfit', gradient: 'cyber', transition: 'fade', transitionDuration: 380 },
+      theme: { accentColor: '#38bdf8', background: '#0b0f19', font: 'outfit', gradient: 'cyber', transition: 'fade', transitionDuration: 600 },
       security: { mode: 'public' },
       pacing: { mode: 'lock_future', allowReviewPast: true }
     };
@@ -794,7 +794,7 @@ export class ConversionEngine {
     if (type === 'pitch' || type === 'startup') {
       defaultManifest.title = 'Pitch Deck & Produto Inovador';
       defaultManifest.subtitle = 'Visão, Tração, Arquitetura e Rodada de Captação';
-      defaultManifest.theme = { accentColor: '#38bdf8', background: '#0b0f19', font: 'outfit', gradient: 'cyber', transition: 'fade', transitionDuration: 380 };
+      defaultManifest.theme = { accentColor: '#38bdf8', background: '#0b0f19', font: 'outfit', gradient: 'cyber', transition: 'fade', transitionDuration: 600 };
       slides = [
         {
           id: 1,
@@ -1014,7 +1014,7 @@ export class ConversionEngine {
     } else if (type === 'masterclass' || type === 'code' || type === 'tech') {
       defaultManifest.title = 'Masterclass Técnica: Arquitetura & Engenharia';
       defaultManifest.subtitle = 'Padrões Modernos, Código de Alta Performance e Resiliência';
-      defaultManifest.theme = { accentColor: '#10b981', background: '#0b0f19', font: 'code', gradient: 'aurora', transition: 'fade', transitionDuration: 380 };
+      defaultManifest.theme = { accentColor: '#10b981', background: '#0b0f19', font: 'code', gradient: 'aurora', transition: 'fade', transitionDuration: 600 };
       slides = [
         {
           id: 1,
@@ -1229,7 +1229,7 @@ export class ConversionEngine {
     } else if (type === 'vision' || type === 'executive' || type === 'executive-vision') {
       defaultManifest.title = 'Visão Executiva & Estratégia Corporativa';
       defaultManifest.subtitle = 'Liderança, Transformação Digital e Retorno sobre Investimento';
-      defaultManifest.theme = { accentColor: '#f59e0b', background: '#0b0f19', font: 'montserrat', gradient: 'editorial', transition: 'fade', transitionDuration: 380 };
+      defaultManifest.theme = { accentColor: '#f59e0b', background: '#0b0f19', font: 'montserrat', gradient: 'editorial', transition: 'fade', transitionDuration: 600 };
       slides = [
         {
           id: 1,
@@ -1445,7 +1445,7 @@ export class ConversionEngine {
     } else if (type === 'training') {
       defaultManifest.title = 'Treinamento Técnico & Capacitação';
       defaultManifest.subtitle = 'Conceitos Fundamentais, Laboratório e Quiz de Fixação';
-      defaultManifest.theme = { accentColor: '#10b981', background: '#0b0f19', font: 'inter', gradient: 'aurora', transition: 'fade', transitionDuration: 380 };
+      defaultManifest.theme = { accentColor: '#10b981', background: '#0b0f19', font: 'inter', gradient: 'aurora', transition: 'fade', transitionDuration: 600 };
       slides = [
         {
           id: 1,
@@ -1567,7 +1567,7 @@ export class ConversionEngine {
     } else if (type === 'product') {
       defaultManifest.title = 'Demonstração de Produto & Lançamento';
       defaultManifest.subtitle = 'Recursos Inovadores, Experiência ao Vivo e Feedback';
-      defaultManifest.theme = { accentColor: '#a855f7', background: '#0b0f19', font: 'outfit', gradient: 'sunset', transition: 'fade', transitionDuration: 380 };
+      defaultManifest.theme = { accentColor: '#a855f7', background: '#0b0f19', font: 'outfit', gradient: 'sunset', transition: 'fade', transitionDuration: 600 };
       slides = [
         {
           id: 1,
@@ -1690,7 +1690,7 @@ export class ConversionEngine {
       // Template em Branco (Blank)
       defaultManifest.title = 'Minha Nova Apresentação';
       defaultManifest.subtitle = 'Criada no SlideMeshLive';
-      defaultManifest.theme = { accentColor: '#38bdf8', background: '#0b0f19', font: 'inter', gradient: 'dark', transition: 'fade', transitionDuration: 380 };
+      defaultManifest.theme = { accentColor: '#38bdf8', background: '#0b0f19', font: 'inter', gradient: 'dark', transition: 'fade', transitionDuration: 600 };
       slides = [
         {
           id: 1,

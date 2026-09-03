@@ -63,6 +63,16 @@ class AdminApp {
       stageFxCard: document.getElementById('admin-stage-fx-card'),
       fxCooldownBadge: document.getElementById('admin-fx-cooldown-badge'),
 
+      // Stage Transitions & Speed Control (Plano 21 - Fase 3)
+      stageTransCard: document.getElementById('admin-stage-trans-card'),
+      transSpeedBadge: document.getElementById('admin-trans-speed-badge'),
+      selectTransMode: document.getElementById('admin-select-trans-mode'),
+      transSliderBox: document.getElementById('admin-trans-slider-box'),
+      sliderTransSpeed: document.getElementById('admin-slider-trans-speed'),
+      transSliderVal: document.getElementById('admin-trans-slider-val'),
+      selectTransEffect: document.getElementById('admin-select-trans-effect'),
+      btnTestTrans: document.getElementById('admin-btn-test-trans'),
+
       // Media Remote Control (Plano 11 - Fase 3)
       mediaControlCard: document.getElementById('admin-media-control-card'),
       mediaStatusBadge: document.getElementById('admin-media-status-badge'),
@@ -373,6 +383,14 @@ class AdminApp {
       if (this.engine.manifest?.pacing?.mode) {
         this.updatePacingUI(this.engine.manifest.pacing.mode);
       }
+
+      // Inicializa configurações de Transição do Palco (Plano 21 - Fase 3)
+      let savedStageSettings = null;
+      try {
+        const stored = localStorage.getItem('slidemesh_stage_settings');
+        if (stored) savedStageSettings = JSON.parse(stored);
+      } catch (e) {}
+      this.updateStageTransUI(savedStageSettings || { transitionMode: 'deck_author' });
 
       this.setupQRCode();
 
@@ -1722,6 +1740,38 @@ class AdminApp {
       });
     }
 
+    // Painel de Transições & Ritmo do Palco (Plano 21 - Fase 3)
+    if (this.dom.selectTransMode) {
+      this.dom.selectTransMode.addEventListener('change', (e) => {
+        const mode = e.target.value;
+        if (this.dom.transSliderBox) {
+          this.dom.transSliderBox.style.display = (mode === 'custom') ? 'flex' : 'none';
+        }
+        this.broadcastStageTransitionConfig();
+      });
+    }
+
+    if (this.dom.sliderTransSpeed) {
+      this.dom.sliderTransSpeed.addEventListener('input', (e) => {
+        if (this.dom.transSliderVal) {
+          this.dom.transSliderVal.textContent = `${e.target.value}ms`;
+        }
+        this.broadcastStageTransitionConfig();
+      });
+    }
+
+    if (this.dom.selectTransEffect) {
+      this.dom.selectTransEffect.addEventListener('change', () => {
+        this.broadcastStageTransitionConfig();
+      });
+    }
+
+    if (this.dom.btnTestTrans) {
+      this.dom.btnTestTrans.addEventListener('click', () => {
+        this.testStageTransition();
+      });
+    }
+
     // Painel de Efeitos Visuais no Telão (Demanda 02 - Fase 2)
     const fxButtons = document.querySelectorAll('.btn-stage-fx');
     fxButtons.forEach(btn => {
@@ -1739,6 +1789,97 @@ class AdminApp {
         this.triggerMediaAction(action);
       });
     });
+  }
+
+  broadcastStageTransitionConfig() {
+    const mode = this.dom.selectTransMode ? this.dom.selectTransMode.value : 'deck_author';
+    const customDuration = this.dom.sliderTransSpeed ? Number(this.dom.sliderTransSpeed.value) : 600;
+    const effect = this.dom.selectTransEffect ? this.dom.selectTransEffect.value : 'deck_author';
+
+    const stageSettings = {
+      transitionMode: mode,
+      customDuration: customDuration,
+      transitionEffect: effect
+    };
+
+    // Atualiza badge de estado
+    this.updateStageTransUI(stageSettings);
+
+    // Salva localmente
+    try {
+      localStorage.setItem('slidemesh_stage_settings', JSON.stringify(stageSettings));
+    } catch(e) {}
+
+    // Transmite via RealtimeEngine
+    if (this.realtime) {
+      this.realtime.updateSessionState(this.sessionId, { stageSettings });
+      this.realtime.sendLocalServerEvent('STAGE_CONFIG_UPDATE', this.sessionId, stageSettings);
+    }
+  }
+
+  updateStageTransUI(settings = {}) {
+    const mode = settings.transitionMode || (this.dom.selectTransMode ? this.dom.selectTransMode.value : 'deck_author');
+    const customDur = settings.customDuration || (this.dom.sliderTransSpeed ? Number(this.dom.sliderTransSpeed.value) : 600);
+    const effect = settings.transitionEffect || (this.dom.selectTransEffect ? this.dom.selectTransEffect.value : 'deck_author');
+
+    if (this.dom.selectTransMode && this.dom.selectTransMode.value !== mode) {
+      this.dom.selectTransMode.value = mode;
+    }
+    if (this.dom.selectTransEffect && this.dom.selectTransEffect.value !== effect) {
+      this.dom.selectTransEffect.value = effect;
+    }
+    if (this.dom.sliderTransSpeed && Number(this.dom.sliderTransSpeed.value) !== customDur) {
+      this.dom.sliderTransSpeed.value = customDur;
+    }
+    if (this.dom.transSliderVal) {
+      this.dom.transSliderVal.textContent = `${customDur}ms`;
+    }
+
+    if (this.dom.transSliderBox) {
+      this.dom.transSliderBox.style.display = (mode === 'custom') ? 'flex' : 'none';
+    }
+
+    if (this.dom.transSpeedBadge) {
+      const modeLabels = {
+        deck_author: '🎯 Seguir Deck',
+        fast: '⚡ 350ms (Rápido)',
+        smooth: '✨ 600ms (Suave)',
+        cinema: '🎬 950ms (Cinema)',
+        epic: '🌌 1400ms (Épico)',
+        custom: `🎛️ ${customDur}ms`
+      };
+      this.dom.transSpeedBadge.textContent = modeLabels[mode] || '🎯 Seguir Deck';
+      this.dom.transSpeedBadge.style.color = (mode === 'deck_author') ? '#38bdf8' : '#34d399';
+      this.dom.transSpeedBadge.style.background = (mode === 'deck_author') ? 'rgba(56,189,248,0.15)' : 'rgba(52,211,153,0.15)';
+    }
+  }
+
+  testStageTransition() {
+    if (!this.realtime) return;
+    const mode = this.dom.selectTransMode ? this.dom.selectTransMode.value : 'deck_author';
+    const customDuration = this.dom.sliderTransSpeed ? Number(this.dom.sliderTransSpeed.value) : 600;
+    const effect = this.dom.selectTransEffect ? this.dom.selectTransEffect.value : 'deck_author';
+
+    const testPayload = {
+      transitionMode: mode,
+      customDuration: customDuration,
+      transitionEffect: effect,
+      timestamp: Date.now()
+    };
+
+    this.realtime.sendLocalServerEvent('STAGE_TRANSITION_TEST', this.sessionId, testPayload);
+    
+    if (this.dom.btnTestTrans) {
+      const originalText = this.dom.btnTestTrans.innerHTML;
+      this.dom.btnTestTrans.textContent = '✨ Testado!';
+      this.dom.btnTestTrans.disabled = true;
+      setTimeout(() => {
+        if (this.dom.btnTestTrans) {
+          this.dom.btnTestTrans.innerHTML = originalText;
+          this.dom.btnTestTrans.disabled = false;
+        }
+      }, 1500);
+    }
   }
 
   triggerMediaAction(action, options = {}) {

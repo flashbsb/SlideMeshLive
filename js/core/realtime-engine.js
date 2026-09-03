@@ -536,6 +536,46 @@ export class RealtimeEngine {
     return this.sendLocalServerEvent('MEDIA_CONTROL_ACTION', normSessionId, payload);
   }
 
+  sendStageConfigUpdate(sessionId, stageSettings) {
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
+    const payload = { stageSettings, timestamp: Date.now() };
+    if (this.channel) {
+      try {
+        this.channel.postMessage({
+          type: 'STAGE_CONFIG_UPDATE',
+          sessionId: normSessionId,
+          payload: payload
+        });
+      } catch (e) {}
+    }
+    this._dispatchLocalEvent({
+      type: 'STAGE_CONFIG_UPDATE',
+      sessionId: normSessionId,
+      payload: payload
+    });
+    return this.sendLocalServerEvent('STAGE_CONFIG_UPDATE', normSessionId, payload);
+  }
+
+  sendStageTransitionTest(sessionId, testConfig) {
+    const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
+    const payload = { ...(testConfig || {}), timestamp: Date.now() };
+    if (this.channel) {
+      try {
+        this.channel.postMessage({
+          type: 'STAGE_TRANSITION_TEST',
+          sessionId: normSessionId,
+          payload: payload
+        });
+      } catch (e) {}
+    }
+    this._dispatchLocalEvent({
+      type: 'STAGE_TRANSITION_TEST',
+      sessionId: normSessionId,
+      payload: payload
+    });
+    return this.sendLocalServerEvent('STAGE_TRANSITION_TEST', normSessionId, payload);
+  }
+
   sendVote(sessionId, pollId, optionId, uid) {
     const normSessionId = (sessionId || 'SHOWCASE2026').trim().toUpperCase();
     const payload = { pollId, optionId, uid, timestamp: Date.now() };

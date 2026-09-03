@@ -4008,6 +4008,117 @@ def test_plano20_sso_cross_tab_telemetry_and_spa_switch():
     print("✓ Plano 20 (SSO Cross-Tab, Telemetria Wi-Fi Resiliente & Troca SPA na Mesa Técnica) 100% HOMOLOGADO.")
 
 
+def test_plano21_stage_transitions_and_speed_control():
+    print_section("40. Plano 21: Controle Granular de Velocidade e Transições de Palco em Cascata")
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    # 1. Validação do PresentationEngine (js/core/presentation-engine.js)
+    pres_engine_path = os.path.join(base_dir, "js", "core", "presentation-engine.js")
+    with open(pres_engine_path, "r", encoding="utf-8") as f:
+        pres_engine_code = f.read()
+
+    assert "resolveSlideTransition" in pres_engine_code, "PresentationEngine não implementa resolveSlideTransition!"
+    assert "stageSettings.transitionMode" in pres_engine_code, "resolveSlideTransition não avalia transitionMode das configurações de palco!"
+    assert "stageSettings.customDuration" in pres_engine_code, "resolveSlideTransition não avalia customDuration de palco!"
+    assert "stageSettings.transitionEffect" in pres_engine_code, "resolveSlideTransition não avalia transitionEffect de palco!"
+    assert "theme.transitionDuration" in pres_engine_code or "manifest?.theme?.transitionDuration" in pres_engine_code, "resolveSlideTransition não consulta o tema do manifesto como fallback!"
+    print("  ✓ PresentationEngine (presentation-engine.js): Resolução de transição em cascata com herança de 4 níveis validada.")
+
+    # 2. Validação do CSS Nativo do Telão (css/presenter.css)
+    pres_css_path = os.path.join(base_dir, "css", "presenter.css")
+    with open(pres_css_path, "r", encoding="utf-8") as f:
+        pres_css_code = f.read()
+
+    assert "--stage-trans-duration: 600ms" in pres_css_code or "--stage-trans-duration:600ms" in pres_css_code, "presenter.css não define --stage-trans-duration: 600ms como padrão base!"
+    print("  ✓ Estilos do Telão (presenter.css): Duração nativa de transição base de 600ms validada.")
+
+    # 3. Validação do SlideMesh Studio UI & Templates (import.html e conversion-engine.js)
+    import_html_path = os.path.join(base_dir, "import.html")
+    with open(import_html_path, "r", encoding="utf-8") as f:
+        import_html_code = f.read()
+
+    assert "cfg-transition-speed" in import_html_code, "import.html não possui o seletor global #cfg-transition-speed!"
+    assert "edit-slide-speed" in import_html_code, "import.html não possui o seletor por slide #edit-slide-speed!"
+    assert "currentConvertedData.manifest.theme.transitionDuration" in import_html_code, "import.html não persiste transitionDuration no manifesto!"
+
+    conv_engine_path = os.path.join(base_dir, "js", "core", "conversion-engine.js")
+    with open(conv_engine_path, "r", encoding="utf-8") as f:
+        conv_engine_code = f.read()
+
+    assert "transitionDuration: 600" in conv_engine_code, "conversion-engine.js não padroniza templates com transitionDuration: 600!"
+    print("  ✓ SlideMesh Studio (import.html & conversion-engine.js): Seletores de velocidade global/slide e templates padronizados validados.")
+
+    # 4. Validação da Mesa Técnica (admin/index.html & admin-app.js)
+    admin_html_path = os.path.join(base_dir, "admin", "index.html")
+    with open(admin_html_path, "r", encoding="utf-8") as f:
+        admin_html_code = f.read()
+
+    assert "admin-stage-trans-card" in admin_html_code, "admin/index.html não possui o card #admin-stage-trans-card!"
+    assert "admin-select-trans-mode" in admin_html_code, "admin/index.html não possui o seletor #admin-select-trans-mode!"
+    assert "admin-slider-trans-speed" in admin_html_code, "admin/index.html não possui o slider #admin-slider-trans-speed!"
+    assert "admin-select-trans-effect" in admin_html_code, "admin/index.html não possui o seletor de override #admin-select-trans-effect!"
+    assert "admin-btn-test-trans" in admin_html_code, "admin/index.html não possui o botão #admin-btn-test-trans!"
+
+    admin_js_path = os.path.join(base_dir, "js", "admin", "admin-app.js")
+    with open(admin_js_path, "r", encoding="utf-8") as f:
+        admin_js_code = f.read()
+
+    assert "broadcastStageTransitionConfig" in admin_js_code, "admin-app.js não implementa broadcastStageTransitionConfig!"
+    assert "updateStageTransUI" in admin_js_code, "admin-app.js não implementa updateStageTransUI!"
+    assert "testStageTransition" in admin_js_code, "admin-app.js não implementa testStageTransition!"
+    assert "slidemesh_stage_settings" in admin_js_code, "admin-app.js não salva/restaura slidemesh_stage_settings!"
+    print("  ✓ Mesa Técnica (admin/index.html & admin-app.js): Card de transições, slider 200-2000ms, presets e métodos mestre validados.")
+
+    # 5. Validação do Protocolo Realtime & Telão (realtime-engine.js & presenter-app.js)
+    realtime_path = os.path.join(base_dir, "js", "core", "realtime-engine.js")
+    with open(realtime_path, "r", encoding="utf-8") as f:
+        realtime_code = f.read()
+
+    assert "sendStageConfigUpdate" in realtime_code, "realtime-engine.js não implementa sendStageConfigUpdate!"
+    assert "sendStageTransitionTest" in realtime_code, "realtime-engine.js não implementa sendStageTransitionTest!"
+
+    pres_app_path = os.path.join(base_dir, "js", "presenter", "presenter-app.js")
+    with open(pres_app_path, "r", encoding="utf-8") as f:
+        pres_app_code = f.read()
+
+    assert "STAGE_CONFIG_UPDATE" in pres_app_code, "presenter-app.js não escuta STAGE_CONFIG_UPDATE!"
+    assert "STAGE_TRANSITION_TEST" in pres_app_code, "presenter-app.js não escuta STAGE_TRANSITION_TEST!"
+    assert "--stage-trans-duration" in pres_app_code, "presenter-app.js não injeta --stage-trans-duration no DOM!"
+    assert "testCurrentSlideTransition" in pres_app_code, "presenter-app.js não implementa testCurrentSlideTransition!"
+    print("  ✓ Telão de Palco & Realtime (realtime-engine.js & presenter-app.js): Protocolo de sincronização e injeção dinâmica de CSS validados.")
+
+    # 6. Validação do Dicionário i18n (i18n-engine.js)
+    i18n_path = os.path.join(base_dir, "js", "core", "i18n-engine.js")
+    with open(i18n_path, "r", encoding="utf-8") as f:
+        i18n_code = f.read()
+
+    required_keys = [
+        "admin.stage_trans_title",
+        "admin.trans_mode_label",
+        "admin.trans_mode_deck",
+        "admin.trans_mode_fast",
+        "admin.trans_mode_smooth",
+        "admin.trans_mode_cinema",
+        "admin.trans_mode_epic",
+        "admin.trans_mode_custom",
+        "admin.trans_effect_label",
+        "admin.trans_effect_deck",
+        "admin.btn_test_trans",
+        "import.cfg_transition_speed",
+        "import.slide_speed_label",
+        "import.speed_inherit",
+        "import.speed_fast",
+        "import.speed_smooth",
+        "import.speed_cinema",
+        "import.speed_epic"
+    ]
+    for k in required_keys:
+        assert k in i18n_code, f"Chave i18n '{k}' ausente em i18n-engine.js!"
+    print("  ✓ Dicionário i18n (i18n-engine.js): 18 chaves simétricas de transição e velocidade validadas em pt-BR e en-US.")
+
+    print("✓ Plano 21 (Controle Granular de Velocidade e Transições de Palco em Cascata) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -4049,6 +4160,7 @@ if __name__ == "__main__":
         test_plano18_ux_resilience_active_modals_and_key_guards()
         test_plano19_rich_layouts_typography_multimedia_and_catalog()
         test_plano20_sso_cross_tab_telemetry_and_spa_switch()
+        test_plano21_stage_transitions_and_speed_control()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

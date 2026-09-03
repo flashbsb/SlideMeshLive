@@ -639,6 +639,15 @@
           </select>
         </div>
         <div class="form-group">
+          <label class="form-label" data-i18n="import.cfg_transition_speed">Velocidade Padrão</label>
+          <select id="cfg-transition-speed" class="form-select">
+            <option value="350" data-i18n="import.speed_fast">⚡ 350ms (Rápido)</option>
+            <option value="600" selected data-i18n="import.speed_smooth">✨ 600ms (Suave / Padrão)</option>
+            <option value="950" data-i18n="import.speed_cinema">🎬 950ms (Cinema)</option>
+            <option value="1400" data-i18n="import.speed_epic">🌌 1400ms (Épico / Lento)</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label class="form-label" data-i18n="import.cfg_security">Segurança</label>
           <select id="cfg-security" class="form-select">
             <option value="public" data-i18n="import.sec_public">Pública (Sem Senha)</option>
@@ -757,8 +766,8 @@
               </div>
             </div>
 
-            <!-- Linha 2: Fonte, Fundo e Transição do Slide -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <!-- Linha 2: Fonte, Fundo, Transição e Velocidade do Slide -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;">
               <div class="form-group">
                 <label class="form-label" data-i18n="import.slide_font_label">Fonte do Slide:</label>
                 <select id="edit-slide-font" class="form-select">
@@ -792,6 +801,16 @@
                   <option value="zoom" data-i18n="import.trans_zoom">🔍 Zoom</option>
                   <option value="dissolve" data-i18n="import.trans_dissolve">🌫️ Dissolver</option>
                   <option value="stagger" data-i18n="import.trans_stagger">📶 Cascata</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="import.slide_speed_label">Velocidade:</label>
+                <select id="edit-slide-speed" class="form-select">
+                  <option value="" data-i18n="import.speed_inherit">🌐 Herdar Global</option>
+                  <option value="350" data-i18n="import.speed_fast">⚡ 350ms (Rápido)</option>
+                  <option value="600" data-i18n="import.speed_smooth">✨ 600ms (Suave)</option>
+                  <option value="950" data-i18n="import.speed_cinema">🎬 950ms (Cinema)</option>
+                  <option value="1400" data-i18n="import.speed_epic">🌌 1400ms (Épico)</option>
                 </select>
               </div>
             </div>
@@ -1480,6 +1499,10 @@
       const selectTrans = document.getElementById('cfg-transition');
       if (selectTrans) selectTrans.value = globalTrans;
 
+      const globalSpeed = currentConvertedData.manifest.theme?.transitionDuration || 600;
+      const selectSpeed = document.getElementById('cfg-transition-speed');
+      if (selectSpeed) selectSpeed.value = String(globalSpeed);
+
       // Tipografia e Gradiente Globais do Deck (Fase 3)
       const globalFont = currentConvertedData.manifest.theme?.font || 'inter';
       const selectFont = document.getElementById('cfg-font');
@@ -1809,6 +1832,8 @@
       document.getElementById('edit-slide-title').value = slide.presenter?.headline || slide.title || '';
       document.getElementById('edit-slide-notes').value = slide.presenter?.notes || '';
       document.getElementById('edit-slide-transition').value = slide.presenter?.transition || '';
+      const selectSlideSpeed = document.getElementById('edit-slide-speed');
+      if (selectSlideSpeed) selectSlideSpeed.value = (slide.presenter?.transitionDuration || slide.transitionDuration) ? String(slide.presenter?.transitionDuration || slide.transitionDuration) : '';
 
       // Layout Semântico, Fonte e Fundo
       const currentLayout = slide.layout || presentationEngine.detectSlideLayout(slide) || 'standard';
@@ -2565,6 +2590,13 @@
       saveDraftToStorage();
     });
 
+    document.getElementById('cfg-transition-speed')?.addEventListener('change', (e) => {
+      currentConvertedData.manifest.theme = currentConvertedData.manifest.theme || {};
+      currentConvertedData.manifest.theme.transitionDuration = Number(e.target.value) || 600;
+      renderActiveSlidePreview();
+      saveDraftToStorage();
+    });
+
     document.getElementById('edit-slide-transition')?.addEventListener('change', (e) => {
       const slide = currentConvertedData.slides[selectedSlideIndex];
       if (slide) {
@@ -2573,6 +2605,20 @@
           slide.presenter.transition = e.target.value;
         } else {
           delete slide.presenter.transition;
+        }
+        renderActiveSlidePreview();
+        saveDraftToStorage();
+      }
+    });
+
+    document.getElementById('edit-slide-speed')?.addEventListener('change', (e) => {
+      const slide = currentConvertedData.slides[selectedSlideIndex];
+      if (slide) {
+        if (!slide.presenter) slide.presenter = {};
+        if (e.target.value) {
+          slide.presenter.transitionDuration = Number(e.target.value);
+        } else {
+          delete slide.presenter.transitionDuration;
         }
         renderActiveSlidePreview();
         saveDraftToStorage();
@@ -2837,9 +2883,10 @@
         allowReviewPast: allowPast
       };
       const globalTrans = document.getElementById('cfg-transition')?.value || 'fade';
+      const globalSpeed = Number(document.getElementById('cfg-transition-speed')?.value) || 600;
       currentConvertedData.manifest.theme = currentConvertedData.manifest.theme || {};
       currentConvertedData.manifest.theme.transition = globalTrans;
-      currentConvertedData.manifest.theme.transitionDuration = 380;
+      currentConvertedData.manifest.theme.transitionDuration = globalSpeed;
       currentConvertedData.manifest.totalSlides = activeSlides.length;
 
       const payload = {
