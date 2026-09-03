@@ -120,7 +120,8 @@ class PresenterApp {
       btnUnlockUser: document.getElementById('btn-unlock-presenter-user'),
       btnUnlockGoogle: document.getElementById('btn-unlock-presenter-google'),
       pinHintBox: document.getElementById('presenter-pin-hint-box'),
-      pinHint: document.getElementById('presenter-pin-hint')
+      pinHint: document.getElementById('presenter-pin-hint'),
+      btnLogout: document.getElementById('btn-presenter-logout')
     };
 
     this.init();
@@ -764,6 +765,7 @@ class PresenterApp {
     if (this.dom.btnMaximizeQR) this.dom.btnMaximizeQR.addEventListener('click', () => this.toggleLargeQR());
     if (this.dom.btnToggleQuestions) this.dom.btnToggleQuestions.addEventListener('click', () => this.toggleQuestionsDrawer());
     if (this.dom.btnCloseQuestionsDrawer) this.dom.btnCloseQuestionsDrawer.addEventListener('click', () => this.toggleQuestionsDrawer());
+    if (this.dom.btnLogout) this.dom.btnLogout.addEventListener('click', () => this.logoutPresenter());
 
     // Dismiss Pergunta Destacada
     if (this.dom.btnDismissFeatured) {
@@ -1170,6 +1172,16 @@ class PresenterApp {
     } finally {
       if (this.dom.btnUnlockGoogle) this.dom.btnUnlockGoogle.disabled = false;
     }
+  }
+
+  logoutPresenter() {
+    sessionStorage.removeItem(`unlocked_session_${this.sessionId}`);
+    sessionStorage.removeItem(`pres_pin_${this.presentationId}`);
+    sessionStorage.removeItem('admin_pin_authenticated');
+    if (this.auth && typeof this.auth.signOut === 'function') {
+      this.auth.signOut();
+    }
+    this.showPresenterLockScreen();
   }
 }
 

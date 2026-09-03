@@ -155,6 +155,11 @@
         <button class="btn btn-sm" id="btn-portal-theme" style="padding: 4px 8px; font-size: 12px;" title="Alternar Tema Visual">
           🌙 Tema
         </button>
+
+        <!-- Botão de Sair / Logout -->
+        <button class="btn btn-sm" id="btn-portal-logout" style="display: none; padding: 4px 10px; font-size: 12px; border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;" title="Encerrar Sessão Autenticada">
+          🚪 <span data-i18n="presenter.btn_logout">Sair</span>
+        </button>
       </div>
     </header>
 
@@ -426,6 +431,8 @@
       const isAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true';
       const modal = document.getElementById('portal-global-lock-modal');
 
+      updatePortalAuthButton();
+
       if (requireAuth && !isAuth) {
         document.body.classList.add('portal-locked');
         if (modal) {
@@ -436,6 +443,19 @@
         document.body.classList.remove('portal-locked');
         if (modal) modal.classList.remove('active');
       }
+    }
+
+    function updatePortalAuthButton() {
+      const isAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true';
+      const btn = document.getElementById('btn-portal-logout');
+      if (btn) btn.style.display = isAuth ? 'inline-flex' : 'none';
+    }
+
+    function logoutPortal() {
+      sessionStorage.removeItem('admin_pin_authenticated');
+      sessionStorage.clear();
+      localStorage.removeItem('apres_auth_user');
+      window.location.reload();
     }
 
     function switchGlobalAuthTab(activeTab) {
@@ -667,6 +687,10 @@
       document.getElementById('portal-tab-pin')?.addEventListener('click', () => switchGlobalAuthTab('pin'));
       document.getElementById('portal-tab-local')?.addEventListener('click', () => switchGlobalAuthTab('local'));
       document.getElementById('portal-tab-google')?.addEventListener('click', () => switchGlobalAuthTab('google'));
+
+      document.getElementById('btn-unlock-portal-global-google')?.addEventListener('click', unlockPortalGlobalGoogle);
+      document.getElementById('btn-portal-logout')?.addEventListener('click', logoutPortal);
+      updatePortalAuthButton();
 
       document.getElementById('btn-unlock-portal-global-pin')?.addEventListener('click', unlockPortalGlobalPin);
       document.getElementById('input-portal-global-pin')?.addEventListener('keydown', (e) => {
