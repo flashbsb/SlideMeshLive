@@ -772,7 +772,7 @@ export class ConversionEngine {
   /* ==========================================================================
      GERADOR DE TEMPLATES PRÉ-FABRICADOS (CRIAÇÃO DO ZERO)
      ========================================================================== */
-  getTemplate(type = 'executive') {
+  getTemplate(type = 'pitch') {
     const defaultManifest = {
       id: `apresentacao-${type}-${Date.now().toString().slice(-4)}`,
       code: `${type.toUpperCase()}-2026`,
@@ -784,39 +784,52 @@ export class ConversionEngine {
       securityMode: 'public',
       securityLabel: 'Pública',
       badgeClass: 'badge-accent',
-      theme: { accentColor: '#38bdf8', background: '#0b0f19', transition: 'fade', transitionDuration: 380 },
+      theme: { accentColor: '#38bdf8', background: '#0b0f19', font: 'outfit', gradient: 'cyber', transition: 'fade', transitionDuration: 380 },
       security: { mode: 'public' },
       pacing: { mode: 'lock_future', allowReviewPast: true }
     };
 
     let slides = [];
 
-    if (type === 'executive') {
-      defaultManifest.title = 'Apresentação Executiva & Estratégica';
-      defaultManifest.subtitle = 'Proposta de Valor, Diferenciais e Próximos Passos';
+    if (type === 'pitch' || type === 'startup') {
+      defaultManifest.title = 'Pitch Deck & Produto Inovador';
+      defaultManifest.subtitle = 'Visão, Tração, Arquitetura e Rodada de Captação';
+      defaultManifest.theme = { accentColor: '#38bdf8', background: '#0b0f19', font: 'outfit', gradient: 'cyber', transition: 'fade', transitionDuration: 380 };
       slides = [
         {
           id: 1,
           slug: 'slide-1',
-          tag: 'VISÃO GERAL',
-          title: 'Apresentação Executiva & Estratégica',
+          tag: 'PITCH DECK 2026',
+          title: 'A Nova Fronteira das Apresentações em Tempo Real',
+          layout: 'hero',
+          font: 'outfit',
+          background: 'cyber',
+          hero: {
+            title: 'SlideMesh: O Futuro do Palco',
+            subtitle: 'Engajamento instantâneo, zero latência e sincronização nativa com os celulares da plateia.',
+            badges: [
+              { text: '⚡ Ultra Baixa Latência', class: 'badge-live' },
+              { text: '🔒 100% Offline / Rede Local', class: 'badge-accent' },
+              { text: '📱 Zero Apps Instalados', class: 'badge-success' }
+            ]
+          },
           included: true,
           presenter: {
-            headline: 'Apresentação Executiva & Estratégica',
+            headline: 'SlideMesh: O Futuro do Palco',
             bullets: [
-              'Contexto de mercado e posicionamento competitivo',
-              'Oportunidade de expansão e ganhos de eficiência',
-              'Acompanhe o material detalhado pelo celular'
+              'Revolução da experiência de apresentações ao vivo',
+              'Sincronização bidirecional entre telão e plateia',
+              'Operação 100% autônoma em rede local sem dependência de internet'
             ],
-            notes: 'Abertura: agradecer a presença de todos e convidar a apontar a câmera para o QR Code.'
+            notes: 'Abertura de impacto: convidar a audiência a escanear o QR Code para acompanhar em tempo real.'
           },
           audience: {
-            summary: 'Síntese executiva dos objetivos e escopo estratégico da apresentação.',
+            summary: 'Pitch oficial da plataforma SlideMeshLive para investidores e clientes.',
             sections: [
               {
-                title: 'Contexto Estratégico',
+                title: 'Nossa Tese de Investimento',
                 type: 'text',
-                content: 'Neste encontro apresentaremos as diretrizes prioritárias de crescimento e inovação para o próximo ciclo operacional.'
+                content: 'Transformamos apresentações estáticas e monótonas em palcos interativos sincronizados em tempo real com smartphones.'
               }
             ]
           }
@@ -824,25 +837,60 @@ export class ConversionEngine {
         {
           id: 2,
           slug: 'slide-2',
-          tag: 'DESAFIO',
-          title: 'O Cenário Atual e os Principais Desafios',
+          tag: 'ECOSSISTEMA',
+          title: 'Grid de Capacidades e Diferenciais do Produto',
+          layout: 'bento',
+          font: 'outfit',
+          background: 'cyber',
+          bento: {
+            cards: [
+              {
+                icon: '⚡',
+                title: 'Motor de Sincronização em Tempo Real',
+                desc: 'Latência sub-50ms via WebSockets e fallback determinístico para HTTP Long-Polling.',
+                cols: 8,
+                highlight: true,
+                stat: '< 50ms'
+              },
+              {
+                icon: '🔒',
+                title: 'Soberania Local',
+                desc: 'Funciona perfeitamente em auditórios sem sinal de internet externa.',
+                cols: 4,
+                stat: '100% Offline'
+              },
+              {
+                icon: '📊',
+                title: 'Enquetes & Votação Instantânea',
+                desc: 'Gráficos projetados no telão com atualização ao vivo a cada voto.',
+                cols: 4,
+                stat: '1 Voto/Pessoa'
+              },
+              {
+                icon: '🎨',
+                title: 'SlideMesh Studio Integrado',
+                desc: 'Importação com 1 clique de arquivos PowerPoint (.pptx), Word (.docx) e Markdown (.md).',
+                cols: 8
+              }
+            ]
+          },
           included: true,
           presenter: {
-            headline: 'O Cenário Atual e os Principais Desafios',
+            headline: 'Grid de Capacidades e Diferenciais do Produto',
             bullets: [
-              'Processos manuais e lentidão operacional',
-              'Falta de visibilidade centralizada em tempo real',
-              'Custos crescentes com ferramentas legadas'
+              'Arquitetura modular de alta disponibilidade',
+              'Controle total pelo palestrante e moderação ao vivo',
+              'Design responsivo sem dependência de apps'
             ],
-            notes: 'Enfatizar as dores mais sentidas pela equipe e o impacto direto nos resultados.'
+            notes: 'Destacar o Bento Grid na tela com foco na velocidade de sincronização.'
           },
           audience: {
-            summary: 'Diagnóstico das restrições e gargalos identificados na operação.',
+            summary: 'Matriz de recursos e diferenciais tecnológicos da plataforma.',
             sections: [
               {
-                title: 'Detalhamento dos Gargalos',
+                title: 'Arquitetura de Alta Performance',
                 type: 'text',
-                content: 'A fragmentação de ferramentas causa retrabalho e dificulta o alinhamento entre as áreas de negócio e tecnologia.'
+                content: 'Desenvolvido sobre uma pilha web moderna e leve que dispensa instalação de aplicativos no celular.'
               }
             ]
           }
@@ -850,25 +898,39 @@ export class ConversionEngine {
         {
           id: 3,
           slug: 'slide-3',
-          tag: 'SOLUÇÃO',
-          title: 'Nossa Proposta de Valor e Diferenciais',
+          tag: 'TRAÇÃO & MÉTRICAS',
+          title: 'Crescimento e Validação de Mercado',
+          layout: 'metric',
+          font: 'outfit',
+          background: 'cyber',
+          metric: {
+            value: '+380%',
+            label: 'Aumento de Engajamento e Participação da Plateia',
+            subtitle: 'Resultados médios obtidos em conferências e grandes eventos corporativos.',
+            delta: '+14.2k Votos em 2026',
+            pillars: [
+              { label: 'Eventos Realizados', value: '450+' },
+              { label: 'Satisfação do Público', value: '99.4%' },
+              { label: 'Tempo Médio Resposta', value: '1.2s' }
+            ]
+          },
           included: true,
           presenter: {
-            headline: 'Nossa Proposta de Valor e Diferenciais',
+            headline: 'Crescimento e Validação de Mercado',
             bullets: [
-              'Arquitetura unificada e sincronização instantânea',
-              'Operação 100% resiliente em rede local sem dependência externa',
-              'Redução de até 40% no tempo de ciclo operacional'
+              'Adoção comprovada em grandes palcos e auditórios',
+              'Retenção de atenção 4x superior a slides tradicionais',
+              'Geração de dados em tempo real para organizadores'
             ],
-            notes: 'Apresentar os diferenciais competitivos e a simplicidade de adoção.'
+            notes: 'Enfatizar a métrica monumental de +380% e os números de validação.'
           },
           audience: {
-            summary: 'Pilares arquiteturais e ganhos tangíveis com a nova abordagem.',
+            summary: 'Indicadores-chave de desempenho e validação em eventos.',
             sections: [
               {
-                title: 'Pilares de Transformação',
+                title: 'Indicadores de Engajamento',
                 type: 'text',
-                content: 'A integração fluida entre dispositivos garante engajamento da equipe e decisões baseadas em dados em tempo real.'
+                content: 'Participantes interagem em média 6 vezes mais através de perguntas e enquetes do que em palestras comuns.'
               }
             ]
           }
@@ -876,37 +938,36 @@ export class ConversionEngine {
         {
           id: 4,
           slug: 'slide-4',
-          tag: 'INTERAÇÃO AO VIVO',
-          title: 'Qual área deve ser priorizada no projeto piloto?',
+          tag: 'ROADMAP',
+          title: 'Plano de Expansão & Próximas Entregas',
+          layout: 'timeline',
+          font: 'outfit',
+          background: 'cyber',
+          timeline: {
+            steps: [
+              { step: 'Q1', title: 'Motor de Mídia & Estúdio Visual', desc: 'Importador dinâmico de PPTX e layouts ricos bento.' },
+              { step: 'Q2', title: 'Moderação de IA', desc: 'Clusterização automática de dúvidas da plateia por tema.' },
+              { step: 'Q3', title: 'Expansão Enterprise', desc: 'Multi-Auth RBAC e federação com credenciais corporativas.' },
+              { step: 'Q4', title: 'Ecossistema Global', desc: 'Marketplace de templates e integrações com Zoom/Teams.' }
+            ]
+          },
           included: true,
           presenter: {
-            headline: 'Qual área deve ser priorizada no projeto piloto?',
+            headline: 'Plano de Expansão & Próximas Entregas',
             bullets: [
-              'Vote agora pelo seu smartphone',
-              'Os resultados serão projetados instantaneamente no telão',
-              'Participe para definir o cronograma da primeira fase'
+              'Roadmap executivo com metas claras e tangíveis',
+              'Evolução contínua orientada a feedback da comunidade',
+              'Acompanhe o cronograma detalhado no smartphone'
             ],
-            notes: 'Pressionar a tecla [V] para abrir a votação e [R] para revelar o gráfico animado de resultados.'
-          },
-          interaction: {
-            poll: {
-              id: 'poll-prioridade-piloto',
-              question: 'Qual área deve ser priorizada no projeto piloto?',
-              options: [
-                { id: 'A', text: 'Operações e Logística' },
-                { id: 'B', text: 'Engenharia e Infraestrutura' },
-                { id: 'C', text: 'Atendimento ao Cliente' },
-                { id: 'D', text: 'Gestão e Controladoria' }
-              ]
-            }
+            notes: 'Apresentar a linha do tempo e abrir para perguntas dos investidores.'
           },
           audience: {
-            summary: 'Selecione a opção desejada para votar ao vivo.',
+            summary: 'Cronograma detalhado de desenvolvimento e marcos estratégicos.',
             sections: [
               {
-                title: 'Critérios de Escolha',
+                title: 'Marcos de Engenharia',
                 type: 'text',
-                content: 'Considere o retorno sobre o investimento e o tempo de implementação ao votar.'
+                content: 'Todas as entregas seguem ciclos ágeis com testes automatizados e 100% de cobertura funcional.'
               }
             ]
           }
@@ -914,25 +975,468 @@ export class ConversionEngine {
         {
           id: 5,
           slug: 'slide-5',
-          tag: 'PRÓXIMOS PASSOS',
-          title: 'Plano de Ação e Próximos Passos',
+          tag: 'DECISÃO AO VIVO',
+          title: 'Em qual módulo devemos acelerar novos investimentos?',
           included: true,
           presenter: {
-            headline: 'Plano de Ação e Próximos Passos',
+            headline: 'Em qual módulo devemos acelerar novos investimentos?',
             bullets: [
-              'Semana 1-2: Alinhamento e homologação do ambiente piloto',
-              'Semana 3-4: Treinamento prático e go-live inicial',
-              'Envie suas dúvidas no botão Perguntar do celular'
+              'Participe da votação em tempo real pelo seu celular',
+              'Resultados computados e projetados instantaneamente',
+              'Sua decisão direciona as prioridades do próximo ciclo'
             ],
-            notes: 'Conclusão: abrir o mural de perguntas com a tecla [M] para responder aos participantes.'
+            notes: 'Pressionar [V] para abrir votação e [R] para exibir o ranking animado de votos.'
+          },
+          interaction: {
+            poll: {
+              id: 'poll-investimento-pitch',
+              question: 'Em qual módulo devemos acelerar novos investimentos?',
+              options: [
+                { id: 'A', text: 'Inteligência Artificial para Perguntas' },
+                { id: 'B', text: 'Mais Layouts & Templates Visuais' },
+                { id: 'C', text: 'Segurança & Governança Enterprise' },
+                { id: 'D', text: 'Integrações com Streaming e Vídeo' }
+              ]
+            }
           },
           audience: {
-            summary: 'Cronograma de entregas e canais de comunicação.',
+            summary: 'Selecione sua prioridade estratégica para votar ao vivo.',
             sections: [
               {
-                title: 'Contato e Suporte',
+                title: 'Votação Interativa',
                 type: 'text',
-                content: 'Dúvidas podem ser enviadas diretamente pelo botão Perguntar no rodapé da tela.'
+                content: 'Escolha uma das alternativas acima para registrar o seu voto no hub central.'
+              }
+            ]
+          }
+        }
+      ];
+    } else if (type === 'masterclass' || type === 'code' || type === 'tech') {
+      defaultManifest.title = 'Masterclass Técnica: Arquitetura & Engenharia';
+      defaultManifest.subtitle = 'Padrões Modernos, Código de Alta Performance e Resiliência';
+      defaultManifest.theme = { accentColor: '#10b981', background: '#0b0f19', font: 'code', gradient: 'aurora', transition: 'fade', transitionDuration: 380 };
+      slides = [
+        {
+          id: 1,
+          slug: 'slide-1',
+          tag: 'TECH MASTERCLASS',
+          title: 'Engenharia de Software para Palcos de Missão Crítica',
+          layout: 'hero',
+          font: 'code',
+          background: 'aurora',
+          hero: {
+            title: 'Masterclass: Engenharia Sem Falhas',
+            subtitle: 'Como construir sistemas síncronos de ultra baixa latência que operam 100% offline em redes locais.',
+            badges: [
+              { text: '🐍 Python Hub + HTTP/WS', class: 'badge-live' },
+              { text: '⚡ Zero Dependency Frontend', class: 'badge-accent' },
+              { text: '🛡️ Multi-Auth Gatekeeper', class: 'badge-success' }
+            ]
+          },
+          included: true,
+          presenter: {
+            headline: 'Masterclass: Engenharia Sem Falhas',
+            bullets: [
+              'Visão aprofundada dos desafios de rede em auditórios reais',
+              'Padrões arquiteturais para tolerância a falhas e desconexões',
+              'Acesse o código-fonte e diagramas diretamente no celular'
+            ],
+            notes: 'Abertura técnica: explicar a motivação de rodar localmente sem nuvem.'
+          },
+          audience: {
+            summary: 'Material de apoio para desenvolvedores e arquitetos de software.',
+            sections: [
+              {
+                title: 'Ementa da Masterclass',
+                type: 'text',
+                content: 'Exploraremos o motor de eventos assíncrono, estratégias de anti-flooding, sanitização XSS e transições sem flicker.'
+              }
+            ]
+          }
+        },
+        {
+          id: 2,
+          slug: 'slide-2',
+          tag: 'CÓDIGO DE SERVIDOR',
+          title: 'Servidor HTTP/WS Sequencial em Python',
+          layout: 'code',
+          font: 'code',
+          background: 'aurora',
+          code: {
+            filename: 'server.py — Hub de Sincronização',
+            snippet: `class SlideMeshHub(ThreadingHTTPServer):\n    def handle_slide_event(self, session_id, slide_idx):\n        # Emissão thread-safe com carimbo temporal\n        event_payload = {\n            "type": "SLIDE_CHANGED",\n            "slideIndex": slide_idx,\n            "timestamp": time.time()\n        }\n        self.broadcast_to_session(session_id, event_payload)\n        return {"status": "ok", "latency_ms": 1.4}`
+          },
+          included: true,
+          presenter: {
+            headline: 'Servidor HTTP/WS Sequencial em Python',
+            bullets: [
+              'Manipulação thread-safe de sessões simultâneas',
+              'Sequenciador de eventos com broadcast determinístico',
+              'Desempenho sub-milissegundo para centenas de celulares'
+            ],
+            notes: 'Explicar a lógica de broadcast na classe SlideMeshHub.'
+          },
+          audience: {
+            summary: 'Código-fonte e explicação técnica do endpoint central.',
+            sections: [
+              {
+                title: 'Threading & Concorrência',
+                type: 'text',
+                content: 'O servidor utiliza buffers atômicos e locks de baixo atrito para garantir que mensagens cheguem em ordem estrita.'
+              }
+            ]
+          }
+        },
+        {
+          id: 3,
+          slug: 'slide-3',
+          tag: 'PADRÕES ARQUITETURAIS',
+          title: '3 Pilares da Resiliência em Rede Local',
+          layout: 'columns',
+          font: 'code',
+          background: 'aurora',
+          columns: {
+            items: [
+              {
+                icon: '🛰️',
+                title: 'Broadcast Local',
+                bullets: [
+                  'WebSockets nativos com fallback HTTP',
+                  'Descoberta mDNS em redes corporativas',
+                  'Reconexão com backoff exponencial'
+                ]
+              },
+              {
+                icon: '🛡️',
+                title: 'Blindagem de Segurança',
+                bullets: [
+                  'Sanitização estrita contra XSS',
+                  'Rate-limiting anti-flooding em RAM',
+                  'Proteção Multi-Auth (PIN, Senha, Token)'
+                ]
+              },
+              {
+                icon: '⚡',
+                title: 'Performance Zero-JS-Fat',
+                bullets: [
+                  'Vanilla JS e CSS sem frameworks pesados',
+                  'Janela deslizante de pré-cache de mídias',
+                  'Renderização 60fps com GPU Acceleration'
+                ]
+              }
+            ]
+          },
+          included: true,
+          presenter: {
+            headline: '3 Pilares da Resiliência em Rede Local',
+            bullets: [
+              'Conexão robusta imune a quedas de link externo',
+              'Segurança em camadas contra ataques no auditório',
+              'Carregamento instantâneo em qualquer smartphone antigo'
+            ],
+            notes: 'Comentar cada pilar com a turma.'
+          },
+          audience: {
+            summary: 'Pilares arquiteturais recomendados para aplicações de palco.',
+            sections: [
+              {
+                title: 'Checklist de Implementação',
+                type: 'text',
+                content: 'Sempre combine rate limiting com validação de payload no servidor para evitar negação de serviço.'
+              }
+            ]
+          }
+        },
+        {
+          id: 4,
+          slug: 'slide-4',
+          tag: 'SLA DE PERFORMANCE',
+          title: 'Confiabilidade e Métricas de Disponibilidade',
+          layout: 'metric',
+          font: 'code',
+          background: 'aurora',
+          metric: {
+            value: '99.999%',
+            label: 'Taxa de Entrega de Eventos em Auditórios',
+            subtitle: 'Testado sob estresse com 500 conexões concorrentes gerando mais de 5.000 requisições/min.',
+            delta: 'SLA < 2ms',
+            pillars: [
+              { label: 'Uso de CPU', value: '< 4%' },
+              { label: 'Consumo RAM', value: '42 MB' },
+              { label: 'Queda de Pacotes', value: '0.00%' }
+            ]
+          },
+          included: true,
+          presenter: {
+            headline: 'Confiabilidade e Métricas de Disponibilidade',
+            bullets: [
+              'Consumo insignificante de recursos na máquina do palestrante',
+              'Zero dependência de serviços externos em nuvem',
+              'Garantia de estabilidade do primeiro ao último slide'
+            ],
+            notes: 'Apresentar as métricas de performance.'
+          },
+          audience: {
+            summary: 'Resultados dos testes de estresse e benchmarking.',
+            sections: [
+              {
+                title: 'Dados de Benchmark',
+                type: 'text',
+                content: 'Testes realizados com Apache Benchmark e ferramentas de injeção de carga confirmam estabilidade extrema.'
+              }
+            ]
+          }
+        },
+        {
+          id: 5,
+          slug: 'slide-5',
+          tag: 'QUIZ TÉCNICO',
+          title: 'Qual mecanismo garante menor consumo de bateria no celular do público?',
+          included: true,
+          presenter: {
+            headline: 'Qual mecanismo garante menor consumo de bateria no celular do público?',
+            bullets: [
+              'Responda no seu smartphone em 30 segundos',
+              'Teste seus conhecimentos de engenharia web',
+              'Acompanhe o ranking da turma ao vivo'
+            ],
+            notes: 'Iniciar o quiz técnico e debater as alternativas com os alunos.'
+          },
+          interaction: {
+            poll: {
+              id: 'poll-quiz-tech',
+              question: 'Qual mecanismo garante menor consumo de bateria no celular do público?',
+              options: [
+                { id: 'A', text: 'WebSockets com Heartbeat passivo e CSS nativo sem loops JS' },
+                { id: 'B', text: 'Polling HTTP contínuo a cada 10ms' },
+                { id: 'C', text: 'Download repetido de todo o HTML a cada frame' },
+                { id: 'D', text: 'Renderização em WebGL 3D em background' }
+              ]
+            }
+          },
+          audience: {
+            summary: 'Quiz de fixação da aula técnica.',
+            sections: [
+              {
+                title: 'Dica do Instrutor',
+                type: 'text',
+                content: 'Lembre-se do impacto de polling constante em conexões móveis.'
+              }
+            ]
+          }
+        }
+      ];
+    } else if (type === 'vision' || type === 'executive' || type === 'executive-vision') {
+      defaultManifest.title = 'Visão Executiva & Estratégia Corporativa';
+      defaultManifest.subtitle = 'Liderança, Transformação Digital e Retorno sobre Investimento';
+      defaultManifest.theme = { accentColor: '#f59e0b', background: '#0b0f19', font: 'montserrat', gradient: 'editorial', transition: 'fade', transitionDuration: 380 };
+      slides = [
+        {
+          id: 1,
+          slug: 'slide-1',
+          tag: 'RELATÓRIO EXECUTIVO',
+          title: 'Transformação Digital & Eficiência Estratégica',
+          layout: 'hero',
+          font: 'montserrat',
+          background: 'editorial',
+          hero: {
+            title: 'Liderança & Visão 2026',
+            subtitle: 'Alinhamento estratégico para maximização de valor e modernização da infraestrutura corporativa.',
+            badges: [
+              { text: '📈 Foco em ROI', class: 'badge-accent' },
+              { text: '🏛️ Governança C-Level', class: 'badge-success' },
+              { text: '💼 Eficiência Operacional', class: 'badge-live' }
+            ]
+          },
+          included: true,
+          presenter: {
+            headline: 'Liderança & Visão 2026',
+            bullets: [
+              'Diretrizes prioritárias de expansão e governança',
+              'Otimização de custos e eliminação de desperdícios legados',
+              'Acesse o sumário executivo no seu smartphone'
+            ],
+            notes: 'Abertura solene: agradecer a presença da diretoria e do conselho.'
+          },
+          audience: {
+            summary: 'Sumário executivo do relatório estratégico para lideranças.',
+            sections: [
+              {
+                title: 'Objetivos da Sessão',
+                type: 'text',
+                content: 'Apresentar as metas de rentabilidade e governança tecnológica para os próximos trimestres.'
+              }
+            ]
+          }
+        },
+        {
+          id: 2,
+          slug: 'slide-2',
+          tag: 'DIRETRIZ DE LIDERANÇA',
+          title: 'Princípio Norteador da Nova Gestão',
+          layout: 'quote',
+          font: 'playfair',
+          background: 'editorial',
+          quote: {
+            text: 'A verdadeira transformação digital não reside apenas na tecnologia que adotamos, mas na agilidade com que nossa equipe se comunica e toma decisões com base em dados reais.',
+            author: 'Dra. Helena Valente',
+            role: 'Chief Technology & Innovation Officer'
+          },
+          included: true,
+          presenter: {
+            headline: 'Princípio Norteador da Nova Gestão',
+            bullets: [
+              'Cultura centrada em colaboração ágil e transparência',
+              'Decisões fundamentadas em métricas imediatas',
+              'Empoderamento das lideranças na ponta da operação'
+            ],
+            notes: 'Citação inspiradora da Dra. Helena para reforçar o compromisso com agilidade.'
+          },
+          audience: {
+            summary: 'Declaração oficial de liderança e diretrizes de inovação.',
+            sections: [
+              {
+                title: 'Comentário da Diretoria',
+                type: 'text',
+                content: 'A comunicação fluida entre todas as camadas organizacionais é o alicerce para atingir nossas metas.'
+              }
+            ]
+          }
+        },
+        {
+          id: 3,
+          slug: 'slide-3',
+          tag: 'PILARES ESTRATÉGICOS',
+          title: '3 Pilares de Expansão e Crescimento Sustentável',
+          layout: 'columns',
+          font: 'montserrat',
+          background: 'editorial',
+          columns: {
+            items: [
+              {
+                icon: '💼',
+                title: 'Eficiência de Capital',
+                bullets: [
+                  'Redução de 30% em custos com software legado',
+                  'Realocação de recursos em inovação direta',
+                  'Ciclos de entrega 2x mais rápidos'
+                ]
+              },
+              {
+                icon: '👥',
+                title: 'Experiência & Engajamento',
+                bullets: [
+                  'Alinhamento instantâneo de toda a organização',
+                  'Participação ativa em reuniões de liderança',
+                  'Feedback e dados computados em tempo real'
+                ]
+              },
+              {
+                icon: '🛡️',
+                title: 'Governança & Segurança',
+                bullets: [
+                  'Proteção estrita de dados confidenciais',
+                  'Autenticação Multi-Auth e trilhas de auditoria',
+                  'Soberania e controle operacional total'
+                ]
+              }
+            ]
+          },
+          included: true,
+          presenter: {
+            headline: '3 Pilares de Expansão e Crescimento Sustentável',
+            bullets: [
+              'Rentabilidade aliada à disciplina de custos',
+              'Aceleração de projetos de alta prioridade',
+              'Consistência e previsibilidade financeira'
+            ],
+            notes: 'Explicar os 3 pilares estratégicos para o conselho.'
+          },
+          audience: {
+            summary: 'Matriz estratégica detalhada dos 3 pilares corporativos.',
+            sections: [
+              {
+                title: 'Detalhamento de Custos',
+                type: 'text',
+                content: 'A consolidação de ferramentas gera economias de escala significativas já no primeiro exercício fiscal.'
+              }
+            ]
+          }
+        },
+        {
+          id: 4,
+          slug: 'slide-4',
+          tag: 'RETORNO SOBRE INVESTIMENTO',
+          title: 'Resultados Financeiros e Projeção de ROI',
+          layout: 'metric',
+          font: 'montserrat',
+          background: 'editorial',
+          metric: {
+            value: '+340%',
+            label: 'Retorno sobre o Investimento em 12 Meses',
+            subtitle: 'Ganhos diretos de produtividade, redução de despesas operacionais e aceleração de decisões.',
+            delta: 'Payback em 4.5 Meses',
+            pillars: [
+              { label: 'Economia Anual', value: 'R$ 2.8M' },
+              { label: 'Tempo Poupado/Semana', value: '18 hrs' },
+              { label: 'Acurácia de Decisão', value: '98.7%' }
+            ]
+          },
+          included: true,
+          presenter: {
+            headline: 'Resultados Financeiros e Projeção de ROI',
+            bullets: [
+              'Retorno expressivo comprovado no projeto piloto',
+              'Recuperação rápida do capital investido (Payback)',
+              'Fundamento sólido para aprovação orçamentária'
+            ],
+            notes: 'Destacar o indicador de ROI de +340% e a economia consolidada de R$ 2.8M.'
+          },
+          audience: {
+            summary: 'Projeção financeira e modelo de retorno para o comitê.',
+            sections: [
+              {
+                title: 'Metodologia de Cálculo',
+                type: 'text',
+                content: 'O cálculo considera horas de trabalho poupadas, eliminação de licenças redundantes e redução de retrabalho.'
+              }
+            ]
+          }
+        },
+        {
+          id: 5,
+          slug: 'slide-5',
+          tag: 'DECISÃO DO CONSELHO',
+          title: 'Qual diretriz deve liderar o orçamento do próximo ano fiscal?',
+          included: true,
+          presenter: {
+            headline: 'Qual diretriz deve liderar o orçamento do próximo ano fiscal?',
+            bullets: [
+              'Vote agora pelo seu smartphone institucional',
+              'Resultado preliminar exibido instantaneamente no telão',
+              'Deliberação democrática com registro seguro'
+            ],
+            notes: 'Pressionar [V] para abrir a votação dos conselheiros.'
+          },
+          interaction: {
+            poll: {
+              id: 'poll-decisao-conselho',
+              question: 'Qual diretriz deve liderar o orçamento do próximo ano fiscal?',
+              options: [
+                { id: 'A', text: 'Automação & Modernização Tecnológica' },
+                { id: 'B', text: 'Expansão Comercial & Novos Mercados' },
+                { id: 'C', text: 'Capacitação de Lideranças & Talentos' },
+                { id: 'D', text: 'Segurança da Informação & Compliance' }
+              ]
+            }
+          },
+          audience: {
+            summary: 'Votação deliberativa para membros do conselho e diretoria.',
+            sections: [
+              {
+                title: 'Instruções de Voto',
+                type: 'text',
+                content: 'Selecione uma das prioridades para registrar a sua posição no comitê executivo.'
               }
             ]
           }
@@ -941,6 +1445,7 @@ export class ConversionEngine {
     } else if (type === 'training') {
       defaultManifest.title = 'Treinamento Técnico & Capacitação';
       defaultManifest.subtitle = 'Conceitos Fundamentais, Laboratório e Quiz de Fixação';
+      defaultManifest.theme = { accentColor: '#10b981', background: '#0b0f19', font: 'inter', gradient: 'aurora', transition: 'fade', transitionDuration: 380 };
       slides = [
         {
           id: 1,
@@ -1062,6 +1567,7 @@ export class ConversionEngine {
     } else if (type === 'product') {
       defaultManifest.title = 'Demonstração de Produto & Lançamento';
       defaultManifest.subtitle = 'Recursos Inovadores, Experiência ao Vivo e Feedback';
+      defaultManifest.theme = { accentColor: '#a855f7', background: '#0b0f19', font: 'outfit', gradient: 'sunset', transition: 'fade', transitionDuration: 380 };
       slides = [
         {
           id: 1,
@@ -1180,10 +1686,11 @@ export class ConversionEngine {
           }
         }
       ];
-    } else if (type === 'blank') {
-      // Template em Branco
+    } else if (type === 'blank' || type === 'empty') {
+      // Template em Branco (Blank)
       defaultManifest.title = 'Minha Nova Apresentação';
       defaultManifest.subtitle = 'Criada no SlideMeshLive';
+      defaultManifest.theme = { accentColor: '#38bdf8', background: '#0b0f19', font: 'inter', gradient: 'dark', transition: 'fade', transitionDuration: 380 };
       slides = [
         {
           id: 1,
