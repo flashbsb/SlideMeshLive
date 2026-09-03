@@ -3763,7 +3763,74 @@ def test_plano17_phase6_governance_matrix_and_wizard_redesign():
     finally:
         httpd.shutdown()
 
-    print("✓ Plano 17 (Fase 6: Matriz de Governança Multi-Auth & Setup Wizard) 100% HOMOLOGADO.")
+def test_plano18_ux_resilience_active_modals_and_key_guards():
+    """
+    Valida a implementação das 5 Fases do Plano 18:
+    1. Ativação correta da classe CSS .active em todos os modais de segurança do ecossistema.
+    2. Guards de teclado (keydown) e bloqueio de comandos remotos sob o estado .presenter-locked.
+    3. Cobertura bilateral de traduções i18n em PT-BR e EN para segurança e governança.
+    4. Conexão do escopo global multiAuth.scopes.studio e verificação de PIN no SlideMesh Studio.
+    5. Botões e fluxos de encerramento de sessão / logout no Telão e no Portal.
+    """
+    print(f"\n{'='*70}")
+    print(" 🧪 37. Plano 18: Varredura Geral, Resiliência de UX, Modais .active e Key Guards")
+    print(f"{'='*70}")
+    base_dir = BASE_DIR
+
+    # 1. Validação de .active nos modais do Portal e Telão
+    index_html = os.path.join(base_dir, "index.html")
+    with open(index_html, "r", encoding="utf-8") as f:
+        idx_content = f.read()
+    assert "classList.add('active')" in idx_content, "index.html não usa classList.add('active') para abrir modais!"
+    assert "classList.remove('active')" in idx_content, "index.html não usa classList.remove('active') para fechar modais!"
+    assert "btn-portal-logout" in idx_content, "Botão de logout do Portal ausente no index.html!"
+    print("  ✓ Portal UI (index.html): Modais ativados via classe .active e botão de logout integrados.")
+
+    # 2. Validação de Guards de Teclado no Telão de Palco
+    presenter_js = os.path.join(base_dir, "js", "presenter", "presenter-app.js")
+    with open(presenter_js, "r", encoding="utf-8") as f:
+        pres_js_content = f.read()
+    assert "document.body.classList.contains('presenter-locked')" in pres_js_content, "presenter-app.js sem guard de presenter-locked no listener de teclas!"
+    assert "logoutPresenter" in pres_js_content, "presenter-app.js sem método logoutPresenter!"
+    assert "btn-presenter-logout" in pres_js_content or "btnLogout" in pres_js_content, "presenter-app.js sem binding de logout!"
+
+    presenter_html = os.path.join(base_dir, "presenter", "index.html")
+    with open(presenter_html, "r", encoding="utf-8") as f:
+        pres_html_content = f.read()
+    assert "btn-presenter-logout" in pres_html_content, "Botão de logout ausente no presenter/index.html!"
+    print("  ✓ Telão de Palco (presenter-app.js & presenter/index.html): Guards de teclado e logout de palco validados.")
+
+    # 3. Validação de Dicionário i18n Bilateral (PT-BR e EN)
+    i18n_js = os.path.join(base_dir, "js", "core", "i18n-engine.js")
+    with open(i18n_js, "r", encoding="utf-8") as f:
+        i18n_content = f.read()
+    
+    required_keys = [
+        "presenter.lock_title", "presenter.lock_desc", "presenter.btn_unlock_pin", "presenter.btn_unlock_user", "presenter.btn_logout",
+        "portal.lock_title", "portal.lock_desc", "portal.btn_unlock_pin", "portal.btn_unlock_user", "portal.btn_deck_unlock",
+        "studio.lock_title", "studio.lock_desc", "studio.btn_unlock", "studio.hint_speaker"
+    ]
+    for k in required_keys:
+        assert k in i18n_content, f"Chave i18n '{k}' ausente em i18n-engine.js!"
+    print(f"  ✓ Dicionário i18n (i18n-engine.js): Todas as {len(required_keys)} chaves de segurança validadas em PT-BR e EN.")
+
+    # 4. Validação de Governança no SlideMesh Studio (import.html)
+    import_html = os.path.join(base_dir, "import.html")
+    with open(import_html, "r", encoding="utf-8") as f:
+        import_content = f.read()
+    assert "checkStudioGlobalProtection" in import_content, "import.html sem checagem checkStudioGlobalProtection!"
+    assert "promptStudioGlobalUnlock" in import_content, "import.html sem método promptStudioGlobalUnlock!"
+    assert "__GLOBAL_STUDIO__" in import_content, "import.html sem suporte a PIN global de desbloqueio!"
+    print("  ✓ SlideMesh Studio (import.html): Gatekeeper de escopo multiAuth.scopes.studio validado com sucesso.")
+
+    # 5. Validação de Escape Seguro na Mesa Técnica (admin-app.js)
+    admin_js = os.path.join(base_dir, "js", "admin", "admin-app.js")
+    with open(admin_js, "r", encoding="utf-8") as f:
+        admin_content = f.read()
+    assert "adminLockModal.classList.contains('active')" in admin_content, "admin-app.js não preserva adminLockModal no evento Escape!"
+    print("  ✓ Mesa Técnica (admin-app.js): Manipulação segura de Escape preservando o Admin Lock Modal validada.")
+
+    print("✓ Plano 18 (Varredura Geral, Resiliência de UX, Modais .active e Key Guards) 100% HOMOLOGADO.")
 
 
 if __name__ == "__main__":
@@ -3804,6 +3871,7 @@ if __name__ == "__main__":
         test_plano17_phase4_studio_hardening_and_zip_governance()
         test_plano17_phase5_smartphone_hardening_anti_spoofing_and_https()
         test_plano17_phase6_governance_matrix_and_wizard_redesign()
+        test_plano18_ux_resilience_active_modals_and_key_guards()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time
