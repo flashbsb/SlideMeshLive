@@ -206,7 +206,7 @@
   </div>
 
   <!-- Modal de Desbloqueio de Deck Protegido no Portal (Plano 17 - Fase 3) -->
-  <div class="modal-overlay" id="portal-deck-auth-modal" style="display: none; z-index: 10000; background: rgba(10, 15, 29, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+  <div class="modal-overlay" id="portal-deck-auth-modal" style="z-index: 10000; background: rgba(10, 15, 29, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
     <div class="modal-card" style="max-width: 420px; text-align: center; padding: 28px 32px;">
       <div style="font-size: 36px; margin-bottom: 8px;">🔒</div>
       <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 6px;" id="portal-auth-deck-title">
@@ -238,7 +238,7 @@
   </div>
 
   <!-- Modal Global de Intranet / Evento Fechado (Plano 17 - Fase 3) -->
-  <div class="modal-overlay" id="portal-global-lock-modal" style="display: none; z-index: 99999; background: rgba(10, 15, 29, 0.98); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);">
+  <div class="modal-overlay" id="portal-global-lock-modal" style="z-index: 99999; background: rgba(10, 15, 29, 0.98); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);">
     <div class="modal-card" style="max-width: 440px; text-align: center; padding: 32px;">
       <div style="font-size: 40px; margin-bottom: 8px;">🏢</div>
       <h3 style="font-size: 19px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">
@@ -370,10 +370,10 @@
         const input = document.getElementById('input-portal-deck-pin');
         if (input) {
           input.value = '';
-          modal.style.display = 'flex';
+          modal.classList.add('active');
           setTimeout(() => input.focus(), 100);
         } else {
-          modal.style.display = 'flex';
+          modal.classList.add('active');
         }
       }
     }
@@ -401,7 +401,7 @@
         if (res.ok && data.success) {
           sessionStorage.setItem('pres_pin_' + pendingDeckAction.presId, 'valid');
           sessionStorage.setItem('pres_pin_code_' + pendingDeckAction.presId, entered);
-          document.getElementById('portal-deck-auth-modal').style.display = 'none';
+          document.getElementById('portal-deck-auth-modal')?.classList.remove('active');
           
           const act = pendingDeckAction;
           pendingDeckAction = null;
@@ -422,16 +422,19 @@
 
     // Modal Global de Intranet / Evento Fechado (Plano 17 - Fase 3)
     function checkGlobalIntranetLock(authData) {
-      const requireAuth = authData && authData.requireAuthForCatalog === true;
+      const requireAuth = Boolean(authData && (authData.requireAuthForCatalog === true || authData.multiAuth?.scopes?.portal === true));
       const isAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true';
       const modal = document.getElementById('portal-global-lock-modal');
 
       if (requireAuth && !isAuth) {
         document.body.classList.add('portal-locked');
-        if (modal) modal.style.display = 'flex';
+        if (modal) {
+          modal.classList.add('active');
+          setTimeout(() => document.getElementById('input-portal-global-pin')?.focus(), 100);
+        }
       } else {
         document.body.classList.remove('portal-locked');
-        if (modal) modal.style.display = 'none';
+        if (modal) modal.classList.remove('active');
       }
     }
 
@@ -480,7 +483,7 @@
         if (res.ok && data.success) {
           sessionStorage.setItem('admin_pin_authenticated', 'true');
           document.body.classList.remove('portal-locked');
-          document.getElementById('portal-global-lock-modal').style.display = 'none';
+          document.getElementById('portal-global-lock-modal')?.classList.remove('active');
         } else {
           if (err) { err.textContent = '✕ PIN incorreto.'; err.style.display = 'block'; }
         }
@@ -507,13 +510,19 @@
         if (res.ok && data.success) {
           sessionStorage.setItem('admin_pin_authenticated', 'true');
           document.body.classList.remove('portal-locked');
-          document.getElementById('portal-global-lock-modal').style.display = 'none';
+          document.getElementById('portal-global-lock-modal')?.classList.remove('active');
         } else {
           if (err) { err.textContent = `✕ ${data.error || 'Credenciais inválidas.'}`; err.style.display = 'block'; }
         }
       } catch (e) {
         if (err) { err.textContent = '✕ Erro ao realizar login.'; err.style.display = 'block'; }
       }
+    }
+
+    function unlockPortalGlobalGoogle() {
+      sessionStorage.setItem('admin_pin_authenticated', 'true');
+      document.body.classList.remove('portal-locked');
+      document.getElementById('portal-global-lock-modal')?.classList.remove('active');
     }
 
     function renderCards(presentations) {

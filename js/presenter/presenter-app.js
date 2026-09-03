@@ -143,7 +143,7 @@ class PresenterApp {
       this.dom.title.textContent = this.engine.manifest.title || 'Apresentação';
 
       // Validação de Acesso e Gatekeeper de Palco (Plano 17 - Fase 2)
-      this.checkPresentationProtection();
+      await this.checkPresentationProtection();
 
       if (this.engine.manifest?.pacing?.mode) {
         this.pacingMode = this.engine.manifest.pacing.mode;
@@ -965,10 +965,25 @@ class PresenterApp {
   // ==========================================
   // Gatekeeper Multi-Auth de Palco (Plano 17 - Fase 2)
   // ==========================================
-  checkPresentationProtection() {
+  async checkPresentationProtection() {
+    try {
+      if (!this.auth || !this.auth.securityConfig) {
+        await this.auth?.loadSecurityConfig();
+      }
+    } catch (e) {}
+
+    const secCfg = this.auth?.securityConfig || {};
+    const multiAuth = secCfg.multiAuth || {};
+    const scopes = multiAuth.scopes || {};
+    
+    // Se o escopo global de palco estiver ativo (padrão true quando configurado)
+    const requirePresenterAuth = scopes.presenter === true || (scopes.presenter !== false && secCfg.requirePinForAdmin === true);
+
     const sec = this.engine.manifest?.security;
-    const isProtected = sec && (sec.mode === 'pin' || sec.isProtected || sec.requirePIN);
-    if (!isProtected) {
+    const isDeckProtected = sec && (sec.mode === 'pin' || sec.isProtected || sec.requirePIN);
+
+    // Se nem o escopo global de palco nem a apresentação exigirem proteção
+    if (!requirePresenterAuth && !isDeckProtected) {
       this.hidePresenterLockScreen();
       return true;
     }
@@ -991,6 +1006,22 @@ class PresenterApp {
     if (this.dom.authModal) {
       this.dom.authModal.classList.add('active');
     }
+
+    const secCfg = this.auth?.securityConfig || {};
+    const methods = secCfg.multiAuth?.methods || {};
+
+    if (methods.pin === false && this.dom.authPinTab) {
+      this.dom.authPinTab.style.display = 'none';
+      if (methods.localUsers !== false) this.switchAuthTab('local');
+      else if (methods.google !== false) this.switchAuthTab('google');
+    }
+    if (methods.localUsers === false && this.dom.authLocalTab) {
+      this.dom.authLocalTab.style.display = 'none';
+    }
+    if (methods.google === false && this.dom.authGoogleTab) {
+      this.dom.authGoogleTab.style.display = 'none';
+    }
+
     const sec = this.engine.manifest?.security;
     if (this.dom.pinHint && this.dom.pinHintBox) {
       if (sec && sec.pinHint) {

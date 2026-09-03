@@ -1290,13 +1290,35 @@ class LiveSyncHTTPRequestHandler(SimpleHTTPRequestHandler):
         if parsed.path == '/api/auth/public-config':
             sec_cfg = load_security_config(BASE_DIR)
             setup_req = is_security_setup_required(BASE_DIR)
+            multi_auth_scopes = sec_cfg.get("multiAuth", {}).get("scopes", {})
+            multi_auth_methods = sec_cfg.get("multiAuth", {}).get("methods", {})
+            
+            require_portal_auth = bool(
+                sec_cfg.get("catalog", {}).get("requireAuth", False) or 
+                sec_cfg.get("requireAuthForCatalog", False) or 
+                multi_auth_scopes.get("portal", False)
+            )
+
             public_data = {
                 "success": True,
                 "setupRequired": setup_req,
                 "requirePinForAdmin": sec_cfg.get("admin", {}).get("requirePinForAdmin", True),
                 "allowedEmails": sec_cfg.get("admin", {}).get("allowedEmails", []),
                 "offlineAudienceEnabled": sec_cfg.get("offlineAudience", {}).get("enabled", True),
-                "requireAuthForCatalog": bool(sec_cfg.get("catalog", {}).get("requireAuth", False) or sec_cfg.get("requireAuthForCatalog", False)),
+                "requireAuthForCatalog": require_portal_auth,
+                "multiAuth": {
+                    "methods": {
+                        "pin": bool(multi_auth_methods.get("pin", bool(sec_cfg.get("admin", {}).get("pin", "2026")))),
+                        "localUsers": bool(multi_auth_methods.get("localUsers", len(sec_cfg.get("admin", {}).get("users", [])) > 0)),
+                        "google": bool(multi_auth_methods.get("google", len(sec_cfg.get("admin", {}).get("allowedEmails", [])) > 0))
+                    },
+                    "scopes": {
+                        "admin": bool(multi_auth_scopes.get("admin", sec_cfg.get("admin", {}).get("requirePinForAdmin", True))),
+                        "presenter": bool(multi_auth_scopes.get("presenter", True)),
+                        "studio": bool(multi_auth_scopes.get("studio", True)),
+                        "portal": require_portal_auth
+                    }
+                },
                 "offlineAudienceUsers": [
                     {"username": u.get("username"), "name": u.get("name", u.get("username"))}
                     for u in sec_cfg.get("offlineAudience", {}).get("users", [])
