@@ -917,6 +917,7 @@
 
     // Inicialização da Página
     applyTranslations();
+    checkStudioGlobalProtection();
 
     // Verificação de Parâmetros de URL (?edit=slug ou ?mode=new)
     const urlParams = new URLSearchParams(window.location.search);
@@ -962,7 +963,7 @@
       document.getElementById('draft-alert-banner').style.display = 'none';
     });
 
-    // Modal de Desbloqueio no Studio
+    // Modal de Desbloqueio no Studio (Deck individual ou Escopo Global)
     function promptStudioUnlock(slug, manifest) {
       pendingProtectedSlug = slug;
       const modal = document.getElementById('studio-deck-auth-modal');
@@ -994,6 +995,51 @@
       }
     }
 
+    function promptStudioGlobalUnlock() {
+      pendingProtectedSlug = '__GLOBAL_STUDIO__';
+      const modal = document.getElementById('studio-deck-auth-modal');
+      if (!modal) return;
+
+      const titleEl = document.getElementById('studio-auth-deck-title');
+      if (titleEl) titleEl.textContent = '🔒 SlideMesh Studio Protegido';
+
+      const descEl = modal.querySelector('p[data-i18n="studio.lock_desc"]') || modal.querySelector('p');
+      if (descEl) descEl.textContent = 'O acesso à criação e edição no Studio é restrito. Digite o PIN de administrador ou palestrante:';
+
+      const hintBox = document.getElementById('studio-deck-pin-hint-box');
+      if (hintBox) hintBox.style.display = 'none';
+
+      const err = document.getElementById('studio-deck-pin-error');
+      if (err) err.style.display = 'none';
+
+      const input = document.getElementById('input-studio-deck-pin');
+      if (input) {
+        input.value = '';
+        modal.style.display = 'flex';
+        setTimeout(() => input.focus(), 100);
+      } else {
+        modal.style.display = 'flex';
+      }
+    }
+
+    async function checkStudioGlobalProtection() {
+      try {
+        const res = await fetch('/api/auth/public-config');
+        if (res.ok) {
+          const cfg = await res.json();
+          const isStudioProtected = cfg.multiAuth?.scopes?.studio === true;
+          const isAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true' ||
+                         (cfg.currentUser && !cfg.currentUser.isAnonymous && (cfg.currentUser.role === 'admin' || cfg.currentUser.role === 'presenter'));
+
+          if (isStudioProtected && !isAuth) {
+            promptStudioGlobalUnlock();
+            return false;
+          }
+        }
+      } catch (e) {}
+      return true;
+    }
+
     async function verifyStudioPin() {
       if (!pendingProtectedSlug) return;
       const input = document.getElementById('input-studio-deck-pin');
@@ -1008,20 +1054,29 @@
       if (btnConfirm) btnConfirm.disabled = true;
 
       try {
+        const payload = pendingProtectedSlug === '__GLOBAL_STUDIO__'
+          ? { pin: entered }
+          : { pin: entered, presentationId: pendingProtectedSlug };
+
         const res = await fetch('/api/auth/verify-pin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pin: entered, presentationId: pendingProtectedSlug })
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          sessionStorage.setItem('pres_pin_' + pendingProtectedSlug, 'valid');
-          sessionStorage.setItem('pres_pin_code_' + pendingProtectedSlug, entered);
+          sessionStorage.setItem('admin_pin_authenticated', 'true');
+          if (pendingProtectedSlug !== '__GLOBAL_STUDIO__') {
+            sessionStorage.setItem('pres_pin_' + pendingProtectedSlug, 'valid');
+            sessionStorage.setItem('pres_pin_code_' + pendingProtectedSlug, entered);
+          }
           document.getElementById('studio-deck-auth-modal').style.display = 'none';
           
           const slug = pendingProtectedSlug;
           pendingProtectedSlug = null;
-          loadExistingPresentation(slug, true);
+          if (slug && slug !== '__GLOBAL_STUDIO__') {
+            loadExistingPresentation(slug, true);
+          }
         } else {
           if (err) { err.textContent = '✕ PIN incorreto. Tente novamente.'; err.style.display = 'block'; }
         }
