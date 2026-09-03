@@ -1001,9 +1001,13 @@ class PresenterApp {
 
     const isUnlocked = sessionStorage.getItem(`unlocked_session_${this.sessionId}`) === 'true' ||
                        sessionStorage.getItem(`pres_pin_${this.presentationId}`) === 'valid' ||
-                       sessionStorage.getItem('admin_pin_authenticated') === 'true';
+                       sessionStorage.getItem('admin_pin_authenticated') === 'true' ||
+                       localStorage.getItem('slidemesh_admin_auth') === 'true';
 
     if (isUnlocked) {
+      if (localStorage.getItem('slidemesh_admin_auth') === 'true' && sessionStorage.getItem('admin_pin_authenticated') !== 'true') {
+        sessionStorage.setItem('admin_pin_authenticated', 'true');
+      }
       this.hidePresenterLockScreen();
       return true;
     }
@@ -1104,6 +1108,11 @@ class PresenterApp {
       if (isValid) {
         sessionStorage.setItem(`unlocked_session_${this.sessionId}`, 'true');
         sessionStorage.setItem(`pres_pin_${this.presentationId}`, 'valid');
+        sessionStorage.setItem('admin_pin_authenticated', 'true');
+        localStorage.setItem('slidemesh_admin_auth', 'true');
+        localStorage.setItem('slidemesh_admin_auth_time', String(Date.now()));
+        sessionStorage.setItem('admin_master_pin_code', String(entered));
+        localStorage.setItem('admin_master_pin_code', String(entered));
         if (this.dom.pinError) this.dom.pinError.style.display = 'none';
         this.hidePresenterLockScreen();
         this.updateSlideView();
@@ -1147,6 +1156,9 @@ class PresenterApp {
       if (loggedUser) {
         sessionStorage.setItem(`unlocked_session_${this.sessionId}`, 'true');
         sessionStorage.setItem(`pres_pin_${this.presentationId}`, 'valid');
+        sessionStorage.setItem('admin_pin_authenticated', 'true');
+        localStorage.setItem('slidemesh_admin_auth', 'true');
+        localStorage.setItem('slidemesh_admin_auth_time', String(Date.now()));
         if (this.dom.userError) this.dom.userError.style.display = 'none';
         this.hidePresenterLockScreen();
         this.updateSlideView();
@@ -1170,6 +1182,9 @@ class PresenterApp {
       if (user) {
         sessionStorage.setItem(`unlocked_session_${this.sessionId}`, 'true');
         sessionStorage.setItem(`pres_pin_${this.presentationId}`, 'valid');
+        sessionStorage.setItem('admin_pin_authenticated', 'true');
+        localStorage.setItem('slidemesh_admin_auth', 'true');
+        localStorage.setItem('slidemesh_admin_auth_time', String(Date.now()));
         this.hidePresenterLockScreen();
         this.updateSlideView();
         this.renderPulpitSlideSorter();
@@ -1185,6 +1200,10 @@ class PresenterApp {
     sessionStorage.removeItem(`unlocked_session_${this.sessionId}`);
     sessionStorage.removeItem(`pres_pin_${this.presentationId}`);
     sessionStorage.removeItem('admin_pin_authenticated');
+    sessionStorage.removeItem('admin_master_pin_code');
+    localStorage.removeItem('slidemesh_admin_auth');
+    localStorage.removeItem('slidemesh_admin_auth_time');
+    localStorage.removeItem('admin_master_pin_code');
     if (this.auth && typeof this.auth.signOut === 'function') {
       this.auth.signOut();
     }

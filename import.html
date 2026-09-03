@@ -1127,7 +1127,12 @@
           const cfg = await res.json();
           const isStudioProtected = cfg.multiAuth?.scopes?.studio === true;
           const isAuth = sessionStorage.getItem('admin_pin_authenticated') === 'true' ||
+                         localStorage.getItem('slidemesh_admin_auth') === 'true' ||
                          (cfg.currentUser && !cfg.currentUser.isAnonymous && (cfg.currentUser.role === 'admin' || cfg.currentUser.role === 'presenter'));
+
+          if (isAuth && sessionStorage.getItem('admin_pin_authenticated') !== 'true') {
+            sessionStorage.setItem('admin_pin_authenticated', 'true');
+          }
 
           if (isStudioProtected && !isAuth) {
             promptStudioGlobalUnlock();
@@ -1164,6 +1169,10 @@
         const data = await res.json();
         if (res.ok && data.success) {
           sessionStorage.setItem('admin_pin_authenticated', 'true');
+          localStorage.setItem('slidemesh_admin_auth', 'true');
+          localStorage.setItem('slidemesh_admin_auth_time', String(Date.now()));
+          sessionStorage.setItem('admin_master_pin_code', String(entered));
+          localStorage.setItem('admin_master_pin_code', String(entered));
           if (pendingProtectedSlug !== '__GLOBAL_STUDIO__') {
             sessionStorage.setItem('pres_pin_' + pendingProtectedSlug, 'valid');
             sessionStorage.setItem('pres_pin_code_' + pendingProtectedSlug, entered);
@@ -1195,7 +1204,7 @@
       if (e.key === 'Enter') verifyStudioPin();
     });
 
-    // Carregar Apresentação Existente para Edição (Plano 17 - Fase 4)
+    // Carregar Apresentação Existente para Edição (Plano 17 - Fase 4 / Plano 20 - Fase 4)
     async function loadExistingPresentation(slug, bypassAuthCheck = false) {
       try {
         document.getElementById('section-step-1').innerHTML = `
@@ -1211,10 +1220,11 @@
         const manifest = await resMan.json();
         manifest.id = manifest.id || slug;
 
-        // Gatekeeper de Segurança no Studio (Plano 17 - Fase 4)
+        // Gatekeeper de Segurança no Studio (Plano 17 - Fase 4 / Plano 20 - Fase 4)
         const isProtected = manifest.security?.mode === 'pin' || manifest.isProtected || (manifest.securityLabel && manifest.securityLabel.includes('PIN'));
         const isAuth = sessionStorage.getItem('pres_pin_' + slug) === 'valid' ||
-                       sessionStorage.getItem('admin_pin_authenticated') === 'true';
+                       sessionStorage.getItem('admin_pin_authenticated') === 'true' ||
+                       localStorage.getItem('slidemesh_admin_auth') === 'true';
 
         if (isProtected && !isAuth && !bypassAuthCheck) {
           promptStudioUnlock(slug, manifest);
