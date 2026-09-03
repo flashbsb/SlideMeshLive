@@ -9,13 +9,15 @@
   "theme": {
     "primaryColor": "#ec4899",
     "accentColor": "#8b5cf6",
+    "font": "outfit",
+    "gradient": "sunset",
     "transition": "zoom",
     "transitionDuration": 400
   },
   "security": {
     "mode": "public",
     "requireAuthForInteraction": false,
-    "description": "Apresentação pública aberta sobre animações, efeitos e controle de palco."
+    "description": "Apresentação pública prática aberta para todos os participantes."
   },
   "defaultSession": "SES-PALCO",
   "pacing": {

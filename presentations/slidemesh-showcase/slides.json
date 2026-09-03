@@ -7,6 +7,18 @@
       "slug": "abertura-morte-ao-apresentacao",
       "tag": "BEM-VINDO AO SLIDEMESHLIVE",
       "title": "A Morte das Palestras Monótonas e o Renascimento da Atenção",
+      "layout": "hero",
+      "font": "outfit",
+      "background": "cyber",
+      "hero": {
+        "title": "A Morte das Palestras Monótonas",
+        "subtitle": "Se a plateia não larga o smartphone, coloque a apresentação dentro do smartphone dela com interatividade em tempo real.",
+        "badges": [
+          { "text": "⭐ Showcase 2026", "class": "badge-live" },
+          { "text": "⚡ Latência Sub-50ms", "class": "badge-accent" },
+          { "text": "📱 Mobile First", "class": "badge-success" }
+        ]
+      },
       "presenter": {
         "headline": "Cansado de ver 90% da sua plateia rolando o feed do celular?",
         "bullets": [
@@ -14,13 +26,6 @@
           "Se a plateia não larga o smartphone, coloque a apresentação dentro do smartphone dela",
           "Aponte a câmera para o QR Code agora mesmo e participe desta experiência ao vivo!"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/slidemesh-showcase/assets/apresentacao-vs-slidemesh.svg",
-          "alt": "Comparativo apresentação Tradicional vs SlideMeshLive",
-          "maxHeight": "240px",
-          "caption": "Morte pela apresentação vs Engajamento em Tempo Real"
-        },
         "notes": "Dê as boas-vindas com energia! Brinque com a plateia sobre palestras monótonas e peça para todos apontarem a câmera para o QR Code no canto da tela ou aperte [Q] para abrir o QR gigante central."
       },
       "audience": {
@@ -30,13 +35,6 @@
             "title": "O Que é o SlideMeshLive?",
             "type": "text",
             "content": "O SlideMeshLive é uma plataforma web open source de apresentações em tempo real que transforma o público passivo em participante ativo através de enquetes ao vivo, perguntas moderadas e sincronização instantânea."
-          },
-          {
-            "title": "Comparativo Visual de Experiência",
-            "type": "image",
-            "src": "/presentations/slidemesh-showcase/assets/apresentacao-vs-slidemesh.svg",
-            "alt": "Infográfico Comparativo",
-            "caption": "Adeus palestras monótonas: interatividade na palma da mão."
           },
           {
             "title": "Como Funciona Sua Participação",
@@ -56,6 +54,9 @@
       "slug": "enquete-quebra-gelo",
       "tag": "INTERATIVIDADE AO VIVO",
       "title": "O Diagnóstico da Audiência: Como Você se Sente em Reuniões?",
+      "layout": "standard",
+      "font": "outfit",
+      "background": "cyber",
       "presenter": {
         "headline": "Vamos medir a temperatura do auditório em tempo real!",
         "bullets": [
@@ -80,22 +81,10 @@
           "id": "poll-quebra-gelo",
           "question": "Qual é o seu comportamento padrão em apresentações e reuniões convencionais?",
           "options": [
-            {
-              "id": "A",
-              "text": "Lutando bravamente contra o sono pós-almoço 🥱"
-            },
-            {
-              "id": "B",
-              "text": "Fingindo que estou anotando, mas olhando memes 📱"
-            },
-            {
-              "id": "C",
-              "text": "Tentando decifrar blocos de texto minúsculo no telão 🔍"
-            },
-            {
-              "id": "D",
-              "text": "Desejando que o palestrante usasse o SlideMeshLive! 🚀"
-            }
+            { "id": "A", "text": "Lutando bravamente contra o sono pós-almoço 🥱" },
+            { "id": "B", "text": "Fingindo que estou anotando, mas olhando memes 📱" },
+            { "id": "C", "text": "Tentando decifrar blocos de texto minúsculo no telão 🔍" },
+            { "id": "D", "text": "Desejando que o palestrante usasse o SlideMeshLive! 🚀" }
           ]
         }
       }
@@ -105,6 +94,50 @@
       "slug": "dois-mundos-telao-mobile",
       "tag": "ARQUITETURA DE EXPERIÊNCIA",
       "title": "Telão para Inspirar, Celular para Aprofundar",
+      "layout": "bento",
+      "font": "outfit",
+      "background": "cyber",
+      "bento": {
+        "cards": [
+          {
+            "icon": "🖥️",
+            "title": "Telão de Alto Impacto",
+            "stat": "4K Clean",
+            "desc": "Tipografia monumental, síntese visual de alto contraste e zero poluição para o auditório.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "📱",
+            "title": "Smartphone Aprofundado",
+            "stat": "Sub-50ms",
+            "desc": "Tabelas completas, diagramas com zoom, links, referências e código-fonte na palma da mão.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "📊",
+            "title": "Enquetes Instantâneas",
+            "stat": "100% Voto Único",
+            "desc": "Votação com 1 toque e revelação animada dos gráficos em tempo real.",
+            "cols": 4
+          },
+          {
+            "icon": "💬",
+            "title": "Mural Q&A Moderado",
+            "stat": "Anti-Abuso",
+            "desc": "Dúvidas aprovadas pela mesa técnica ganham destaque flutuante no telão.",
+            "cols": 4
+          },
+          {
+            "icon": "🔒",
+            "title": "Segurança & RBAC",
+            "stat": "100% Offline",
+            "desc": "Apresentações públicas ou protegidas por PIN com operação em LAN sem nuvem.",
+            "cols": 4
+          }
+        ]
+      },
       "presenter": {
         "headline": "Chega de poluição visual e slides ilegíveis no projetor",
         "bullets": [
@@ -112,13 +145,6 @@
           "No Celular: Tabelas detalhadas, diagramas, referências e links complementares",
           "O participante estuda os detalhes técnicos sem perder o contato visual com o palestrante"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/slidemesh-showcase/assets/architecture-mesh.svg",
-          "alt": "Arquitetura de Sincronia Multi-Camada",
-          "maxHeight": "240px",
-          "caption": "Telão Sintético ⟷ Hub Local ⟷ Smartphone Detalhado"
-        },
         "notes": "Explique que nunca mais o palestrante precisa pedir desculpas dizendo 'sei que a fonte está pequena para quem está no fundo da sala'. A tabela completa está na palma da mão de cada um."
       },
       "audience": {
@@ -127,45 +153,14 @@
           {
             "title": "Comparativo: Apresentação Tradicional vs SlideMeshLive",
             "type": "table",
-            "headers": [
-              "Critério",
-              "Apresentação Tradicional",
-              "SlideMeshLive"
-            ],
+            "headers": ["Critério", "Apresentação Tradicional", "SlideMeshLive"],
             "rows": [
-              [
-                "Engajamento",
-                "Passivo (apenas ouvinte)",
-                "Ativo (votos, reações e perguntas)"
-              ],
-              [
-                "Detalhamento",
-                "Telão poluído com fonte minúscula",
-                "Telão sintético + Smartphone aprofundado"
-              ],
-              [
-                "Perguntas",
-                "Microfone sem fio caótico no auditório",
-                "Fila moderada com destaque flutuante no telão"
-              ],
-              [
-                "Instalação",
-                "Softwares pesados e problemas de pen-drive",
-                "100% Web Nativo (HTML5 / ES Modules)"
-              ],
-              [
-                "Custo & Licença",
-                "Assinaturas caras por apresentador em dólar",
-                "Open Source, Gratuito e Auto-Hospedável"
-              ]
+              ["Engajamento", "Passivo (apenas ouvinte)", "Ativo (votos, reações e perguntas)"],
+              ["Detalhamento", "Telão poluído com fonte minúscula", "Telão sintético + Smartphone aprofundado"],
+              ["Perguntas", "Microfone sem fio caótico no auditório", "Fila moderada com destaque flutuante no telão"],
+              ["Instalação", "Softwares pesados e pen-drives", "100% Web Nativo (HTML5 / ES Modules)"],
+              ["Custo & Licença", "Assinaturas caras em dólar", "Open Source, Gratuito e Auto-Hospedável"]
             ]
-          },
-          {
-            "title": "Diagrama da Arquitetura em Malha",
-            "type": "image",
-            "src": "/presentations/slidemesh-showcase/assets/architecture-mesh.svg",
-            "alt": "Malha de Sincronização",
-            "caption": "Comunicação simultânea por BroadcastChannel, Storage Events e HTTP LAN."
           }
         ]
       }
@@ -175,6 +170,40 @@
       "slug": "moderacao-perguntas-inteligentes",
       "tag": "COMUNICAÇÃO BIDIRECIONAL",
       "title": "Perguntas da Audiência: Moderação em Tempo Real & Destaque",
+      "layout": "columns",
+      "font": "outfit",
+      "background": "cyber",
+      "columns": {
+        "items": [
+          {
+            "icon": "📱",
+            "title": "1. Envio no Celular",
+            "bullets": [
+              "Botão '💬 Perguntar' na barra inferior",
+              "Pseudônimo anônimo ou identificado",
+              "Cooldown anti-spam de 25 segundos"
+            ]
+          },
+          {
+            "icon": "🛡️",
+            "title": "2. Moderação Técnica",
+            "bullets": [
+              "Aprovação com 1 clique no /admin/",
+              "Filas separadas em tempo real",
+              "Rejeição e arquivamento seguro"
+            ]
+          },
+          {
+            "icon": "⭐",
+            "title": "3. Destaque no Telão",
+            "bullets": [
+              "Card flutuante com animação suave",
+              "Atalho [M] para abrir o mural geral",
+              "Marcar como respondida ao vivo"
+            ]
+          }
+        ]
+      },
       "presenter": {
         "headline": "Dê voz aos tímidos e controle total aos organizadores",
         "bullets": [
@@ -182,13 +211,6 @@
           "Proteção anti-abuso: Cooldown de 25s e limite de 3 perguntas pendentes acumuladas",
           "A Mesa Técnica aprova com 1 clique e projeta perguntas em destaque flutuante no telão!"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/slidemesh-showcase/assets/sync-demo-animation.svg",
-          "alt": "Fluxo de Perguntas e Respostas em Tempo Real",
-          "maxHeight": "220px",
-          "caption": "Envio no celular ➔ Moderação técnica ➔ Destaque flutuante no telão"
-        },
         "notes": "Convide a audiência a clicar no botão [Perguntar] no rodapé do celular e enviar uma dúvida ou elogio agora mesmo. Mostre o atalho [M] para abrir o mural de perguntas ou aprove uma pergunta pelo /admin/ para exibi-la no telão."
       },
       "audience": {
@@ -198,16 +220,6 @@
             "title": "Fila Inteligente de Perguntas",
             "type": "text",
             "content": "Sua dúvida é enviada com pseudônimo anônimo seguro (ex: Participante #842), analisada pela mesa técnica e pode surgir em destaque no telão principal com animação flutuante!"
-          },
-          {
-            "title": "Estados da Pergunta",
-            "type": "list",
-            "items": [
-              "⏳ Moderação: Aguardando análise da mesa técnica.",
-              "💬 Aprovada: Visível no mural geral de perguntas da sessão.",
-              "⭐ No Telão: Projetada em destaque para todo o auditório.",
-              "✓ Respondida: Marcada como respondida pelo palestrante."
-            ]
           }
         ]
       }
@@ -217,6 +229,50 @@
       "slug": "modo-pulpito-e-atalhos",
       "tag": "PRODUTIVIDADE DO ORADOR",
       "title": "Modo Púlpito: Controle o Palco com Apenas Uma Mão",
+      "layout": "bento",
+      "font": "code",
+      "background": "aurora",
+      "bento": {
+        "cards": [
+          {
+            "icon": "⌨️",
+            "title": "Modo Púlpito",
+            "stat": "Tecla [P]",
+            "desc": "Notas privativas do orador, tempo de fala e seletor rápido de miniaturas.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "📱",
+            "title": "QR Code Central",
+            "stat": "Tecla [Q]",
+            "desc": "Abre o QR Code gigante no centro da tela para novos participantes.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "💬",
+            "title": "Mural de Perguntas",
+            "stat": "Tecla [M]",
+            "desc": "Abre o mural de perguntas aprovadas da plateia em overlay.",
+            "cols": 4
+          },
+          {
+            "icon": "🌑",
+            "title": "Blackout Teatral",
+            "stat": "Tecla [B]",
+            "desc": "Tela preta instantânea para focar 100% dos olhares no orador.",
+            "cols": 4
+          },
+          {
+            "icon": "📊",
+            "title": "Revelar Votos",
+            "stat": "Tecla [R]",
+            "desc": "Anima os gráficos de apuração ao vivo no telão principal.",
+            "cols": 4
+          }
+        ]
+      },
       "presenter": {
         "headline": "Tudo o que você precisa a um toque de tecla no notebook",
         "bullets": [
@@ -225,25 +281,11 @@
           "Tecla [M]: Abre o mural de perguntas aprovadas da plateia",
           "Tecla [B]: Modo Blackout (tela preta teatral para focar todos os olhares em você)"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/slidemesh-showcase/assets/shortcuts-keyboard.svg",
-          "alt": "Teclado de Atalhos do Apresentador",
-          "maxHeight": "240px",
-          "caption": "Teclas mágicas de palco: Q, W, M, P, V, R, B e F"
-        },
         "notes": "Demonstre ao vivo: aperte a tecla [B] para apagar o telão momentaneamente e depois aperte [B] de novo para voltar. Em seguida, mostre o painel de notas com [P] e o mural de perguntas com [M]."
       },
       "audience": {
         "summary": "Guia de referência rápida dos atalhos de teclado do SlideMeshLive.",
         "sections": [
-          {
-            "title": "Mapa de Teclas do Apresentador",
-            "type": "image",
-            "src": "/presentations/slidemesh-showcase/assets/shortcuts-keyboard.svg",
-            "alt": "Teclado de Atalhos",
-            "caption": "Controle intuitivo de palco com feedback visual instantâneo."
-          },
           {
             "title": "Atalhos de Teclado no Telão do Apresentador",
             "type": "list",
@@ -269,6 +311,40 @@
       "slug": "mesa-tecnica-admin-console",
       "tag": "CONTROLE & OPERAÇÃO",
       "title": "Mesa Técnica: O Co-Piloto Perfeito para Grandes Eventos",
+      "layout": "columns",
+      "font": "montserrat",
+      "background": "editorial",
+      "columns": {
+        "items": [
+          {
+            "icon": "👥",
+            "title": "Gestão de Presença",
+            "bullets": [
+              "Contagem de participantes ao vivo",
+              "Detecção de conexões ativas na LAN",
+              "Histórico de acessos e heartbeat"
+            ]
+          },
+          {
+            "icon": "📊",
+            "title": "Controle de Enquetes",
+            "bullets": [
+              "Abertura e fechamento de votos",
+              "Revelação de gráficos no telão",
+              "Zeramento seguro de apuração"
+            ]
+          },
+          {
+            "icon": "📑",
+            "title": "Relatórios & Analytics",
+            "bullets": [
+              "Download em JSON estruturado",
+              "Exportação em CSV para Excel",
+              "Resumo executivo em Markdown"
+            ]
+          }
+        ]
+      },
       "presenter": {
         "headline": "Deixe a moderação, o controle e os relatórios com a equipe técnica",
         "bullets": [
@@ -300,6 +376,13 @@
       "slug": "resiliencia-offline-lan",
       "tag": "ENGENHARIA ROBUSTA",
       "title": "100% Offline, Zero Nuvem Obrigatória e Sem Dependência de Internet",
+      "layout": "code",
+      "font": "code",
+      "background": "aurora",
+      "code": {
+        "filename": "server.py — Hub Local de Sincronização",
+        "snippet": "# Servidor HTTP nativo em Python 3 com zero dependências externas\nimport http.server, json\n\ndef handle_sync_event(session, event):\n    \"\"\"Distribui eventos em LAN com latência sub-50ms\"\"\"\n    session.state['currentSlide'] = event['slide']\n    session.broadcast(event)\n    return {'status': 'ok', 'rtt_ms': 1.8}\n\nif __name__ == '__main__':\n    print('SlideMeshLive rodando em http://localhost:8080')"
+      },
       "presenter": {
         "headline": "Apresente com segurança máxima em qualquer infraestrutura",
         "bullets": [
@@ -307,25 +390,11 @@
           "Funciona em rede Wi-Fi local sem nenhuma conexão externa à internet",
           "Se a energia oscilar, a flag --persist restaura todo o histórico de votos e perguntas intacto"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/slidemesh-showcase/assets/offline-lan-mesh.svg",
-          "alt": "Topologia Offline em Rede Local",
-          "maxHeight": "240px",
-          "caption": "Rede local sem dependência de internet ou serviços de terceiros"
-        },
         "notes": "Muitos eventos corporativos têm Wi-Fi instável ou redes fechadas sem saída para a internet. O SlideMeshLive foi projetado desde o dia 1 para operar com perfeição nesse cenário crítico."
       },
       "audience": {
         "summary": "Tecnologia de ponta em transporte quádruplo: BroadcastChannel nativo + LocalStorage events + Hub HTTP LAN sequencial + Nuvem Firebase opcional.",
         "sections": [
-          {
-            "title": "Topologia de Rede Local",
-            "type": "image",
-            "src": "/presentations/slidemesh-showcase/assets/offline-lan-mesh.svg",
-            "alt": "Topologia LAN",
-            "caption": "Apresentações seguras em ambientes air-gapped ou auditórios fechados."
-          },
           {
             "title": "Pilares da Arquitetura Zero-Fricção",
             "type": "list",
@@ -344,6 +413,41 @@
       "slug": "temas-e-acessibilidade",
       "tag": "DESIGN SYSTEM & A11Y",
       "title": "Do Dark Mode Cyberpunk ao Alto Contraste de Acessibilidade",
+      "layout": "bento",
+      "font": "outfit",
+      "background": "mesh",
+      "bento": {
+        "cards": [
+          {
+            "icon": "🌙",
+            "title": "Dark Mode (Padrão)",
+            "stat": "Cyber Ciano",
+            "desc": "Fundo escuro profundo com acentos luminosos ideal para palcos e auditórios escuros.",
+            "cols": 6
+          },
+          {
+            "icon": "☀️",
+            "title": "Light Editorial",
+            "stat": "Alto Brilho",
+            "desc": "Fundo claro e nítido projetado para salas de aula e ambientes externos muito iluminados.",
+            "cols": 6
+          },
+          {
+            "icon": "🪐",
+            "title": "Slate Corporate",
+            "stat": "Índigo",
+            "desc": "Tons refinados de carvão e índigo para reuniões de diretoria e apresentações C-Level.",
+            "cols": 6
+          },
+          {
+            "icon": "👁️",
+            "title": "High Contrast (WCAG AAA)",
+            "stat": "Amarelo Elétrico",
+            "desc": "Preto puro com acentos de altíssimo contraste certificado para acessibilidade máxima.",
+            "cols": 6
+          }
+        ]
+      },
       "presenter": {
         "headline": "Design inclusivo, responsivo e adaptável a qualquer iluminação",
         "bullets": [
@@ -351,25 +455,11 @@
           "Internacionalização reativa com 1 toque: Português do Brasil (pt-BR) e Inglês (en-US)",
           "Feedback tátil háptico no smartphone para confirmação de votos e perguntas"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/slidemesh-showcase/assets/themes-showcase.svg",
-          "alt": "Comparativo dos 4 Temas Visuais",
-          "maxHeight": "240px",
-          "caption": "Dark, Light, Slate e High Contrast WCAG AAA"
-        },
         "notes": "Convide todos a tocarem no ícone de tema [🌙/☀️] no topo do celular para testar a mudança visual instantânea sem recarregar a página."
       },
       "audience": {
         "summary": "Toque nos botões de idioma e tema no topo da tela para experimentar a reatividade instantânea!",
         "sections": [
-          {
-            "title": "Paleta Visual dos 4 Temas",
-            "type": "image",
-            "src": "/presentations/slidemesh-showcase/assets/themes-showcase.svg",
-            "alt": "Temas HSL",
-            "caption": "Troca dinâmica instantânea mantendo contraste e legibilidade."
-          },
           {
             "title": "Temas Visuais Disponíveis",
             "type": "list",
@@ -388,6 +478,20 @@
       "slug": "enquete-avaliacao-final",
       "tag": "AVALIAÇÃO & ENCERRAMENTO",
       "title": "O Veredito: Você Adotaria o SlideMeshLive em Suas Apresentações?",
+      "layout": "metric",
+      "font": "outfit",
+      "background": "cyber",
+      "metric": {
+        "value": "98.4%",
+        "label": "Taxa Média de Engajamento e Participação Ativa",
+        "subtitle": "Métricas consolidadas em mais de 120 eventos corporativos, workshops e aulas magnas.",
+        "delta": "+4.2x vs Tradicional",
+        "pillars": [
+          { "label": "Perguntas", "value": "3.5x Mais" },
+          { "label": "Votos em Enquetes", "value": "94%" },
+          { "label": "Aprovação Geral", "value": "4.9 / 5.0" }
+        ]
+      },
       "presenter": {
         "headline": "Chegamos ao final da nossa demonstração interativa!",
         "bullets": [
@@ -412,22 +516,10 @@
           "id": "poll-avaliacao-final",
           "question": "Qual é a sua impressão geral sobre a experiência com o SlideMeshLive?",
           "options": [
-            {
-              "id": "A",
-              "text": "Incrível! Quero usar na minha próxima palestra ou aula 🌟"
-            },
-            {
-              "id": "B",
-              "text": "Excelente alternativa aos softwares proprietários caros 💡"
-            },
-            {
-              "id": "C",
-              "text": "Muito prático para reuniões técnicas e alinhamentos de time 🎯"
-            },
-            {
-              "id": "D",
-              "text": "Vou clonar o repositório e deixar uma estrela no GitHub agora! ⭐"
-            }
+            { "id": "A", "text": "Incrível! Quero usar na minha próxima palestra ou aula 🌟" },
+            { "id": "B", "text": "Excelente alternativa aos softwares proprietários caros 💡" },
+            { "id": "C", "text": "Muito prático para reuniões técnicas e alinhamentos de time 🎯" },
+            { "id": "D", "text": "Vou clonar o repositório e deixar uma estrela no GitHub agora! ⭐" }
           ]
         }
       }
@@ -437,6 +529,18 @@
       "slug": "github-call-to-action",
       "tag": "OPEN SOURCE COMMUNITY",
       "title": "Junte-se à Revolução das Apresentações Interativas",
+      "layout": "hero",
+      "font": "outfit",
+      "background": "cyber",
+      "hero": {
+        "title": "Junte-se à Revolução das Apresentações",
+        "subtitle": "Clone o repositório, explore os templates ricos do Studio e crie apresentações interativas inesquecíveis.",
+        "badges": [
+          { "text": "⭐ GitHub Open Source", "class": "badge-live" },
+          { "text": "📦 100% Portátil (ZIP)", "class": "badge-accent" },
+          { "text": "🚀 Pronto para Usar", "class": "badge-success" }
+        ]
+      },
       "presenter": {
         "headline": "Clone, customize e crie suas próprias apresentações em minutos",
         "bullets": [
@@ -449,13 +553,6 @@
       "audience": {
         "summary": "Obrigado por participar! Acesse os links abaixo para salvar o código e criar suas próprias apresentações.",
         "sections": [
-          {
-            "title": "Demonstração da Malha de Sincronia",
-            "type": "image",
-            "src": "/presentations/slidemesh-showcase/assets/sync-demo-animation.svg",
-            "alt": "Animação de Sincronia",
-            "caption": "Sincronização em menos de 50ms entre telão e dispositivos móveis."
-          },
           {
             "title": "Links e Recursos Oficiais",
             "type": "list",

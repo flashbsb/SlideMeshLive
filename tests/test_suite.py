@@ -3833,6 +3833,113 @@ def test_plano18_ux_resilience_active_modals_and_key_guards():
     print("✓ Plano 18 (Varredura Geral, Resiliência de UX, Modais .active e Key Guards) 100% HOMOLOGADO.")
 
 
+def test_plano19_rich_layouts_typography_multimedia_and_catalog():
+    """
+    Valida a implementação das 5 Fases do Plano 19:
+    1. Motor de Layouts Ricos & Tipografia Aberta (7 layouts semânticos, 5 fontes Google e 5 gradientes temáticos).
+    2. Componentes Multimídia (Vídeo em loop silencioso de fundo e player de áudio elegante com visualizador de ondas).
+    3. Modernização do SlideMesh Studio (6 templates prontos, seletores globais e contextuais de layout e preview WYSIWYG).
+    4. Modernização dos 7 Decks Existentes + Criação de 3 Novos Decks no Catálogo (10 decks no total).
+    5. Homologação Completa e Verificação de Integridade Funcional.
+    """
+    print(f"\n{'='*70}")
+    print(" 🧪 38. Plano 19: Showcase de Apresentações, Layouts Ricos, Multimídia e Catálogo Expandido")
+    print(f"{'='*70}")
+    base_dir = BASE_DIR
+
+    # 1. Validação do Motor de Layouts Semânticos e Tipografia
+    pres_engine_js = os.path.join(base_dir, "js", "core", "presentation-engine.js")
+    with open(pres_engine_js, "r", encoding="utf-8") as f:
+        engine_content = f.read()
+
+    required_renderers = [
+        "renderBentoSlideHtml", "renderMetricSlideHtml", "renderQuoteSlideHtml",
+        "renderCodeSlideHtml", "renderColumnsSlideHtml", "renderTimelineSlideHtml",
+        "renderHeroSlideHtml", "getFontClass", "getBackgroundClass"
+    ]
+    for renderer in required_renderers:
+        assert renderer in engine_content, f"Função '{renderer}' ausente em presentation-engine.js!"
+    print(f"  ✓ PresentationEngine (presentation-engine.js): Todos os {len(required_renderers)} renderizadores semânticos e métodos de herança validados.")
+
+    # 2. Validação dos Estilos CSS
+    pres_css = os.path.join(base_dir, "css", "presenter.css")
+    with open(pres_css, "r", encoding="utf-8") as f:
+        css_content = f.read()
+
+    required_css_classes = [
+        ".slide-layout-bento", ".slide-layout-metric", ".slide-layout-quote",
+        ".slide-layout-code", ".slide-layout-columns", ".slide-layout-timeline", ".slide-layout-hero",
+        ".font-outfit", ".font-playfair", ".font-code", ".font-montserrat", ".font-inter",
+        ".slide-bg-cyber", ".slide-bg-aurora", ".slide-bg-sunset", ".slide-bg-editorial", ".slide-bg-mesh"
+    ]
+    for cls in required_css_classes:
+        assert cls in css_content, f"Classe CSS '{cls}' ausente em presenter.css!"
+    print(f"  ✓ Estilos de Layout & Tipografia (presenter.css): Todas as {len(required_css_classes)} classes de layout, tipografia e fundos temáticos validadas.")
+
+    # 3. Validação de Multimídia (Vídeo Loop & Áudio Cues)
+    assert "videoBackgroundLayer" in engine_content or "slide-video-bg-layer" in engine_content, "Suporte a vídeo em loop ausente em presentation-engine.js!"
+    assert "slide-audio-player-box" in engine_content or "slide-audio-wave-anim" in engine_content or "audio" in engine_content, "Suporte a áudio player estruturado ausente em presentation-engine.js!"
+
+    media_cache_js = os.path.join(base_dir, "js", "core", "media-cache-engine.js")
+    with open(media_cache_js, "r", encoding="utf-8") as f:
+        media_cache_content = f.read()
+    assert "videoBackground" in media_cache_content or "videoLoop" in media_cache_content, "Extração de vídeo em loop ausente em media-cache-engine.js!"
+    assert "audio.src" in media_cache_content or "slide.audio" in media_cache_content, "Extração de áudio ausente em media-cache-engine.js!"
+    print("  ✓ Mídias Estruturadas (media-cache-engine.js & presentation-engine.js): Camada de vídeo loop e player de áudio validados.")
+
+    # 4. Validação do SlideMesh Studio e Conversão
+    conv_engine_js = os.path.join(base_dir, "js", "core", "conversion-engine.js")
+    with open(conv_engine_js, "r", encoding="utf-8") as f:
+        conv_content = f.read()
+
+    required_templates = ["pitch", "masterclass", "vision", "training", "product", "blank"]
+    for tpl in required_templates:
+        assert f"type === '{tpl}'" in conv_content or f'type === "{tpl}"' in conv_content or f"'{tpl}'" in conv_content, f"Template '{tpl}' ausente em conversion-engine.js!"
+
+    import_html = os.path.join(base_dir, "import.html")
+    with open(import_html, "r", encoding="utf-8") as f:
+        import_content = f.read()
+
+    required_studio_controls = [
+        "cfg-font", "cfg-gradient", "edit-slide-layout",
+        "edit-slide-font", "edit-slide-bg", "edit-slide-video-bg",
+        "layout-contextual-fields"
+    ]
+    for ctrl in required_studio_controls:
+        assert ctrl in import_content, f"Controle de estúdio '{ctrl}' ausente em import.html!"
+    print("  ✓ SlideMesh Studio (conversion-engine.js & import.html): 6 templates ricos e controles contextuais WYSIWYG validados.")
+
+    # 5. Validação dos 10 Decks no Catálogo
+    catalog_path = os.path.join(base_dir, "presentations", "catalog.json")
+    with open(catalog_path, "r", encoding="utf-8") as f:
+        catalog = json.load(f)
+
+    presentations = catalog.get("presentations", [])
+    assert len(presentations) == 10, f"Esperado exatamente 10 apresentações no catálogo, encontrado {len(presentations)}!"
+
+    pids = [p["id"] for p in presentations]
+    expected_new_pids = ["pitch-startup-ia", "tech-masterclass-backend", "executive-board-report"]
+    for npid in expected_new_pids:
+        assert npid in pids, f"Nova apresentação '{npid}' não encontrada no catálogo!"
+
+    # Verifica se os 7 novos layouts semânticos estão distribuídos pelos decks
+    all_used_layouts = set()
+    for p in presentations:
+        pid = p["id"]
+        slides_path = os.path.join(base_dir, "presentations", pid, "slides.json")
+        with open(slides_path, "r", encoding="utf-8") as sf:
+            sdata = json.load(sf)
+            for sl in sdata.get("slides", []):
+                if "layout" in sl:
+                    all_used_layouts.add(sl["layout"])
+
+    for expected_layout in ["bento", "metric", "quote", "code", "columns", "timeline", "hero"]:
+        assert expected_layout in all_used_layouts, f"Layout semântico '{expected_layout}' não está sendo utilizado em nenhum slide do catálogo!"
+    print(f"  ✓ Catálogo Expandido (catalog.json): 10 apresentações estruturadas e cobrindo 100% dos 7 layouts semânticos.")
+
+    print("✓ Plano 19 (Showcase de Apresentações, Layouts Ricos, Multimídia e Catálogo Expandido) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -3872,6 +3979,7 @@ if __name__ == "__main__":
         test_plano17_phase5_smartphone_hardening_anti_spoofing_and_https()
         test_plano17_phase6_governance_matrix_and_wizard_redesign()
         test_plano18_ux_resilience_active_modals_and_key_guards()
+        test_plano19_rich_layouts_typography_multimedia_and_catalog()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time

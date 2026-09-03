@@ -1,0 +1,28 @@
+{
+  "id": "executive-board-report",
+  "code": "BOARD-2026",
+  "title": "Relatório Executivo & Conselho: Estratégia 2026",
+  "subtitle": "Governança Corporativa, Resultados Financeiros e Alocação de Capital",
+  "version": "1.0.0",
+  "author": "SlideMeshLive Governance Board",
+  "description": "Modelo de relatório executivo e conselho de administração com citação editorial monumental em Playfair, pilares de governança corporativa, métricas de EBITDA e enquete de deliberação.",
+  "theme": {
+    "primaryColor": "#0284c7",
+    "accentColor": "#f59e0b",
+    "font": "montserrat",
+    "gradient": "editorial",
+    "transition": "fade",
+    "transitionDuration": 400
+  },
+  "security": {
+    "mode": "public",
+    "requireAuthForInteraction": false,
+    "description": "Relatório executivo aberto para reuniões de conselho e liderança."
+  },
+  "defaultSession": "SES-BOARD2026",
+  "pacing": {
+    "mode": "lock_future",
+    "allowReviewPast": true
+  },
+  "tags": ["executivo", "board", "governanca", "estrategia", "financeiro"]
+}

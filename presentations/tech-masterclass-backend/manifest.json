@@ -1,0 +1,28 @@
+{
+  "id": "tech-masterclass-backend",
+  "code": "TECH-2026",
+  "title": "Masterclass: Engenharia de Baixa Latência em Sistemas Distribuídos",
+  "subtitle": "Arquiteturas Síncronas, Tolerância a Falhas e Otimizações de Memória",
+  "version": "1.0.0",
+  "author": "SlideMeshLive Architecture Core",
+  "description": "Masterclass técnica aprofundada demonstrando terminais de código macOS com syntax highlight, 3 colunas de padrões arquiteturais, métricas de SLA e quiz técnico ao vivo.",
+  "theme": {
+    "primaryColor": "#10b981",
+    "accentColor": "#38bdf8",
+    "font": "code",
+    "gradient": "aurora",
+    "transition": "slide",
+    "transitionDuration": 350
+  },
+  "security": {
+    "mode": "public",
+    "requireAuthForInteraction": false,
+    "description": "Masterclass técnica aberta para engenheiros e desenvolvedores."
+  },
+  "defaultSession": "SES-TECH2026",
+  "pacing": {
+    "mode": "lock_future",
+    "allowReviewPast": true
+  },
+  "tags": ["tech", "backend", "concorrencia", "performance", "masterclass"]
+}

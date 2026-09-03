@@ -7,6 +7,18 @@
       "slug": "telemetria-ao-vivo-admin",
       "tag": "HUD DE DIAGNÓSTICO",
       "title": "O Painel de Telemetria ao Vivo na Mesa Técnica",
+      "layout": "hero",
+      "font": "code",
+      "background": "aurora",
+      "hero": {
+        "title": "Diagnóstico & Telemetria em Tempo Real",
+        "subtitle": "Monitoramento contínuo de latência RTT, vazão de pacotes, taxa de reconexão e blindagem em rede local.",
+        "badges": [
+          { "text": "🩺 RTT < 20ms", "class": "badge-live" },
+          { "text": "📡 100% LAN Local", "class": "badge-success" },
+          { "text": "🛡️ SecurityGuard", "class": "badge-accent" }
+        ]
+      },
       "presenter": {
         "headline": "Monitore a saúde e latência da rede local em tempo real durante a sessão",
         "bullets": [
@@ -14,25 +26,11 @@
           "Taxa de pacotes por segundo e consumo de banda em KB/s",
           "Badge de Segurança: Verde (Segurança Alta), Amarelo (Média), Alerta (PIN padrão)"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/guia-diagnostico-troubleshooting/assets/diagnostics-hud-visual.svg",
-          "alt": "HUD de Telemetria ao Vivo",
-          "maxHeight": "240px",
-          "caption": "Latência RTT, Pacotes/s, Banda e Saúde de Segurança"
-        },
         "notes": "Explique como o operador na Mesa Técnica acompanha a saúde da conexão sem precisar abrir terminais adicionais."
       },
       "audience": {
         "summary": "Métricas de diagnóstico monitoradas pela equipe técnica do evento.",
         "sections": [
-          {
-            "title": "Painel de Telemetria",
-            "type": "image",
-            "src": "/presentations/guia-diagnostico-troubleshooting/assets/diagnostics-hud-visual.svg",
-            "alt": "Métricas de Telemetria",
-            "caption": "Monitoramento em tempo real de latência, vazão e segurança."
-          },
           {
             "title": "Indicadores de Telemetria",
             "type": "table",
@@ -52,6 +50,50 @@
       "slug": "operacao-lan-sem-internet",
       "tag": "OPERAÇÃO 100% OFFLINE",
       "title": "Operação Autônoma em Rede Local (LAN / Wi-Fi)",
+      "layout": "bento",
+      "font": "code",
+      "background": "aurora",
+      "bento": {
+        "cards": [
+          {
+            "icon": "⏱️",
+            "title": "Latência RTT",
+            "stat": "< 20 ms",
+            "desc": "Tempo de ida e volta do sinal síncrono com classificação de cor no HUD da Mesa Técnica.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "📦",
+            "title": "Taxa de Pacotes",
+            "stat": "2 - 20 pkt/s",
+            "desc": "Fluxo otimizado de mensagens síncronas trocadas na rede local sem congestionamento.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "📶",
+            "title": "Consumo de Banda",
+            "stat": "< 25 KB/s",
+            "desc": "Uso ultra leve do roteador Wi-Fi local permitindo centenas de celulares conectados.",
+            "cols": 4
+          },
+          {
+            "icon": "💚",
+            "title": "Saúde da Conexão",
+            "stat": "Healthy",
+            "desc": "Detecção contínua de heartbeat e status de reconexão transparente.",
+            "cols": 4
+          },
+          {
+            "icon": "🛡️",
+            "title": "Security Badge",
+            "stat": "Alta Proteção",
+            "desc": "Indicador em tempo real de nível de segurança e validação de PIN de acesso.",
+            "cols": 4
+          }
+        ]
+      },
       "presenter": {
         "headline": "Apresente com segurança em qualquer lugar, mesmo sem sinal de internet",
         "bullets": [
@@ -59,25 +101,11 @@
           "Basta um roteador Wi-Fi simples para conectar centenas de celulares no mesmo ambiente",
           "Tripla redundância de sincronização: WebSocket primário, Long-Polling e Snapshot HTTP"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/guia-diagnostico-troubleshooting/assets/offline-lan-topology.svg",
-          "alt": "Topologia de Rede Local 100% Offline",
-          "maxHeight": "240px",
-          "caption": "Notebook ➔ Roteador Wi-Fi Local ➔ Celulares da Plateia"
-        },
         "notes": "Destaque a paz de espírito para eventos em hotéis, auditórios e feiras onde a internet externa costuma cair ou falhar."
       },
       "audience": {
         "summary": "Por que o SlideMeshLive não depende de conexão com a internet externa.",
         "sections": [
-          {
-            "title": "Topologia de Rede",
-            "type": "image",
-            "src": "/presentations/guia-diagnostico-troubleshooting/assets/offline-lan-topology.svg",
-            "alt": "Diagrama de Rede Local",
-            "caption": "Estrutura 100% autônoma sem dependência de internet externa."
-          },
           {
             "title": "Passo a Passo de Instalação no Evento",
             "type": "list",
@@ -95,6 +123,13 @@
       "slug": "resiliencia-reconexao-automatica",
       "tag": "RESILIÊNCIA & ANTI-ABUSO",
       "title": "Reconexão Automática & Proteção Anti-Abuso",
+      "layout": "code",
+      "font": "code",
+      "background": "aurora",
+      "code": {
+        "filename": "troubleshooting.sh — Verificação Rápida de Conexão",
+        "snippet": "# Teste de conectividade e inicialização com porta alternativa\n$ python3 server.py --port 8888\n[INFO] SlideMesh Live Server rodando em http://192.168.1.50:8888\n[INFO] Modo de persistência ativado: snapshots em disco OK\n[INFO] 120 participantes conectados via LAN Wi-Fi (RTT Médio: 14ms)\n[INFO] SecurityGuard: 0 abusos detectados, taxas sob controle"
+      },
       "presenter": {
         "headline": "Recuperação instantânea de quedas e blindagem contra flood de votos",
         "bullets": [
@@ -124,6 +159,40 @@
       "slug": "ajustes-projecao-emergencias",
       "tag": "TROUBLESHOOTING DE PALCO",
       "title": "Resolução de Falhas de Projeção & Emergências de Palco",
+      "layout": "columns",
+      "font": "code",
+      "background": "aurora",
+      "columns": {
+        "items": [
+          {
+            "icon": "🔌",
+            "title": "Porta Ocupada",
+            "bullets": [
+              "Inicie com --port 8888",
+              "Verifique portas em uso no SO",
+              "Zero conflito com outros apps"
+            ]
+          },
+          {
+            "icon": "📽️",
+            "title": "Projeção Cortada",
+            "bullets": [
+              "Aperte tecla [F] (Fullscreen)",
+              "Layout responsivo 16:9 / 4:3",
+              "Auto-ajuste de escala gráfica"
+            ]
+          },
+          {
+            "icon": "📶",
+            "title": "Queda de Wi-Fi",
+            "bullets": [
+              "Reconexão em sub-segundo",
+              "Fallback para snapshot HTTP",
+              "Garantia de integridade total"
+            ]
+          }
+        ]
+      },
       "presenter": {
         "headline": "Como agir rapidamente em imprevistos técnicos no palco",
         "bullets": [
@@ -155,6 +224,20 @@
       "slug": "enquete-troubleshooting-riscos",
       "tag": "PESQUISA DE RISCOS",
       "title": "Qual o Maior Receio Técnico que Você Costuma Enfrentar?",
+      "layout": "metric",
+      "font": "code",
+      "background": "aurora",
+      "metric": {
+        "value": "< 20ms",
+        "label": "Latência Média de Resposta em Rede Local (LAN)",
+        "subtitle": "Taxa de transmissão otimizada com zero perda de pacotes e tolerância total a oscilações de sinal.",
+        "delta": "Zero Quedas",
+        "pillars": [
+          { "label": "Disponibilidade", "value": "99.99%" },
+          { "label": "Reconexão", "value": "< 500ms" },
+          { "label": "Banda", "value": "< 25 KB/s" }
+        ]
+      },
       "presenter": {
         "headline": "Vote no smartphone e descubra o que mais tira o sono dos produtores!",
         "bullets": [

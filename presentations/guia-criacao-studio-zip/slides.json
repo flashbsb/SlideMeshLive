@@ -6,22 +6,27 @@
       "id": 1,
       "slug": "studio-templates-prontos",
       "tag": "CRIAÇÃO RÁPIDA",
-      "title": "Criação em 1 Clique com 4 Templates Estruturados",
+      "title": "Criação em 1 Clique com 6 Templates Estruturados",
+      "layout": "hero",
+      "font": "outfit",
+      "background": "mesh",
+      "hero": {
+        "title": "SlideMesh Studio & Pacotes ZIP",
+        "subtitle": "Criação ágil, conversão multiformato inteligente (PPTX/Word/MD/PDF) e portabilidade total 100% offline.",
+        "badges": [
+          { "text": "🎨 Studio Visual", "class": "badge-accent" },
+          { "text": "📦 Portabilidade ZIP", "class": "badge-live" },
+          { "text": "⚡ 6 Templates Ricos", "class": "badge-success" }
+        ]
+      },
       "presenter": {
         "headline": "Inicie sua apresentação sem perder tempo com páginas em branco",
         "bullets": [
-          "Template Executivo & Pitch: Foco em métricas, tração e proposta de valor",
-          "Template Aula & Treinamento: Foco em didática, exemplos e quizzes",
-          "Template Demonstração de Produto: Foco em recursos, comparativos e CTA",
-          "Template Em Branco: Total liberdade criativa para começar do zero"
+          "Template Pitch Deck & Startup: Bento Grid, métricas de crescimento e roadmap",
+          "Template Masterclass Técnica: Terminal de código macOS, 3 colunas e quiz",
+          "Template Visão Executiva & Board: Citação editorial, governança e ROI",
+          "Template Aula & Treinamento e Template Demonstração de Produto"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/guia-criacao-studio-zip/assets/studio-templates-overview.svg",
-          "alt": "Os 4 Templates Prontos do Studio",
-          "maxHeight": "240px",
-          "caption": "Pitch, Aula, Produto e Em Branco"
-        },
         "notes": "Explique que no Studio (/import.html) o usuário clica no template desejado e já recebe a estrutura inicial pronta com manifesto e slides configurados."
       },
       "audience": {
@@ -30,14 +35,7 @@
           {
             "title": "Como Acessar os Templates",
             "type": "text",
-            "content": "Abra '/import.html' no navegador e clique em qualquer um dos 4 cards de modelos para pré-carregar um deck completo."
-          },
-          {
-            "title": "Templates Disponíveis",
-            "type": "image",
-            "src": "/presentations/guia-criacao-studio-zip/assets/studio-templates-overview.svg",
-            "alt": "Modelos Prontos",
-            "caption": "Selecione o modelo e comece a editar em segundos."
+            "content": "Abra '/import.html' no navegador e clique em qualquer um dos 6 cards de modelos para pré-carregar um deck completo."
           }
         ]
       }
@@ -45,8 +43,52 @@
     {
       "id": 2,
       "slug": "estruturacao-split-screen",
-      "tag": "COMPOSIÇÃO VISUAL",
-      "title": "Composição Visual & Split-Screen Automático",
+      "tag": "TEMPLATES RICOS DO STUDIO",
+      "title": "Modelos Prontos de Alta Fidelidade Visual",
+      "layout": "bento",
+      "font": "outfit",
+      "background": "mesh",
+      "bento": {
+        "cards": [
+          {
+            "icon": "🚀",
+            "title": "Pitch Deck & Startup",
+            "stat": "Outfit / Cyber",
+            "desc": "Hero monumental, Bento Grid moderno, métricas de crescimento e roadmap visual.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "💻",
+            "title": "Masterclass Técnica",
+            "stat": "Fira Code / Aurora",
+            "desc": "Terminal de código macOS, 3 colunas de padrões de engenharia e quiz interativo.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "🏛️",
+            "title": "Visão Executiva & Board",
+            "stat": "Montserrat / Editorial",
+            "desc": "Citação editorial de liderança, pilares de governança corporativa e análise de ROI.",
+            "cols": 4
+          },
+          {
+            "icon": "🎓",
+            "title": "Aula & Treinamento",
+            "stat": "Inter / Clean",
+            "desc": "Ementa estruturada, arquitetura conceitual e quiz de fixação ao vivo.",
+            "cols": 4
+          },
+          {
+            "icon": "✨",
+            "title": "Demonstração de Produto",
+            "stat": "Outfit / Sunset",
+            "desc": "Destaque de novos recursos, comparativo de mercado e votação da plateia.",
+            "cols": 4
+          }
+        ]
+      },
       "presenter": {
         "headline": "Divida o telão em 2 colunas simplesmente associando uma imagem",
         "bullets": [
@@ -57,15 +99,15 @@
         "notes": "Destaque o princípio de design: telão sintético para foco visual e smartphone rico para consulta detalhada."
       },
       "audience": {
-        "summary": "O segredo do split-screen automático no SlideMeshLive.",
+        "summary": "O segredo dos layouts ricos e automáticos no SlideMeshLive.",
         "sections": [
           {
-            "title": "Como Ativar o Split-Screen",
+            "title": "Como Funciona a Seleção de Layout",
             "type": "list",
             "items": [
-              "No editor do slide, adicione o caminho de uma imagem no campo 'Mídia / Imagem'.",
-              "O layout detecta a presença da mídia e reorganiza os elementos em 2 colunas harmoniosas.",
-              "Caso não haja imagem, o texto ocupa a largura central ideal com tipografia expandida."
+              "No editor do slide, selecione o 'Layout Semântico' desejado (Bento, Métrica, Código, etc.).",
+              "O Studio ajusta os campos contextuais e renderiza o preview WYSIWYG em tempo real.",
+              "Alterne fontes e fundos globalmente ou individualmente por slide."
             ]
           }
         ]
@@ -76,6 +118,50 @@
       "slug": "motor-importacao-multiformato",
       "tag": "CONVERSÃO UNIVERSAL",
       "title": "Importação Semântica Multiformato em 1 Clique",
+      "layout": "bento",
+      "font": "outfit",
+      "background": "mesh",
+      "bento": {
+        "cards": [
+          {
+            "icon": "📊",
+            "title": "PowerPoint (.pptx)",
+            "stat": "PPTX ➔ JSON",
+            "desc": "Extrai títulos, tópicos, marcadores e notas privativas do orador automaticamente.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "📄",
+            "title": "Documento Word (.docx)",
+            "stat": "DOCX ➔ Slides",
+            "desc": "Converte apostilas e relatórios mapeando cabeçalhos H1 e H2 em novos slides.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "📝",
+            "title": "Markdown (.md)",
+            "stat": "MD ➔ Deck",
+            "desc": "Interpreta divisores de página e listas de tópicos em segundos.",
+            "cols": 4
+          },
+          {
+            "icon": "📕",
+            "title": "Documento PDF (.pdf)",
+            "stat": "PDF Text",
+            "desc": "Extração de texto e estruturação automática de páginas.",
+            "cols": 4
+          },
+          {
+            "icon": "📦",
+            "title": "Pacote SlideMesh (.zip)",
+            "stat": "Import Direto",
+            "desc": "Descompacta e edita apresentações existentes com 100% de integridade.",
+            "cols": 4
+          }
+        ]
+      },
       "presenter": {
         "headline": "Arraste seus arquivos existentes e converta em apresentações interativas",
         "bullets": [
@@ -83,35 +169,21 @@
           "Word (.docx): Converte apostilas e relatórios em slides sequenciais",
           "Markdown (.md) & PDF (.pdf): Mapeia cabeçalhos H1/H2 e divide o conteúdo automaticamente"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/guia-criacao-studio-zip/assets/import-pipeline.svg",
-          "alt": "Pipeline de Importação Multiformato",
-          "maxHeight": "240px",
-          "caption": "PPTX / DOCX / MD / PDF ➔ JSON ➔ .slidemesh.zip"
-        },
         "notes": "Demonstre a versatilidade: o usuário não precisa reescrever apresentações antigas do PowerPoint, basta arrastar o arquivo .pptx."
       },
       "audience": {
         "summary": "Formatos suportados pelo motor de importação do Studio.",
         "sections": [
           {
-            "title": "Fluxo de Importação",
-            "type": "image",
-            "src": "/presentations/guia-criacao-studio-zip/assets/import-pipeline.svg",
-            "alt": "Pipeline de Conversão",
-            "caption": "Extração semântica com divisão automática de slides e notas."
-          },
-          {
             "title": "Formatos Aceitos",
             "type": "table",
             "headers": ["Formato", "Extensão", "Extração Automática"],
             "rows": [
-              ["PowerPoint", ".pptx", "Slides, tópicos, bullets e notas de notas do orador"],
+              ["PowerPoint", ".pptx", "Slides, tópicos, bullets e notas do orador"],
               ["Documento Word", ".docx", "Seções H1/H2 transformadas em slides"],
               ["Markdown", ".md", "Divisão por cabeçalhos e listas de marcadores"],
               ["Documento PDF", ".pdf", "Páginas e texto estruturado"],
-              ["Página Web", ".html", "Tags semânticas de artigo e seções"]
+              ["Pacote ZIP", ".zip", "Importação completa de manifest e slides"]
             ]
           }
         ]
@@ -122,6 +194,40 @@
       "slug": "portabilidade-zip-standalone",
       "tag": "PORTABILIDADE TOTAL",
       "title": "Pacotes Portáteis Autocontidos (.slidemesh.zip)",
+      "layout": "columns",
+      "font": "outfit",
+      "background": "mesh",
+      "columns": {
+        "items": [
+          {
+            "icon": "📦",
+            "title": "1. 100% Autocontido",
+            "bullets": [
+              "Manifesto e slides JSON",
+              "Todas as imagens locais",
+              "Mídias de áudio e vídeo inclusas"
+            ]
+          },
+          {
+            "icon": "⚡",
+            "title": "2. Zero Dependência",
+            "bullets": [
+              "Funciona sem conexão à internet",
+              "Compatível com pendrive e LAN",
+              "Importação e execução em 1 clique"
+            ]
+          },
+          {
+            "icon": "🔒",
+            "title": "3. Backup Seguro",
+            "bullets": [
+              "Exportação via Portal e Studio",
+              "CLI tools/export_presentation.py",
+              "Preservação do histórico e PIN"
+            ]
+          }
+        ]
+      },
       "presenter": {
         "headline": "Exporte um pacote ZIP com tudo incluso e leve no seu pendrive",
         "bullets": [
@@ -147,6 +253,20 @@
       "slug": "enquete-formatos-favoritos",
       "tag": "PESQUISA DE USO",
       "title": "Qual Formato Você Mais Costuma Converter?",
+      "layout": "metric",
+      "font": "outfit",
+      "background": "mesh",
+      "metric": {
+        "value": "100%",
+        "label": "Portabilidade de Apresentações com Zero Dependência Externa",
+        "subtitle": "Exporte um pacote .slidemesh.zip e execute em qualquer computador sem precisar de conexão com a internet.",
+        "delta": "Offline Standalone",
+        "pillars": [
+          { "label": "Formatos", "value": "6 Tipos" },
+          { "label": "Templates", "value": "6 Ricos" },
+          { "label": "Exportação", "value": "1 Clique" }
+        ]
+      },
       "presenter": {
         "headline": "Vote no seu smartphone e descubra a preferência da comunidade!",
         "bullets": [

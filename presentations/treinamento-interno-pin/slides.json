@@ -7,6 +7,18 @@
       "slug": "seguranca-acesso-pin",
       "tag": "ACESSO RESTRITO",
       "title": "Acesso Restrito na Prática: Desbloqueio por PIN (7482)",
+      "layout": "hero",
+      "font": "montserrat",
+      "background": "dark",
+      "hero": {
+        "title": "Segurança, PINs & Governança RBAC",
+        "subtitle": "Controle de acesso granular, autenticação server-side e travas pedagógicas de ritmo.",
+        "badges": [
+          { "text": "🔒 PIN 7482", "class": "badge-live" },
+          { "text": "🛡️ Matriz RBAC", "class": "badge-accent" },
+          { "text": "⏱️ Pacing Lock", "class": "badge-success" }
+        ]
+      },
       "presenter": {
         "headline": "Você acabou de desbloquear este guia digitando o PIN 7482 no seu celular!",
         "bullets": [
@@ -14,13 +26,6 @@
           "Dica personalizada exibida na tela de bloqueio do smartphone (ex: 'PIN: 7482')",
           "Ideal para workshops corporativos, provas técnicas e reuniões estratégicas"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/treinamento-interno-pin/assets/pin-gatekeeper-flow.svg",
-          "alt": "Fluxo de Validação de PIN no Smartphone",
-          "maxHeight": "240px",
-          "caption": "Scan QR ➔ Gatekeeper Backend ➔ Liberação Instantânea"
-        },
         "notes": "Parabenize o público por ter digitado o código 7482 no celular para desbloquear a visualização sincronizada."
       },
       "audience": {
@@ -30,13 +35,6 @@
             "title": "Como Funciona a Proteção por PIN?",
             "type": "text",
             "content": "Quando uma apresentação possui 'security.mode: pin', nenhum conteúdo dos slides é renderizado no smartphone até que o código correto seja validado pelo servidor."
-          },
-          {
-            "title": "Diagrama de Segurança",
-            "type": "image",
-            "src": "/presentations/treinamento-interno-pin/assets/pin-gatekeeper-flow.svg",
-            "alt": "Fluxo de PIN Gatekeeper",
-            "caption": "Validação segura de 4 dígitos sem trafegar senhas em texto puro."
           }
         ]
       }
@@ -46,6 +44,50 @@
       "slug": "setup-wizard-primeiro-uso",
       "tag": "SETUP INICIAL",
       "title": "Assistente de Primeiro Uso & Configuração de Segurança",
+      "layout": "bento",
+      "font": "montserrat",
+      "background": "dark",
+      "bento": {
+        "cards": [
+          {
+            "icon": "🔑",
+            "title": "PIN de Apresentação",
+            "stat": "4 Dígitos",
+            "desc": "Bloqueio estrito validado via backend no smartphone antes da renderização.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "🛡️",
+            "title": "Setup Wizard",
+            "stat": "/setup.html",
+            "desc": "Assistente inicial para gerar PINs e credenciais criptografadas em 1 clique.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "👥",
+            "title": "Matriz RBAC",
+            "stat": "3 Perfis",
+            "desc": "Admin, Presenter e Audience com privilégios estritamente isolados.",
+            "cols": 4
+          },
+          {
+            "icon": "⏱️",
+            "title": "Pacing Lock",
+            "stat": "Lock Future",
+            "desc": "Impede participantes de pularem para slides futuros antes da fala do orador.",
+            "cols": 4
+          },
+          {
+            "icon": "🌐",
+            "title": "Modo Intranet",
+            "stat": "Zero Vazamento",
+            "desc": "Bloqueia acesso a qualquer deck sem autorização prévia por senha global.",
+            "cols": 4
+          }
+        ]
+      },
       "presenter": {
         "headline": "Defina o PIN mestre do evento e credenciais em menos de 2 minutos",
         "bullets": [
@@ -75,6 +117,40 @@
       "slug": "painel-seguranca-mesa-tecnica",
       "tag": "RBAC NO ADMIN",
       "title": "Painel de Gestão de Segurança & Papéis RBAC",
+      "layout": "columns",
+      "font": "montserrat",
+      "background": "dark",
+      "columns": {
+        "items": [
+          {
+            "icon": "👑",
+            "title": "1. Admin",
+            "bullets": [
+              "Acesso total à Mesa Técnica (/admin)",
+              "Moderação de Q&A e Enquetes ao vivo",
+              "Gestão de credenciais e exportação ZIP"
+            ]
+          },
+          {
+            "icon": "🎤",
+            "title": "2. Presenter",
+            "bullets": [
+              "Controle do Telão do Palco (/presenter)",
+              "Modo Púlpito [P] com notas privadas",
+              "Atalhos de palco e comandos visuais"
+            ]
+          },
+          {
+            "icon": "📱",
+            "title": "3. Audience",
+            "bullets": [
+              "Acompanhamento síncrono no celular",
+              "Votação com trava de voto único",
+              "Envio moderado de dúvidas com pseudônimo"
+            ]
+          }
+        ]
+      },
       "presenter": {
         "headline": "Controle quem pode apresentar, moderar e participar do seu evento",
         "bullets": [
@@ -82,25 +158,11 @@
           "Crie contas para palestrantes convidados com login local ou Google Workspace",
           "Alterne o PIN da mesa técnica a qualquer momento sem reiniciar o servidor"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/treinamento-interno-pin/assets/rbac-matrix.svg",
-          "alt": "Matriz de Papéis RBAC",
-          "maxHeight": "240px",
-          "caption": "Administrador ➔ Palestrante ➔ Audiência"
-        },
         "notes": "Demonstre na Mesa Técnica onde fica o botão [🔐 Segurança] e como ele permite gerenciar usuários em tempo real."
       },
       "audience": {
         "summary": "Matriz de privilégios e permissões por perfil de usuário.",
         "sections": [
-          {
-            "title": "Matriz RBAC (Role-Based Access Control)",
-            "type": "image",
-            "src": "/presentations/treinamento-interno-pin/assets/rbac-matrix.svg",
-            "alt": "Tabela de Privilégios",
-            "caption": "Divisão estrita de privilégios para evitar intervenções não autorizadas."
-          },
           {
             "title": "Resumo dos Papéis",
             "type": "table",
@@ -117,8 +179,16 @@
     {
       "id": 4,
       "slug": "pacing-lock-controle-ritmo",
-      "tag": "TRAVA DE RITMO",
-      "title": "Trava de Ritmo da Plateia (Audience Pacing Lock)",
+      "tag": "GOVERNANÇA EDITORIAL",
+      "title": "A Importância da Governança de Conteúdo em Palco",
+      "layout": "quote",
+      "font": "playfair",
+      "background": "editorial",
+      "quote": {
+        "text": "Segurança corporativa em apresentações não é sobre criar burocracia, mas sobre garantir que dados estratégicos estejam visíveis apenas para quem deve vê-los, no momento exato em que devem ser debatidos.",
+        "author": "Diretoria de Segurança da Informação",
+        "role": "CISO Governance & Compliance Framework"
+      },
       "presenter": {
         "headline": "Impeça que o público avance os slides antes da hora e perca o foco",
         "bullets": [
@@ -144,6 +214,20 @@
       "slug": "quiz-seguranca-pratica",
       "tag": "QUIZ TÉCNICO",
       "title": "Quiz Técnico: Qual Política de Segurança Adotar?",
+      "layout": "metric",
+      "font": "montserrat",
+      "background": "dark",
+      "metric": {
+        "value": "100%",
+        "label": "Conformidade e Proteção de Dados em Sessões Corporativas",
+        "subtitle": "Zero vazamento de segredos com sanitização server-side de manifestos e tokens seguros.",
+        "delta": "Zero Secret Leak",
+        "pillars": [
+          { "label": "Validação", "value": "Server-Side" },
+          { "label": "Criptografia", "value": "SHA-256" },
+          { "label": "Controle", "value": "Pacing Lock" }
+        ]
+      },
       "presenter": {
         "headline": "Avalie os conhecimentos de segurança com apuração ao vivo!",
         "bullets": [

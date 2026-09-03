@@ -7,6 +7,18 @@
       "slug": "transicoes-visuais",
       "tag": "TRANSIÇÕES DE SLIDE",
       "title": "As 4 Transições Nativas de Slide no Telão",
+      "layout": "hero",
+      "font": "outfit",
+      "background": "sunset",
+      "hero": {
+        "title": "Transições de Palco & Efeitos 4K",
+        "subtitle": "Aceleração gráfica via GPU a 60 FPS com controles de transição cinematográfica e streaming local inteligente.",
+        "badges": [
+          { "text": "🎨 60 FPS Nativos", "class": "badge-live" },
+          { "text": "🎬 GPU Acelerada", "class": "badge-accent" },
+          { "text": "⚡ HTTP 206 Streaming", "class": "badge-success" }
+        ]
+      },
       "presenter": {
         "headline": "Efeitos visuais suaves com aceleração por GPU diretamente no navegador",
         "bullets": [
@@ -14,13 +26,6 @@
           "Duração e curvas de animação ajustáveis via CSS custom properties",
           "Transição sem quebra de layout mesmo com split-screen ativo"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/guia-animacoes-e-palco/assets/transition-types.svg",
-          "alt": "As 4 Transições Nativas de Tela",
-          "maxHeight": "240px",
-          "caption": "Fade, Zoom, Slide Horizontal e Slide Vertical"
-        },
         "notes": "Ao avançar este slide, observe o efeito suave de zoom cinematográfico configurado no manifesto deste deck."
       },
       "audience": {
@@ -30,23 +35,6 @@
             "title": "Configuração no manifest.json",
             "type": "text",
             "content": "No bloco 'theme', defina a chave 'transition' com um dos 4 valores suportados: 'fade', 'zoom', 'slide-horizontal' ou 'slide-vertical'."
-          },
-          {
-            "title": "Diagrama de Transições",
-            "type": "image",
-            "src": "/presentations/guia-animacoes-e-palco/assets/transition-types.svg",
-            "alt": "Tipos de Transição",
-            "caption": "Aceleração gráfica via GPU para máxima fluidez a 60 FPS."
-          },
-          {
-            "title": "Exemplo de Sintaxe JSON",
-            "type": "list",
-            "items": [
-              "\"transition\": \"zoom\"",
-              "\"transitionDuration\": 400",
-              "\"primaryColor\": \"#ec4899\"",
-              "\"accentColor\": \"#8b5cf6\""
-            ]
           }
         ]
       }
@@ -56,6 +44,50 @@
       "slug": "efeitos-canvas-2d",
       "tag": "EFEITOS ESPECIAIS 2D",
       "title": "Efeitos Visuais de Palco Acelerados em Canvas 2D",
+      "layout": "bento",
+      "font": "outfit",
+      "background": "sunset",
+      "bento": {
+        "cards": [
+          {
+            "icon": "🎉",
+            "title": "Chuva de Confetes",
+            "stat": "Canvas 2D",
+            "desc": "Celebrações de vitórias, anúncios de prêmios e momentos de encerramento.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "🔦",
+            "title": "Spotlight de Palco",
+            "stat": "Foco 4K",
+            "desc": "Ilumina e destaca pontos cruciais do slide com sombra dramática.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "🎆",
+            "title": "Partículas Flutuantes",
+            "stat": "Física 60fps",
+            "desc": "Atmosfera visual contínua para eventos tech e lançamentos.",
+            "cols": 4
+          },
+          {
+            "icon": "⚡",
+            "title": "Flash de Revelação",
+            "stat": "Strobe",
+            "desc": "Pico de luz suave ao revelar respostas corretas de enquetes.",
+            "cols": 4
+          },
+          {
+            "icon": "🎮",
+            "title": "Disparo na Mesa",
+            "stat": "1 Clique",
+            "desc": "Operador da mesa técnica controla todos os efeitos sem distrair o orador.",
+            "cols": 4
+          }
+        ]
+      },
       "presenter": {
         "headline": "Chuva de confetes, partículas e celebrações disparadas sob demanda",
         "bullets": [
@@ -85,6 +117,40 @@
       "slug": "controle-midia-http206",
       "tag": "ÁUDIO & VÍDEO INTELIGENTE",
       "title": "Controle Remoto de Mídia com Pré-Cache Deslizante (HTTP 206)",
+      "layout": "columns",
+      "font": "outfit",
+      "background": "sunset",
+      "columns": {
+        "items": [
+          {
+            "icon": "📦",
+            "title": "Buffer Deslizante ±2",
+            "bullets": [
+              "Pré-carregamento em memória local",
+              "Zero travamento ao avançar slides",
+              "Mídias 1080p/4K prontas para exibição"
+            ]
+          },
+          {
+            "icon": "⚡",
+            "title": "HTTP 206 Ranges",
+            "bullets": [
+              "Seek e navegação instantânea",
+              "Transmissão sob demanda por blocos",
+              "Economia de banda na rede local"
+            ]
+          },
+          {
+            "icon": "🎧",
+            "title": "Controle Remoto Admin",
+            "bullets": [
+              "Play, Pause e Reiniciar pelo /admin/",
+              "Ajuste de volume centralizado",
+              "Sincronia entre telão e celulares"
+            ]
+          }
+        ]
+      },
       "presenter": {
         "headline": "Reproduza vídeos e áudios pesados sem travar a rede local do evento",
         "bullets": [
@@ -92,25 +158,11 @@
           "Suporte nativo a HTTP 206 Partial Content (Range Requests)",
           "Controles de Play, Pause, Reiniciar e Mudo operados da Mesa Técnica"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/guia-animacoes-e-palco/assets/media-cache-sliding-window.svg",
-          "alt": "Janela Deslizante de Pré-Cache",
-          "maxHeight": "240px",
-          "caption": "Janela ±2 slides em buffer RAM local"
-        },
         "notes": "Destaque que o palestrante não precisa mexer no mouse para dar play em um vídeo: a mesa técnica tem controle total remoto."
       },
       "audience": {
         "summary": "Arquitetura otimizada para streaming local de áudio e vídeo em alta definição.",
         "sections": [
-          {
-            "title": "Como Funciona a Janela Deslizante ±2",
-            "type": "image",
-            "src": "/presentations/guia-animacoes-e-palco/assets/media-cache-sliding-window.svg",
-            "alt": "Diagrama de Pré-Cache",
-            "caption": "Gerenciamento inteligente de memória e economia de banda na rede local."
-          },
           {
             "title": "Benefícios Técnicos",
             "type": "list",
@@ -128,6 +180,50 @@
       "slug": "atalhos-palco-orador",
       "tag": "ATALHOS DE PALCO",
       "title": "Mestria nos Atalhos de Teclado no Telão Principal",
+      "layout": "bento",
+      "font": "code",
+      "background": "sunset",
+      "bento": {
+        "cards": [
+          {
+            "icon": "🎤",
+            "title": "Modo Púlpito",
+            "stat": "[P]",
+            "desc": "Notas privadas do orador, tempo de fala e seletor rápido de miniaturas.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "📱",
+            "title": "QR Code Gigante",
+            "stat": "[Q]",
+            "desc": "Abre o QR Code centralizado na tela para novos participantes.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "💬",
+            "title": "Mural de Perguntas",
+            "stat": "[M]",
+            "desc": "Exibe as dúvidas aprovadas da plateia em overlay animado.",
+            "cols": 4
+          },
+          {
+            "icon": "🌑",
+            "title": "Blackout Total",
+            "stat": "[B]",
+            "desc": "Tela preta instantânea para focar 100% dos olhares no orador.",
+            "cols": 4
+          },
+          {
+            "icon": "📊",
+            "title": "Revelar Votos",
+            "stat": "[R]",
+            "desc": "Anima o gráfico de apuração da enquete ao vivo no palco.",
+            "cols": 4
+          }
+        ]
+      },
       "presenter": {
         "headline": "Comande o telão com apenas uma tecla sem depender do mouse",
         "bullets": [
@@ -162,6 +258,20 @@
       "slug": "enquete-preferencia-transicao",
       "tag": "INTERAÇÃO VISUAL",
       "title": "Qual Transição Você Considera Mais Elegante?",
+      "layout": "metric",
+      "font": "outfit",
+      "background": "sunset",
+      "metric": {
+        "value": "60 FPS",
+        "label": "Taxa de Atualização com Aceleração por GPU",
+        "subtitle": "Transições cinematográficas e efeitos Canvas 2D sem perda de quadros ou consumo excessivo de CPU.",
+        "delta": "Zero Jitter",
+        "pillars": [
+          { "label": "Transições", "value": "4 Estilos" },
+          { "label": "Engine", "value": "Canvas 2D" },
+          { "label": "Streaming", "value": "HTTP 206" }
+        ]
+      },
       "presenter": {
         "headline": "Vote no smartphone e veja o gráfico animado no palco!",
         "bullets": [

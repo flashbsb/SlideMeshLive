@@ -1,0 +1,28 @@
+{
+  "id": "pitch-startup-ia",
+  "code": "PITCH-AI",
+  "title": "Pitch Deck & Captação: NeuralMesh AI",
+  "subtitle": "A Plataforma de Inteligência em Tempo Real para Decisões Críticas",
+  "version": "1.0.0",
+  "author": "SlideMeshLive Showcase Team",
+  "description": "Apresentação modelo de pitch deck para investidores com Bento Grid de recursos, métricas de tração e receita, roadmap estratégico visual e enquete de validação.",
+  "theme": {
+    "primaryColor": "#38bdf8",
+    "accentColor": "#818cf8",
+    "font": "outfit",
+    "gradient": "cyber",
+    "transition": "fade",
+    "transitionDuration": 380
+  },
+  "security": {
+    "mode": "public",
+    "requireAuthForInteraction": false,
+    "description": "Pitch deck público para investidores e comunidade."
+  },
+  "defaultSession": "SES-PITCHAI",
+  "pacing": {
+    "mode": "lock_future",
+    "allowReviewPast": true
+  },
+  "tags": ["pitch", "startup", "ia", "captacao", "investimento"]
+}

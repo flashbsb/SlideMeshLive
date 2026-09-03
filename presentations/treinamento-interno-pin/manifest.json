@@ -7,15 +7,19 @@
   "author": "SlideMeshLive Open Source Community",
   "description": "Apresentação com acesso protegido por PIN (código 7482) que ensina passo a passo como configurar o Setup Wizard, criar PINs de deck, ativar a trava de ritmo (Pacing Lock) e gerenciar papéis RBAC.",
   "theme": {
-    "primaryColor": "#10b981",
-    "accentColor": "#6366f1",
-    "transition": "slide-horizontal",
-    "transitionDuration": 350
+    "primaryColor": "#f59e0b",
+    "accentColor": "#38bdf8",
+    "font": "montserrat",
+    "gradient": "dark",
+    "transition": "fade",
+    "transitionDuration": 380
   },
   "security": {
     "mode": "pin",
     "pin": "7482",
-    "pinHint": "Digite o código de demonstração 7482 para desbloquear este guia no smartphone"
+    "pinHint": "Código de 4 dígitos informado no início da sessão (7482)",
+    "requireAuthForInteraction": true,
+    "description": "Apresentação interna com acesso restrito via PIN de 4 dígitos."
   },
   "defaultSession": "SES-SEG7482",
   "pacing": {

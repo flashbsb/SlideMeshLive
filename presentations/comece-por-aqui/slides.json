@@ -7,6 +7,18 @@
       "slug": "onboarding-intro",
       "tag": "BEM-VINDO AO SLIDEMESHLIVE",
       "title": "A Nova Era das Apresentações em Tempo Real",
+      "layout": "hero",
+      "font": "outfit",
+      "background": "cyber",
+      "hero": {
+        "title": "A Nova Era das Apresentações em Tempo Real",
+        "subtitle": "Telão limpo 4K, Celular interativo e Mesa Técnica síncrona com latência sub-50ms e zero dependência de nuvem.",
+        "badges": [
+          { "text": "🚀 Onboarding Oficial", "class": "badge-accent" },
+          { "text": "⚡ 100% Offline / Local", "class": "badge-success" },
+          { "text": "📱 Mobile First", "class": "badge-live" }
+        ]
+      },
       "presenter": {
         "headline": "Uma plataforma desacoplada feita para engajar 100% da sua audiência",
         "bullets": [
@@ -14,13 +26,6 @@
           "Zero dependência de nuvem: opere 100% offline em rede Wi-Fi ou cabo Ethernet local",
           "Aponte a câmera para o QR Code agora para navegar junto no seu smartphone!"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/comece-por-aqui/assets/ecosystem-map.svg",
-          "alt": "Mapa da Arquitetura Desacoplada",
-          "maxHeight": "240px",
-          "caption": "Telão Limpo + Celular Interativo + Mesa Técnica Síncrona"
-        },
         "notes": "Dê as boas-vindas ao SlideMeshLive! Peça para todos apontarem a câmera para o QR Code no rodapé para sincronizar seus smartphones em tempo real ou aperte [Q] para abrir o QR gigante central."
       },
       "audience": {
@@ -30,13 +35,6 @@
             "title": "Como Funciona o SlideMeshLive?",
             "type": "text",
             "content": "O SlideMeshLive conecta instantaneamente a tela de projeção do palestrante aos celulares da plateia com latência sub-50ms via WebSocket e HTTP local."
-          },
-          {
-            "title": "Arquitetura do Sistema",
-            "type": "image",
-            "src": "/presentations/comece-por-aqui/assets/ecosystem-map.svg",
-            "alt": "Diagrama da Arquitetura",
-            "caption": "Conexão síncrona local entre Telão, Celular e Mesa Técnica."
           },
           {
             "title": "Recursos Disponíveis no Seu Smartphone",
@@ -56,6 +54,50 @@
       "slug": "mapa-das-interfaces",
       "tag": "ARQUITETURA & TELAS",
       "title": "O Escopo das 5 Interfaces Web Integradas",
+      "layout": "bento",
+      "font": "outfit",
+      "background": "cyber",
+      "bento": {
+        "cards": [
+          {
+            "icon": "🌐",
+            "title": "Portal Inicial",
+            "stat": "Rota: /",
+            "desc": "Catálogo dinâmico de apresentações, status de segurança e download de pacotes ZIP portáteis.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "🖥️",
+            "title": "Telão do Apresentador",
+            "stat": "/presenter",
+            "desc": "Projeção limpa sem botões ou distrações, com modo Púlpito [P] e atalhos rápidos de palco.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "🎧",
+            "title": "Mesa Técnica",
+            "stat": "/admin",
+            "desc": "Console para operador: modere dúvidas em 4 fases, controle enquetes e monitore a rede.",
+            "cols": 4
+          },
+          {
+            "icon": "📱",
+            "title": "Smartphone Audiência",
+            "stat": "/audience",
+            "desc": "Leitura aprofundada, votos em 1 toque, dúvidas anônimas e tema personalizável.",
+            "cols": 4
+          },
+          {
+            "icon": "🎨",
+            "title": "SlideMesh Studio",
+            "stat": "/import.html",
+            "desc": "Criação do zero com 6 templates ricos e importador inteligente de PPTX, Word, MD e PDF.",
+            "cols": 4
+          }
+        ]
+      },
       "presenter": {
         "headline": "5 interfaces especializadas projetadas para cada papel no evento",
         "bullets": [
@@ -63,25 +105,11 @@
           "Telão (/presenter) & Mesa Técnica (/admin): Projeção limpa e controle invisível",
           "Smartphone (/audience) & Studio (/import.html): Engajamento e criação em 1 clique"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/comece-por-aqui/assets/interfaces-overview.svg",
-          "alt": "As 5 Interfaces Web do SlideMeshLive",
-          "maxHeight": "240px",
-          "caption": "Portal, Telão, Mesa Técnica, Audiência e Studio"
-        },
         "notes": "Explique brevemente as 5 interfaces. Destaque que o palestrante pode apertar [P] para abrir o modo Púlpito com notas privadas e cronômetro."
       },
       "audience": {
         "summary": "Conheça o papel de cada uma das 5 telas do SlideMeshLive.",
         "sections": [
-          {
-            "title": "Visão Geral das 5 Telas",
-            "type": "image",
-            "src": "/presentations/comece-por-aqui/assets/interfaces-overview.svg",
-            "alt": "Infográfico das 5 Interfaces",
-            "caption": "Interfaces dedicadas para palestrante, público, operador e criador."
-          },
           {
             "title": "Tabela de Rotas e Papéis",
             "type": "table",
@@ -101,7 +129,41 @@
       "id": 3,
       "slug": "trilha-de-aprendizado",
       "tag": "GUIA DE NAVEGAÇÃO",
-      "title": "A Trilha dos 7 Manuais Vivos no Catálogo",
+      "title": "A Trilha dos Manuais Vivos no Catálogo",
+      "layout": "columns",
+      "font": "outfit",
+      "background": "cyber",
+      "columns": {
+        "items": [
+          {
+            "icon": "🚀",
+            "title": "Trilha 1: Onboarding",
+            "bullets": [
+              "Mapa de Interfaces & Ecossistema",
+              "Showcase Geral de Recursos ao Vivo",
+              "Experiência Mobile da Audiência"
+            ]
+          },
+          {
+            "icon": "🎨",
+            "title": "Trilha 2: Operação & Palco",
+            "bullets": [
+              "Transições Cinematográficas 4K",
+              "Efeitos Especiais Canvas 2D ao Vivo",
+              "Criação & Importação no Studio"
+            ]
+          },
+          {
+            "icon": "🔒",
+            "title": "Trilha 3: Governança & TI",
+            "bullets": [
+              "Segurança RBAC & Proteção por PIN",
+              "Telemetria & Diagnóstico de Rede",
+              "Exportação de Relatórios CSV e JSON"
+            ]
+          }
+        ]
+      },
       "presenter": {
         "headline": "Aprenda a operar cada módulo experimentando apresentações interativas",
         "bullets": [
@@ -112,18 +174,18 @@
         "notes": "Mostre a visão geral do catálogo de apresentações e oriente o público sobre como navegar pelas outras apresentações disponíveis no repositório."
       },
       "audience": {
-        "summary": "Explore os outros 6 manuais práticos disponíveis no SlideMeshLive.",
+        "summary": "Explore os outros manuais práticos disponíveis no SlideMeshLive.",
         "sections": [
           {
             "title": "Manuais Vivos Disponíveis no Catálogo",
             "type": "list",
             "items": [
-              "🌟 Showcase Geral (slidemesh-showcase): Demonstração completa de recursos.",
-              "🎨 Guia de Palco (guia-animacoes-e-palco): Transições, Canvas 2D e mídias.",
-              "📦 Guia do Studio (guia-criacao-studio-zip): Criação, importação e exportação ZIP.",
-              "💬 Guia de Moderação (guia-moderacao-e-analytics): Mesa técnica e relatórios CSV.",
-              "🔒 Guia de Segurança (treinamento-interno-pin): PIN 7482, Pacing Lock e RBAC.",
-              "🩺 Guia de Diagnóstico (guia-diagnostico-troubleshooting): Telemetria e resolução de falhas."
+              "🌟 Showcase Geral: Demonstração completa de recursos.",
+              "🎨 Guia de Palco: Transições, Canvas 2D e mídias.",
+              "📦 Guia do Studio: Criação, importação e exportação ZIP.",
+              "💬 Guia de Moderação: Mesa técnica e relatórios CSV.",
+              "🔒 Guia de Segurança: PIN 7482, Pacing Lock e RBAC.",
+              "🩺 Guia de Diagnóstico: Telemetria e resolução de falhas."
             ]
           }
         ]
@@ -134,6 +196,20 @@
       "slug": "como-executar-local",
       "tag": "EXECUÇÃO & REDE LOCAL",
       "title": "Como Iniciar em 1 Comando e Rodar em Rede Local",
+      "layout": "metric",
+      "font": "outfit",
+      "background": "cyber",
+      "metric": {
+        "value": "< 50ms",
+        "label": "Latência de Sincronização em Rede Wi-Fi Local",
+        "subtitle": "Zero internet externa necessária. Basta executar um único comando Python no seu computador.",
+        "delta": "100% Offline",
+        "pillars": [
+          { "label": "Portabilidade", "value": "ZIP Autônomo" },
+          { "label": "Setup", "value": "1 Comando" },
+          { "label": "Dependências", "value": "Zero (Stdlib)" }
+        ]
+      },
       "presenter": {
         "headline": "Inicie o servidor local e conecte dezenas de aparelhos no mesmo Wi-Fi",
         "bullets": [
@@ -164,6 +240,16 @@
       "slug": "enquete-perfil-usuario",
       "tag": "DIAGNÓSTICO INTERATIVO",
       "title": "Qual o seu Perfil Principal de Uso Hoje?",
+      "layout": "timeline",
+      "font": "outfit",
+      "background": "cyber",
+      "timeline": {
+        "steps": [
+          { "step": "Passo 1", "title": "Conectar Audiência", "desc": "Aponte a câmera para o QR Code." },
+          { "step": "Passo 2", "title": "Votar na Enquete", "desc": "Selecione seu perfil no smartphone." },
+          { "step": "Passo 3", "title": "Ver Apuração ao Vivo", "desc": "Resultados projetados no telão com tecla [R]." }
+        ]
+      },
       "presenter": {
         "headline": "Responda no seu smartphone e veja o gráfico atualizar ao vivo!",
         "bullets": [

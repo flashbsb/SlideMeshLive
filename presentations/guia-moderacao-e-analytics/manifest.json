@@ -7,15 +7,17 @@
   "author": "SlideMeshLive Open Source Community",
   "description": "Aprenda a operar o console da Mesa Técnica (/admin): gerencie o ciclo de 4 fases de perguntas da plateia, controle a abertura e revelação de enquetes ao vivo e exporte relatórios executivos em CSV/Markdown/JSON.",
   "theme": {
-    "primaryColor": "#06b6d4",
-    "accentColor": "#3b82f6",
+    "primaryColor": "#f59e0b",
+    "accentColor": "#38bdf8",
+    "font": "montserrat",
+    "gradient": "editorial",
     "transition": "fade",
-    "transitionDuration": 350
+    "transitionDuration": 380
   },
   "security": {
     "mode": "public",
     "requireAuthForInteraction": false,
-    "description": "Apresentação pública aberta sobre operação da mesa técnica, moderação de perguntas e analytics."
+    "description": "Apresentação pública prática aberta para todos os participantes."
   },
   "defaultSession": "SES-MESA",
   "pacing": {

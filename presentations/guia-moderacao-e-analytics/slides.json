@@ -7,6 +7,18 @@
       "slug": "mesa-tecnica-visao-geral",
       "tag": "CONSOLE DO ADMIN",
       "title": "O Console de Controle Invisível de Palco (/admin)",
+      "layout": "hero",
+      "font": "montserrat",
+      "background": "editorial",
+      "hero": {
+        "title": "Mesa Técnica & Analytics",
+        "subtitle": "Controle invisível de palco, moderação de perguntas em 4 fases e relatórios executivos pós-evento.",
+        "badges": [
+          { "text": "🎧 Operação Invisível", "class": "badge-accent" },
+          { "text": "💬 Moderação Q&A", "class": "badge-live" },
+          { "text": "📊 Relatórios CSV", "class": "badge-success" }
+        ]
+      },
       "presenter": {
         "headline": "Comande o evento nos bastidores sem interferir na projeção do telão",
         "bullets": [
@@ -14,25 +26,11 @@
           "Painel independente de moderação de perguntas e controle de enquetes",
           "Protegido por autenticação de administrador configurável no Setup Wizard"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/guia-moderacao-e-analytics/assets/admin-console-layout.svg",
-          "alt": "Setores Operacionais da Mesa Técnica",
-          "maxHeight": "240px",
-          "caption": "Navegação, Moderação de Q&A e Mídias/Segurança"
-        },
         "notes": "Explique que a Mesa Técnica (/admin) permite que o produtor do evento auxilie o palestrante sem que a plateia perceba as intervenções de bastidor."
       },
       "audience": {
         "summary": "O console /admin centraliza toda a inteligência e operação do evento ao vivo.",
         "sections": [
-          {
-            "title": "Setores da Mesa Técnica",
-            "type": "image",
-            "src": "/presentations/guia-moderacao-e-analytics/assets/admin-console-layout.svg",
-            "alt": "Layout da Mesa Técnica",
-            "caption": "Operação invisível de palco e moderação de audiência."
-          },
           {
             "title": "Recursos do Admin",
             "type": "list",
@@ -51,6 +49,40 @@
       "slug": "ciclo-moderacao-4-fases",
       "tag": "MODERAÇÃO DE PERGUNTAS",
       "title": "O Ciclo de Moderação de Perguntas em 4 Fases",
+      "layout": "columns",
+      "font": "montserrat",
+      "background": "editorial",
+      "columns": {
+        "items": [
+          {
+            "icon": "⏳",
+            "title": "1. Pendentes",
+            "bullets": [
+              "Envio instantâneo do público",
+              "Triagem privada pelo moderador",
+              "Filtro anti-spam e cooldown de 25s"
+            ]
+          },
+          {
+            "icon": "💬",
+            "title": "2. Aprovadas",
+            "bullets": [
+              "Aprovação com 1 clique",
+              "Liberada no mural geral",
+              "Controle de ordem de fala"
+            ]
+          },
+          {
+            "icon": "⭐",
+            "title": "3. Destaque [M]",
+            "bullets": [
+              "Overlay flutuante no telão",
+              "Animação suave de foco",
+              "Marcação de respondida [✓]"
+            ]
+          }
+        ]
+      },
       "presenter": {
         "headline": "Filtre dúvidas inadequadas e destaque as melhores perguntas no telão",
         "bullets": [
@@ -59,25 +91,11 @@
           "3. Destaque no Telão [M]: A pergunta surge flutuando em overlay no palco",
           "4. Arquivadas: Marcação de pergunta respondida para manter a fila limpa"
         ],
-        "media": {
-          "type": "svg",
-          "src": "/presentations/guia-moderacao-e-analytics/assets/qa-moderation-lifecycle.svg",
-          "alt": "Ciclo de Moderação de Perguntas",
-          "maxHeight": "240px",
-          "caption": "Pendente ➔ Aprovada ➔ Destaque [M] ➔ Arquivada"
-        },
         "notes": "Abra o mural com a tecla [M] no telão para mostrar como as perguntas aprovadas são exibidas de forma elegante sobre a apresentação."
       },
       "audience": {
         "summary": "Como suas dúvidas são recebidas e moderadas pela equipe do evento.",
         "sections": [
-          {
-            "title": "Fluxo de Moderação",
-            "type": "image",
-            "src": "/presentations/guia-moderacao-e-analytics/assets/qa-moderation-lifecycle.svg",
-            "alt": "Ciclo das 4 Fases",
-            "caption": "Triagem e aprovação em tempo real pela mesa técnica."
-          },
           {
             "title": "O Ciclo de 4 Fases",
             "type": "table",
@@ -97,6 +115,50 @@
       "slug": "gestao-enquetes-tempo-real",
       "tag": "ENQUETES AO VIVO",
       "title": "Gestão de Enquetes & Revelação Animada no Palco",
+      "layout": "bento",
+      "font": "montserrat",
+      "background": "editorial",
+      "bento": {
+        "cards": [
+          {
+            "icon": "📊",
+            "title": "Abertura Sob Demanda",
+            "stat": "Tecla [V]",
+            "desc": "Libera a votação nos celulares apenas no momento desejado pelo orador.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "🎬",
+            "title": "Revelação Surpresa",
+            "stat": "Tecla [R]",
+            "desc": "Anima as porcentagens no telão após o encerramento dos votos.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "🔒",
+            "title": "Voto Único",
+            "stat": "100% Blindado",
+            "desc": "Identificador seguro por token previne votos duplicados na mesma sessão.",
+            "cols": 4
+          },
+          {
+            "icon": "🔄",
+            "title": "Zerar Votos",
+            "stat": "Reset Seguro",
+            "desc": "Permite reabrir enquetes em novas turmas e sessões com 1 clique.",
+            "cols": 4
+          },
+          {
+            "icon": "📈",
+            "title": "Exportação CSV",
+            "stat": "Excel / CRM",
+            "desc": "Planilha pronta para follow-up pós-evento com métricas completas.",
+            "cols": 4
+          }
+        ]
+      },
       "presenter": {
         "headline": "Abra votações sob demanda e gere expectativa com revelação surpresa",
         "bullets": [
@@ -122,6 +184,41 @@
       "slug": "analytics-historico-multisessao",
       "tag": "RELATÓRIOS & ANALYTICS",
       "title": "Relatórios Pós-Evento & Histórico Multissessão",
+      "layout": "bento",
+      "font": "montserrat",
+      "background": "editorial",
+      "bento": {
+        "cards": [
+          {
+            "icon": "📊",
+            "title": "Planilha CSV",
+            "stat": "sessions.csv",
+            "desc": "Dados consolidados de presença, votos e perguntas formatados para Excel e Google Sheets.",
+            "cols": 6
+          },
+          {
+            "icon": "📑",
+            "title": "Ata em Markdown",
+            "stat": "relatorio.md",
+            "desc": "Relatório executivo estruturado com tabelas e gráficos em texto limpo para GitHub e Notion.",
+            "cols": 6
+          },
+          {
+            "icon": "💾",
+            "title": "Snapshot JSON",
+            "stat": "state.json",
+            "desc": "Dump completo do estado da sessão para auditoria e integrações de backend.",
+            "cols": 6
+          },
+          {
+            "icon": "🔒",
+            "title": "Armazenamento Local",
+            "stat": "100% Privado",
+            "desc": "Arquivado com segurança na pasta sessions_archive/ sem envio para servidores externos.",
+            "cols": 6
+          }
+        ]
+      },
       "presenter": {
         "headline": "Exporte métricas de engajamento consolidadas em CSV, Markdown e JSON",
         "bullets": [
@@ -151,6 +248,20 @@
       "slug": "enquete-metricas-admin",
       "tag": "AVALIAÇÃO OPERACIONAL",
       "title": "Qual Métrica Pós-Evento é Mais Valiosa para Você?",
+      "layout": "metric",
+      "font": "montserrat",
+      "background": "editorial",
+      "metric": {
+        "value": "+450",
+        "label": "Perguntas Moderadas com Zero Interrupção do Palco",
+        "subtitle": "A Mesa Técnica permite que a produção atue como copiloto invisível do palestrante.",
+        "delta": "100% Controlado",
+        "pillars": [
+          { "label": "Aprovação", "value": "< 2s" },
+          { "label": "Exportação", "value": "3 Formatos" },
+          { "label": "Privacidade", "value": "Local" }
+        ]
+      },
       "presenter": {
         "headline": "Vote no smartphone e descubra a prioridade dos produtores de eventos!",
         "bullets": [

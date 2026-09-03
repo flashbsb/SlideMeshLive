@@ -20,6 +20,25 @@
       ]
     },
     {
+      "id": "executive-board-report",
+      "code": "BOARD-2026",
+      "title": "Relatório Executivo & Conselho: Estratégia 2026",
+      "subtitle": "Governança Corporativa, Resultados Financeiros e Alocação de Capital",
+      "description": "Modelo de relatório executivo e conselho de administração com citação editorial monumental em Playfair, pilares de governança corporativa, métricas de EBITDA e enquete de deliberação.",
+      "defaultSession": "SES-BOARD2026",
+      "totalSlides": 5,
+      "securityMode": "public",
+      "securityLabel": "🏛️ Conselho Executivo (Aberta)",
+      "badgeClass": "badge-accent",
+      "tags": [
+        "executivo",
+        "board",
+        "governanca",
+        "estrategia",
+        "financeiro"
+      ]
+    },
+    {
       "id": "guia-animacoes-e-palco",
       "code": "PALCO",
       "title": "Manual Prático: Transições de Telão, Efeitos & Controle de Mídia",
@@ -43,7 +62,7 @@
       "code": "STUDIO",
       "title": "Manual Prático: SlideMesh Studio — Criação, Importação & Pacotes ZIP",
       "subtitle": "Como Criar, Importar PPTX/Word/MD/PDF e Exportar Pacotes Portáteis",
-      "description": "Guia prático hands-on de criação no Studio: explore os 4 templates prontos, aprenda a ativar o layout split-screen automático, importe arquivos externos e gere pacotes .slidemesh.zip para rodar offline.",
+      "description": "Guia prático hands-on de criação no Studio: explore os 6 templates prontos, aprenda a ativar o layout split-screen automático, importe arquivos externos e gere pacotes .slidemesh.zip para rodar offline.",
       "defaultSession": "SES-STUDIO",
       "totalSlides": 5,
       "securityMode": "public",
@@ -96,6 +115,25 @@
       ]
     },
     {
+      "id": "pitch-startup-ia",
+      "code": "PITCH-AI",
+      "title": "Pitch Deck & Captação: NeuralMesh AI",
+      "subtitle": "A Plataforma de Inteligência em Tempo Real para Decisões Críticas",
+      "description": "Apresentação modelo de pitch deck para investidores com Bento Grid de recursos, métricas de tração e receita, roadmap estratégico visual e enquete de validação.",
+      "defaultSession": "SES-PITCHAI",
+      "totalSlides": 5,
+      "securityMode": "public",
+      "securityLabel": "🚀 Pitch & Startups (Aberta)",
+      "badgeClass": "badge-live",
+      "tags": [
+        "pitch",
+        "startup",
+        "ia",
+        "captacao",
+        "investimento"
+      ]
+    },
+    {
       "id": "slidemesh-showcase",
       "code": "SHOWCASE",
       "title": "SlideMeshLive: A Mágica das Apresentações Interativas",
@@ -111,6 +149,25 @@
         "demonstracao",
         "geral",
         "ao-vivo"
+      ]
+    },
+    {
+      "id": "tech-masterclass-backend",
+      "code": "TECH-2026",
+      "title": "Masterclass: Engenharia de Baixa Latência em Sistemas Distribuídos",
+      "subtitle": "Arquiteturas Síncronas, Tolerância a Falhas e Otimizações de Memória",
+      "description": "Masterclass técnica aprofundada demonstrando terminais de código macOS com syntax highlight, 3 colunas de padrões arquiteturais, métricas de SLA e quiz técnico ao vivo.",
+      "defaultSession": "SES-TECH2026",
+      "totalSlides": 5,
+      "securityMode": "public",
+      "securityLabel": "💻 Masterclass Tech (Aberta)",
+      "badgeClass": "badge-live",
+      "tags": [
+        "tech",
+        "backend",
+        "concorrencia",
+        "performance",
+        "masterclass"
       ]
     },
     {

@@ -1,0 +1,269 @@
+{
+  "presentationId": "pitch-startup-ia",
+  "title": "Pitch Deck & Captação: NeuralMesh AI",
+  "slides": [
+    {
+      "id": 1,
+      "slug": "hero-visao",
+      "tag": "SEED ROUND 2026",
+      "title": "NeuralMesh AI: O Cérebro das Decisões em Tempo Real",
+      "layout": "hero",
+      "font": "outfit",
+      "background": "cyber",
+      "videoBackground": "assets/bg-loop.mp4",
+      "hero": {
+        "title": "NeuralMesh AI: O Cérebro das Decisões em Tempo Real",
+        "subtitle": "Infraestrutura de inteligência artificial descentralizada que conecta fluxos de telemetria com latência sub-milissegundo.",
+        "badges": [
+          { "text": "🚀 Rodada Seed $4M", "class": "badge-live" },
+          { "text": "⚡ 50x Mais Rápido", "class": "badge-accent" },
+          { "text": "🔒 Enterprise Ready", "class": "badge-success" }
+        ]
+      },
+      "presenter": {
+        "headline": "A próxima geração de infraestrutura de dados em tempo real",
+        "bullets": [
+          "O mercado de decisões críticas em tempo real cresce 38% ao ano",
+          "A Nuvem tradicional não atende aos requisitos de latência de robótica, fintechs e IA de borda",
+          "A NeuralMesh AI entrega processamento cognitivo local com governança absoluta"
+        ],
+        "notes": "Apresente o problema da latência em sistemas de IA na nuvem e posicione a NeuralMesh como a infraestrutura indispensável para a próxima década."
+      },
+      "audience": {
+        "summary": "Bem-vindo ao Pitch Deck Oficial da NeuralMesh AI.",
+        "sections": [
+          {
+            "title": "A Tese de Investimento",
+            "type": "text",
+            "content": "A computação na borda com modelos de linguagem e visão compactos exige uma malha de sincronização ultra rápida e segura. A NeuralMesh AI resolve esse gargalo."
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "slug": "bento-diferenciais",
+      "tag": "ARQUITETURA & PRODUTO",
+      "title": "A Malha Cognitiva Descentralizada da NeuralMesh",
+      "layout": "bento",
+      "font": "outfit",
+      "background": "cyber",
+      "bento": {
+        "cards": [
+          {
+            "icon": "🧠",
+            "title": "Modelos Cognitivos Locais",
+            "stat": "< 2ms",
+            "desc": "Inferência e processamento direto na borda com zero latência de chamadas externas de nuvem.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "🛡️",
+            "title": "Segurança Soberana",
+            "stat": "100% On-Prem",
+            "desc": "Dados confidenciais e telemetria de produção nunca saem do perímetro seguro da sua organização.",
+            "cols": 6,
+            "highlight": true
+          },
+          {
+            "icon": "⚡",
+            "title": "Orquestração Autônoma",
+            "stat": "10M Ev/s",
+            "desc": "Auto-recuperação de rotas e balanceamento inteligente de pacotes.",
+            "cols": 4
+          },
+          {
+            "icon": "📊",
+            "title": "Analytics Preditivo",
+            "stat": "99.8% Acurácia",
+            "desc": "Detecção de anomalias com alertas preventivos em tempo real.",
+            "cols": 4
+          },
+          {
+            "icon": "🌐",
+            "title": "Malha Híbrida Multi-Cloud",
+            "stat": "Universal",
+            "desc": "Conexão nativa com AWS, Azure, GCP e servidores bare-metal.",
+            "cols": 4
+          }
+        ]
+      },
+      "presenter": {
+        "headline": "Uma suíte modular que substitui pilhas legadas complexas e caras",
+        "bullets": [
+          "Bento Grid de recursos que ilustra a densidade tecnológica da solução",
+          "Arquitetura modular que escala de 10 a 100.000 nós sem reconfiguração",
+          "Redução média de 70% nos custos de infraestrutura em nuvem para nossos clientes"
+        ],
+        "notes": "Destaque os diferenciais de privacidade e a economia de 70% na fatura de nuvem dos clientes corporativos."
+      },
+      "audience": {
+        "summary": "Recursos-chave da plataforma NeuralMesh AI.",
+        "sections": [
+          {
+            "title": "Vantagens Competitivas",
+            "type": "table",
+            "headers": ["Funcionalidade", "Nuvem Convencional", "NeuralMesh AI"],
+            "rows": [
+              ["Latência de Decisão", "150ms - 800ms", "Sub-2ms (Tempo Real)"],
+              ["Soberania de Dados", "Vazamento / Terceiros", "100% On-Premise / Local"],
+              ["Custo de Tráfego", "Cobrança por Egress", "Zero Egress Fee"],
+              ["Resiliência Offline", "Inoperante sem link", "Operação Local Autônoma"]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "slug": "metrica-tracao",
+      "tag": "TRAÇÃO & FINANCEIRO",
+      "title": "Crescimento Exponencial de Receita e Retenção",
+      "layout": "metric",
+      "font": "outfit",
+      "background": "cyber",
+      "metric": {
+        "value": "+420%",
+        "label": "Crescimento Anual de Receita Recorrente (ARR)",
+        "subtitle": "Tração acelerada com mais de 35 clientes corporativos nos setores de fintech, energia e logística.",
+        "delta": "ARR: $2.8M",
+        "pillars": [
+          { "label": "Clientes Enterprise", "value": "35+" },
+          { "label": "Net Retention (NDR)", "value": "148%" },
+          { "label": "CAC Payback", "value": "4.2 Meses" }
+        ]
+      },
+      "presenter": {
+        "headline": "Validação sólida de Product-Market Fit com expansão dentro da base",
+        "bullets": [
+          "ARR atingiu $2.8M com crescimento de 420% ano sobre ano",
+          "Net Dollar Retention de 148% comprova a rápida expansão pós-onboarding",
+          "CAC Payback inferior a 5 meses viabiliza alocação agressiva de capital na rodada"
+        ],
+        "notes": "Apresente as métricas financeiras com convicção e destaque o baixo tempo de retorno de CAC."
+      },
+      "audience": {
+        "summary": "Resultados de tração e indicadores financeiros da NeuralMesh AI.",
+        "sections": [
+          {
+            "title": "Métricas Chave da Rodada Seed",
+            "type": "list",
+            "items": [
+              "ARR Atual: $2.8M (com pipeline qualificado de $6.5M para 2026).",
+              "Margem Bruta de Software: 84% de margem pura.",
+              "Churn Anual: Inferior a 1.2% (retenção enterprise líder de mercado)."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "slug": "timeline-roadmap",
+      "tag": "ROADMAP ESTRATÉGICO",
+      "title": "Plano de Expansão e Marcos de Execução",
+      "layout": "timeline",
+      "font": "outfit",
+      "background": "cyber",
+      "timeline": {
+        "steps": [
+          {
+            "step": "Q1 2026",
+            "title": "Expansão Enterprise & Edge",
+            "desc": "Lançamento do NeuralMesh Edge para clusters Kubernetes bare-metal."
+          },
+          {
+            "step": "Q2 2026",
+            "title": "Copiloto Operacional Integrado",
+            "desc": "Mitigação automatizada de anomalias com modelos generativos especializados."
+          },
+          {
+            "step": "Q3 2026",
+            "title": "Escala Global EMEA & APAC",
+            "desc": "Abertura de polos comerciais e obtenção das certificações SOC2 Tipo II e ISO 27001."
+          },
+          {
+            "step": "Q4 2026",
+            "title": "Série A & Liderança de Mercado",
+            "desc": "Meta de $8M ARR e consolidação como padrão de infraestrutura de tempo real."
+          }
+        ]
+      },
+      "presenter": {
+        "headline": "Execução precisa com alocação clara dos recursos captados",
+        "bullets": [
+          "55% para expansão de Engenharia de Baixa Latência e IA",
+          "30% para Vendas Enterprise e Parcerias Estratégicas",
+          "15% para Conformidade, Segurança e Operações Globais"
+        ],
+        "notes": "Explique detalhadamente como os $4M da rodada serão aplicados para atingir a meta de $8M ARR em 12 meses."
+      },
+      "audience": {
+        "summary": "Cronograma de entregas e roadmap de produto da NeuralMesh AI.",
+        "sections": [
+          {
+            "title": "Destinação dos Recursos da Rodada",
+            "type": "list",
+            "items": [
+              "P&D e Engenharia: 12 novos engenheiros de infraestrutura distribuída.",
+              "Go-to-Market: Estruturação de time comercial nos EUA e Europa.",
+              "Certificações: SOC2 Tipo II, HIPAA e ISO 27001."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "slug": "enquete-due-diligence",
+      "tag": "INTERAÇÃO COM INVESTIDORES",
+      "title": "Qual Área Você Considera com Maior Potencial de Retorno?",
+      "layout": "metric",
+      "font": "outfit",
+      "background": "cyber",
+      "metric": {
+        "value": "$4.0M",
+        "label": "Tamanho da Rodada Seed em Aberto",
+        "subtitle": "Valuation e termsheet disponíveis para investidores qualificados.",
+        "delta": "70% Alocado",
+        "pillars": [
+          { "label": "Ticket Mínimo", "value": "$250k" },
+          { "label": "Alocação Atual", "value": "$2.8M" },
+          { "label": "Fechamento", "value": "Q1 2026" }
+        ]
+      },
+      "presenter": {
+        "headline": "Convidamos os investidores a votar e agendar uma sessão de Due Diligence",
+        "bullets": [
+          "Termsheet com 70% da rodada já alocada por fundos líderes",
+          "Acompanhamento em tempo real do interesse da plateia",
+          "Pressione [R] para revelar a percepção do auditório"
+        ],
+        "notes": "Abra a votação para os investidores e finalize convidando para o cocktail e conversas de Due Diligence."
+      },
+      "audience": {
+        "summary": "Participe da rodada de validação da NeuralMesh AI.",
+        "sections": [
+          {
+            "title": "Agendar Reunião de Due Diligence",
+            "type": "text",
+            "content": "Selecione a opção desejada na enquete abaixo para receber nosso dataroom e termsheet completo."
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll-investor-interest",
+          "question": "Qual área da NeuralMesh AI você considera com maior potencial de retorno?",
+          "options": [
+            { "id": "A", "text": "🧠 Processamento local de IA com soberania de dados" },
+            { "id": "B", "text": "⚡ Infraestrutura de baixa latência em tempo real" },
+            { "id": "C", "text": "📊 Analytics preditivo e automação de operações" },
+            { "id": "D", "text": "🤝 Quero agendar um call de Due Diligence agora!" }
+          ]
+        }
+      }
+    }
+  ]
+}

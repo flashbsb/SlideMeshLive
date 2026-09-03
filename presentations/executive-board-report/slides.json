@@ -1,0 +1,238 @@
+{
+  "presentationId": "executive-board-report",
+  "title": "Relatório Executivo & Conselho: Estratégia 2026",
+  "slides": [
+    {
+      "id": 1,
+      "slug": "hero-conselho",
+      "tag": "CONSELHO DE ADMINISTRAÇÃO",
+      "title": "Relatório Anual ao Conselho de Administração",
+      "layout": "hero",
+      "font": "montserrat",
+      "background": "editorial",
+      "hero": {
+        "title": "Relatório Anual ao Conselho de Administração",
+        "subtitle": "Revisão estratégica, governança corporativa, desempenho operacional e diretrizes de alocação de capital para o ciclo 2026.",
+        "badges": [
+          { "text": "🏛️ Sessão Ordinária", "class": "badge-live" },
+          { "text": "📈 EBITDA +28.4%", "class": "badge-accent" },
+          { "text": "🔒 Governança Nível 1", "class": "badge-success" }
+        ]
+      },
+      "presenter": {
+        "headline": "Apresentação dos resultados consolidados e deliberações estratégicas",
+        "bullets": [
+          "Superação das metas operacionais em todas as unidades de negócio",
+          "Fortalecimento da estrutura de capital com redução da alavancagem financeira",
+          "Proposta de alocação do orçamento de investimentos para votação do comitê"
+        ],
+        "notes": "Abra a reunião de conselho destacando a consistência dos resultados e a solidez da governança."
+      },
+      "audience": {
+        "summary": "Pauta e materiais de apoio da reunião do Conselho de Administração.",
+        "sections": [
+          {
+            "title": "Pauta da Reunião",
+            "type": "list",
+            "items": [
+              "1. Aprovação das demonstrações financeiras do exercício.",
+              "2. Revisão dos pilares estratégicos de expansão e governança.",
+              "3. Deliberação sobre alocação de capital e investimentos."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "slug": "citacao-lideranca",
+      "tag": "MENSAGEM DA LIDERANÇA",
+      "title": "Compromisso com a Solidez e Criação de Valor",
+      "layout": "quote",
+      "font": "playfair",
+      "background": "editorial",
+      "quote": {
+        "text": "Liderança exemplar não se mede apenas pelo crescimento de curto prazo, mas pela capacidade contínua de inovar preservando a solidez e a confiança dos nossos parceiros.",
+        "author": "Comitê Executivo de Liderança",
+        "role": "Mensagem aos Acionistas & Conselheiros"
+      },
+      "presenter": {
+        "headline": "A visão de longo prazo que orienta as decisões do conselho",
+        "bullets": [
+          "Citação editorial clássica com tipografia Playfair Display",
+          "Foco em perenidade, reputação e geração sustentável de valor",
+          "Alinhamento dos interesses dos acionistas, colaboradores e comunidade"
+        ],
+        "notes": "Faça uma pausa reflexiva para conectar os princípios éticos às decisões estratégicas que serão votadas."
+      },
+      "audience": {
+        "summary": "Mensagem editorial da liderança executiva.",
+        "sections": [
+          {
+            "title": "Diretrizes de Governança",
+            "type": "text",
+            "content": "A sustentabilidade do negócio decorre do equilíbrio entre audácia competitiva e prudência financeira."
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "slug": "pilares-governanca",
+      "tag": "PILARES ESTRATÉGICOS",
+      "title": "3 Pilares de Execução e Excelência",
+      "layout": "columns",
+      "font": "montserrat",
+      "background": "editorial",
+      "columns": {
+        "items": [
+          {
+            "icon": "🎯",
+            "title": "1. Eficiência Operacional",
+            "bullets": [
+              "Redução de 18% em despesas gerais",
+              "Otimização de processos críticos",
+              "Ganhos de produtividade com IA"
+            ]
+          },
+          {
+            "icon": "💎",
+            "title": "2. Expansão de Mercado",
+            "bullets": [
+              "3 novos polos regionais abertos",
+              "+34% em contratos corporativos",
+              "Novas fontes recorrentes de receita"
+            ]
+          },
+          {
+            "icon": "🛡️",
+            "title": "3. Governança & ESG",
+            "bullets": [
+              "Auditoria sem ressalvas pelo 5º ano",
+              "Comitê de conformidade ativo",
+              "Metas de sustentabilidade atingidas"
+            ]
+          }
+        ]
+      },
+      "presenter": {
+        "headline": "Resultados concretos alcançados nos 3 eixos de atuação",
+        "bullets": [
+          "Eficiência operacional gerou R$ 12M em economia recorrente",
+          "Expansão comercial diversificou o risco setorial da carteira",
+          "Governança sólida garante acesso a linhas de crédito com taxas preferenciais"
+        ],
+        "notes": "Detalhe o impacto financeiro de cada pilar antes de entrar no demonstrativo de caixa."
+      },
+      "audience": {
+        "summary": "Detalhamento dos três pilares estratégicos.",
+        "sections": [
+          {
+            "title": "Resultados dos Pilares",
+            "type": "table",
+            "headers": ["Pilar", "Meta", "Realizado"],
+            "rows": [
+              ["Eficiência Operacional", "-15% Custos", "-18.2% (Superado)"],
+              ["Novos Contratos", "+25%", "+34.0% (Superado)"],
+              ["Conformidade ESG", "Índice A", "Índice AAA (Líder)"]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "slug": "metric-caixa",
+      "tag": "DESEMPENHO FINANCEIRO",
+      "title": "Geração de Caixa e Indicadores de Rentabilidade",
+      "layout": "metric",
+      "font": "montserrat",
+      "background": "editorial",
+      "metric": {
+        "value": "R$ 48.5M",
+        "label": "Geração de Caixa Operacional no Exercício",
+        "subtitle": "Desempenho histórico impulsionado por margens sólidas e eficiência na gestão do capital de giro.",
+        "delta": "+32.4% vs Orçado",
+        "pillars": [
+          { "label": "Margem EBITDA", "value": "31.2%" },
+          { "label": "ROE Anual", "value": "24.8%" },
+          { "label": "Liquidez Corrente", "value": "2.4x" }
+        ]
+      },
+      "presenter": {
+        "headline": "O balanço patrimonial mais robusto da história da companhia",
+        "bullets": [
+          "Geração operacional de R$ 48.5M supera a projeção anual em 32.4%",
+          "Margem EBITDA atinge patamar recorde de 31.2%",
+          "Índice de liquidez de 2.4x confere total tranquilidade para novos investimentos"
+        ],
+        "notes": "Apresente os números de caixa e convide os conselheiros para a rodada de deliberação."
+      },
+      "audience": {
+        "summary": "Demonstração consolidada do fluxo de caixa e rentabilidade.",
+        "sections": [
+          {
+            "title": "Indicadores Financeiros Consolidados",
+            "type": "list",
+            "items": [
+              "Receita Líquida Total: R$ 156.2M (+22% a/a).",
+              "EBITDA Ajustado: R$ 48.7M (+28.4% a/a).",
+              "Dívida Líquida / EBITDA: 0.4x (baixíssimo endividamento)."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "slug": "deliberacao-conselho",
+      "tag": "VOTAÇÃO ESTRATÉGICA",
+      "title": "Deliberação do Conselho: Alocação de Recursos 2026",
+      "layout": "metric",
+      "font": "montserrat",
+      "background": "editorial",
+      "metric": {
+        "value": "R$ 25.0M",
+        "label": "Orçamento Disponível para Alocação Estratégica",
+        "subtitle": "Os membros do conselho votam pelo smartphone para definir as prioridades do próximo ciclo.",
+        "delta": "Votação Secreta",
+        "pillars": [
+          { "label": "Conselheiros", "value": "100% Presentes" },
+          { "label": "Quórum", "value": "Total" },
+          { "label": "Voto Único", "value": "Auditado" }
+        ]
+      },
+      "presenter": {
+        "headline": "Votação interativa com os membros do Conselho de Administração",
+        "bullets": [
+          "Cada conselheiro registra seu posicionamento no smartphone",
+          "Apuração sigilosa e instantânea com relatório auditável",
+          "Pressione [R] para revelar o direcionamento escolhido pelo conselho"
+        ],
+        "notes": "Abra a votação com a tecla [V] e em seguida revele com [R] para lavrar a ata da reunião."
+      },
+      "audience": {
+        "summary": "Votação oficial de deliberação do Conselho.",
+        "sections": [
+          {
+            "title": "Cédula de Votação",
+            "type": "text",
+            "content": "Selecione a diretriz prioritária para aplicação do orçamento estratégico de 2026."
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll-board-deliberation",
+          "question": "Qual prioridade estratégica deve receber maior alocação de recursos em 2026?",
+          "options": [
+            { "id": "A", "text": "🚀 Expansão orgânica e aquisições estratégicas (M&A)" },
+            { "id": "B", "text": "🧠 Aceleração em P&D de Inteligência Artificial e Automação" },
+            { "id": "C", "text": "💰 Aumento na distribuição de proventos e dividendos" },
+            { "id": "D", "text": "🛡️ Fortalecimento das reservas de liquidez e caixa preventivo" }
+          ]
+        }
+      }
+    }
+  ]
+}

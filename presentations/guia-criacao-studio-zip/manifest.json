@@ -5,17 +5,19 @@
   "subtitle": "Como Criar, Importar PPTX/Word/MD/PDF e Exportar Pacotes Portáteis",
   "version": "1.0.0",
   "author": "SlideMeshLive Open Source Community",
-  "description": "Guia prático hands-on de criação no Studio: explore os 4 templates prontos, aprenda a ativar o layout split-screen automático, importe arquivos externos e gere pacotes .slidemesh.zip para rodar offline.",
+  "description": "Guia prático hands-on de criação no Studio: explore os 6 templates prontos, aprenda a ativar o layout split-screen automático, importe arquivos externos e gere pacotes .slidemesh.zip para rodar offline.",
   "theme": {
-    "primaryColor": "#f59e0b",
-    "accentColor": "#10b981",
-    "transition": "slide-horizontal",
-    "transitionDuration": 350
+    "primaryColor": "#a855f7",
+    "accentColor": "#38bdf8",
+    "font": "outfit",
+    "gradient": "mesh",
+    "transition": "fade",
+    "transitionDuration": 380
   },
   "security": {
     "mode": "public",
     "requireAuthForInteraction": false,
-    "description": "Apresentação pública aberta sobre criação e importação no SlideMesh Studio."
+    "description": "Apresentação pública prática aberta para todos os participantes."
   },
   "defaultSession": "SES-STUDIO",
   "pacing": {

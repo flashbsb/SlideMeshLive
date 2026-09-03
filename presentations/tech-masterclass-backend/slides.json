@@ -1,0 +1,228 @@
+{
+  "presentationId": "tech-masterclass-backend",
+  "title": "Masterclass: Engenharia de Baixa Latência em Sistemas Distribuídos",
+  "slides": [
+    {
+      "id": 1,
+      "slug": "hero-masterclass",
+      "tag": "MASTERCLASS 2026",
+      "title": "Engenharia de Baixa Latência em Sistemas Distribuídos",
+      "layout": "hero",
+      "font": "code",
+      "background": "aurora",
+      "hero": {
+        "title": "Engenharia de Baixa Latência em Sistemas Distribuídos",
+        "subtitle": "Princípios avançados de I/O não-bloqueante, alocação zero de memória e sincronização determinística em auditórios.",
+        "badges": [
+          { "text": "💻 Masterclass Tech", "class": "badge-live" },
+          { "text": "⚡ Latência < 2ms", "class": "badge-accent" },
+          { "text": "🛠️ Hands-on Code", "class": "badge-success" }
+        ]
+      },
+      "presenter": {
+        "headline": "Como construir aplicações em tempo real que não engasgam sob estresse",
+        "bullets": [
+          "Fundamentos de concorrência com multiplexação de eventos assíncronos",
+          "Eliminação de contenção de locks e garbage collection pauses",
+          "Hands-on de código com terminal macOS de alta fidelidade"
+        ],
+        "notes": "Dê as boas-vindas aos engenheiros e desenvolvedores e introduza os conceitos fundamentais de I/O assíncrono."
+      },
+      "audience": {
+        "summary": "Bem-vindo à Masterclass Técnica de Engenharia de Baixa Latência.",
+        "sections": [
+          {
+            "title": "Objetivos da Aula",
+            "type": "text",
+            "content": "Aprender a desenhar sistemas distribuídos que operam na faixa sub-50ms com consumo mínimo de recursos de CPU e RAM."
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "slug": "code-terminal",
+      "tag": "ARQUITETURA DE CÓDIGO",
+      "title": "Multiplexador de Eventos em Alta Vazão",
+      "layout": "code",
+      "font": "code",
+      "background": "aurora",
+      "code": {
+        "filename": "engine.py — Multiplexador de Eventos em Alta Vazão",
+        "snippet": "import asyncio, socket\n\nclass EventMeshProtocol(asyncio.Protocol):\n    def __init__(self, broadcast_channel):\n        self.channel = broadcast_channel\n        self.transport = None\n\n    def connection_made(self, transport):\n        self.transport = transport\n        self.transport.set_write_buffer_limits(high=65536)\n\n    def data_received(self, data: bytes):\n        # Zero-copy parsing e despacho em milissegundos\n        if data.startswith(b'SYNC:'):\n            self.channel.dispatch_fast(data[5:])\n            self.transport.write(b'ACK\\n')"
+      },
+      "presenter": {
+        "headline": "O segredo da performance: parsing direto sem cópias desnecessárias de buffers",
+        "bullets": [
+          "Uso de protocolos nativos sobre TCP/WebSocket sem sobrecarga de frameworks pesados",
+          "Evite decodificações e serializações repetitivas no caminho crítico",
+          "Buffer limits configurados para evitar acúmulo de memória em conexões lentas"
+        ],
+        "notes": "Explique aos participantes como o método data_received processa bytes brutos sem gerar garbage collection."
+      },
+      "audience": {
+        "summary": "Código-fonte do multiplexador assíncrono em Python.",
+        "sections": [
+          {
+            "title": "Análise Técnica",
+            "type": "text",
+            "content": "Ao utilizar asyncio.Protocol em baixo nível, reduzimos em até 85% o overhead em relação a roteadores HTTP convencionais."
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "slug": "columns-padroes",
+      "tag": "PADRÕES ARQUITETURAIS",
+      "title": "3 Pilares para Confiabilidade Extrema",
+      "layout": "columns",
+      "font": "code",
+      "background": "aurora",
+      "columns": {
+        "items": [
+          {
+            "icon": "⚡",
+            "title": "1. I/O Não-Bloqueante",
+            "bullets": [
+              "Event loops acelerados",
+              "Multiplexação epoll / kqueue",
+              "Zero thread context switch"
+            ]
+          },
+          {
+            "icon": "🛡️",
+            "title": "2. Tolerância a Falhas",
+            "bullets": [
+              "Circuit breakers adaptativos",
+              "Snapshots atômicos em disco",
+              "Idempotência de requisição"
+            ]
+          },
+          {
+            "icon": "📊",
+            "title": "3. Zero GC Pressure",
+            "bullets": [
+              "Buffers estáticos pré-alocados",
+              "Estruturas em memória contígua",
+              "Evitar alocações no loop rápido"
+            ]
+          }
+        ]
+      },
+      "presenter": {
+        "headline": "Padrões que separam sistemas amadores de plataformas mission-critical",
+        "bullets": [
+          "Cada pilar ataca um gargalo clássico de concorrência em auditórios",
+          "A combinação dos 3 garante estabilidade contínua mesmo com picos de conexões",
+          "Aplicável em qualquer linguagem: Go, Rust, C++, Node.js ou Python"
+        ],
+        "notes": "Debata com os participantes a importância da tolerância a falhas com snapshots atômicos."
+      },
+      "audience": {
+        "summary": "Resumo dos três pilares de engenharia para sistemas de baixa latência.",
+        "sections": [
+          {
+            "title": "Guia de Boas Práticas",
+            "type": "list",
+            "items": [
+              "Monitore alocações de heap no caminho crítico.",
+              "Prefira estruturas orientadas a arrays e slices contíguos.",
+              "Garanta idempotência com identificadores únicos sequenciais."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "slug": "metric-sla",
+      "tag": "BENCHMARKING & SLA",
+      "title": "Confiabilidade e Métricas de Disponibilidade em Produção",
+      "layout": "metric",
+      "font": "code",
+      "background": "aurora",
+      "metric": {
+        "value": "99.999%",
+        "label": "Taxa de Entrega de Eventos em Auditórios Concorrentes",
+        "subtitle": "Testado sob estresse com 500 conexões ativas gerando mais de 5.000 eventos síncronos/minuto.",
+        "delta": "SLA < 2ms",
+        "pillars": [
+          { "label": "Uso de CPU", "value": "< 4%" },
+          { "label": "Consumo RAM", "value": "42 MB" },
+          { "label": "Queda de Pacotes", "value": "0.00%" }
+        ]
+      },
+      "presenter": {
+        "headline": "Resultados de benchmarking sob estresse pesado",
+        "bullets": [
+          "Consumo insignificante de memória mesmo com centenas de clientes",
+          "Zero dependência de bibliotecas pesadas de terceiros",
+          "Garantia de estabilidade do primeiro ao último participante"
+        ],
+        "notes": "Apresente as métricas de benchmarking e destaque a eficiência de memória de apenas 42 MB."
+      },
+      "audience": {
+        "summary": "Dados de telemetria e benchmarking de estresse.",
+        "sections": [
+          {
+            "title": "Métricas de Benchmark",
+            "type": "text",
+            "content": "Testes de carga com injeção de pacotes confirmam entrega determinística em sub-2ms com 0.00% de perda."
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "slug": "quiz-tech",
+      "tag": "QUIZ DE FIXAÇÃO",
+      "title": "Qual Estratégia Reduz Mais a Latência em Redes Wi-Fi?",
+      "layout": "metric",
+      "font": "code",
+      "background": "aurora",
+      "metric": {
+        "value": "Sub-2ms",
+        "label": "Tempo Médio de Resposta em Redes Locais Wi-Fi",
+        "subtitle": "Responda ao quiz no smartphone e debata as alternativas com a turma ao vivo.",
+        "delta": "Quiz Técnico",
+        "pillars": [
+          { "label": "Tempo Limite", "value": "45s" },
+          { "label": "Participantes", "value": "100%" },
+          { "label": "Apuração", "value": "Ao Vivo" }
+        ]
+      },
+      "presenter": {
+        "headline": "Teste de fixação técnica para avaliar o aprendizado da turma",
+        "bullets": [
+          "Votação aberta nos celulares para todos responderem",
+          "Debate técnico sobre as armadilhas de redes sem fio densas",
+          "Pressione [R] para revelar as respostas e o gabarito"
+        ],
+        "notes": "Abra a votação com [V] e em seguida aperte [R] para revelar a alternativa correta (A)."
+      },
+      "audience": {
+        "summary": "Quiz técnico de fixação da masterclass.",
+        "sections": [
+          {
+            "title": "Quiz Técnico",
+            "type": "text",
+            "content": "Selecione a alternativa correta no seu celular para registrar seu voto."
+          }
+        ]
+      },
+      "interaction": {
+        "poll": {
+          "id": "poll-tech-quiz",
+          "question": "Qual estratégia reduz mais a latência em redes locais Wi-Fi de alta densidade?",
+          "options": [
+            { "id": "A", "text": "⚡ Frames compactos com compressão e payloads delta mínimos" },
+            { "id": "B", "text": "📦 Envio de JSONs gigantescos repetidos a cada 5ms" },
+            { "id": "C", "text": "🔄 Abertura de nova conexão TCP para cada clique" },
+            { "id": "D", "text": "🎬 Streaming contínuo de vídeo 4K sem cache local" }
+          ]
+        }
+      }
+    }
+  ]
+}
