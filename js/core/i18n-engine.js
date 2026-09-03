@@ -133,6 +133,10 @@ export const TRANSLATIONS = {
     'import.trans_zoom': '🔍 Zoom In',
     'import.trans_dissolve': '🌫️ Dissolver',
     'import.trans_stagger': '📶 Cascata (Stagger)',
+    'studio.lock_title': 'Apresentação Protegida',
+    'studio.lock_desc': 'Esta apresentação possui acesso restrito. Digite o PIN de segurança para carregar e editar os slides no Studio.',
+    'studio.btn_unlock': '🔓 Desbloquear',
+    'studio.hint_speaker': 'Dica do Orador:',
 
     // Mesa Técnica / Admin
     'admin.badge': '🛡️ MESA TÉCNICA',
@@ -446,6 +450,10 @@ export const TRANSLATIONS = {
     'import.trans_zoom': '🔍 Zoom In',
     'import.trans_dissolve': '🌫️ Dissolve',
     'import.trans_stagger': '📶 Cascade (Stagger)',
+    'studio.lock_title': 'Protected Presentation',
+    'studio.lock_desc': 'This presentation has restricted access. Enter the security PIN to load and edit slides in Studio.',
+    'studio.btn_unlock': '🔓 Unlock',
+    'studio.hint_speaker': 'Speaker Hint:',
 
     // Admin / Moderator
     'admin.badge': '🛡️ CONTROL ROOM',

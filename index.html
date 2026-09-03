@@ -209,10 +209,10 @@
   <div class="modal-overlay" id="portal-deck-auth-modal" style="z-index: 10000; background: rgba(10, 15, 29, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
     <div class="modal-card" style="max-width: 420px; text-align: center; padding: 28px 32px;">
       <div style="font-size: 36px; margin-bottom: 8px;">🔒</div>
-      <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 6px;" id="portal-auth-deck-title">
+      <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 6px;" id="portal-auth-deck-title" data-i18n="portal.auth_deck_title">
         Apresentação Protegida por PIN
       </h3>
-      <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px;" id="portal-auth-deck-desc">
+      <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px;" id="portal-auth-deck-desc" data-i18n="portal.auth_deck_desc">
         Informe o PIN para acessar as telas ou baixar o pacote ZIP desta apresentação.
       </p>
 
@@ -227,10 +227,10 @@
         ✕ PIN incorreto.
       </div>
       <div style="display: flex; gap: 8px;">
-        <button class="btn" id="btn-cancel-portal-deck-auth" style="flex: 1; padding: 9px; font-size: 12.5px; border-color: var(--border-medium);">
+        <button class="btn" id="btn-cancel-portal-deck-auth" style="flex: 1; padding: 9px; font-size: 12.5px; border-color: var(--border-medium);" data-i18n="app.cancel">
           Cancelar
         </button>
-        <button class="btn btn-primary" id="btn-confirm-portal-deck-auth" style="flex: 2; padding: 9px; font-size: 12.5px; font-weight: 700;">
+        <button class="btn btn-primary" id="btn-confirm-portal-deck-auth" style="flex: 2; padding: 9px; font-size: 12.5px; font-weight: 700;" data-i18n="portal.btn_deck_unlock">
           🔓 Desbloquear &amp; Acessar
         </button>
       </div>
@@ -241,10 +241,10 @@
   <div class="modal-overlay" id="portal-global-lock-modal" style="z-index: 99999; background: rgba(10, 15, 29, 0.98); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);">
     <div class="modal-card" style="max-width: 440px; text-align: center; padding: 32px;">
       <div style="font-size: 40px; margin-bottom: 8px;">🏢</div>
-      <h3 style="font-size: 19px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">
+      <h3 style="font-size: 19px; font-weight: 800; color: #ffffff; margin-bottom: 6px;" data-i18n="portal.lock_title">
         Portal Corporativo Protegido
       </h3>
-      <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 18px;">
+      <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 18px;" data-i18n="portal.lock_desc">
         Este ambiente opera em modo restrito. Identifique-se para visualizar o catálogo de apresentações e sessões.
       </p>
 
@@ -269,7 +269,7 @@
         <div id="portal-global-pin-error" style="display: none; color: #fca5a5; font-size: 12px; margin-bottom: 12px; background: rgba(239, 68, 68, 0.1); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);">
           ✕ PIN incorreto.
         </div>
-        <button class="btn btn-primary" id="btn-unlock-portal-global-pin" style="width: 100%; padding: 11px; font-size: 13.5px; font-weight: 700;">
+        <button class="btn btn-primary" id="btn-unlock-portal-global-pin" style="width: 100%; padding: 11px; font-size: 13.5px; font-weight: 700;" data-i18n="portal.btn_unlock_pin">
           🔓 Acessar Portal
         </button>
       </div>
@@ -291,19 +291,19 @@
         <div id="portal-global-user-error" style="display: none; color: #fca5a5; font-size: 12px; margin-bottom: 12px; background: rgba(239, 68, 68, 0.1); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);">
           ✕ Usuário ou senha incorretos.
         </div>
-        <button class="btn btn-primary" id="btn-unlock-portal-global-user" style="width: 100%; padding: 11px; font-size: 13.5px; font-weight: 700;">
-          🔑 Entrar no Portal
+        <button class="btn btn-primary" id="btn-unlock-portal-global-user" style="width: 100%; padding: 11px; font-size: 13.5px; font-weight: 700;" data-i18n="portal.btn_unlock_user">
+          🔑 Entrar com Usuário
         </button>
       </div>
 
       <!-- PAINEL 3: Google Workspace -->
       <div id="portal-panel-google" style="display: none;">
-        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;" data-i18n="presenter.google_desc">
           Acesso corporativo integrado com Google Workspace.
         </p>
         <button class="btn" id="btn-unlock-portal-global-google" style="width: 100%; padding: 10px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-color: rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.05); color: #ffffff; cursor: pointer;">
           <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.04 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
-          <span>Entrar com Google</span>
+          <span data-i18n="admin.btn_login_google">Entrar com Google</span>
         </button>
       </div>
     </div>
