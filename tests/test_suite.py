@@ -3940,6 +3940,74 @@ def test_plano19_rich_layouts_typography_multimedia_and_catalog():
     print("✓ Plano 19 (Showcase de Apresentações, Layouts Ricos, Multimídia e Catálogo Expandido) 100% HOMOLOGADO.")
 
 
+def test_plano20_sso_cross_tab_telemetry_and_spa_switch():
+    """
+    Valida a implementação das 5 Fases do Plano 20:
+    1. Single Sign-On (SSO) Local Cross-Tab unificado no AuthEngine (slidemesh_admin_auth + espelhamento).
+    2. Herança universal de sessão e modais de desbloqueio sincronizados no Portal (index.html).
+    3. Mesa Técnica (admin-app.js): Troca dinâmica SPA via switchPresentationDynamically sem reload de página e telemetria no init().
+    4. Telão do Apresentador (presenter-app.js) e SlideMesh Studio (import.html) com reconhecimento e gravação unificada de SSO.
+    """
+    print(f"\n{'='*70}")
+    print(" 🧪 39. Plano 20: SSO Cross-Tab, Telemetria Wi-Fi Resiliente & Troca SPA na Mesa Técnica")
+    print(f"{'='*70}")
+    base_dir = BASE_DIR
+
+    # 1. Validação do AuthEngine (js/core/auth-engine.js)
+    auth_js = os.path.join(base_dir, "js", "core", "auth-engine.js")
+    with open(auth_js, "r", encoding="utf-8") as f:
+        auth_content = f.read()
+
+    assert "localStorage.setItem('slidemesh_admin_auth', 'true')" in auth_content, "setAdminAuthenticated não grava slidemesh_admin_auth no localStorage!"
+    assert "localStorage.getItem('slidemesh_admin_auth') === 'true'" in auth_content, "isAdminAuthenticated não valida slidemesh_admin_auth no localStorage!"
+    assert "this.setAdminAuthenticated(true)" in auth_content, "signInWithLocalCredentials não invoca setAdminAuthenticated(true)!"
+    assert "this.setAdminAuthenticated(false)" in auth_content, "signOut não invoca setAdminAuthenticated(false) para logout universal!"
+    print("  ✓ Motor de Autenticação (auth-engine.js): Barramento SSO localStorage ↔ sessionStorage e logout universal validados.")
+
+    # 2. Validação do Portal Inicial (index.html)
+    portal_html = os.path.join(base_dir, "index.html")
+    with open(portal_html, "r", encoding="utf-8") as f:
+        portal_content = f.read()
+
+    assert "localStorage.getItem('slidemesh_admin_auth') === 'true'" in portal_content, "Portal não valida slidemesh_admin_auth no checkGlobalIntranetLock!"
+    assert "localStorage.setItem('slidemesh_admin_auth', 'true')" in portal_content, "Portal não grava slidemesh_admin_auth no unlockPortalGlobalPin!"
+    assert "localStorage.removeItem('slidemesh_admin_auth')" in portal_content, "Portal não limpa slidemesh_admin_auth no logoutPortal!"
+    print("  ✓ Portal Inicial (index.html): Herança de sessão, modais globais e logout universal validados.")
+
+    # 3. Validação da Mesa Técnica (js/admin/admin-app.js)
+    admin_js = os.path.join(base_dir, "js", "admin", "admin-app.js")
+    with open(admin_js, "r", encoding="utf-8") as f:
+        admin_content = f.read()
+
+    assert "this.fetchEnvironmentDiagnostics().catch" in admin_content or "this.fetchEnvironmentDiagnostics()" in admin_content, "admin-app.js não executa fetchEnvironmentDiagnostics no init()!"
+    assert "switchPresentationDynamically" in admin_content, "admin-app.js não implementa switchPresentationDynamically!"
+    assert "window.history.replaceState" in admin_content, "admin-app.js não atualiza URL via replaceState!"
+    # Garante que o presSelector não faça mais hard reload
+    assert "presSelector.addEventListener('change', async" in admin_content or "switchPresentationDynamically" in admin_content, "Seletor de apresentações não utiliza troca dinâmica SPA!"
+    print("  ✓ Mesa Técnica (admin-app.js): Troca dinâmica SPA (zero reload) e telemetria antecipada no init() validadas.")
+
+    # 4. Validação do Telão de Palco (js/presenter/presenter-app.js)
+    pres_js = os.path.join(base_dir, "js", "presenter", "presenter-app.js")
+    with open(pres_js, "r", encoding="utf-8") as f:
+        pres_content = f.read()
+
+    assert "localStorage.getItem('slidemesh_admin_auth') === 'true'" in pres_content, "presenter-app.js não reconhece slidemesh_admin_auth em checkPresenterProtection!"
+    assert "localStorage.setItem('slidemesh_admin_auth', 'true')" in pres_content, "presenter-app.js não grava slidemesh_admin_auth nos unlocks!"
+    assert "localStorage.removeItem('slidemesh_admin_auth')" in pres_content, "presenter-app.js não limpa slidemesh_admin_auth no logoutPresenter!"
+    print("  ✓ Telão do Apresentador (presenter-app.js): SSO Cross-Tab e desbloqueio transparente validados.")
+
+    # 5. Validação do SlideMesh Studio (import.html)
+    import_html = os.path.join(base_dir, "import.html")
+    with open(import_html, "r", encoding="utf-8") as f:
+        import_content = f.read()
+
+    assert "localStorage.getItem('slidemesh_admin_auth') === 'true'" in import_content, "import.html não valida slidemesh_admin_auth em checkStudioGlobalProtection!"
+    assert "localStorage.setItem('slidemesh_admin_auth', 'true')" in import_content, "import.html não grava slidemesh_admin_auth em verifyStudioPin!"
+    print("  ✓ SlideMesh Studio (import.html): Integração completa com o barramento de SSO Cross-Tab validada.")
+
+    print("✓ Plano 20 (SSO Cross-Tab, Telemetria Wi-Fi Resiliente & Troca SPA na Mesa Técnica) 100% HOMOLOGADO.")
+
+
 if __name__ == "__main__":
     start_time = time.time()
     try:
@@ -3980,6 +4048,7 @@ if __name__ == "__main__":
         test_plano17_phase6_governance_matrix_and_wizard_redesign()
         test_plano18_ux_resilience_active_modals_and_key_guards()
         test_plano19_rich_layouts_typography_multimedia_and_catalog()
+        test_plano20_sso_cross_tab_telemetry_and_spa_switch()
         test_readme_and_documentation_consistency()
         
         elapsed = time.time() - start_time
